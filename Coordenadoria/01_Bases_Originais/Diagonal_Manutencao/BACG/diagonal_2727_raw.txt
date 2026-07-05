@@ -1,0 +1,20 @@
+DIAGONAL 1º15º GAV PROJEÇÃO DE VENCIMENTOS DE INSPEÇÕES C-98 (ABR2026 A MAR2027)
+ANV. 2727, ESQ. 1º/15º GAV
+Meses da grade: ABR2026, MAIO2026, JUN2026, JUL2026, AGO2026, SET2026, OUT2026, NOV2026, DEZ2026, JAN2027, FEV2027, MAR2027
+
+Linha "INSPEÇÕES PROGRAMADAS" (texto aparece na coluna do mês em que a inspeção cai):
+- JUL2026: "ID5-15-0A (HORA) 100H (MOTOR)"
+- AGO2026: "ID5-15-06B (DATA)"
+- SET2026: "ID5-15-16 (HORA) 200H (MOTOR)"
+- OUT2026: "ID5-15-07 (DATA)"
+- NOV2026 (ou próxima coluna): "ID5-15-06B ID5-15-01 ID5-15-02 ID5-15-03 ID5-15-09 ID5-15-11 ID5-15-20 ID5-15-21 (DATA)"
+- coluna seguinte: "ID5-15-0A (HORA) 300H (MOTOR)"
+- última coluna antes de IMPACTO DIAG.: "ID5-15-06B (HORA) 400H (MOTOR)"
+
+Linha "IMPACTO DIAG.": sem valores preenchidos nesta captura (todas colunas vazias).
+
+NOTA: texto flat (sem colunas exatas) — obtido via read_file_content porque o binário .ods
+original está corrompido no Drive (content.xml não descomprime, confirmado 2x). A atribuição
+de cada código à coluna de mês exata acima é uma reconstrução aproximada a partir da ordem de
+aparição no texto — não há garantia de precisão perfeita mês a mês. Marcar como confiança
+"aproximada" nesta fonte específica, não inventar uma data exata quando parsear.

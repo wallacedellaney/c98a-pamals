@@ -1,0 +1,105 @@
+*C-98 - 01/07/2026*
+
+*RESUMO:*
+
+*Disponibilidade*
+
+12 D / 18 M
+
+(10 DI / 02 DO / 04 II / 04 IN / 00 ITR / 07 IS / 02 IP)
+
+*Previsão até o final do dia: 13 D / 18 M*
+
+*Previsão de disponibilidade semanal*
+
+*Disponíveis:* 17
+
+- 2703, 2708, 2719, 2738, 2741
+
+*Montadas:* 19
+
+- 2721, 2738, 2739
+
+*Esforço Aéreo*
+
+Anual: 10070:00 / 4210:45 / 41,81%
+
+*Motores disponíveis: 24*
+
+*CLA*
+
+[ ] 2723 - IS - Agd atendimento de FCU - DPE: 02 DIAS após chegada do item.
+
+*DACTA II*
+
+[ ] 2742 - DO
+
+*PAMA-LS*
+
+[ ] 2704 - DI
+
+[ ] 2706 - IP - 75 APE- DPE: A ser definido.
+
+[ ] 2724 - IP - ANV acidentada.
+
+[ ] 2726 - IS - 91 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+
+[ ] 2728 - IN - Aguardando avaliação de sinistro - DPE: 06/07
+
+[ ] 2730 - IS - SEM MOTOR - 44 IPLR - DPE: Aguarda DPE do PAMASP.
+
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+*1º ETA*
+
+[ ] 2731 - DI
+
+[ ] 2733 - DI
+
+[ ] 2739 - IS - Agd atendimento de FCU - DPE: 01 DIA após chegada do item.
+
+*1º/15º GAV*
+
+[ ] 2727 - DI
+
+*1º/5º GAV*
+
+[ ] 2702 - DI
+
+[ ] 2703 - II - Realizando inspeções ID 0A,20,21,22 / 4100FH - DPE: 03/07
+
+[ ] 2708 - IN - Pesquisa no sistema de indicação de flape. - DPE: 03/07
+
+[ ] 2729 - II - Realizando inspeções ID 0A,02,07,10,11,12,21,22 / 2900FH/HSI - DPE: 31/07
+
+*2º ETA*
+
+[ ] 2719 - II - Realizando inspeções 4300 FH/HSI.- DPE: 10/07
+
+[ ] 2722 - DI
+
+*5º ETA*
+
+[ ] 2743 - DI
+
+*6º ETA*
+
+[ ] 2709 - IN - Pane no sistema de flape - DPE: 03/07
+
+[ ] 2720 - DO
+
+[ ] 2721 - IS - Motor recolhido para reparo na geradora de gases - DPE: 13/07
+
+*7º ETA*
+
+[ ] 2736 - DI
+
+[ ] 2737 - DI
+
+[ ] 2738 - II - Realizando inspeções programadas. - DPE: 01/07
+
+[ ] 2740 - DI
+
+[ ] 2741 - IN - Pesquisa de pane de vazamento de óleo do motor. - DPE: 03/07
