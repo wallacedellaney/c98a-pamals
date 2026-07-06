@@ -77,7 +77,11 @@ def parse_inteiro(valor):
         return None
 
 
-def extrair():
+def extrair(historico_completo=False):
+    """Se historico_completo=False (padrão): só emergências em aberto do
+    provedor VEE ONE (os 3 filtros de sempre). Se True: TODO o histórico da
+    planilha (abertas e concluídas, qualquer Atd/cancelada), filtrando só por
+    Provedor = VEE ONE — usado por extrair_historico_completo()."""
     inconsistencias = []
     linhas = []
 
@@ -91,14 +95,14 @@ def extrair():
         situacao_bruta = str(row[7] or "").strip()
         situacao = SITUACOES_TRUNCADAS.get(situacao_bruta, situacao_bruta)
 
-        if situacao == "Emg concluída":
-            continue  # ignorar emergências já concluídas — só interessa o que está em aberto
-
         if str(row[22] or "").strip() != "VEE ONE":
             continue  # só interessa o provedor do Contrato 005 (VEE ONE)
 
-        if str(row[15] or "").strip():
-            continue  # Atd/cancelada tem que estar em branco (só espaços/vazio)
+        if not historico_completo:
+            if situacao == "Emg concluída":
+                continue  # ignorar emergências já concluídas — só interessa o que está em aberto
+            if str(row[15] or "").strip():
+                continue  # Atd/cancelada tem que estar em branco (só espaços/vazio)
 
         data_abertura, erro1 = parse_data(row[9])
         data_info, erro2 = parse_data(row[10])
@@ -160,6 +164,31 @@ def main():
     )
 
     print(f"{len(df)} emergências carregadas -> {destino}")
+    if inconsistencias:
+        print(f"{len(inconsistencias)} inconsistência(s) encontrada(s), ver log em 06_Logs/.")
+
+    return df
+
+
+def extrair_historico_completo():
+    """Todo o histórico da planilha (abertas e concluídas, desde 2022),
+    filtrando só por Provedor = VEE ONE — sem os filtros de 'em aberto' que
+    `main()` aplica. Preparação pedida pelo Wallace em 2026-07-06 pra um uso
+    futuro ainda não definido. Ver 00_Instrucoes/emergencias.md."""
+    DADOS_TRATADOS.mkdir(parents=True, exist_ok=True)
+    df, inconsistencias = extrair(historico_completo=True)
+
+    destino = DADOS_TRATADOS / "historico_completo_emergencias.xlsx"
+    df.to_excel(destino, index=False, sheet_name="Emergencias")
+
+    registrar_log(
+        nome_execucao="extrair_historico_completo_emergencias",
+        arquivos_lidos=[str(FONTE)],
+        arquivos_gerados=[str(destino)],
+        inconsistencias=inconsistencias,
+    )
+
+    print(f"{len(df)} emergências (histórico completo, VEE ONE) -> {destino}")
     if inconsistencias:
         print(f"{len(inconsistencias)} inconsistência(s) encontrada(s), ver log em 06_Logs/.")
 

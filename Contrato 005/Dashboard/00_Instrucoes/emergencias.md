@@ -78,6 +78,23 @@ tratativas). Ficaram de fora: OM_EMG (código redundante com OM), Provedor
 (sempre VEE ONE após o filtro), AWB, Prev Entrega, Retirado pela
 empresa/Obrigatório recibo, Mensagem para operador.
 
+## Histórico completo (VEE ONE, todas as situações) — a partir de 2026-07-06
+
+A pedido do Wallace, `extrair_historico_completo()` (mesmo arquivo
+`extrair_emergencias.py`) puxa **todo** o histórico da planilha — abertas
+**e** concluídas, qualquer valor de `Atd/cancelada` — filtrando só por
+`Provedor = VEE ONE` (sem os 2 outros filtros que `main()` aplica). Salva em
+`02_Dados_Tratados/historico_completo_emergencias.xlsx` (553 linhas na
+primeira extração, 2025-02-13 a 2026-07-02 — não é o histórico completo da
+planilha inteira desde 2022, só o período em que já existem emergências do
+provedor VEE ONE).
+
+**Ainda não tem uso definido no dashboard** — é preparação a pedido do
+Wallace pra uma análise que ele vai explicar depois. Rodar sob demanda
+(`python3 extrair_historico_completo` dentro de `05_Scripts/python/`, com o
+ambiente do projeto ativo) — não faz parte da atualização automática
+(seg-sex 12h) nem do fluxo `atualizar_do_drive()`/`main()` de sempre.
+
 ## Histórico e "novidades desde ontem" (a partir de 2026-07-06)
 
 Igual ao RAC (ver `Coordenadoria/00_Instrucoes/rac.md`), a base de Emergências
