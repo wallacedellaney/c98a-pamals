@@ -1,0 +1,67 @@
+name: Atualizações automáticas
+
+# Horários em UTC (o Brasil, sem horário de verão, é UTC-3):
+# Disponibilidade Diária: seg-sex 10h local = 13h UTC
+# Emergências: seg-sex 12h local = 15h UTC
+# Pagamentos: toda segunda 10h local = 13h UTC
+on:
+  schedule:
+    - cron: "0 13 * * 1-5"
+    - cron: "0 15 * * 1-5"
+    - cron: "0 13 * * 1"
+  workflow_dispatch:
+    inputs:
+      fonte:
+        description: "Fonte para atualizar manualmente"
+        required: true
+        type: choice
+        options:
+          - disponibilidade_diaria
+          - emergencias
+          - pagamentos
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Configurar credencial do Google (a partir do Secret)
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          mkdir -p .secrets
+          echo "$GOOGLE_SERVICE_ACCOUNT_JSON" > .secrets/service_account.json
+
+      - name: Configurar identidade git (pro commit automático)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Determinar qual fonte atualizar
+        id: fonte
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "nome=${{ inputs.fonte }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 13 * * 1-5" ]; then
+            echo "nome=disponibilidade_diaria" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 15 * * 1-5" ]; then
+            echo "nome=emergencias" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 13 * * 1" ]; then
+            echo "nome=pagamentos" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Buscar, reprocessar e enviar pro GitHub
+        run: python3 shared/executar_atualizacao.py "${{ steps.fonte.outputs.nome }}"
