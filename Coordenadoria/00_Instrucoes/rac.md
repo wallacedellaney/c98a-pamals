@@ -68,12 +68,17 @@ Duas tabelas, salvas em `02_Dados_Tratados/base_rac_tratada.xlsx`:
 
 Usar indicadores, filtros, tabelas-resumo e uma visão individual por aeronave — não uma cópia em grade da planilha original.
 
-### Regra de detalhe por contrato (definida pelo Wallace)
+### Regra de detalhe por contrato (atualizada pelo Wallace em 2026-07-06)
 
-* Aeronaves **dentro do contrato**: mostrar a lista detalhada de pendências (quais PNs faltam, nomenclatura, quantidade de cada um).
-* Aeronaves **fora do contrato**: mostrar **somente o quantitativo total** de pendências — não detalhar quais itens são.
+Todas as aeronaves (dentro **e** fora do contrato) mostram a lista detalhada
+de pendências (PN, nomenclatura, quantidade de cada item) na visão
+individual — a restrição que existia antes (só total pras "fora do
+contrato") foi removida a pedido do Wallace. Pras "fora do contrato", a tela
+só mostra um aviso de contexto ("é só pra referência, não faz parte do
+escopo do contrato") acima da mesma tabela detalhada.
 
-Isso vale para a visão individual por aeronave e para qualquer lista/tabela de pendências no site. Os dados tratados (`Pendencias`) continuam completos para as duas situações — a restrição é só na camada de exibição do dashboard.
+Os dados tratados (`Pendencias`) sempre foram completos pras duas situações
+— a restrição antiga era só na camada de exibição do dashboard.
 
 ## Regra de agrupamento no site (definida pelo Wallace)
 

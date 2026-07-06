@@ -456,11 +456,7 @@ def _detalhe_aeronave(dados, matricula):
     st.metric("Quantidade total faltante", f"{int(row['soma_unidades_faltantes'])} unidades")
 
     if row["contrato"] == "Fora do contrato":
-        st.info(
-            "Aeronave fora do contrato — exibindo apenas o quantitativo total, "
-            "sem detalhamento dos itens (ver regra em rac.md)."
-        )
-        return
+        st.info("Aeronave fora do contrato — itens abaixo são só pra referência, não fazem parte do escopo do contrato.")
 
     pend_aeronave = pendencias[pendencias["matricula"] == matricula].sort_values(
         "quantidade_faltante", ascending=False
