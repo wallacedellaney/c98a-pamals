@@ -18,15 +18,16 @@ C-98A PAMALS/
 └── Coordenadoria/             <- esqueleto vazio, a desenvolver junto
 ```
 
-## Atualização de dados sob demanda (Drive real)
+## Atualização de dados — automática (3 fontes) + manual (as demais)
 
-Cada fonte de dado (Emergências/Reparáveis/Pagamentos no Contrato 005; RAC/
-Vencimentos/Disponibilidade na Coordenadoria) tem seu próprio botão
-"Atualizar X", que busca a versão mais recente **direto do Google Drive**
-(via `shared/drive_sync.py`, com credencial própria do app) e mostra status
-(última versão, última atualização local, erro) — nunca em cascata, nunca ao
-abrir página. Ver `00_Instrucoes/atualizacoes.md` para a arquitetura
-completa, o que já está pronto e o que falta (fases 2-4).
+Disponibilidade Diária (seg-sex 10h), Emergências (seg-sex 12h) e Pagamentos
+(toda segunda 10h) atualizam **sozinhos**, via `launchd` no Mac do Wallace +
+`shared/drive_sync.py` (credencial própria, `.secrets/service_account.json`)
++ `shared/executar_atualizacao.py` (busca, reprocessa, commita e dá push
+sozinho — o Streamlit Cloud reimplanta automaticamente). As demais fontes
+(Reparáveis, Vencimentos, RAC, Diagonal de Manutenção) continuam manuais —
+Wallace pede na conversa. Ver `00_Instrucoes/atualizacoes.md` para a
+arquitetura completa e como adicionar uma fonte nova ao agendamento.
 
 ## Comando "executar" / "roda"
 
