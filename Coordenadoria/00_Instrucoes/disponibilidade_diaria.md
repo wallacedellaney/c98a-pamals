@@ -83,8 +83,22 @@ Checagem de consistência automática: soma dos códigos (DI+DO+II+IN+ITR+IS+IP)
 
 Wallace pediu uma especificação bastante ampla (34 seções: importação manual de relatório com tela de validação, comparação entre datas quaisquer, histórico/linha do tempo por aeronave, exportação em PDF/Excel, configuração de siglas/cores, etc.). Construímos em fases:
 
-**Fase 1 (feita)**: cabeçalho com data de referência, indicadores principais (D, M, % disponibilidade, previsão do dia, motores, esforço aéreo), distribuição por situação (DI/DO/II/IN/ITR/IS/IP), previsão semanal, comparação simples com o relatório imediatamente anterior (variação de D/M e mudanças de situação por aeronave), alertas classificados (crítico/atenção/programado), painel por unidade com aeronaves, busca e filtros.
+**Fase 1 (feita)**: cabeçalho com data de referência, indicadores principais (D, M, % disponibilidade, previsão do dia, motores, esforço aéreo), distribuição por situação (DI/DO/II/IN/ITR/IS/IP), previsão semanal, comparação simples com o relatório imediatamente anterior (variação de D/M e mudanças de situação por aeronave), alertas classificados (crítico/atenção/programado), painel por unidade com aeronaves (cards clicáveis), busca e filtros.
 
-**Próximas fases (não feitas ainda)**: importação manual de novo relatório com tela de validação dentro do site (por ora a entrada é sempre via Claude, ver acima), comparação entre duas datas quaisquer, histórico/linha do tempo por aeronave ao longo de vários meses, exportação em PDF/Excel, tela de configuração de siglas e cores.
+**Feito em 2026-07-06**: página de detalhe por aeronave (clicar no card, no painel por unidade) com 2 abas — "Situação atual" (situação/ocorrência/DPE do relatório mais recente) e "Histórico" (linha do tempo de situação por relatório + tabela completa, exportável em CSV). Ver seção "Histórico por aeronave" abaixo.
+
+**Próximas fases (não feitas ainda)**: importação manual de novo relatório com tela de validação dentro do site (por ora a entrada é sempre via Claude, ver acima), comparação entre duas datas quaisquer, exportação em PDF, tela de configuração de siglas e cores.
+
+## Histórico por aeronave (a partir de 2026-07-06)
+
+Diferente do RAC, aqui o histórico **já existia sem querer**: cada relatório
+vira um `.txt` próprio (nunca sobrescreve o anterior), e
+`extrair_disponibilidade_diaria.py` já lia todos os arquivos salvos e montava
+uma linha por aeronave x relatório na aba "Aeronaves" — só faltava uma tela
+pra mostrar isso, que foi construída agora (ver acima).
+
+O histórico só cobre os relatórios que já foram efetivamente salvos
+localmente (ver seção "Fonte") — não há relatório de fim de semana, então a
+linha do tempo pula sábados/domingos normalmente, e isso é esperado.
 
 Identidade visual: reaproveita os mesmos componentes/cores/tipografia já usados no RAC e no restante do site (ver `Contrato 005/Dashboard/00_Instrucoes/00_BRAND/identidade_visual.md`).

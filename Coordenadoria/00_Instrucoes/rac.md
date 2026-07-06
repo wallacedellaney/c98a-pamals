@@ -84,6 +84,26 @@ Os dados tratados (`Pendencias`) sempre foram completos pras duas situações
 
 Aeronaves **"Sem condições" nunca entram no grupo "sem pendências"/regulares**, mesmo quando `total_pendencias` é 0 — elas ficam sempre na área de prioridade/atenção, junto com as Desmontadas. Só entram na seção "regulares" (recolhida) as aeronaves **Montadas** (que por definição já têm 0 pendência).
 
+## Histórico por aeronave (a partir de 2026-07-06)
+
+O RAC sempre sobrescreveu a cópia local a cada busca — não existe histórico
+anterior a 2026-07-06. A partir dessa data, toda vez que a atualização
+automática roda (seg-sex 12h, ver `00_Instrucoes/atualizacoes.md`), o script
+também acrescenta um **snapshot do dia, item a item** (matrícula, PN,
+nomenclatura, quantidade faltante) em
+`02_Dados_Tratados/historico_rac.csv` — nunca sobrescreve dias anteriores, só
+substitui o snapshot do próprio dia se rodar de novo na mesma data (evita
+duplicar).
+
+Na visão individual de cada aeronave (RAC → clicar numa aeronave), a aba
+**"Histórico"** mostra: gráfico de evolução do total de PNs distintos
+faltantes ao longo dos dias registrados, e um seletor pra ver o detalhe
+item a item de um dia específico.
+
+Enquanto o histórico for curto (poucos dias registrados), o gráfico vai
+parecer "vazio"/pouco informativo — isso é esperado, ele cresce sozinho a
+cada dia útil.
+
 ## Decisões já tomadas (não usar % de completude)
 
 Em vez de "% de completude" (sem base de cálculo confiável — a planilha só traz o que falta, não um total de itens exigidos por aeronave), usar **faixas por quantidade de unidades faltantes**:

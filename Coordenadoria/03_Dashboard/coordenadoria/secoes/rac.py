@@ -458,21 +458,70 @@ def _detalhe_aeronave(dados, matricula):
     if row["contrato"] == "Fora do contrato":
         st.info("Aeronave fora do contrato — itens abaixo são só pra referência, não fazem parte do escopo do contrato.")
 
-    pend_aeronave = pendencias[pendencias["matricula"] == matricula].sort_values(
-        "quantidade_faltante", ascending=False
+    aba_pendencias, aba_historico = st.tabs(["Pendências atuais", "Histórico"])
+
+    with aba_pendencias:
+        pend_aeronave = pendencias[pendencias["matricula"] == matricula].sort_values(
+            "quantidade_faltante", ascending=False
+        )
+
+        busca = st.text_input("Buscar nas pendências (PN ou nomenclatura)", key="busca_detalhe")
+        if busca:
+            b = busca.strip().lower()
+            pend_aeronave = pend_aeronave[
+                pend_aeronave["pn"].astype(str).str.lower().str.contains(b)
+                | pend_aeronave["nomenclatura"].astype(str).str.lower().str.contains(b, na=False)
+            ]
+
+        st.markdown("##### Materiais faltantes")
+        st.dataframe(pend_aeronave[["pn", "nomenclatura", "quantidade_faltante"]],
+                     hide_index=True, width="stretch")
+
+        csv = pend_aeronave.to_csv(index=False).encode("utf-8")
+        st.download_button("⬇️ Exportar esta aeronave", csv, file_name=f"pendencias_{matricula}.csv", mime="text/csv")
+
+    with aba_historico:
+        _historico_aeronave_rac(dados, matricula)
+
+
+def _historico_aeronave_rac(dados, matricula):
+    historico = dados.get("rac_historico")
+    if historico is None or historico.empty:
+        st.info(
+            "Ainda não há histórico registrado — o registro começou em 2026-07-06 "
+            "e acumula um snapshot por dia útil, a partir da atualização automática do RAC (seg-sex 12h)."
+        )
+        return
+
+    hist_aeronave = historico[historico["matricula"] == str(matricula)].copy()
+    if hist_aeronave.empty:
+        st.info("Nenhum snapshot registrado ainda para esta aeronave.")
+        return
+
+    por_dia = (
+        hist_aeronave.groupby("data")
+        .agg(total_pendencias=("pn", "nunique"), soma_unidades_faltantes=("quantidade_faltante", "sum"))
+        .reset_index()
+        .sort_values("data")
     )
 
-    busca = st.text_input("Buscar nas pendências (PN ou nomenclatura)", key="busca_detalhe")
-    if busca:
-        b = busca.strip().lower()
-        pend_aeronave = pend_aeronave[
-            pend_aeronave["pn"].astype(str).str.lower().str.contains(b)
-            | pend_aeronave["nomenclatura"].astype(str).str.lower().str.contains(b, na=False)
-        ]
+    st.markdown("##### Evolução das pendências ao longo do tempo")
+    fig = px.line(por_dia, x="data", y="total_pendencias", markers=True, color_discrete_sequence=[AMBER])
+    fig.update_layout(yaxis_title="PNs distintos faltantes", xaxis_title="")
+    layout_grafico(fig, altura=220)
+    st.plotly_chart(fig, width="stretch")
 
-    st.markdown("##### Materiais faltantes")
-    st.dataframe(pend_aeronave[["pn", "nomenclatura", "quantidade_faltante"]],
-                 hide_index=True, width="stretch")
+    dia_escolhido = st.selectbox(
+        "Ver detalhe de um dia",
+        options=sorted(hist_aeronave["data"].dt.date.unique(), reverse=True),
+        format_func=lambda d: d.strftime("%d/%m/%Y"),
+        key="rac_hist_dia",
+    )
+    detalhe_dia = hist_aeronave[hist_aeronave["data"].dt.date == dia_escolhido][
+        ["pn", "nomenclatura", "quantidade_faltante"]
+    ].sort_values("quantidade_faltante", ascending=False)
+    st.dataframe(detalhe_dia, hide_index=True, width="stretch")
 
-    csv = pend_aeronave.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Exportar esta aeronave", csv, file_name=f"pendencias_{matricula}.csv", mime="text/csv")
+    csv = hist_aeronave[["data", "pn", "nomenclatura", "quantidade_faltante"]].to_csv(index=False).encode("utf-8")
+    st.download_button("⬇️ Exportar histórico completo desta aeronave", csv,
+                        file_name=f"historico_rac_{matricula}.csv", mime="text/csv")

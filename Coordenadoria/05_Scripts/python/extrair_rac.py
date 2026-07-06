@@ -34,6 +34,11 @@ ABA = "Rac"
 # de emergências C-98 2026", aba "Rac".
 DRIVE_FILE_ID = "1o8supQLcHkC1WZZCZDAtuRKGB_VUlQ8qBlYj7racsGQ"
 
+# Um snapshot por dia (item a item) das pendências, acumulado desde
+# 2026-07-06 — não existe histórico anterior a essa data, pois o RAC sempre
+# sobrescreveu a cópia local até então. Ver 00_Instrucoes/rac.md.
+HISTORICO_RAC = DADOS_TRATADOS / "historico_rac.csv"
+
 PRIMEIRA_COLUNA_AERONAVE = 7  # coluna G
 LINHA_CONTAGEM_PENDENCIAS = 3
 PRIMEIRA_LINHA_PN = 5
@@ -150,6 +155,22 @@ def main():
     return df_aeronaves, df_pendencias
 
 
+def _registrar_historico(df_pendencias):
+    """Acrescenta o snapshot de hoje ao histórico item a item — se já rodou
+    hoje antes, substitui só as linhas de hoje (não duplica)."""
+    hoje = datetime.now().date().isoformat()
+    novo = df_pendencias[["matricula", "unidade", "pn", "nomenclatura", "quantidade_faltante"]].copy()
+    novo.insert(0, "data", hoje)
+
+    if HISTORICO_RAC.exists():
+        historico = pd.read_csv(HISTORICO_RAC, dtype={"matricula": str})
+        historico = historico[historico["data"] != hoje]
+        historico = pd.concat([historico, novo], ignore_index=True)
+    else:
+        historico = novo
+    historico.to_csv(HISTORICO_RAC, index=False)
+
+
 def atualizar_do_drive():
     """Busca a versão mais recente direto do Google Drive, sobrescreve a
     cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md."""
@@ -158,7 +179,8 @@ def atualizar_do_drive():
         conteudo = drive_sync.baixar_arquivo(DRIVE_FILE_ID, exportar_como=drive_sync.XLSX_MIME)
         FONTE.parent.mkdir(parents=True, exist_ok=True)
         FONTE.write_bytes(conteudo)
-        df_aeronaves, _ = main()
+        df_aeronaves, df_pendencias = main()
+        _registrar_historico(df_pendencias)
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "rac",
             remote_modified_time=metadados["modifiedTime"],

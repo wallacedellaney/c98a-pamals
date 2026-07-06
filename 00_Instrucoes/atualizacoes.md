@@ -56,6 +56,12 @@ e removidos.
    atualização local, status (`atualizado`/`pendente`/`erro`/`sem_novidade`),
    quantidade de registros, erro (se houver).
 
+Pra RAC especificamente: cada rodada também acrescenta um snapshot do dia
+(item a item, por aeronave x PN) em `Coordenadoria/02_Dados_Tratados/historico_rac.csv`
+— nunca sobrescreve dias anteriores, só o snapshot do próprio dia (se rodar
+2x no mesmo dia). Esse arquivo alimenta a aba "Histórico" na visão individual
+de cada aeronave no RAC. Ver `Coordenadoria/00_Instrucoes/rac.md`.
+
 Pra Disponibilidade Diária especificamente: se não houver relatório novo
 ainda (ex.: rodou antes de alguém postar o relatório do dia, ou é fim de
 semana — só sai relatório de segunda a sexta, confirmado pelo Wallace), o

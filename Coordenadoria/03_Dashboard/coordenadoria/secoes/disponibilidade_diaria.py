@@ -20,10 +20,17 @@ from coordenadoria.utils import atualizar_dados_disponibilidade, DISPONIBILIDADE
 
 ORDEM_SITUACAO = ["DI", "DO", "II", "IN", "ITR", "IS", "IP"]
 
+ICONE_SITUACAO = {"DI": "✅", "DO": "🟡", "II": "🔧", "IN": "⚠️", "ITR": "🚚", "IS": "📦", "IP": "⛔"}
+COR_MD_SITUACAO = {"DI": "green", "DO": "green", "II": "orange", "IN": "red", "ITR": "gray", "IS": "violet", "IP": "red"}
+
 FILTRO_KEYS = ["disp_f_unidade", "disp_f_situacao", "disp_f_busca"]
 
 
 def render(dados):
+    if st.session_state.get("disp_aeronave_selecionada"):
+        _detalhe_aeronave(dados, st.session_state["disp_aeronave_selecionada"])
+        return
+
     relatorios = dados["disp_relatorios"]
     aeronaves = dados["disp_aeronaves"]
 
@@ -107,6 +114,19 @@ def _estilo():
     border: 1px solid {LINE};
     border-radius: 10px;
     padding: 0.8rem 1rem;
+}}
+.st-key-disp_cards div.stButton > button {{
+    text-align: left;
+    white-space: pre-line;
+    line-height: 1.6;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    height: auto;
+    font-size: 1.0rem;
+    padding: 0.7rem 0.9rem;
+}}
+.st-key-disp_cards div.stButton > button p {{
+    font-size: 1.0rem;
 }}
 </style>""",
         unsafe_allow_html=True,
@@ -373,19 +393,98 @@ def _aplicar_filtros(aer, f):
     return df
 
 
+def _card_aeronave_disp(row):
+    situacao = row["situacao"]
+    icone = ICONE_SITUACAO.get(situacao, "•")
+    cor_md = COR_MD_SITUACAO.get(situacao, "gray")
+    ocorrencia = row["ocorrencia"] if pd.notna(row["ocorrencia"]) else None
+    dpe = row["dpe_texto_original"] if pd.notna(row["dpe_texto_original"]) else None
+
+    linhas = [
+        f"**FAB {row['matricula']}**",
+        f":{cor_md}[{icone} {situacao} — {NOME_SITUACAO.get(situacao, situacao)}]",
+    ]
+    if ocorrencia:
+        linhas.append(ocorrencia)
+    if dpe:
+        linhas.append(f"DPE: {dpe}")
+
+    if st.button("\n".join(linhas), key=f"disp_card_{row['matricula']}", width="stretch"):
+        st.session_state["disp_aeronave_selecionada"] = row["matricula"]
+        st.rerun()
+
+
 def _painel_por_unidade(aer):
     st.markdown("##### Painel por unidade")
     if aer.empty:
         st.caption("Nenhuma aeronave no filtro atual.")
         return
 
-    for unidade in aer["unidade"].drop_duplicates().tolist():
-        grupo = aer[aer["unidade"] == unidade].sort_values("matricula")
-        resumo_situacoes = grupo["situacao"].value_counts()
-        resumo_txt = " · ".join(f"{qtd} {sit}" for sit, qtd in resumo_situacoes.items())
-        with st.expander(f"{unidade} — {len(grupo)} aeronave(s) · {resumo_txt}"):
-            tabela = grupo[["matricula", "situacao", "ocorrencia", "dpe_texto_original"]].rename(columns={
-                "matricula": "Matrícula", "situacao": "Situação",
-                "ocorrencia": "Ocorrência", "dpe_texto_original": "DPE",
-            }).fillna("—")
-            st.dataframe(tabela, hide_index=True, width="stretch")
+    with st.container(key="disp_cards"):
+        for unidade in aer["unidade"].drop_duplicates().tolist():
+            grupo = aer[aer["unidade"] == unidade].sort_values("matricula")
+            resumo_situacoes = grupo["situacao"].value_counts()
+            resumo_txt = " · ".join(f"{qtd} {sit}" for sit, qtd in resumo_situacoes.items())
+            with st.expander(f"{unidade} — {len(grupo)} aeronave(s) · {resumo_txt}"):
+                cols = st.columns(3)
+                for i, (_, row) in enumerate(grupo.iterrows()):
+                    with cols[i % 3]:
+                        _card_aeronave_disp(row)
+
+
+def _detalhe_aeronave(dados, matricula):
+    aeronaves = dados["disp_aeronaves"]
+
+    if st.button("← Voltar à lista"):
+        st.session_state["disp_aeronave_selecionada"] = None
+        st.rerun()
+
+    hist = aeronaves[aeronaves["matricula"] == matricula].sort_values("data_referencia")
+    if hist.empty:
+        st.warning("Aeronave não encontrada nos relatórios carregados.")
+        return
+    atual = hist.iloc[-1]
+
+    st.title(f"FAB {matricula}")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Situação atual", f"{atual['situacao']} — {NOME_SITUACAO.get(atual['situacao'], '')}")
+    c2.metric("Unidade", atual["unidade"] or "—")
+    c3.metric("Último relatório", atual["data_referencia"].strftime("%d/%m/%Y"))
+
+    aba_atual, aba_historico = st.tabs(["Situação atual", "Histórico"])
+
+    with aba_atual:
+        ocorrencia = atual["ocorrencia"] if pd.notna(atual["ocorrencia"]) else "—"
+        dpe = atual["dpe_texto_original"] if pd.notna(atual["dpe_texto_original"]) else "—"
+        st.markdown(f"**Ocorrência:** {ocorrencia}")
+        st.markdown(f"**DPE:** {dpe}")
+
+    with aba_historico:
+        if len(hist) < 2:
+            st.info(
+                "Só existe 1 relatório com esta aeronave até agora — o histórico vai crescendo "
+                "conforme os relatórios diários forem chegando (seg-sex, via atualização automática)."
+            )
+
+        st.markdown("##### Linha do tempo — situação por relatório")
+        fig = px.scatter(
+            hist, x="data_referencia", y="situacao",
+            color="situacao", color_discrete_map=COR_SITUACAO,
+            category_orders={"situacao": ORDEM_SITUACAO},
+        )
+        fig.update_traces(marker=dict(size=12))
+        fig.update_layout(yaxis_title="", xaxis_title="", showlegend=False)
+        layout_grafico(fig, altura=220)
+        st.plotly_chart(fig, width="stretch")
+
+        tabela = hist[["data_referencia", "situacao", "ocorrencia", "dpe_texto_original"]].copy()
+        tabela["data_referencia"] = tabela["data_referencia"].dt.strftime("%d/%m/%Y")
+        tabela = tabela.rename(columns={
+            "data_referencia": "Data", "situacao": "Situação",
+            "ocorrencia": "Ocorrência", "dpe_texto_original": "DPE",
+        }).fillna("—").sort_values("Data", ascending=False)
+        st.dataframe(tabela, hide_index=True, width="stretch")
+
+        csv = tabela.to_csv(index=False).encode("utf-8")
+        st.download_button("⬇️ Exportar histórico desta aeronave", csv,
+                            file_name=f"historico_disponibilidade_{matricula}.csv", mime="text/csv")

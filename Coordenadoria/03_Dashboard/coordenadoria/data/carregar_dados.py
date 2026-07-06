@@ -14,12 +14,29 @@ def _ler_excel(caminho_str, _mtime, **kwargs):
     return pd.read_excel(caminho_str, **kwargs)
 
 
+@st.cache_data
+def _ler_csv(caminho_str, _mtime, **kwargs):
+    return pd.read_csv(caminho_str, **kwargs)
+
+
 def carregar_rac():
     caminho = DADOS_TRATADOS / "base_rac_tratada.xlsx"
     mtime = caminho.stat().st_mtime
     aeronaves = _ler_excel(str(caminho), mtime, sheet_name="Aeronaves")
     pendencias = _ler_excel(str(caminho), mtime, sheet_name="Pendencias")
     return aeronaves, pendencias, mtime
+
+
+def carregar_historico_rac():
+    """Snapshot diário item a item das pendências do RAC, acumulado desde
+    2026-07-06 (não existe histórico anterior a essa data). Ver rac.md."""
+    caminho = DADOS_TRATADOS / "historico_rac.csv"
+    if not caminho.exists():
+        return pd.DataFrame(columns=["data", "matricula", "unidade", "pn", "nomenclatura", "quantidade_faltante"])
+    mtime = caminho.stat().st_mtime
+    df = _ler_csv(str(caminho), mtime, dtype={"matricula": str})
+    df["data"] = pd.to_datetime(df["data"])
+    return df
 
 
 def carregar_disponibilidade_diaria():
@@ -65,6 +82,7 @@ def carregar_diagonal_manutencao():
 
 def carregar_tudo():
     aeronaves, pendencias, mtime_rac = carregar_rac()
+    historico_rac = carregar_historico_rac()
     disp_relatorios, disp_aeronaves, mtime_disp = carregar_disponibilidade_diaria()
     tmot, mtime_venc = carregar_vencimentos()
     venc_operadores, mtime_venc_op = carregar_vencimentos_operadores()
@@ -72,6 +90,7 @@ def carregar_tudo():
     return {
         "rac_aeronaves": aeronaves,
         "rac_pendencias": pendencias,
+        "rac_historico": historico_rac,
         "atualizado_em": mtime_rac,
         "disp_relatorios": disp_relatorios,
         "disp_aeronaves": disp_aeronaves,
