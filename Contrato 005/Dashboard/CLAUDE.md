@@ -168,11 +168,13 @@ Salvar resultado em:
 
 Nunca criar gráfico usando diretamente as bases originais.
 
-O dashboard é interativo e dividido em 4 partes, navegáveis por botões/abas na parte de baixo da tela:
+O dashboard é interativo e dividido em partes, navegáveis por botões/abas na parte de baixo da tela:
 
 * **Visão Geral** — resumo consolidado com os indicadores principais das 3 áreas abaixo;
 * **Reparáveis** — dados tratados de `base_reparaveis_tratada.xlsx`;
 * **Emergências Abertas** — dados tratados de `base_emergencias_tratada.xlsx`;
+* **Emergências Totais** — histórico completo (abertas + concluídas, VEE ONE) de `historico_completo_emergencias.xlsx`, ver `00_Instrucoes/emergencias.md`;
+* **Fechamento Mensal** — seletor de mês + 2 subseções ("Cômputo Mensal" e "Atrasos"), ainda sem conteúdo definido — não presumir métricas, aguardar instrução do Wallace;
 * **Pagamentos** — dados tratados de `base_pagamentos_tratada.xlsx`.
 
 Cada seção deve poder ser filtrada e navegada de forma independente.
