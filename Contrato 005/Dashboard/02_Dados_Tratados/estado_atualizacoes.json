@@ -5,5 +5,12 @@
     "status": "atualizado",
     "record_count": 16,
     "last_error": null
+  },
+  "pagamentos": {
+    "remote_modified_time": "2026-07-06T14:07:59.681Z",
+    "local_updated_at": "2026-07-06T11:20:45.914512",
+    "status": "atualizado",
+    "record_count": 29,
+    "last_error": null
   }
 }
