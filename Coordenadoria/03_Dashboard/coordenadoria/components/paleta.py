@@ -81,3 +81,6 @@ NOME_SITUACAO = {
     "IS": "Aguardando suprimento",
     "IP": "Indisponibilidade prolongada",
 }
+
+ICONE_SITUACAO = {"DI": "✅", "DO": "🟡", "II": "🔧", "IN": "⚠️", "ITR": "🚚", "IS": "📦", "IP": "⛔"}
+COR_MD_SITUACAO = {"DI": "green", "DO": "green", "II": "orange", "IN": "red", "ITR": "gray", "IS": "violet", "IP": "red"}

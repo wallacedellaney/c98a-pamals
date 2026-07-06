@@ -104,6 +104,21 @@ Enquanto o histórico for curto (poucos dias registrados), o gráfico vai
 parecer "vazio"/pouco informativo — isso é esperado, ele cresce sozinho a
 cada dia útil.
 
+### Cruzamento com a Disponibilidade Diária (a partir de 2026-07-06)
+
+A tabela "Pendências x situação operacional, por dia" (na aba Histórico)
+mostra, lado a lado, o total de PNs faltantes daquele dia **e** a situação
+operacional (DI/DO/II/IN/ITR/IS/IP) da mesma aeronave na Disponibilidade
+Diária do mesmo dia — dá pra ver, por exemplo, se uma aeronave ficou
+indisponível justamente nos dias em que tinha mais pendência de material.
+
+A coluna "Situação (Disponibilidade)" só aparece nas datas em que **as duas**
+fontes têm dado daquele dia (RAC desde 2026-07-06, Disponibilidade só
+seg-sex) — mostra "—" quando falta uma das duas. Aeronaves **sem nenhuma
+pendência** no RAC nunca aparecem em `historico_rac.csv` (só registramos
+PN com falta > 0), então não têm com o que cruzar — isso é esperado, não é
+falha de coleta.
+
 ## Decisões já tomadas (não usar % de completude)
 
 Em vez de "% de completude" (sem base de cálculo confiável — a planilha só traz o que falta, não um total de itens exigidos por aeronave), usar **faixas por quantidade de unidades faltantes**:

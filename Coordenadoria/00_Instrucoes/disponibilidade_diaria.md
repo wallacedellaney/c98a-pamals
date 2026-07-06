@@ -101,4 +101,12 @@ O histórico só cobre os relatórios que já foram efetivamente salvos
 localmente (ver seção "Fonte") — não há relatório de fim de semana, então a
 linha do tempo pula sábados/domingos normalmente, e isso é esperado.
 
+### Cruzamento com o RAC (a partir de 2026-07-06)
+
+A tabela de histórico ganha uma coluna extra, "Pendências RAC (mesmo dia)",
+com o total de PNs distintos faltantes daquela aeronave no RAC, na mesma
+data do relatório de Disponibilidade — mostra "—" quando o RAC não tem
+snapshot daquele dia (histórico do RAC só começa em 2026-07-06, ver
+`rac.md`) ou quando a aeronave não tinha nenhuma pendência registrada.
+
 Identidade visual: reaproveita os mesmos componentes/cores/tipografia já usados no RAC e no restante do site (ver `Contrato 005/Dashboard/00_Instrucoes/00_BRAND/identidade_visual.md`).

@@ -16,7 +16,9 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from coordenadoria.components.paleta import STATUS, AMBER, CYAN, SECONDARY, PANEL, LINE, INK, layout_grafico
+from coordenadoria.components.paleta import (
+    STATUS, AMBER, CYAN, SECONDARY, PANEL, LINE, INK, ICONE_SITUACAO, NOME_SITUACAO, layout_grafico,
+)
 from coordenadoria.utils import atualizar_dados_rac, RAC_PLANILHA_URL
 
 ICONE_DISPONIBILIDADE = {"Montada": "✅", "Desmontada": "🛠️", "Sem condições": "⛔"}
@@ -511,6 +513,24 @@ def _historico_aeronave_rac(dados, matricula):
     layout_grafico(fig, altura=220)
     st.plotly_chart(fig, width="stretch")
 
+    situacao_por_dia = _situacao_disponibilidade_por_dia(dados, matricula)
+    if situacao_por_dia is not None:
+        tabela_resumo = por_dia.merge(situacao_por_dia, on="data", how="left")
+        tabela_resumo["situacao_disp"] = tabela_resumo["situacao"].apply(
+            lambda s: "—" if pd.isna(s) else f"{ICONE_SITUACAO.get(s, '•')} {s} — {NOME_SITUACAO.get(s, s)}"
+        )
+        tabela_resumo = tabela_resumo.drop(columns=["situacao"]).rename(columns={
+            "data": "Data", "total_pendencias": "PNs faltantes (RAC)",
+            "soma_unidades_faltantes": "Unidades faltantes", "situacao_disp": "Situação (Disponibilidade)",
+        }).sort_values("Data", ascending=False)
+        tabela_resumo["Data"] = tabela_resumo["Data"].dt.strftime("%d/%m/%Y")
+        st.markdown("##### Pendências x situação operacional, por dia")
+        st.dataframe(tabela_resumo, hide_index=True, width="stretch")
+        st.caption(
+            "\"Situação (Disponibilidade)\" só aparece nas datas em que a Disponibilidade "
+            "Diária também tem relatório — não sai relatório de fim de semana."
+        )
+
     dia_escolhido = st.selectbox(
         "Ver detalhe de um dia",
         options=sorted(hist_aeronave["data"].dt.date.unique(), reverse=True),
@@ -525,3 +545,17 @@ def _historico_aeronave_rac(dados, matricula):
     csv = hist_aeronave[["data", "pn", "nomenclatura", "quantidade_faltante"]].to_csv(index=False).encode("utf-8")
     st.download_button("⬇️ Exportar histórico completo desta aeronave", csv,
                         file_name=f"historico_rac_{matricula}.csv", mime="text/csv")
+
+
+def _situacao_disponibilidade_por_dia(dados, matricula):
+    """Situação operacional (Disponibilidade Diária) da mesma aeronave, por
+    dia, pra cruzar com a evolução das pendências do RAC."""
+    disp = dados.get("disp_aeronaves")
+    if disp is None or disp.empty:
+        return None
+    aer = disp[disp["matricula"] == int(matricula)]
+    if aer.empty:
+        return None
+    tab = aer[["data_referencia", "situacao"]].copy()
+    tab["data"] = tab["data_referencia"].dt.normalize()
+    return tab[["data", "situacao"]]

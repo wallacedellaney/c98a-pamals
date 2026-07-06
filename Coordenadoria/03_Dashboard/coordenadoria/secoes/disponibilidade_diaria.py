@@ -14,14 +14,12 @@ import plotly.express as px
 import streamlit as st
 
 from coordenadoria.components.paleta import (
-    AMBER, CYAN, INK, LINE, PANEL, SECONDARY, STATUS, COR_SITUACAO, NOME_SITUACAO, layout_grafico,
+    AMBER, CYAN, INK, LINE, PANEL, SECONDARY, STATUS, COR_SITUACAO, NOME_SITUACAO,
+    ICONE_SITUACAO, COR_MD_SITUACAO, layout_grafico,
 )
 from coordenadoria.utils import atualizar_dados_disponibilidade, DISPONIBILIDADE_PASTA_URL
 
 ORDEM_SITUACAO = ["DI", "DO", "II", "IN", "ITR", "IS", "IP"]
-
-ICONE_SITUACAO = {"DI": "✅", "DO": "🟡", "II": "🔧", "IN": "⚠️", "ITR": "🚚", "IS": "📦", "IP": "⛔"}
-COR_MD_SITUACAO = {"DI": "green", "DO": "green", "II": "orange", "IN": "red", "ITR": "gray", "IS": "violet", "IP": "red"}
 
 FILTRO_KEYS = ["disp_f_unidade", "disp_f_situacao", "disp_f_busca"]
 
@@ -432,6 +430,20 @@ def _painel_por_unidade(aer):
                         _card_aeronave_disp(row)
 
 
+def _pendencias_rac_por_dia(dados, matricula):
+    """Total de PNs distintos faltantes (RAC) por dia, pra cruzar com a
+    situação operacional da mesma aeronave no histórico da Disponibilidade."""
+    historico_rac = dados.get("rac_historico")
+    if historico_rac is None or historico_rac.empty:
+        return None
+    hist_aeronave = historico_rac[historico_rac["matricula"] == str(matricula)]
+    if hist_aeronave.empty:
+        return None
+    por_dia = hist_aeronave.groupby("data")["pn"].nunique().reset_index()
+    por_dia.columns = ["data_referencia", "total_pendencias_rac"]
+    return por_dia
+
+
 def _detalhe_aeronave(dados, matricula):
     aeronaves = dados["disp_aeronaves"]
 
@@ -478,12 +490,27 @@ def _detalhe_aeronave(dados, matricula):
         st.plotly_chart(fig, width="stretch")
 
         tabela = hist[["data_referencia", "situacao", "ocorrencia", "dpe_texto_original"]].copy()
+
+        pendencias_por_dia = _pendencias_rac_por_dia(dados, matricula)
+        if pendencias_por_dia is not None:
+            tabela = tabela.merge(pendencias_por_dia, on="data_referencia", how="left")
+            tabela["total_pendencias_rac"] = tabela["total_pendencias_rac"].apply(
+                lambda v: "—" if pd.isna(v) else f"{int(v)} PN(s)"
+            )
+
         tabela["data_referencia"] = tabela["data_referencia"].dt.strftime("%d/%m/%Y")
-        tabela = tabela.rename(columns={
+        colunas = {
             "data_referencia": "Data", "situacao": "Situação",
             "ocorrencia": "Ocorrência", "dpe_texto_original": "DPE",
-        }).fillna("—").sort_values("Data", ascending=False)
+            "total_pendencias_rac": "Pendências RAC (mesmo dia)",
+        }
+        tabela = tabela.rename(columns=colunas).fillna("—").sort_values("Data", ascending=False)
         st.dataframe(tabela, hide_index=True, width="stretch")
+        if pendencias_por_dia is not None:
+            st.caption(
+                "\"Pendências RAC (mesmo dia)\" só aparece nas datas em que o RAC também foi "
+                "atualizado (a partir de 2026-07-06) — ver Coordenadoria/00_Instrucoes/rac.md."
+            )
 
         csv = tabela.to_csv(index=False).encode("utf-8")
         st.download_button("⬇️ Exportar histórico desta aeronave", csv,
