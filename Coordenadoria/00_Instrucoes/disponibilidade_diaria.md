@@ -2,7 +2,15 @@
 
 ## Fonte
 
-Google Drive, pasta **"Atualização de Disponibilidade"** → **2026** → mês (ex.: "07 Julho") → um Google Doc por dia, nomeado "Disponibilidade DD/MM". Cada doc é o texto que vira a mensagem de WhatsApp diária de disponibilidade da frota C-98.
+Google Drive, pasta **"Atualização de Disponibilidade"** (id `1JLrUGunWo5ABsR3WuYo88b2WD4QWoxNH`) → ano (ex.: pasta "2026", id `1GUcW8HrIedJKfwNO68nPHaOO1zIn1MeM`) → mês (ex.: "07 Julho", id `10IxiLjPonqd2zw6Vm0pVeAf1CUF1gsRw` — nome do mês muda todo mês, tem que buscar de novo) → um Google Doc por dia, nomeado "Disponibilidade DD/MM". Cada doc é o texto que vira a mensagem de WhatsApp diária de disponibilidade da frota C-98.
+
+**Confirmado pelo Wallace: só sai relatório de segunda a sexta** (sem fim de
+semana). Isso é esperado, não é uma falha — ao buscar "o mais recente", não
+existir relatório de sábado/domingo é normal. A comparação "mudanças desde
+[data anterior]" (na seção own do site) deve sempre comparar com o **último
+relatório realmente existente**, seja ele de ontem ou de sexta-feira (se hoje
+for segunda) — nunca pular ou tentar inventar um relatório de fim de semana
+que não existe.
 
 Não há credencial do Google configurada no app Streamlit (diferente das outras áreas, que leem cópias `.xlsx` locais de Sheets). Por isso, o fluxo aqui é:
 

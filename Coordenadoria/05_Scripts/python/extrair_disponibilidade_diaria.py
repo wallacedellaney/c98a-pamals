@@ -26,9 +26,16 @@ from datetime import date, datetime
 
 import pandas as pd
 
-from common import BASES_ORIGINAIS, DADOS_TRATADOS, registrar_log
+from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
+from shared import drive_sync, estado
 
 PASTA_ORIGEM = BASES_ORIGINAIS / "Disponibilidade_Diaria"
+
+# Ver 00_Instrucoes/disponibilidade_diaria.md — pasta "Atualização de
+# Disponibilidade" → ano → mês (nome do mês muda todo mês, tem que buscar
+# de novo) → um Google Doc por dia.
+PASTA_RAIZ_DRIVE_ID = "1JLrUGunWo5ABsR3WuYo88b2WD4QWoxNH"
+RE_NOME_DOC = re.compile(r"Disponibilidade\s+(\d{2})/(\d{2})")
 
 RE_TITULO = re.compile(r"^\*C-98\s*-\s*(\d{2}/\d{2}/\d{4})\*$")
 RE_RESUMO_DM = re.compile(r"^(\d+)\s*D\s*/\s*(\d+)\s*M$")
@@ -245,6 +252,76 @@ def main():
     if inconsistencias:
         print(f"{len(inconsistencias)} inconsistência(s) encontrada(s), ver log em 06_Logs/.")
 
+    return df_relatorios
+
+
+def _achar_subpasta(pasta_id, prefixo):
+    """Acha, dentro de `pasta_id`, a subpasta cujo nome começa com `prefixo`
+    (ex.: prefixo="2026" acha a pasta do ano; prefixo="07 " acha "07 Julho").
+    Se não achar por prefixo, cai pra maior nome em ordem alfabética (os
+    nomes de ano/mês já ordenam certo como texto)."""
+    filhos = drive_sync.listar_pasta(pasta_id)
+    pastas = [f for f in filhos if f["mimeType"] == "application/vnd.google-apps.folder"]
+    candidatos = [f for f in pastas if f["name"].strip().startswith(prefixo)]
+    if candidatos:
+        return candidatos[0]
+    return sorted(pastas, key=lambda f: f["name"])[-1] if pastas else None
+
+
+def atualizar_do_drive():
+    """Busca o relatório diário mais recente ainda não salvo localmente,
+    direto do Drive (sem eu precisar estar numa conversa) — ver
+    00_Instrucoes/disponibilidade_diaria.md. Nunca sobrescreve relatório
+    antigo; se não achar nada novo (ex.: fim de semana, ou relatório do dia
+    ainda não publicado), não é erro — só não faz nada."""
+    try:
+        agora = datetime.now()
+        pasta_ano = _achar_subpasta(PASTA_RAIZ_DRIVE_ID, str(agora.year))
+        if pasta_ano is None:
+            raise drive_sync.DriveSyncError(f"Pasta do ano {agora.year} não encontrada.")
+        pasta_mes = _achar_subpasta(pasta_ano["id"], f"{agora.month:02d} ")
+        if pasta_mes is None:
+            raise drive_sync.DriveSyncError(f"Pasta do mês {agora.month:02d} não encontrada em {pasta_ano['name']}.")
+
+        filhos = drive_sync.listar_pasta(pasta_mes["id"])
+        docs = [(f, RE_NOME_DOC.search(f["name"])) for f in filhos]
+        docs = [(f, m) for f, m in docs if m]
+        if not docs:
+            estado.atualizar_estado(ESTADO_ATUALIZACOES, "disponibilidade_diaria",
+                                     status="sem_novidade", last_error=None)
+            return {"status": "sem_novidade", "motivo": "nenhum relatório na pasta do mês atual"}
+
+        doc, m = max(docs, key=lambda par: int(par[1].group(1)))
+        dia, mes = m.group(1), m.group(2)
+        nome_local = f"Disponibilidade_{dia}_{mes}_{agora.year}.txt"
+        caminho = PASTA_ORIGEM / nome_local
+
+        if caminho.exists():
+            estado.atualizar_estado(ESTADO_ATUALIZACOES, "disponibilidade_diaria",
+                                     status="sem_novidade", last_error=None)
+            return {"status": "sem_novidade", "arquivo": nome_local}
+
+        conteudo = drive_sync.baixar_arquivo(doc["id"], exportar_como=drive_sync.TEXTO_MIME)
+        texto = conteudo.decode("utf-8") if isinstance(conteudo, bytes) else conteudo
+        PASTA_ORIGEM.mkdir(parents=True, exist_ok=True)
+        caminho.write_text(texto, encoding="utf-8")
+
+        df_relatorios = main()
+        estado.atualizar_estado(
+            ESTADO_ATUALIZACOES, "disponibilidade_diaria",
+            remote_modified_time=doc["modifiedTime"],
+            local_updated_at=datetime.now().isoformat(),
+            status="atualizado", record_count=len(df_relatorios), last_error=None,
+        )
+        return {"status": "atualizado", "arquivo": nome_local, "record_count": len(df_relatorios)}
+    except Exception as e:
+        estado.atualizar_estado(ESTADO_ATUALIZACOES, "disponibilidade_diaria", status="erro", last_error=str(e))
+        raise
+
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if "--atualizar-do-drive" in sys.argv:
+        print(atualizar_do_drive())
+    else:
+        main()
