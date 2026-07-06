@@ -65,3 +65,33 @@ Com isso, de ~1.150 linhas históricas sobram só as emergências realmente em a
 Os 3 filtros acima já reduzem a base na extração (não no dashboard). Dentro do que sobra, aeronave, situação, TPEMG e faixa de atraso ainda podem ser filtrados na tela "Emergências Abertas" (provedor já é sempre VEE ONE, então esse filtro não é necessário na tela).
 
 Linhas com `TPEMG` = "AIFP" ou "IPLR" ficam destacadas na tabela — são as de prazo mais curto.
+
+## Tabela completa (a partir de 2026-07-06)
+
+A pedido do Wallace, a tabela da tela "Emergências Abertas" mostra praticamente
+todas as colunas da planilha original (não só um resumo): OM, EMERGÊNCIA, PN,
+NOMENCLATURA, MATR, ST_EMG, TPEMG, **DT_EMG** (data de abertura), **INFO EMG**
+(data da última informação), QT_EMG, PRAZO DE ENTREGA, DPE, Atd/cancelada,
+DIAS ATRASO, DIAS CORRIDOS, Estoque, **OBSERVAÇÃO COORDENADORIA/FISCAL** e
+**OBSERVAÇÃO VEE ONE** (os 2 campos de texto livre com o histórico de
+tratativas). Ficaram de fora: OM_EMG (código redundante com OM), Provedor
+(sempre VEE ONE após o filtro), AWB, Prev Entrega, Retirado pela
+empresa/Obrigatório recibo, Mensagem para operador.
+
+## Histórico e "novidades desde ontem" (a partir de 2026-07-06)
+
+Igual ao RAC (ver `Coordenadoria/00_Instrucoes/rac.md`), a base de Emergências
+sempre sobrescreveu a cópia local — não existe histórico anterior a
+2026-07-06. A partir dessa data, toda vez que a atualização automática roda
+(seg-sex 12h, ver `00_Instrucoes/atualizacoes.md`), o script também
+acrescenta um **snapshot do dia** das emergências em aberto
+(`02_Dados_Tratados/historico_emergencias.csv`) — nunca sobrescreve dias
+anteriores, só substitui o snapshot do próprio dia se rodar 2x no mesmo dia.
+
+Na tela "Emergências Abertas", a seção **"Novidades desde a última
+atualização"** compara o snapshot mais recente com o anterior e mostra: quais
+números de emergência são **novos** (não existiam no snapshot anterior) e
+quais **saíram da lista** (foram atendidos/cancelados ou não estão mais em
+aberto). Enquanto só houver 1 snapshot registrado, essa seção avisa que ainda
+não dá pra comparar — a comparação passa a existir a partir do 2º dia útil
+com dado.

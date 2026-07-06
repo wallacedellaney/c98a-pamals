@@ -29,6 +29,15 @@ ABA = "Prazos das emergências"
 # emergências - C-98", dono aux.coord.c98@gmail.com.
 DRIVE_FILE_ID = "1OuZK024q1kOkKEf6KN18yu2b33mCHwgZfnwFdpELieA"
 
+# Um snapshot por dia das emergências em aberto — não existe histórico
+# anterior a 2026-07-06, pois a base sempre sobrescreveu a cópia local até
+# então. Ver 00_Instrucoes/emergencias.md.
+HISTORICO_EMERGENCIAS = DADOS_TRATADOS / "historico_emergencias.csv"
+COLUNAS_HISTORICO = [
+    "numero_emergencia", "om", "matricula_aeronave", "pn", "nomenclatura",
+    "situacao", "tpemg", "data_abertura", "prazo_entrega", "dpe", "dias_atraso",
+]
+
 COLUNAS = [
     "om_emg", "om", "numero_emergencia", "pn", "nomenclatura", "categoria",
     "matricula_aeronave", "situacao", "tpemg", "data_abertura",
@@ -157,6 +166,23 @@ def main():
     return df
 
 
+def _registrar_historico(df):
+    """Acrescenta o snapshot de hoje das emergências em aberto — se já rodou
+    hoje antes, substitui só as linhas de hoje (não duplica)."""
+    hoje = datetime.now().date().isoformat()
+    abertas = df[df["em_aberto"]]
+    novo = abertas[COLUNAS_HISTORICO].copy()
+    novo.insert(0, "data_snapshot", hoje)
+
+    if HISTORICO_EMERGENCIAS.exists():
+        historico = pd.read_csv(HISTORICO_EMERGENCIAS, dtype={"matricula_aeronave": str, "numero_emergencia": str})
+        historico = historico[historico["data_snapshot"] != hoje]
+        historico = pd.concat([historico, novo], ignore_index=True)
+    else:
+        historico = novo
+    historico.to_csv(HISTORICO_EMERGENCIAS, index=False)
+
+
 def atualizar_do_drive():
     """Busca a versão mais recente direto do Google Drive, sobrescreve a
     cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md."""
@@ -166,6 +192,7 @@ def atualizar_do_drive():
         FONTE.parent.mkdir(parents=True, exist_ok=True)
         FONTE.write_bytes(conteudo)
         df = main()
+        _registrar_historico(df)
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "emergencias",
             remote_modified_time=metadados["modifiedTime"],

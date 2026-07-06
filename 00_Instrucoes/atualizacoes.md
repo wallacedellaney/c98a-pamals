@@ -62,6 +62,12 @@ Pra RAC especificamente: cada rodada também acrescenta um snapshot do dia
 2x no mesmo dia). Esse arquivo alimenta a aba "Histórico" na visão individual
 de cada aeronave no RAC. Ver `Coordenadoria/00_Instrucoes/rac.md`.
 
+Pra Emergências especificamente: mesmo padrão, mas o snapshot é da lista de
+emergências em aberto (`Contrato 005/Dashboard/02_Dados_Tratados/historico_emergencias.csv`)
+— alimenta a seção "Novidades desde a última atualização" na tela
+"Emergências Abertas" (o que entrou/saiu da lista desde o snapshot anterior).
+Ver `Contrato 005/Dashboard/00_Instrucoes/emergencias.md`.
+
 Pra Disponibilidade Diária especificamente: se não houver relatório novo
 ainda (ex.: rodou antes de alguém postar o relatório do dia, ou é fim de
 semana — só sai relatório de segunda a sexta, confirmado pelo Wallace), o

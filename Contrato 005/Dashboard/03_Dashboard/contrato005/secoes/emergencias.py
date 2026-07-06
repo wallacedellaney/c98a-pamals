@@ -8,9 +8,24 @@ from contrato005.components.paleta import AMBER, CATEGORICA, layout_grafico
 
 TPEMG_PRIORIDADE = ("AIFP", "IPLR")  # prazo de 6 e 10 dias corridos (ver emergencias.md) — ANCE tem 30
 
+COLUNAS_TABELA = [
+    "om", "numero_emergencia", "pn", "nomenclatura", "matricula_aeronave",
+    "situacao", "tpemg", "data_abertura", "data_info", "quantidade",
+    "prazo_entrega", "dpe", "atendido_cancelado", "dias_atraso", "dias_corridos",
+    "estoque", "obs_coordenadoria_fiscal", "obs_vee_one",
+]
+NOMES_COLUNAS = {
+    "om": "OM", "numero_emergencia": "EMERGÊNCIA", "pn": "PN", "nomenclatura": "NOMENCLATURA",
+    "matricula_aeronave": "MATR", "situacao": "ST_EMG", "tpemg": "TPEMG",
+    "data_abertura": "DT_EMG", "data_info": "INFO EMG", "quantidade": "QT_EMG",
+    "prazo_entrega": "PRAZO DE ENTREGA", "dpe": "DPE", "atendido_cancelado": "Atd/cancelada",
+    "dias_atraso": "DIAS ATRASO", "dias_corridos": "DIAS CORRIDOS", "estoque": "Estoque",
+    "obs_coordenadoria_fiscal": "OBSERVAÇÃO COORDENADORIA/FISCAL", "obs_vee_one": "OBSERVAÇÃO VEE ONE",
+}
+
 
 def _destacar_prioridade(row):
-    if row["tpemg"] in TPEMG_PRIORIDADE:
+    if row["TPEMG"] in TPEMG_PRIORIDADE:
         return [f"background-color: {AMBER}22"] * len(row)
     return [""] * len(row)
 
@@ -54,16 +69,16 @@ def render(dados):
 
     st.caption("Linhas destacadas em âmbar: TPEMG = AIFP (prazo 6 dias) ou IPLR (prazo 10 dias) — prazo bem mais curto que ANCE (30 dias).")
 
-    tabela = filtrado[[
-        "numero_emergencia", "om", "matricula_aeronave", "pn", "nomenclatura",
-        "situacao", "tpemg", "prazo_entrega", "dias_atraso", "dias_corridos",
-    ]]
+    tabela = filtrado[COLUNAS_TABELA].rename(columns=NOMES_COLUNAS)
     st.dataframe(
         tabela.style.apply(_destacar_prioridade, axis=1),
         width="stretch",
         hide_index=True,
         height=420,
     )
+
+    st.divider()
+    _novidades(dados)
 
     with st.expander("Distribuição por situação"):
         por_situacao = filtrado["situacao"].value_counts().reset_index()
@@ -72,3 +87,54 @@ def render(dados):
         fig.update_layout(xaxis_title="", yaxis_title="Quantidade", showlegend=False)
         layout_grafico(fig)
         st.plotly_chart(fig, width="stretch")
+
+
+def _novidades(dados):
+    st.markdown("##### Novidades desde a última atualização")
+    historico = dados.get("historico_emergencias")
+    if historico is None or historico.empty:
+        st.info(
+            "Ainda não há histórico registrado — o registro começou em 2026-07-06 e "
+            "acumula um snapshot por dia útil, junto da atualização automática (seg-sex 12h)."
+        )
+        return
+
+    datas = sorted(historico["data_snapshot"].unique())
+    if len(datas) < 2:
+        st.info(
+            f"Só existe 1 snapshot até agora ({pd.Timestamp(datas[-1]).strftime('%d/%m/%Y')}) — "
+            "a comparação aparece a partir do 2º dia útil registrado."
+        )
+        return
+
+    data_atual, data_anterior = datas[-1], datas[-2]
+    atual = historico[historico["data_snapshot"] == data_atual]
+    anterior = historico[historico["data_snapshot"] == data_anterior]
+
+    novas = atual[~atual["numero_emergencia"].isin(anterior["numero_emergencia"])]
+    saidas = anterior[~anterior["numero_emergencia"].isin(atual["numero_emergencia"])]
+
+    st.caption(
+        f"Comparando {pd.Timestamp(data_anterior).strftime('%d/%m/%Y')} → "
+        f"{pd.Timestamp(data_atual).strftime('%d/%m/%Y')}"
+    )
+    c1, c2 = st.columns(2)
+    c1.metric("Novas emergências", len(novas))
+    c2.metric("Saíram da lista (atendidas/canceladas)", len(saidas))
+
+    if len(novas):
+        with st.expander(f"🆕 Ver as {len(novas)} nova(s)", expanded=True):
+            st.dataframe(
+                novas[["numero_emergencia", "om", "matricula_aeronave", "pn", "nomenclatura",
+                       "situacao", "tpemg", "data_abertura"]].rename(columns=NOMES_COLUNAS),
+                hide_index=True, width="stretch",
+            )
+    if len(saidas):
+        with st.expander(f"✅ Ver as {len(saidas)} que saíram"):
+            st.dataframe(
+                saidas[["numero_emergencia", "om", "matricula_aeronave", "pn", "nomenclatura",
+                        "situacao", "tpemg", "data_abertura"]].rename(columns=NOMES_COLUNAS),
+                hide_index=True, width="stretch",
+            )
+    if not len(novas) and not len(saidas):
+        st.success("Nenhuma mudança na lista de emergências em aberto desde o último snapshot.")
