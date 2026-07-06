@@ -19,13 +19,20 @@ Estrutura da aba (ver 00_Instrucoes/rac.md):
   daquele PN para aquela aeronave (vazio/zero = não falta).
 """
 
+from datetime import datetime
+
 import openpyxl
 import pandas as pd
 
-from common import BASES_ORIGINAIS, DADOS_TRATADOS, registrar_log
+from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
+from shared import drive_sync, estado
 
 FONTE = BASES_ORIGINAIS / "RAC" / "Analise critica de emergencias C-98 2026 (Google Sheets).xlsx"
 ABA = "Rac"
+
+# Ver 00_Instrucoes/atualizacoes.md — planilha Google nativa "Análise crítica
+# de emergências C-98 2026", aba "Rac".
+DRIVE_FILE_ID = "1o8supQLcHkC1WZZCZDAtuRKGB_VUlQ8qBlYj7racsGQ"
 
 PRIMEIRA_COLUNA_AERONAVE = 7  # coluna G
 LINHA_CONTAGEM_PENDENCIAS = 3
@@ -140,6 +147,35 @@ def main():
     if inconsistencias:
         print(f"{len(inconsistencias)} inconsistência(s) encontrada(s), ver log em 06_Logs/.")
 
+    return df_aeronaves, df_pendencias
+
+
+def atualizar_do_drive():
+    """Busca a versão mais recente direto do Google Drive, sobrescreve a
+    cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md."""
+    try:
+        metadados = drive_sync.obter_metadados(DRIVE_FILE_ID)
+        conteudo = drive_sync.baixar_arquivo(DRIVE_FILE_ID, exportar_como=drive_sync.XLSX_MIME)
+        FONTE.parent.mkdir(parents=True, exist_ok=True)
+        FONTE.write_bytes(conteudo)
+        df_aeronaves, _ = main()
+        estado.atualizar_estado(
+            ESTADO_ATUALIZACOES, "rac",
+            remote_modified_time=metadados["modifiedTime"],
+            local_updated_at=datetime.now().isoformat(),
+            status="atualizado",
+            record_count=len(df_aeronaves),
+            last_error=None,
+        )
+    except Exception as e:
+        estado.atualizar_estado(ESTADO_ATUALIZACOES, "rac", status="erro", last_error=str(e))
+        raise
+    return estado.obter_entrada(ESTADO_ATUALIZACOES, "rac")
+
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if "--atualizar-do-drive" in sys.argv:
+        atualizar_do_drive()
+    else:
+        main()

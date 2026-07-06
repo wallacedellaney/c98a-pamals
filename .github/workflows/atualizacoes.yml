@@ -2,7 +2,7 @@ name: Atualizações automáticas
 
 # Horários em UTC (o Brasil, sem horário de verão, é UTC-3):
 # Disponibilidade Diária: seg-sex 10h local = 13h UTC
-# Emergências: seg-sex 12h local = 15h UTC
+# Emergências + RAC: seg-sex 12h local = 15h UTC (mesmo horário, rodam os dois)
 # Pagamentos: toda segunda 10h local = 13h UTC
 on:
   schedule:
@@ -19,6 +19,7 @@ on:
           - disponibilidade_diaria
           - emergencias
           - pagamentos
+          - rac
 
 permissions:
   contents: write
@@ -50,18 +51,21 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Determinar qual fonte atualizar
+      - name: Determinar quais fontes atualizar
         id: fonte
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "nome=${{ inputs.fonte }}" >> "$GITHUB_OUTPUT"
+            echo "nomes=${{ inputs.fonte }}" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.schedule }}" = "0 13 * * 1-5" ]; then
-            echo "nome=disponibilidade_diaria" >> "$GITHUB_OUTPUT"
+            echo "nomes=disponibilidade_diaria" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.schedule }}" = "0 15 * * 1-5" ]; then
-            echo "nome=emergencias" >> "$GITHUB_OUTPUT"
+            echo "nomes=emergencias rac" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.schedule }}" = "0 13 * * 1" ]; then
-            echo "nome=pagamentos" >> "$GITHUB_OUTPUT"
+            echo "nomes=pagamentos" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Buscar, reprocessar e enviar pro GitHub
-        run: python3 shared/executar_atualizacao.py "${{ steps.fonte.outputs.nome }}"
+        run: |
+          for fonte in ${{ steps.fonte.outputs.nomes }}; do
+            python3 shared/executar_atualizacao.py "$fonte"
+          done

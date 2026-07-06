@@ -2,5 +2,12 @@
   "disponibilidade_diaria": {
     "status": "sem_novidade",
     "last_error": null
+  },
+  "rac": {
+    "remote_modified_time": "2026-07-06T15:48:10.360Z",
+    "local_updated_at": "2026-07-06T12:48:40.225314",
+    "status": "atualizado",
+    "record_count": 30,
+    "last_error": null
   }
 }

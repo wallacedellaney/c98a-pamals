@@ -18,14 +18,17 @@ C-98A PAMALS/
 └── Coordenadoria/             <- esqueleto vazio, a desenvolver junto
 ```
 
-## Atualização de dados — automática (3 fontes) + manual (as demais)
+## Atualização de dados — automática (4 fontes) + manual (as demais)
 
-Disponibilidade Diária (seg-sex 10h), Emergências (seg-sex 12h) e Pagamentos
-(toda segunda 10h) atualizam **sozinhos**, via `launchd` no Mac do Wallace +
-`shared/drive_sync.py` (credencial própria, `.secrets/service_account.json`)
-+ `shared/executar_atualizacao.py` (busca, reprocessa, commita e dá push
+Disponibilidade Diária (seg-sex 10h), Emergências e RAC (seg-sex 12h) e
+Pagamentos (toda segunda 10h) atualizam **sozinhos, rodando na nuvem do
+GitHub** (`.github/workflows/atualizacoes.yml`, GitHub Actions) — não depende
+do Mac do Wallace estar ligado, nem de internet dele, nem de mim numa
+conversa. O workflow usa a credencial própria do Google (Secret
+`GOOGLE_SERVICE_ACCOUNT_JSON`) + `shared/drive_sync.py` +
+`shared/executar_atualizacao.py` (busca, reprocessa, commita e dá push
 sozinho — o Streamlit Cloud reimplanta automaticamente). As demais fontes
-(Reparáveis, Vencimentos, RAC, Diagonal de Manutenção) continuam manuais —
+(Reparáveis, Vencimentos, Diagonal de Manutenção) continuam manuais —
 Wallace pede na conversa. Ver `00_Instrucoes/atualizacoes.md` para a
 arquitetura completa e como adicionar uma fonte nova ao agendamento.
 
