@@ -45,6 +45,17 @@ def carregar_historico_emergencias():
     return df
 
 
+def carregar_emergencias_totais():
+    """Todo o histórico de emergências (abertas e concluídas) do provedor
+    VEE ONE, gerado sob demanda por extrair_historico_completo(). Ver
+    emergencias.md — 'Histórico completo (VEE ONE, todas as situações)'."""
+    caminho = DADOS_TRATADOS / "historico_completo_emergencias.xlsx"
+    if not caminho.exists():
+        return pd.DataFrame(), None
+    mtime = caminho.stat().st_mtime
+    return _ler_excel(str(caminho), mtime), mtime
+
+
 def carregar_reparaveis():
     caminho = DADOS_TRATADOS / "base_reparaveis_tratada.xlsx"
     return _ler_excel(str(caminho), caminho.stat().st_mtime), caminho.stat().st_mtime
@@ -62,11 +73,14 @@ def carregar_pagamentos():
 def carregar_tudo():
     df_emergencias, mtime_emerg = carregar_emergencias()
     historico_emergencias = carregar_historico_emergencias()
+    df_emergencias_totais, mtime_emerg_totais = carregar_emergencias_totais()
     df_reparaveis, mtime_rep = carregar_reparaveis()
     df_pagamentos, contrato, empenhos, mtime_pag = carregar_pagamentos()
     return {
         "emergencias": df_emergencias,
         "historico_emergencias": historico_emergencias,
+        "emergencias_totais": df_emergencias_totais,
+        "emergencias_totais_atualizado_em": mtime_emerg_totais,
         "reparaveis": df_reparaveis,
         "pagamentos": df_pagamentos,
         "contrato": contrato,

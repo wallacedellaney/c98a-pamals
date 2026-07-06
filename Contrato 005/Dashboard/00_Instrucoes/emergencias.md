@@ -89,11 +89,19 @@ primeira extração, 2025-02-13 a 2026-07-02 — não é o histórico completo d
 planilha inteira desde 2022, só o período em que já existem emergências do
 provedor VEE ONE).
 
-**Ainda não tem uso definido no dashboard** — é preparação a pedido do
-Wallace pra uma análise que ele vai explicar depois. Rodar sob demanda
-(`python3 extrair_historico_completo` dentro de `05_Scripts/python/`, com o
-ambiente do projeto ativo) — não faz parte da atualização automática
+Rodar sob demanda (`python3 -c "import extrair_emergencias; extrair_emergencias.extrair_historico_completo()"`
+dentro de `05_Scripts/python/`) — não faz parte da atualização automática
 (seg-sex 12h) nem do fluxo `atualizar_do_drive()`/`main()` de sempre.
+
+### Tela "Emergências Totais" (a partir de 2026-07-06)
+
+Mostra esse histórico completo (`historico_completo_emergencias.xlsx`) numa
+tela própria (`03_Dashboard/contrato005/secoes/emergencias_totais.py`),
+separada de "Emergências Abertas": todas as 26 colunas da planilha, filtros
+por PN, aeronave, OM, categoria, situação, TPEMG, período de abertura e
+atraso, além de um seletor "Em aberto / Concluídas / Todas". Ainda não tem
+uso analítico definido além disso — é preparação a pedido do Wallace pra uma
+análise que ele vai explicar depois.
 
 ## Histórico e "novidades desde ontem" (a partir de 2026-07-06)
 
