@@ -86,7 +86,7 @@ def _parse_lista_matriculas(linha):
 
 
 def parse_relatorio(caminho):
-    linhas = [l.strip() for l in caminho.read_text(encoding="utf-8").splitlines()]
+    linhas = [l.strip() for l in caminho.read_text(encoding="utf-8-sig").splitlines()]
     linhas = [l for l in linhas if l != ""]
 
     resumo = {}
@@ -302,7 +302,10 @@ def atualizar_do_drive():
             return {"status": "sem_novidade", "arquivo": nome_local}
 
         conteudo = drive_sync.baixar_arquivo(doc["id"], exportar_como=drive_sync.TEXTO_MIME)
-        texto = conteudo.decode("utf-8") if isinstance(conteudo, bytes) else conteudo
+        # utf-8-sig: o Google Docs exporta texto puro com um BOM no início,
+        # que quebrava o parser (RE_TITULO não batia na 1ª linha) — descoberto
+        # em 2026-07-07, na 1ª busca real feita por este caminho automático.
+        texto = conteudo.decode("utf-8-sig") if isinstance(conteudo, bytes) else conteudo
         PASTA_ORIGEM.mkdir(parents=True, exist_ok=True)
         caminho.write_text(texto, encoding="utf-8")
 

@@ -38,6 +38,24 @@ Mac estivesse ligado e acordado no horário exato. Migrado pra GitHub Actions
 a pedido do Wallace (autonomia total); os `.plist` locais foram desativados
 e removidos.
 
+## Falha observada em 2026-07-07 — 1ª execução agendada não disparou
+
+No dia seguinte a criar o workflow, o cron das 10h (Disponibilidade Diária)
+simplesmente não rodou — confirmado via `GET /repos/.../actions/runs`
+(nenhuma execução registrada, nem erro, só a manual do dia anterior). O
+workflow estava ativo e configurado certo; isso é uma instabilidade
+conhecida do GitHub Actions com a *primeira* ocorrência de um `schedule`
+recém-criado (`da3cf8e`, criado em 2026-07-06 depois que o horário das 10h
+daquele dia já tinha passado — então 07/07 10h seria o 1º disparo real desse
+cron). Resolvido rodando a busca manualmente na conversa. **Se isso
+acontecer de novo em dias seguintes**, não é mais esperado — investigar de
+verdade (workflow desativado, erro de sintaxe no yaml, etc.), não presumir
+que é só o mesmo problema.
+
+Esse mesmo episódio expôs um bug real de parsing (não relacionado ao
+agendamento) — ver "Bug corrigido em 2026-07-07" em
+`Coordenadoria/00_Instrucoes/disponibilidade_diaria.md`.
+
 ## Como cada fonte busca (regra por tipo)
 
 1. `drive_sync.obter_metadados` — checa nome/data de modificação mais recente.

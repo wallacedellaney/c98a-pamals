@@ -21,6 +21,24 @@ Isso é o mesmo padrão já usado no RAC e no Contrato 005 (ver `CLAUDE.md` da C
 
 Cada relatório processado fica salvo como um arquivo próprio — nunca sobrescrever relatórios antigos, para manter o histórico.
 
+## Bug corrigido em 2026-07-07 — BOM quebrava o parser na busca automática
+
+Na primeira vez que a busca automática (`atualizar_do_drive()`, GitHub
+Actions) efetivamente baixou um relatório novo direto do Drive (07/07/2026,
+já que os relatórios anteriores tinham sido salvos manualmente por mim,
+Claude, nunca pelo caminho automático de verdade), o parser quebrou com
+`KeyError: 'data_referencia'`. Causa: o Google Docs exporta texto puro
+(`text/plain`) com um **BOM** (`﻿`) no início do arquivo — isso fazia a
+1ª linha não bater com `RE_TITULO` (`^\*C-98...`), então `data_referencia`
+nunca era preenchido. Corrigido lendo/decodificando com `utf-8-sig` (que
+descarta o BOM se existir, e não faz diferença se não existir) em vez de
+`utf-8`, tanto na gravação (`atualizar_do_drive`) quanto na leitura
+(`parse_relatorio`). Também descobrimos, ao investigar isso, que o
+agendamento do GitHub Actions das 10h simplesmente não disparou nesse dia
+(nenhuma execução registrada, nem erro) — falha conhecida do GitHub Actions
+em disparar a 1ª ocorrência de um `schedule` recém-criado; resolvido rodando
+manualmente. Ver `00_Instrucoes/atualizacoes.md`.
+
 ## Formato do relatório (texto)
 
 ```
