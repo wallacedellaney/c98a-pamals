@@ -1,14 +1,14 @@
 {
   "emergencias": {
-    "remote_modified_time": "2026-07-06T17:47:26.049Z",
-    "local_updated_at": "2026-07-06T15:06:15.323338",
+    "remote_modified_time": "2026-07-07T14:04:06.157Z",
+    "local_updated_at": "2026-07-07T11:24:24.136871",
     "status": "atualizado",
-    "record_count": 13,
+    "record_count": 16,
     "last_error": null
   },
   "pagamentos": {
     "remote_modified_time": "2026-07-06T14:07:59.681Z",
-    "local_updated_at": "2026-07-06T11:20:45.914512",
+    "local_updated_at": "2026-07-07T11:24:13.295618",
     "status": "atualizado",
     "record_count": 29,
     "last_error": null
