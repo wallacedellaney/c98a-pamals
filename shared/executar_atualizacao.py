@@ -28,6 +28,20 @@ def _registrar(texto):
         f.write(texto)
 
 
+def _sincronizar_com_remoto():
+    """Sincroniza com o GitHub antes de rodar — necessário porque agora tanto
+    o GitHub Actions quanto o launchd do Mac do Wallace rodam essa mesma
+    fonte, e podem divergir se um commitar sem o outro saber (já aconteceu em
+    2026-07-08). Só reseta se não houver alteração local pendente — nunca
+    mexe em trabalho manual em andamento (ex.: sessão do Claude Code aberta)."""
+    status = subprocess.run(["git", "status", "--porcelain"], cwd=str(RAIZ), capture_output=True, text=True)
+    if status.stdout.strip():
+        _registrar("Há alterações locais pendentes — não sincronizei antes de rodar (para não mexer em trabalho manual).\n")
+        return
+    subprocess.run(["git", "fetch", "origin"], cwd=str(RAIZ), capture_output=True, text=True)
+    subprocess.run(["git", "reset", "--hard", "origin/main"], cwd=str(RAIZ), capture_output=True, text=True)
+
+
 def main():
     if len(sys.argv) < 2 or sys.argv[1] not in SCRIPTS:
         print(f"Uso: python3 {sys.argv[0]} <{'|'.join(SCRIPTS)}>")
@@ -36,6 +50,8 @@ def main():
     fonte = sys.argv[1]
     script = SCRIPTS[fonte]
     agora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    _sincronizar_com_remoto()
 
     resultado = subprocess.run(
         [sys.executable, str(script), "--atualizar-do-drive"],
