@@ -222,6 +222,10 @@ def atualizar_do_drive():
         FONTE.write_bytes(conteudo)
         df = main()
         _registrar_historico(df)
+        # Mantém o histórico completo (aba usada pelo Cômputo Mensal e por
+        # "Emergências Totais") sempre em dia — antes só era gerado sob
+        # demanda e podia ficar desatualizado por dias (achado em 2026-07-08).
+        extrair_historico_completo()
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "emergencias",
             remote_modified_time=metadados["modifiedTime"],

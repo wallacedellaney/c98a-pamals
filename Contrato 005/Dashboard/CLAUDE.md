@@ -174,7 +174,7 @@ O dashboard é interativo e dividido em partes, navegáveis por botões/abas na 
 * **Reparáveis** — dados tratados de `base_reparaveis_tratada.xlsx`;
 * **Emergências Abertas** — dados tratados de `base_emergencias_tratada.xlsx`;
 * **Emergências Totais** — histórico completo (abertas + concluídas, VEE ONE) de `historico_completo_emergencias.xlsx`, ver `00_Instrucoes/emergencias.md`;
-* **Fechamento Mensal** — seletor de mês + 2 subseções ("Cômputo Mensal" e "Atrasos"), ainda sem conteúdo definido — não presumir métricas, aguardar instrução do Wallace;
+* **Fechamento Mensal** — seletor de mês + 2 subseções: **"Cômputo Mensal"** (feito, ver `00_Instrucoes/computo_mensal.md` — prévia automática da matriz aeronave x dia da Pré-RNA a partir das emergências AIFP/IPLR) e **"Atrasos"** (ainda sem conteúdo definido — não presumir métricas, aguardar instrução do Wallace);
 * **Pagamentos** — dados tratados de `base_pagamentos_tratada.xlsx`.
 
 Cada seção deve poder ser filtrada e navegada de forma independente.

@@ -56,6 +56,28 @@ def carregar_emergencias_totais():
     return _ler_excel(str(caminho), mtime), mtime
 
 
+def carregar_computo_mensal(ano, mes):
+    """Cômputo Mensal (aba 1.2 da Pré-RNA) — matriz aeronave x dia calculada
+    por calcular_computo_mensal.py. Ver 00_Instrucoes/computo_mensal.md."""
+    pasta = DADOS_TRATADOS / "computo_mensal"
+    mes_ref = f"{ano}-{mes:02d}"
+    caminho_matriz = pasta / f"{mes_ref}_matriz.csv"
+    caminho_motivos = pasta / f"{mes_ref}_motivos.csv"
+    caminho_resumo = pasta / f"{mes_ref}_resumo.json"
+    if not caminho_matriz.exists():
+        return None, None, None
+    mtime = caminho_matriz.stat().st_mtime
+    df_matriz = _ler_csv(str(caminho_matriz), mtime, dtype={"matricula": str})
+    df_motivos = (
+        _ler_csv(str(caminho_motivos), caminho_motivos.stat().st_mtime, dtype={"matricula": str})
+        if caminho_motivos.exists() else pd.DataFrame()
+    )
+    import json
+    with open(caminho_resumo, encoding="utf-8") as f:
+        resumo = json.load(f)
+    return df_matriz, df_motivos, resumo
+
+
 def carregar_reparaveis():
     caminho = DADOS_TRATADOS / "base_reparaveis_tratada.xlsx"
     return _ler_excel(str(caminho), caminho.stat().st_mtime), caminho.stat().st_mtime
