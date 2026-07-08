@@ -287,36 +287,54 @@ def atualizar_do_drive():
         docs = [(f, RE_NOME_DOC.search(f["name"])) for f in filhos]
         docs = [(f, m) for f, m in docs if m]
         if not docs:
+            # Mesmo sem relatório novo pra buscar, reprocessa o que já existe
+            # localmente — garante que a planilha tratada nunca fique
+            # desatualizada em relação aos .txt já salvos (bug corrigido em
+            # 2026-07-08: essa função podia "achar que não tinha nada a
+            # fazer" e nunca chamar main(), deixando o site desatualizado
+            # mesmo com o relatório certo já salvo localmente).
+            df_relatorios = main()
             estado.atualizar_estado(ESTADO_ATUALIZACOES, "disponibilidade_diaria",
-                                     status="sem_novidade", last_error=None)
-            return {"status": "sem_novidade", "motivo": "nenhum relatório na pasta do mês atual"}
+                                     status="sem_novidade", last_error=None,
+                                     local_updated_at=datetime.now().isoformat(),
+                                     record_count=len(df_relatorios))
+            return {"status": "sem_novidade", "motivo": "nenhum relatório na pasta do mês atual",
+                    "record_count": len(df_relatorios)}
 
         doc, m = max(docs, key=lambda par: int(par[1].group(1)))
         dia, mes = m.group(1), m.group(2)
         nome_local = f"Disponibilidade_{dia}_{mes}_{agora.year}.txt"
         caminho = PASTA_ORIGEM / nome_local
 
-        if caminho.exists():
-            estado.atualizar_estado(ESTADO_ATUALIZACOES, "disponibilidade_diaria",
-                                     status="sem_novidade", last_error=None)
-            return {"status": "sem_novidade", "arquivo": nome_local}
+        novo = not caminho.exists()
+        if novo:
+            conteudo = drive_sync.baixar_arquivo(doc["id"], exportar_como=drive_sync.TEXTO_MIME)
+            # utf-8-sig: o Google Docs exporta texto puro com um BOM no início,
+            # que quebrava o parser (RE_TITULO não batia na 1ª linha) — descoberto
+            # em 2026-07-07, na 1ª busca real feita por este caminho automático.
+            texto = conteudo.decode("utf-8-sig") if isinstance(conteudo, bytes) else conteudo
+            PASTA_ORIGEM.mkdir(parents=True, exist_ok=True)
+            caminho.write_text(texto, encoding="utf-8")
 
-        conteudo = drive_sync.baixar_arquivo(doc["id"], exportar_como=drive_sync.TEXTO_MIME)
-        # utf-8-sig: o Google Docs exporta texto puro com um BOM no início,
-        # que quebrava o parser (RE_TITULO não batia na 1ª linha) — descoberto
-        # em 2026-07-07, na 1ª busca real feita por este caminho automático.
-        texto = conteudo.decode("utf-8-sig") if isinstance(conteudo, bytes) else conteudo
-        PASTA_ORIGEM.mkdir(parents=True, exist_ok=True)
-        caminho.write_text(texto, encoding="utf-8")
-
+        # Sempre reprocessa, novo ou não — ver comentário acima sobre o bug
+        # de 2026-07-08 (planilha tratada podia ficar desatualizada mesmo
+        # com o .txt certo já salvo).
         df_relatorios = main()
-        estado.atualizar_estado(
-            ESTADO_ATUALIZACOES, "disponibilidade_diaria",
-            remote_modified_time=doc["modifiedTime"],
-            local_updated_at=datetime.now().isoformat(),
-            status="atualizado", record_count=len(df_relatorios), last_error=None,
-        )
-        return {"status": "atualizado", "arquivo": nome_local, "record_count": len(df_relatorios)}
+
+        if novo:
+            estado.atualizar_estado(
+                ESTADO_ATUALIZACOES, "disponibilidade_diaria",
+                remote_modified_time=doc["modifiedTime"],
+                local_updated_at=datetime.now().isoformat(),
+                status="atualizado", record_count=len(df_relatorios), last_error=None,
+            )
+            return {"status": "atualizado", "arquivo": nome_local, "record_count": len(df_relatorios)}
+
+        estado.atualizar_estado(ESTADO_ATUALIZACOES, "disponibilidade_diaria",
+                                 status="sem_novidade", last_error=None,
+                                 local_updated_at=datetime.now().isoformat(),
+                                 record_count=len(df_relatorios))
+        return {"status": "sem_novidade", "arquivo": nome_local, "record_count": len(df_relatorios)}
     except Exception as e:
         estado.atualizar_estado(ESTADO_ATUALIZACOES, "disponibilidade_diaria", status="erro", last_error=str(e))
         raise
