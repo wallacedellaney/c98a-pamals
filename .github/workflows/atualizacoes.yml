@@ -1,14 +1,18 @@
 name: Atualizações automáticas
 
-# Horários em UTC (o Brasil, sem horário de verão, é UTC-3):
-# Disponibilidade Diária: seg-sex 10h local = 13h UTC
-# Emergências + RAC: seg-sex 12h local = 15h UTC (mesmo horário, rodam os dois)
-# Pagamentos: toda segunda 10h local = 13h UTC
+# Horários em UTC (o Brasil, sem horário de verão, é UTC-3). Minutos quebrados
+# (não em hora cheia) de propósito — o GitHub recomenda isso pra reduzir o
+# atraso de agendamentos gratuitos, que ficam sobrecarregados bem na hora
+# cheia (confirmado na prática em 2026-07-07: agendado pra 13h/15h UTC, só
+# rodou de verdade às 19h25/21h06 UTC — ~6h de atraso).
+# Disponibilidade Diária: seg-sex ~10h07 local = 13h07 UTC
+# Emergências + RAC: seg-sex ~12h22 local = 15h22 UTC (mesmo horário, rodam os dois)
+# Pagamentos: toda segunda ~10h37 local = 13h37 UTC
 on:
   schedule:
-    - cron: "0 13 * * 1-5"
-    - cron: "0 15 * * 1-5"
-    - cron: "0 13 * * 1"
+    - cron: "7 13 * * 1-5"
+    - cron: "22 15 * * 1-5"
+    - cron: "37 13 * * 1"
   workflow_dispatch:
     inputs:
       fonte:
@@ -56,11 +60,11 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "nomes=${{ inputs.fonte }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "0 13 * * 1-5" ]; then
+          elif [ "${{ github.event.schedule }}" = "7 13 * * 1-5" ]; then
             echo "nomes=disponibilidade_diaria" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "0 15 * * 1-5" ]; then
+          elif [ "${{ github.event.schedule }}" = "22 15 * * 1-5" ]; then
             echo "nomes=emergencias rac" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "0 13 * * 1" ]; then
+          elif [ "${{ github.event.schedule }}" = "37 13 * * 1" ]; then
             echo "nomes=pagamentos" >> "$GITHUB_OUTPUT"
           fi
 

@@ -38,6 +38,19 @@ Mac estivesse ligado e acordado no horário exato. Migrado pra GitHub Actions
 a pedido do Wallace (autonomia total); os `.plist` locais foram desativados
 e removidos.
 
+## Limitação conhecida — atraso do agendamento gratuito do GitHub
+
+Confirmado na prática em 2026-07-07: os horários agendados pra 13h/15h UTC
+só rodaram de verdade às 19h25/21h06 UTC — **~6h de atraso**. O GitHub avisa
+que agendamentos gratuitos podem atrasar em horários de pico, principalmente
+na **hora cheia** (todo mundo agenda "às 13h00", por exemplo). Em
+2026-07-08, os horários foram trocados pra minutos quebrados (13h07, 15h22,
+13h37 UTC) — recomendação oficial do GitHub pra reduzir esse atraso. Não
+existe garantia de horário exato num plano gratuito; se um dia isso importar
+de verdade (ex.: emergência real acontecendo), o caminho mais confiável
+continua sendo pedir pra mim buscar na conversa, ou disparar manualmente
+(aba Actions → "Run workflow").
+
 ## Falha observada em 2026-07-07 — 1ª execução agendada não disparou
 
 No dia seguinte a criar o workflow, o cron das 10h (Disponibilidade Diária)
