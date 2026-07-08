@@ -4,13 +4,16 @@ definido — não presumir métricas sem perguntar ao Wallace, ver CLAUDE.md).
 """
 
 import sys
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from contrato005.components.paleta import AMBER, STATUS, layout_grafico
+from contrato005.components.paleta import AMBER, LINE, STATUS, layout_grafico
+
+ABREV_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
 SCRIPTS_PYTHON = Path(__file__).resolve().parents[3] / "05_Scripts" / "python"
 if str(SCRIPTS_PYTHON) not in sys.path:
@@ -90,7 +93,7 @@ def _computo_mensal(mes_escolhido):
     c1, c2, c3 = st.columns(3)
     c1.metric("MMAM prévia", f"{resumo['mmam_previa']}%" if resumo["mmam_previa"] is not None else "—")
     c2.metric("Aeronaves pontuadas", len(resumo["aeronaves_pontuadas"]))
-    c3.metric("Dias calculados", resumo["ultimo_dia_calculado"])
+    c3.metric("Dias já decorridos", f"{resumo['ultimo_dia_calculado']} de {resumo.get('ultimo_dia_mes', resumo['ultimo_dia_calculado'])}")
 
     if resumo["inconsistencias"]:
         with st.expander(f"⚠️ {len(resumo['inconsistencias'])} inconsistência(s) — revisar manualmente", expanded=True):
@@ -98,21 +101,41 @@ def _computo_mensal(mes_escolhido):
                 st.markdown(f"- {i}")
 
     st.markdown("##### Evolução da % de aeronaves montadas no mês")
-    media_diaria = df_matriz.groupby("dia")["montada"].mean().mul(100).reset_index()
+    media_diaria = df_matriz.dropna(subset=["montada"]).groupby("dia")["montada"].mean().mul(100).reset_index()
     fig = px.line(media_diaria, x="dia", y="montada", markers=True, color_discrete_sequence=[AMBER])
-    fig.update_layout(yaxis_title="% montadas", xaxis_title="Dia do mês", yaxis_range=[0, 105])
+    fig.update_layout(
+        yaxis_title="% montadas", xaxis_title="Dia do mês", yaxis_range=[0, 105],
+        xaxis_range=[0.5, resumo.get("ultimo_dia_mes", media_diaria["dia"].max()) + 0.5],
+    )
     layout_grafico(fig, altura=220)
     st.plotly_chart(fig, width="stretch")
 
-    st.markdown("##### Matriz aeronave x dia (1 = montada, 0 = desmontada)")
+    st.markdown("##### Matriz aeronave x dia (1 = montada, 0 = desmontada) — mês inteiro, sáb/dom marcados em cinza")
     pivot = df_matriz.pivot(index="matricula", columns="dia", values="montada")
 
-    def _cor_celula(v):
-        if pd.isna(v):
-            return ""
-        return f"background-color: {STATUS['good']}55" if v == 1 else f"background-color: {STATUS['critical']}55"
+    mapa_rotulo = {}
+    fins_de_semana = set()
+    for dia in pivot.columns:
+        wd = date(mes_escolhido.year, mes_escolhido.month, int(dia)).weekday()
+        rotulo = f"{dia} {ABREV_SEMANA[wd]}"
+        mapa_rotulo[dia] = rotulo
+        if wd >= 5:
+            fins_de_semana.add(rotulo)
+    pivot = pivot.rename(columns=mapa_rotulo)
 
-    st.dataframe(pivot.style.map(_cor_celula), width="stretch", height=460)
+    def _cor_fabrica(coluna):
+        def _colorir(v):
+            if pd.isna(v):
+                return f"background-color: {LINE}" if coluna in fins_de_semana else ""
+            cor = STATUS["good"] if v == 1 else STATUS["critical"]
+            return f"background-color: {cor}55"
+        return _colorir
+
+    styler = pivot.style
+    for coluna in pivot.columns:
+        styler = styler.map(_cor_fabrica(coluna), subset=[coluna])
+
+    st.dataframe(styler, width="stretch", height=460)
 
     if resumo["aeronaves_fora_listadas"]:
         st.caption(

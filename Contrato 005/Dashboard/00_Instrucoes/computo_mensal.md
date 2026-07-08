@@ -25,7 +25,7 @@ Calcular automaticamente, a partir dos registros de emergências já existentes 
   - `<AAAA>-<MM>_resumo.json` — MMAM prévia, aeronaves pontuadas/fora, inconsistências.
 - `carregar_mes(ano, mes)` — lê de volta os 3 arquivos.
 
-Tela: `03_Dashboard/contrato005/secoes/fechamento_mensal.py`, aba "Cômputo Mensal" — botão "Recalcular" (roda `calcular_mes` na hora), métricas (MMAM prévia, aeronaves pontuadas, dias calculados), gráfico de evolução diária, matriz colorida (verde/vermelho), tabela de justificativa, exportação em CSV.
+Tela: `03_Dashboard/contrato005/secoes/fechamento_mensal.py`, aba "Cômputo Mensal" — botão "Recalcular" (roda `calcular_mes` na hora), métricas (MMAM prévia, aeronaves pontuadas, dias já decorridos/total do mês), gráfico de evolução diária, matriz colorida (verde/vermelho) mostrando o **mês inteiro** (1 ao último dia, igual à planilha oficial — dias ainda não decorridos ficam em branco), com sábado/domingo destacados em cinza no cabeçalho e no fundo das células vazias, tabela de justificativa, exportação em CSV.
 
 ## Validação (julho/2026, calculado em 2026-07-08)
 

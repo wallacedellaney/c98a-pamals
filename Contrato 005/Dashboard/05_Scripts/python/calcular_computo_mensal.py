@@ -170,22 +170,32 @@ def calcular_mes(ano, mes, hoje=None):
             "periodo_no_mes_fim": fim_efetivo,
         })
 
+    # Mostra o mês inteiro (1 a último dia do mês, igual à planilha oficial)
+    # — dias ainda não decorridos ficam em branco (None), não 0 nem 1.
     linhas_matriz = []
     for matricula in pontuadas:
         periodos_aeronave = [p for p in periodos if p["matricula"] == matricula]
-        for dia in range(1, ultimo_dia_calculado + 1):
+        for dia in range(1, ultimo_dia_mes + 1):
             data_dia = date(ano, mes, dia)
-            negativada = any(
-                p["periodo_no_mes_inicio"] <= data_dia <= p["periodo_no_mes_fim"] for p in periodos_aeronave
-            )
-            linhas_matriz.append({"matricula": matricula, "dia": dia, "montada": 0 if negativada else 1})
+            if dia > ultimo_dia_calculado:
+                montada = None
+            else:
+                negativada = any(
+                    p["periodo_no_mes_inicio"] <= data_dia <= p["periodo_no_mes_fim"] for p in periodos_aeronave
+                )
+                montada = 0 if negativada else 1
+            linhas_matriz.append({
+                "matricula": matricula, "dia": dia,
+                "fim_de_semana": data_dia.weekday() >= 5,
+                "montada": montada,
+            })
 
     df_matriz = pd.DataFrame(linhas_matriz)
     df_motivos = pd.DataFrame(periodos)
 
     if not df_matriz.empty:
-        media_diaria = df_matriz.groupby("dia")["montada"].mean() * 100
-        mmam_previa = round(media_diaria.mean(), 2)
+        media_diaria = df_matriz.dropna(subset=["montada"]).groupby("dia")["montada"].mean() * 100
+        mmam_previa = round(media_diaria.mean(), 2) if len(media_diaria) else None
     else:
         mmam_previa = None
 
@@ -194,6 +204,7 @@ def calcular_mes(ano, mes, hoje=None):
         "aeronaves_pontuadas": pontuadas,
         "aeronaves_fora_listadas": fora_listadas,
         "ultimo_dia_calculado": ultimo_dia_calculado,
+        "ultimo_dia_mes": ultimo_dia_mes,
         "mmam_previa": mmam_previa,
         "inconsistencias": inconsistencias,
     }
