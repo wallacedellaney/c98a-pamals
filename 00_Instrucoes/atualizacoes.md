@@ -38,6 +38,36 @@ Mac estivesse ligado e acordado no horário exato. Migrado pra GitHub Actions
 a pedido do Wallace (autonomia total); os `.plist` locais foram desativados
 e removidos.
 
+## Duplo caminho — GitHub Actions + launchd no Mac (a partir de 2026-07-08)
+
+A pedido do Wallace, os agendamentos locais (`launchd`) foram **recriados**,
+rodando **junto** com o GitHub Actions (não é mais um ou outro) — se o Mac
+estiver ligado no horário, ele busca também; se não estiver, o GitHub cobre
+sozinho. 4 arquivos em `~/Library/LaunchAgents/` (agora incluindo RAC, que
+não tinha `.plist` da primeira vez):
+
+| Fonte | Horário no Mac (`launchd`) | Horário no GitHub Actions |
+|---|---|---|
+| Disponibilidade Diária | seg-sex 10h00 | seg-sex 13h07 UTC (~10h07) |
+| Emergências | seg-sex 12h00 | seg-sex 15h22 UTC (~12h22) |
+| RAC | seg-sex 12h05 | seg-sex 15h22 UTC (~12h22, junto com Emergências) |
+| Pagamentos | toda segunda 10h05 | toda segunda 13h37 UTC (~10h37) |
+
+Horários do Mac deliberadamente **diferentes** dos do GitHub (minutos
+distintos) — reduz a chance de os dois tentarem commitar bem na mesma hora.
+RAC e Pagamentos também usam minutos diferentes de Disponibilidade/Emergências
+**dentro do próprio Mac**, pelo mesmo motivo (duas `launchd` rodando ao mesmo
+tempo, mexendo no mesmo repositório local, também podem colidir entre si).
+
+**Proteção adicionada em `shared/executar_atualizacao.py`:** antes de rodar a
+extração, o script agora sincroniza com o GitHub (`git fetch` + `git reset
+--hard origin/main`) — mas **só se não houver alteração local pendente**
+(nunca mexe em trabalho manual em andamento, tipo uma sessão do Claude Code
+aberta com edições não commitadas). Isso evita que Mac e GitHub divirjam
+quando os dois rodam a mesma fonte em horários próximos — problema real que
+aconteceu em 2026-07-08 antes dessa proteção existir (tive que reconciliar
+manualmente um push rejeitado por non-fast-forward).
+
 ## Limitação conhecida — atraso do agendamento gratuito do GitHub
 
 Confirmado na prática em 2026-07-07: os horários agendados pra 13h/15h UTC

@@ -21,12 +21,15 @@ C-98A PAMALS/
 ## Atualização de dados — automática (4 fontes) + manual (as demais)
 
 Disponibilidade Diária (seg-sex 10h), Emergências e RAC (seg-sex 12h) e
-Pagamentos (toda segunda 10h) atualizam **sozinhos, rodando na nuvem do
-GitHub** (`.github/workflows/atualizacoes.yml`, GitHub Actions) — não depende
-do Mac do Wallace estar ligado, nem de internet dele, nem de mim numa
-conversa. O workflow usa a credencial própria do Google (Secret
+Pagamentos (toda segunda 10h) atualizam **sozinhos, por 2 caminhos ao mesmo
+tempo** (a pedido do Wallace, desde 2026-07-08): na nuvem do GitHub
+(`.github/workflows/atualizacoes.yml`, GitHub Actions — não depende do Mac
+ligado) **e** via `launchd` no Mac do Wallace (se estiver ligado no horário,
+busca também) — ver "Duplo caminho" em `00_Instrucoes/atualizacoes.md`. O
+workflow/script usa a credencial própria do Google (Secret
 `GOOGLE_SERVICE_ACCOUNT_JSON`) + `shared/drive_sync.py` +
-`shared/executar_atualizacao.py` (busca, reprocessa, commita e dá push
+`shared/executar_atualizacao.py` (sincroniza com o GitHub antes de rodar pra
+não divergir, busca, reprocessa, commita e dá push
 sozinho — o Streamlit Cloud reimplanta automaticamente). As demais fontes
 (Reparáveis, Vencimentos, Diagonal de Manutenção) continuam manuais —
 Wallace pede na conversa. Ver `00_Instrucoes/atualizacoes.md` para a
