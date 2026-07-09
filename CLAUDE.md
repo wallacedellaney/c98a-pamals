@@ -18,10 +18,10 @@ C-98A PAMALS/
 └── Coordenadoria/             <- RAC, Disponibilidade Diária, Vencimentos, Diagonal (ver CLAUDE.md próprio)
 ```
 
-## Atualização de dados — automática (4 fontes) + manual (as demais)
+## Atualização de dados — automática (5 fontes) + manual (as demais)
 
-Disponibilidade Diária (seg-sex 10h), Emergências e RAC (seg-sex 12h) e
-Pagamentos (toda segunda 10h) atualizam **sozinhos, por 2 caminhos ao mesmo
+Disponibilidade Diária (seg-sex 10h), Emergências, RAC e Vencimentos TMOT
+(seg-sex 12h) e Pagamentos (toda segunda 10h) atualizam **sozinhos, por 2 caminhos ao mesmo
 tempo** (a pedido do Wallace, desde 2026-07-08): na nuvem do GitHub
 (`.github/workflows/atualizacoes.yml`, GitHub Actions — não depende do Mac
 ligado) **e** via `launchd` no Mac do Wallace (se estiver ligado no horário,
@@ -33,8 +33,8 @@ não divergir, busca, reprocessa, commita e dá push
 sozinho — o Streamlit Cloud reimplanta automaticamente). Emergências Totais
 (histórico completo) e o Cômputo Mensal (Fechamento Mensal, Contrato 005)
 não têm agendamento próprio — recalculam de carona toda vez que Emergências
-atualiza. As demais fontes (Reparáveis, Vencimentos, Diagonal de Manutenção)
-continuam manuais — Wallace pede na conversa. Ver `00_Instrucoes/atualizacoes.md`
+atualiza. As demais fontes (Reparáveis, Vencimentos por Operador, Diagonal de
+Manutenção) continuam manuais — Wallace pede na conversa. Ver `00_Instrucoes/atualizacoes.md`
 para a arquitetura completa e como adicionar uma fonte nova ao agendamento.
 
 ## Comando "executar" / "roda"

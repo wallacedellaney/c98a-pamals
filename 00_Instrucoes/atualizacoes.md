@@ -4,7 +4,7 @@
 
 O site tem sua **própria credencial do Google** (conta de serviço
 `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`, chave
-guardada como Secret do GitHub, nunca no código) e busca 4 fontes **sozinho,
+guardada como Secret do GitHub, nunca no código) e busca 5 fontes **sozinho,
 rodando na nuvem do GitHub (GitHub Actions)** — não depende do Mac do
 Wallace estar ligado, nem de internet dele, nem de mim (Claude) numa
 conversa. Definido em `.github/workflows/atualizacoes.yml`:
@@ -14,8 +14,9 @@ conversa. Definido em `.github/workflows/atualizacoes.yml`:
 | Disponibilidade Diária | Segunda a sexta | 10h | `Coordenadoria/05_Scripts/python/extrair_disponibilidade_diaria.py` |
 | Emergências | Segunda a sexta | 12h | `Contrato 005/Dashboard/05_Scripts/python/extrair_emergencias.py` |
 | RAC | Segunda a sexta | 12h (junto com Emergências) | `Coordenadoria/05_Scripts/python/extrair_rac.py` |
+| Vencimentos TMOT | Segunda a sexta | 12h (junto com Emergências/RAC) | `Coordenadoria/05_Scripts/python/extrair_vencimentos.py` |
 | Pagamentos | Toda segunda | 10h | `Contrato 005/Dashboard/05_Scripts/python/extrair_pagamentos.py` |
-| Reparáveis, Vencimentos (TMOT e por operador), Diagonal de Manutenção, Devoluções/Empréstimos | — | — | Manual — Wallace pede na conversa |
+| Reparáveis, Vencimentos por Operador, Diagonal de Manutenção, Devoluções/Empréstimos | — | — | Manual — Wallace pede na conversa |
 
 Cada horário do cron chama `shared/executar_atualizacao.py <fonte>` (uma vez
 por fonte daquele horário — 12h roda emergencias e rac em sequência), que:
@@ -43,14 +44,14 @@ e removidos.
 A pedido do Wallace, os agendamentos locais (`launchd`) foram **recriados**,
 rodando **junto** com o GitHub Actions (não é mais um ou outro) — se o Mac
 estiver ligado no horário, ele busca também; se não estiver, o GitHub cobre
-sozinho. 4 arquivos em `~/Library/LaunchAgents/` (agora incluindo RAC, que
-não tinha `.plist` da primeira vez):
+sozinho. 5 arquivos em `~/Library/LaunchAgents/`:
 
 | Fonte | Horário no Mac (`launchd`) | Horário no GitHub Actions |
 |---|---|---|
 | Disponibilidade Diária | seg-sex 10h00 | seg-sex 13h07 UTC (~10h07) |
 | Emergências | seg-sex 12h00 | seg-sex 15h22 UTC (~12h22) |
 | RAC | seg-sex 12h05 | seg-sex 15h22 UTC (~12h22, junto com Emergências) |
+| Vencimentos TMOT | seg-sex 12h10 | seg-sex 15h22 UTC (~12h22, junto com Emergências/RAC) |
 | Pagamentos | toda segunda 10h05 | toda segunda 13h37 UTC (~10h37) |
 
 Horários do Mac deliberadamente **diferentes** dos do GitHub (minutos
@@ -179,7 +180,7 @@ a fonte em `shared/executar_atualizacao.py` (dict `SCRIPTS`) e em
 | Reparáveis (Contrato 005) | `1dy_U2Pu5mw6se_gsGvPnuiErKlUJbHnE743f5fnSQ4o` |
 | Pagamentos (Contrato 005) | `1zV_SQKlcXVYeaqCbV0X-PiWnzdzOZPt5esaXp_4k6_o` |
 | RAC (Coordenadoria) | `1o8supQLcHkC1WZZCZDAtuRKGB_VUlQ8qBlYj7racsGQ` |
-| Vencimentos TMOT (Coordenadoria) | ver `VENCIMENTOS_PLANILHA_URL` em `coordenadoria/utils.py` |
+| Vencimentos TMOT (Coordenadoria) | `178vQ-lRP52sw30kQArqcsQGXfj2OLblaFCgjIXWFIl8` — compartilhada e automatizada em 2026-07-09 |
 | Disponibilidade Diária (Coordenadoria) | pasta raiz `1JLrUGunWo5ABsR3WuYo88b2WD4QWoxNH` → ano → mês |
 | Vencimentos por Operador (Coordenadoria) | `drive_file_id` no `REGISTRO` — ainda não incorporado |
 | Devoluções/Empréstimos (Contrato 005) | `1czUWXVjQt7fPz7GJgdPp3rsxPn_5Uck44voBsJIiRWI` — manual, ver `Contrato 005/Dashboard/00_Instrucoes/emprestimos.md` |

@@ -19,6 +19,23 @@ Google Sheets **"Vencimentos"** (dono `fred_o_m@hotmail.com`, planilha compartil
 
 Cópia local só com as colunas usadas (linha 1 "ATUALIZADO DD/MM" removida, linha 2 vira cabeçalho): `01_Bases_Originais/Vencimentos/Vencimentos_C-98U8.xlsx`.
 
+### Atualização automática (a partir de 2026-07-09)
+
+Compartilhada com a conta de serviço (`pamals-drive-reader@...`) e adicionada à
+cadência automática — roda junto com Emergências/RAC (seg-sex ~12h, GitHub
+Actions e Mac). `extrair_vencimentos.py` ganhou `atualizar_do_drive()`, igual
+às outras fontes.
+
+**Bug corrigido nessa migração:** o código lia `wb.active` (a aba "ativa" por
+padrão do arquivo) em vez de pedir a aba `C-98U8` pelo nome. Isso nunca deu
+problema antes porque a cópia local (`01_Bases_Originais/`) só tinha a aba
+C-98U8 mesmo. Mas o arquivo real do Drive tem **10 abas** (uma por frota —
+C-97A2, A-29T2, C-95A7, C-98U8, G-19U2, IU-93A6, T-25T9, T-27T1, PNs TGCC,
+Lixos), e a aba "ativa" por padrão é **C-97A2**, não a nossa — se a busca
+automática tivesse sido ligada sem esse fix, teria extraído os dados errados
+(de outra frota) silenciosamente. Corrigido pra sempre referenciar `wb["C-98U8"]`
+explicitamente.
+
 **Colunas importantes (definidas pelo Wallace)**: DISPONIBILIDADE, DATAVENC, INSPEÇÃO, PN, SN, MATRÍCULA, OPERADOR, NOMENCLATURADOITEM. As demais colunas da planilha original (CODEMP, INTERVALO, TSN/TSO do item, Monitoração, dados do "conjunto maior", posição do item) não são usadas por ora.
 
 ## Como interpretar a coluna DISPONIBILIDADE (confirmado pelo Wallace)
