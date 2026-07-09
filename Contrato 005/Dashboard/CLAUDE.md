@@ -10,7 +10,7 @@
 
 Ver `C-98A PAMALS/CLAUDE.md`. Resumo: regenerar dados com `05_Scripts/python/gerar_dados_tratados.py`, depois subir `C-98A PAMALS/app.py` (não o `app.py` desta pasta) na porta 8501.
 
-**Isso não busca dados novos do Google Sheets sozinho** — a planilha de emergências é privada, sem conexão ao vivo (ver `emergencias.md`). Se o Wallace quiser os dados mais recentes de lá, ele precisa pedir explicitamente ("atualiza os dados do drive"/"busca de novo") antes do "executa".
+**O comando "executar" em si não busca dados novos do Google Sheets** — só reprocessa o que já está em `01_Bases_Originais/`. Emergências e Pagamentos já têm busca automática própria (agendada, seg-sex/segunda — ver `C-98A PAMALS/00_Instrucoes/atualizacoes.md`), separada do "executar". Reparáveis continua sem conexão ao vivo — se o Wallace quiser os dados mais recentes de lá, precisa pedir explicitamente ("atualiza os dados do drive"/"busca de novo").
 
 ---
 
@@ -111,7 +111,7 @@ Ver `reparaveis.md` para a lista completa e o que fica de fora (Qt, TAT REAL, ob
 
 Fonte:
 
-Planilha Google Sheets "Prazo das emergências - C-98" (aba "Prazos das emergências"), privada, sem conexão ao vivo. Cópia baixada fica em `01_Bases_Originais/Prazo_Emergencias_C98/`.
+Planilha Google Sheets "Prazo das emergências - C-98" (aba "Prazos das emergências"), privada — mas **com busca automática própria** (seg-sex ~12h, GitHub Actions + Mac, credencial de serviço). Cópia baixada fica em `01_Bases_Originais/Prazo_Emergencias_C98/`.
 
 Ler a aba e aplicar 3 filtros na extração: ST_EMG ≠ "Emg concluída", Provedor = "VEE ONE", Atd/cancelada em branco. Ver `emergencias.md`.
 

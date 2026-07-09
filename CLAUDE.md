@@ -2,8 +2,8 @@
 
 Pasta guarda-chuva com uma única página principal, que dá acesso a 2 áreas:
 
-* **Coordenadoria** — ainda não desenvolvida. Ver `Coordenadoria/CLAUDE.md`.
-* **Contrato 005/CELOG/2025** — dashboard completo (emergências, reparáveis, pagamentos). Ver `Contrato 005/Dashboard/CLAUDE.md`.
+* **Coordenadoria** — RAC, Disponibilidade Diária, Vencimentos (TMOT + Operadores), Diagonal de Manutenção e Dashboard Geral construídos; Previsão Mensal ainda é só um stub. Ver `Coordenadoria/CLAUDE.md`.
+* **Contrato 005/CELOG/2025** — dashboard completo (Visão Geral, Reparáveis, Emergências Abertas, Emergências Totais, Fechamento Mensal, Pagamentos). Ver `Contrato 005/Dashboard/CLAUDE.md`.
 
 ## Estrutura
 
@@ -15,7 +15,7 @@ C-98A PAMALS/
 ├── shared/                    <- drive_sync.py + estado.py, usados pelas 2 áreas (ver 00_Instrucoes/atualizacoes.md)
 ├── 00_Instrucoes/atualizacoes.md  <- atualização sob demanda por fonte, com Drive real
 ├── Contrato 005/Dashboard/    <- projeto completo do Contrato 005 (ver CLAUDE.md próprio)
-└── Coordenadoria/             <- esqueleto vazio, a desenvolver junto
+└── Coordenadoria/             <- RAC, Disponibilidade Diária, Vencimentos, Diagonal (ver CLAUDE.md próprio)
 ```
 
 ## Atualização de dados — automática (4 fontes) + manual (as demais)
@@ -30,10 +30,12 @@ workflow/script usa a credencial própria do Google (Secret
 `GOOGLE_SERVICE_ACCOUNT_JSON`) + `shared/drive_sync.py` +
 `shared/executar_atualizacao.py` (sincroniza com o GitHub antes de rodar pra
 não divergir, busca, reprocessa, commita e dá push
-sozinho — o Streamlit Cloud reimplanta automaticamente). As demais fontes
-(Reparáveis, Vencimentos, Diagonal de Manutenção) continuam manuais —
-Wallace pede na conversa. Ver `00_Instrucoes/atualizacoes.md` para a
-arquitetura completa e como adicionar uma fonte nova ao agendamento.
+sozinho — o Streamlit Cloud reimplanta automaticamente). Emergências Totais
+(histórico completo) e o Cômputo Mensal (Fechamento Mensal, Contrato 005)
+não têm agendamento próprio — recalculam de carona toda vez que Emergências
+atualiza. As demais fontes (Reparáveis, Vencimentos, Diagonal de Manutenção)
+continuam manuais — Wallace pede na conversa. Ver `00_Instrucoes/atualizacoes.md`
+para a arquitetura completa e como adicionar uma fonte nova ao agendamento.
 
 ## Comando "executar" / "roda"
 
