@@ -31,6 +31,63 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+
+def _tela_login():
+    st.markdown(
+        """
+        <style>
+            #MainMenu {display: none;}
+            footer {display: none;}
+            header {display: none;}
+            [data-testid="stToolbar"] {display: none;}
+            .stApp {
+                background:
+                    radial-gradient(circle at 8% 20%, rgba(245, 158, 11, 0.16), transparent 28%),
+                    radial-gradient(circle at 93% 88%, rgba(245, 158, 11, 0.18), transparent 26%),
+                    radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.9), transparent 34%),
+                    linear-gradient(135deg, #05070b 0%, #0b1117 42%, #111827 100%);
+                color: #f9fafb;
+            }
+            .login-titulo { text-align: center; font-size: 26px; font-weight: 900; letter-spacing: 2px; margin-top: 14vh; }
+            .login-sub { text-align: center; color: #9ca3af; font-size: 14px; margin-bottom: 24px; }
+            div.stButton > button {
+                width: 100%;
+                border-radius: 14px;
+                border: 1px solid rgba(245, 158, 11, 0.75);
+                background: rgba(15, 23, 42, 0.7);
+                color: #f59e0b;
+                font-weight: 800;
+            }
+            div.stButton > button:hover {
+                background: #f59e0b;
+                color: #111827;
+                border: 1px solid #f59e0b;
+            }
+        </style>
+        <div class="login-titulo">C-98A PAMA-LS</div>
+        <div class="login-sub">Acesso restrito — digite a senha pra continuar.</div>
+        """,
+        unsafe_allow_html=True,
+    )
+    _, col, _ = st.columns([1, 1, 1])
+    with col:
+        senha = st.text_input("Senha", type="password", key="login_senha", label_visibility="collapsed",
+                               placeholder="Senha de acesso")
+        if st.button("Entrar", key="login_botao"):
+            if senha == st.secrets.get("site_password"):
+                st.session_state["autenticado"] = True
+                st.rerun()
+            else:
+                st.error("Senha incorreta.")
+
+
+if "autenticado" not in st.session_state:
+    st.session_state["autenticado"] = False
+
+if not st.session_state["autenticado"]:
+    _tela_login()
+    st.stop()
+
 if "area" not in st.session_state:
     st.session_state["area"] = None
 
