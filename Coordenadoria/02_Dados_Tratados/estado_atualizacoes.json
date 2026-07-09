@@ -3,21 +3,21 @@
     "status": "sem_novidade",
     "last_error": null,
     "remote_modified_time": "2026-07-09T11:46:16.052Z",
-    "local_updated_at": "2026-07-09T15:31:05.504630",
+    "local_updated_at": "2026-07-09T18:13:01.500220",
     "record_count": 6
   },
   "rac": {
     "remote_modified_time": "2026-07-09T18:05:59.883Z",
     "local_updated_at": "2026-07-09T15:31:41.090736",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 30,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-07-09T17:03:34.124Z",
     "local_updated_at": "2026-07-09T15:31:49.462882",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 193,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   }
 }
