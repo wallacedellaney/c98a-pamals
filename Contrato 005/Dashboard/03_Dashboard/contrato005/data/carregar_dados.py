@@ -78,6 +78,19 @@ def carregar_computo_mensal(ano, mes):
     return df_matriz, df_motivos, resumo
 
 
+def carregar_devolucoes():
+    """Empréstimos/devoluções de material — planilha "Devoluções". Ver
+    00_Instrucoes/emprestimos.md."""
+    caminho = DADOS_TRATADOS / "base_devolucoes_tratada.xlsx"
+    if not caminho.exists():
+        return pd.DataFrame(), None
+    mtime = caminho.stat().st_mtime
+    df = _ler_excel(str(caminho), mtime)
+    df["pedido_envio"] = pd.to_datetime(df["pedido_envio"], errors="coerce")
+    df["data_devolucao"] = pd.to_datetime(df["data_devolucao"], errors="coerce")
+    return df, mtime
+
+
 def carregar_reparaveis():
     caminho = DADOS_TRATADOS / "base_reparaveis_tratada.xlsx"
     return _ler_excel(str(caminho), caminho.stat().st_mtime), caminho.stat().st_mtime
@@ -96,6 +109,7 @@ def carregar_tudo():
     df_emergencias, mtime_emerg = carregar_emergencias()
     historico_emergencias = carregar_historico_emergencias()
     df_emergencias_totais, mtime_emerg_totais = carregar_emergencias_totais()
+    df_devolucoes, mtime_devolucoes = carregar_devolucoes()
     df_reparaveis, mtime_rep = carregar_reparaveis()
     df_pagamentos, contrato, empenhos, mtime_pag = carregar_pagamentos()
     return {
@@ -103,6 +117,8 @@ def carregar_tudo():
         "historico_emergencias": historico_emergencias,
         "emergencias_totais": df_emergencias_totais,
         "emergencias_totais_atualizado_em": mtime_emerg_totais,
+        "devolucoes": df_devolucoes,
+        "devolucoes_atualizado_em": mtime_devolucoes,
         "reparaveis": df_reparaveis,
         "pagamentos": df_pagamentos,
         "contrato": contrato,

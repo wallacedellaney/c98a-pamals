@@ -12,5 +12,12 @@
     "status": "atualizado",
     "record_count": 29,
     "last_error": null
+  },
+  "devolucoes": {
+    "remote_modified_time": "2026-07-08T18:34:33.415Z",
+    "local_updated_at": "2026-07-09T10:36:38.620011",
+    "status": "atualizado",
+    "record_count": 424,
+    "last_error": null
   }
 }

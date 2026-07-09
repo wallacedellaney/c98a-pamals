@@ -3,7 +3,7 @@
 Pasta guarda-chuva com uma única página principal, que dá acesso a 2 áreas:
 
 * **Coordenadoria** — RAC, Disponibilidade Diária, Vencimentos (TMOT + Operadores), Diagonal de Manutenção e Dashboard Geral construídos; Previsão Mensal ainda é só um stub. Ver `Coordenadoria/CLAUDE.md`.
-* **Contrato 005/CELOG/2025** — dashboard completo (Visão Geral, Reparáveis, Emergências Abertas, Emergências Totais, Fechamento Mensal, Pagamentos). Ver `Contrato 005/Dashboard/CLAUDE.md`.
+* **Contrato 005/CELOG/2025** — dashboard completo (Visão Geral, Reparáveis, Emergências Abertas, Emergências Totais, Fechamento Mensal, Empréstimos, Pagamentos). Ver `Contrato 005/Dashboard/CLAUDE.md`.
 
 ## Estrutura
 

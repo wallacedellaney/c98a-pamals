@@ -18,7 +18,10 @@ import streamlit as st
 
 from contrato005.components.paleta import AMBER, SECONDARY, LINE
 from contrato005.data.carregar_dados import carregar_tudo
-from contrato005.secoes import visao_geral, reparaveis, emergencias, emergencias_totais, fechamento_mensal, pagamentos
+from contrato005.secoes import (
+    visao_geral, reparaveis, emergencias, emergencias_totais,
+    fechamento_mensal, emprestimos, pagamentos,
+)
 
 PAGINAS = {
     "Visão Geral": visao_geral,
@@ -26,6 +29,7 @@ PAGINAS = {
     "Emergências Abertas": emergencias,
     "Emergências Totais": emergencias_totais,
     "Fechamento Mensal": fechamento_mensal,
+    "Empréstimos": emprestimos,
     "Pagamentos": pagamentos,
 }
 
