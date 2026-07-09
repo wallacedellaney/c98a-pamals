@@ -11,7 +11,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from contrato005.components.paleta import AMBER, LINE, STATUS, layout_grafico
+from contrato005.components.paleta import AMBER, LINE, PANEL, STATUS, layout_grafico
 
 ABREV_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
@@ -70,6 +70,52 @@ def render(dados):
         st.info("Ainda não construído — aguardando instruções do Wallace sobre o que exibir aqui.")
 
 
+def _mostrar_motivo_celula(matricula, dia, valor, df_motivos):
+    if pd.isna(valor):
+        st.info(f"FAB {matricula}, dia {dia}: ainda não decorrido — sem dado calculado.")
+        return
+
+    if valor == 1:
+        st.markdown(
+            f'<div style="background:{PANEL};border:1px solid {LINE};border-left:3px solid {STATUS["good"]};'
+            f'border-radius:8px;padding:0.7rem 1rem;">'
+            f'<strong>FAB {matricula}, dia {dia}:</strong> montada — sem negativação nesse dia.</div>',
+            unsafe_allow_html=True,
+        )
+        return
+
+    if df_motivos.empty:
+        st.warning(f"FAB {matricula}, dia {dia}: desmontada, mas não achei o motivo (inesperado).")
+        return
+
+    motivos_aeronave = df_motivos[df_motivos["matricula"] == matricula].copy()
+    motivos_aeronave["inicio_dia"] = pd.to_datetime(motivos_aeronave["periodo_no_mes_inicio"]).dt.day
+    motivos_aeronave["fim_dia"] = pd.to_datetime(motivos_aeronave["periodo_no_mes_fim"]).dt.day
+    encontrados = motivos_aeronave[(motivos_aeronave["inicio_dia"] <= dia) & (motivos_aeronave["fim_dia"] >= dia)]
+
+    if encontrados.empty:
+        st.warning(f"FAB {matricula}, dia {dia}: desmontada, mas não achei o motivo (inesperado).")
+        return
+
+    linhas_html = ""
+    for _, m in encontrados.iterrows():
+        cancelamento = m["data_cancelamento"] if pd.notna(m["data_cancelamento"]) else "ainda aberta"
+        linhas_html += (
+            f'<div style="margin-top:0.4rem;">'
+            f'Emergência <strong>{m["numero_emergencia"]}</strong> ({m["tipo"]}) — '
+            f'aberta em {m["data_abertura"]}, informada em {m["data_info"]}, sem estoque.<br>'
+            f'Negativado de {m["periodo_no_mes_inicio"]} até {m["periodo_no_mes_fim"]} · '
+            f'cancelamento/conclusão: {cancelamento}</div>'
+        )
+
+    st.markdown(
+        f'<div style="background:{PANEL};border:1px solid {LINE};border-left:3px solid {STATUS["critical"]};'
+        f'border-radius:8px;padding:0.7rem 1rem;">'
+        f'<strong>FAB {matricula}, dia {dia}: desmontada</strong>{linhas_html}</div>',
+        unsafe_allow_html=True,
+    )
+
+
 def _computo_mensal(mes_escolhido):
     st.subheader(f"Cômputo Mensal — {_formatar_mes(mes_escolhido)}")
     st.caption(
@@ -111,6 +157,7 @@ def _computo_mensal(mes_escolhido):
     st.plotly_chart(fig, width="stretch")
 
     st.markdown("##### Matriz aeronave x dia (1 = montada, 0 = desmontada) — mês inteiro, sáb/dom marcados em cinza")
+    st.caption("Clique numa célula pra ver o motivo da negativação (ou confirmar que ficou montada).")
     pivot = df_matriz.pivot(index="matricula", columns="dia", values="montada")
 
     mapa_rotulo = {}
@@ -131,11 +178,27 @@ def _computo_mensal(mes_escolhido):
             return f"background-color: {cor}55"
         return _colorir
 
-    styler = pivot.style
+    styler = pivot.style.format(precision=0, na_rep="")
     for coluna in pivot.columns:
         styler = styler.map(_cor_fabrica(coluna), subset=[coluna])
 
-    st.dataframe(styler, width="stretch", height=460)
+    altura_tabela = min(35 * (len(pivot) + 1) + 3, 700)
+    colunas_config = {
+        coluna: st.column_config.NumberColumn(width="small") for coluna in pivot.columns
+    }
+    evento = st.dataframe(
+        styler, width="stretch", height=altura_tabela,
+        column_config=colunas_config,
+        on_select="rerun", selection_mode="single-cell", key="computo_matriz_selecao",
+    )
+
+    celulas = evento.selection.get("cells", []) if evento else []
+    if celulas:
+        linha_idx, coluna_rotulo = celulas[0]
+        matricula_sel = pivot.index[linha_idx]
+        dia_sel = int(coluna_rotulo.split()[0])
+        valor_sel = pivot.iloc[linha_idx][coluna_rotulo]
+        _mostrar_motivo_celula(matricula_sel, dia_sel, valor_sel, df_motivos)
 
     if resumo["aeronaves_fora_listadas"]:
         st.caption(
