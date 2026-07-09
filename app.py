@@ -113,25 +113,10 @@ def _aplicar_css_home():
         .brand-left {
             display: flex;
             align-items: center;
-            gap: 12px;
             font-size: 17px;
             font-weight: 850;
             letter-spacing: 0.4px;
             color: #f9fafb;
-        }
-
-        .brand-mark {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            border: 1px solid rgba(245, 158, 11, 0.55);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #f59e0b;
-            background: rgba(245, 158, 11, 0.08);
-            box-shadow: 0 0 22px rgba(245, 158, 11, 0.12);
-            font-size: 17px;
         }
 
         .top-status {
@@ -193,71 +178,6 @@ def _aplicar_css_home():
             letter-spacing: 0.3px;
         }
 
-        .hero p {
-            max-width: 815px;
-            margin: 0 auto;
-            color: #d1d5db;
-            font-size: 17px;
-            line-height: 1.75;
-            font-weight: 430;
-        }
-
-        .hero p strong {
-            color: #f59e0b;
-            font-weight: 850;
-        }
-
-        .pills {
-            display: flex;
-            justify-content: center;
-            align-items: stretch;
-            flex-wrap: wrap;
-            gap: 14px;
-            margin: 34px auto 40px auto;
-        }
-
-        .pill {
-            min-width: 165px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 13px 18px;
-            border-radius: 999px;
-            background:
-                linear-gradient(145deg, rgba(15,23,42,0.82), rgba(17,24,39,0.70));
-            border: 1px solid rgba(148, 163, 184, 0.16);
-            box-shadow:
-                0 16px 38px rgba(0,0,0,0.25),
-                inset 0 1px 0 rgba(255,255,255,0.04);
-            color: #d1d5db;
-        }
-
-        .pill-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #cbd5e1;
-            font-size: 15px;
-        }
-
-        .pill-title {
-            font-size: 13px;
-            color: #cbd5e1;
-            line-height: 1.2;
-            font-weight: 650;
-        }
-
-        .pill-value {
-            margin-top: 3px;
-            font-size: 13px;
-            color: #f59e0b;
-            line-height: 1.2;
-            font-weight: 850;
-        }
-
         .portal-card {
             min-height: 300px;
             border-radius: 26px;
@@ -302,24 +222,6 @@ def _aplicar_css_home():
             gap: 24px;
             position: relative;
             z-index: 2;
-        }
-
-        .card-icon {
-            min-width: 88px;
-            width: 88px;
-            height: 88px;
-            border-radius: 999px;
-            border: 1px solid rgba(245, 158, 11, 0.72);
-            background:
-                radial-gradient(circle, rgba(245,158,11,0.16), rgba(245,158,11,0.04));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            color: #f59e0b;
-            box-shadow:
-                0 0 34px rgba(245,158,11,0.13),
-                inset 0 1px 0 rgba(255,255,255,0.06);
         }
 
         .card-title {
@@ -381,14 +283,11 @@ def _aplicar_css_home():
 
         .footer-home {
             text-align: center;
-            margin-top: 30px;
+            max-width: 780px;
+            margin: 30px auto 0 auto;
             color: #8b95a5;
-            font-size: 14px;
-            line-height: 1.75;
-        }
-
-        .footer-home strong {
-            color: #f59e0b;
+            font-size: 13px;
+            line-height: 1.7;
         }
 
         @media (max-width: 900px) {
@@ -412,28 +311,14 @@ def _menu_principal():
     st.markdown(
         '<div class="home-shell">'
         '<div class="topbar">'
-        '<div class="brand-left"><div class="brand-mark">🛡️</div><div>C-98A PAMA-LS</div></div>'
+        '<div class="brand-left"><div>C-98A PAMA-LS</div></div>'
         '<div class="top-status">Sistema interno de apoio à gestão • <strong>Ambiente Streamlit</strong></div>'
         '</div>'
         '<section class="hero">'
-        '<div class="hero-kicker">✦ Portal gerencial integrado</div>'
+        '<div class="hero-kicker">Portal gerencial integrado</div>'
         '<h1>C-98A <span>PAMA-LS</span></h1>'
         '<h2>Portal Gerencial de Coordenação e Contrato</h2>'
-        '<p>Acompanhamento operacional, controle contratual, pagamentos, emergências, '
-        'notas fiscais e indicadores do <strong>Contrato 005/CELOG/2025</strong>.</p>'
         '</section>'
-        '<div class="pills">'
-        '<div class="pill"><div class="pill-icon">📅</div><div><div class="pill-title">Contrato Ativo</div>'
-        '<div class="pill-value">005/CELOG/2025</div></div></div>'
-        '<div class="pill"><div class="pill-icon">🛡️</div><div><div class="pill-title">Vigência</div>'
-        '<div class="pill-value">2025</div></div></div>'
-        '<div class="pill"><div class="pill-icon">👥</div><div><div class="pill-title">Gestão Integrada</div>'
-        '<div class="pill-value">Coordenação + Contrato</div></div></div>'
-        '<div class="pill"><div class="pill-icon">📊</div><div><div class="pill-title">Indicadores</div>'
-        '<div class="pill-value">Tempo real</div></div></div>'
-        '<div class="pill"><div class="pill-icon">✅</div><div><div class="pill-title">Conformidade</div>'
-        '<div class="pill-value">Governança e Controle</div></div></div>'
-        '</div>'
         '</div>',
         unsafe_allow_html=True,
     )
@@ -443,7 +328,6 @@ def _menu_principal():
     with col1:
         st.markdown(
             '<div class="portal-card"><div class="card-head">'
-            '<div class="card-icon">👥</div>'
             '<div><div class="card-title">Coordenadoria</div>'
             '<div class="card-description">Painel de gestão da coordenação operacional, '
             'acompanhamento de demandas, comunicação institucional, disponibilidade, '
@@ -460,7 +344,6 @@ def _menu_principal():
     with col2:
         st.markdown(
             '<div class="portal-card"><div class="card-head">'
-            '<div class="card-icon">📄</div>'
             '<div><div class="card-title gold">Contrato 005/CELOG/2025</div>'
             '<div class="card-description">Gestão contratual, execução financeira, pagamentos, '
             'notas fiscais, emergências, reparáveis, recibos, pendências e indicadores de desempenho.</div>'
@@ -474,8 +357,9 @@ def _menu_principal():
             st.rerun()
 
     st.markdown(
-        '<div class="footer-home">🛡️ <strong>Governança</strong> • Transparência • Eficiência • '
-        'Responsabilidade<br>Sistema PAMA-LS • Gestão integrada para resultados</div>',
+        '<div class="footer-home">Acompanhamento centralizado da frota C-98 — RAC, disponibilidade diária, '
+        'vencimentos e diagonal de manutenção (Coordenadoria); emergências, reparáveis, empréstimos, '
+        'pagamentos e fechamento mensal (Contrato 005/CELOG/2025).</div>',
         unsafe_allow_html=True,
     )
 
