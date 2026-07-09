@@ -170,7 +170,7 @@ Nunca criar gráfico usando diretamente as bases originais.
 
 O dashboard é interativo e dividido em partes, navegáveis por botões/abas na parte de baixo da tela:
 
-* **Visão Geral** — resumo consolidado com os indicadores principais das 3 áreas abaixo;
+* **Visão Geral** — resumo consolidado com os indicadores principais de todas as áreas abaixo (Reparáveis, Emergências, Empréstimos, Fechamento Mensal, Pagamentos), atualizado em 2026-07-09;
 * **Reparáveis** — dados tratados de `base_reparaveis_tratada.xlsx`;
 * **Emergências Abertas** — dados tratados de `base_emergencias_tratada.xlsx`;
 * **Emergências Totais** — histórico completo (abertas + concluídas, VEE ONE) de `historico_completo_emergencias.xlsx`, ver `00_Instrucoes/emergencias.md`;

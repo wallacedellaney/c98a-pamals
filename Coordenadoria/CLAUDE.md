@@ -15,7 +15,7 @@ Nenhuma fonte de dado da Coordenadoria (RAC, Disponibilidade Diária, Vencimento
 * **Vencimentos** — mini-dashboard com duas partes: **TMOT** (planilha única "Vencimentos"/C-98U8, pronta) e **Operadores** (Controle de Vencimentos por base — todos os 9 operadores confirmados incorporados: BAMN, BABE, CLA, BANT, BABR, PAMA-LS, DACTA II, BACO, BACG). Ver `00_Instrucoes/vencimentos.md`.
 * **Diagonal de Manutenção** — linha do tempo (Gantt) de indisponibilidade projetada por aeronave, a partir de hoje, com resumo mensal embaixo. Todos os 9 operadores incorporados (PAMA-LS/BACG com confiança "aproximada" — binário não transferiu íntegro). Ver `00_Instrucoes/diagonal_manutencao.md`.
 * **Previsão Mensal** — stub, escopo ainda não definido.
-* **Dashboard geral** — construído (visão gerencial combinando RAC + Disponibilidade Diária).
+* **Dashboard geral** — construído: visão gerencial combinando RAC, Disponibilidade Diária, Vencimentos (TMOT + Operadores) e Diagonal de Manutenção, com pontos de atenção e atalhos pras 4 áreas.
 
 ## Padrão de módulos Python
 

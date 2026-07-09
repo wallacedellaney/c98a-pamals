@@ -18,14 +18,17 @@ def render(dados):
     _estilo()
     st.title("Dashboard")
     st.caption(
-        "Visão gerencial da frota C-98 — configuração (RAC) e situação operacional do dia "
-        "(Disponibilidade Diária) num só lugar."
+        "Visão gerencial da frota C-98 — configuração (RAC), situação operacional do dia "
+        "(Disponibilidade Diária), vencimentos e diagonal de manutenção num só lugar."
     )
 
     aeronaves = dados["rac_aeronaves"]
     pendencias = dados["rac_pendencias"]
     disp_relatorios = dados["disp_relatorios"]
     disp_aeronaves = dados["disp_aeronaves"]
+    venc_tmot = dados.get("venc_tmot")
+    venc_operadores = dados.get("venc_operadores")
+    diagonal = dados.get("diagonal")
 
     rel_hoje = None
     aer_hoje = pd.DataFrame()
@@ -37,6 +40,9 @@ def render(dados):
 
     _cards_indicadores(aeronaves, pendencias, rel_hoje, aer_hoje)
 
+    st.write("")
+    _cards_vencimentos_diagonal(venc_tmot, venc_operadores, diagonal)
+
     st.divider()
     col1, col2 = st.columns(2)
     with col1:
@@ -45,7 +51,7 @@ def render(dados):
         _situacao_hoje(aer_hoje, rel_hoje)
 
     st.divider()
-    _pontos_atencao(aeronaves, pendencias, aer_hoje, rel_hoje)
+    _pontos_atencao(aeronaves, pendencias, aer_hoje, rel_hoje, venc_tmot, venc_operadores, diagonal)
 
     st.divider()
     _atalhos()
@@ -122,6 +128,32 @@ def _cards_indicadores(aeronaves, pendencias, rel_hoje, aer_hoje):
         _card(l2[3], "—", "Alertas críticos hoje", "sem dados de Disponibilidade Diária", SECONDARY)
 
 
+def _cards_vencimentos_diagonal(venc_tmot, venc_operadores, diagonal):
+    vencidos_tmot = int(venc_tmot["vencido"].sum()) if venc_tmot is not None and not venc_tmot.empty else 0
+    vencidos_operadores = (
+        int(venc_operadores["vencido"].sum()) if venc_operadores is not None and not venc_operadores.empty else 0
+    )
+    total_vencidos = vencidos_tmot + vencidos_operadores
+
+    if diagonal is not None and not diagonal.empty:
+        hoje = pd.Timestamp.now().normalize()
+        indisponiveis_agora = diagonal[(diagonal["periodo_inicio"] <= hoje) & (diagonal["periodo_fim"] >= hoje)]
+        aeronaves_diagonal = indisponiveis_agora["aeronave"].nunique()
+    else:
+        aeronaves_diagonal = None
+
+    l3 = st.columns(4)
+    _card(l3[0], total_vencidos, "Itens vencidos", "Vencimentos (TMOT + Operadores)",
+          STATUS["critical"] if total_vencidos else STATUS["good"])
+    _card(l3[1], vencidos_tmot, "Vencidos — TMOT", "", STATUS["critical"] if vencidos_tmot else STATUS["good"])
+    _card(l3[2], vencidos_operadores, "Vencidos — Operadores", "", STATUS["critical"] if vencidos_operadores else STATUS["good"])
+    if aeronaves_diagonal is not None:
+        _card(l3[3], aeronaves_diagonal, "Indisponíveis (Diagonal)", "projeção pra hoje",
+              STATUS["critical"] if aeronaves_diagonal else STATUS["good"])
+    else:
+        _card(l3[3], "—", "Indisponíveis (Diagonal)", "sem dados", SECONDARY)
+
+
 def _config_frota(aeronaves):
     st.markdown("##### Configuração da frota (RAC)")
     contagem = (
@@ -159,7 +191,7 @@ def _situacao_hoje(aer_hoje, rel_hoje):
     st.caption(f"Relatório de {data_txt} — DI/DO disponível, demais códigos indisponível por algum motivo.")
 
 
-def _pontos_atencao(aeronaves, pendencias, aer_hoje, rel_hoje):
+def _pontos_atencao(aeronaves, pendencias, aer_hoje, rel_hoje, venc_tmot=None, venc_operadores=None, diagonal=None):
     st.markdown("##### Pontos de atenção")
     itens = []
 
@@ -191,6 +223,23 @@ def _pontos_atencao(aeronaves, pendencias, aer_hoje, rel_hoje):
             delta = int(rel_hoje["previsao_semana_disponiveis_qtd"] - rel_hoje["disponiveis_hoje"])
             itens.append(f"📈 Disp. Diária: previsão de +{delta} disponíveis até o fim da semana.")
 
+    if venc_tmot is not None and not venc_tmot.empty:
+        vencidos_tmot = int(venc_tmot["vencido"].sum())
+        if vencidos_tmot:
+            itens.append(f"📆 Vencimentos (TMOT): {vencidos_tmot} item(ns) já vencido(s).")
+    if venc_operadores is not None and not venc_operadores.empty:
+        vencidos_op = int(venc_operadores["vencido"].sum())
+        if vencidos_op:
+            itens.append(f"📆 Vencimentos (Operadores): {vencidos_op} item(ns) já vencido(s).")
+
+    if diagonal is not None and not diagonal.empty:
+        hoje_ts = pd.Timestamp.now().normalize()
+        indisponiveis_agora = diagonal[(diagonal["periodo_inicio"] <= hoje_ts) & (diagonal["periodo_fim"] >= hoje_ts)]
+        n_diagonal = indisponiveis_agora["aeronave"].nunique()
+        if n_diagonal:
+            aeronaves_diag = ", ".join(f"FAB {a}" for a in sorted(indisponiveis_agora["aeronave"].unique()))
+            itens.append(f"🗓️ Diagonal de Manutenção: {n_diagonal} aeronave(s) indisponível(is) hoje: {aeronaves_diag}.")
+
     if not itens:
         st.markdown(
             '<div class="dash-painel"><div class="dash-item">✅ Nenhum ponto de atenção — frota regular.</div></div>',
@@ -204,7 +253,7 @@ def _pontos_atencao(aeronaves, pendencias, aer_hoje, rel_hoje):
 
 def _atalhos():
     st.markdown("##### Ver mais")
-    c1, c2 = st.columns(2)
+    c1, c2, c3, c4 = st.columns(4)
     with c1:
         if st.button("🛩️ Ver RAC completo →", key="dash_ir_rac", width="stretch"):
             st.session_state["coord_pagina"] = "RAC"
@@ -212,4 +261,12 @@ def _atalhos():
     with c2:
         if st.button("📋 Ver Disponibilidade Diária completa →", key="dash_ir_disp", width="stretch"):
             st.session_state["coord_pagina"] = "Disponibilidade Diária"
+            st.rerun()
+    with c3:
+        if st.button("📆 Ver Vencimentos →", key="dash_ir_venc", width="stretch"):
+            st.session_state["coord_pagina"] = "Vencimentos"
+            st.rerun()
+    with c4:
+        if st.button("🗓️ Ver Diagonal de Manutenção →", key="dash_ir_diagonal", width="stretch"):
+            st.session_state["coord_pagina"] = "Diagonal de Manutenção"
             st.rerun()
