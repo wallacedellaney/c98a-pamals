@@ -8,10 +8,10 @@
   },
   "rac": {
     "remote_modified_time": "2026-07-09T18:05:59.883Z",
-    "local_updated_at": "2026-07-09T15:31:41.090736",
-    "status": "erro",
+    "local_updated_at": "2026-07-09T18:28:36.983849",
+    "status": "atualizado",
     "record_count": 30,
-    "last_error": "Unable to find the server at oauth2.googleapis.com"
+    "last_error": null
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-07-09T17:03:34.124Z",
