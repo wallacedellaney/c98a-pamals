@@ -20,12 +20,12 @@ C-98A PAMALS/
 
 ## Atualização de dados — automática (5 fontes) + manual (as demais)
 
-Disponibilidade Diária (seg-sex 10h), Emergências, RAC e Vencimentos TMOT
-(seg-sex 12h) e Pagamentos (toda segunda 10h) atualizam **sozinhos, por 2 caminhos ao mesmo
-tempo** (a pedido do Wallace, desde 2026-07-08): na nuvem do GitHub
+Disponibilidade Diária, Emergências, RAC, Vencimentos TMOT e Pagamentos
+atualizam **sozinhos, de 2 em 2 horas (seg-sex, 8h-20h), por 2 caminhos ao
+mesmo tempo** (a pedido do Wallace, desde 2026-07-09): na nuvem do GitHub
 (`.github/workflows/atualizacoes.yml`, GitHub Actions — não depende do Mac
 ligado) **e** via `launchd` no Mac do Wallace (se estiver ligado no horário,
-busca também) — ver "Duplo caminho" em `00_Instrucoes/atualizacoes.md`. O
+busca também) — ver `00_Instrucoes/atualizacoes.md`. O
 workflow/script usa a credencial própria do Google (Secret
 `GOOGLE_SERVICE_ACCOUNT_JSON`) + `shared/drive_sync.py` +
 `shared/executar_atualizacao.py` (sincroniza com o GitHub antes de rodar pra

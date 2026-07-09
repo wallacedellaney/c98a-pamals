@@ -5,60 +5,57 @@
 O site tem sua **própria credencial do Google** (conta de serviço
 `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`, chave
 guardada como Secret do GitHub, nunca no código) e busca 5 fontes **sozinho,
-rodando na nuvem do GitHub (GitHub Actions)** — não depende do Mac do
-Wallace estar ligado, nem de internet dele, nem de mim (Claude) numa
-conversa. Definido em `.github/workflows/atualizacoes.yml`:
+rodando na nuvem do GitHub (GitHub Actions) e no Mac do Wallace, ao mesmo
+tempo** — não depende do Mac estar ligado (o GitHub cobre sozinho), mas se
+estiver ligado no horário, busca também.
 
-| Fonte | Dias | Horário | Script |
-|---|---|---|---|
-| Disponibilidade Diária | Segunda a sexta | 10h | `Coordenadoria/05_Scripts/python/extrair_disponibilidade_diaria.py` |
-| Emergências | Segunda a sexta | 12h | `Contrato 005/Dashboard/05_Scripts/python/extrair_emergencias.py` |
-| RAC | Segunda a sexta | 12h (junto com Emergências) | `Coordenadoria/05_Scripts/python/extrair_rac.py` |
-| Vencimentos TMOT | Segunda a sexta | 12h (junto com Emergências/RAC) | `Coordenadoria/05_Scripts/python/extrair_vencimentos.py` |
-| Pagamentos | Toda segunda | 10h | `Contrato 005/Dashboard/05_Scripts/python/extrair_pagamentos.py` |
-| Reparáveis, Vencimentos por Operador, Diagonal de Manutenção, Devoluções/Empréstimos | — | — | Manual — Wallace pede na conversa |
+**Desde 2026-07-09 (a pedido do Wallace): todas as 5 fontes rodam juntas,
+de 2 em 2 horas, seg-sex, das 8h às 20h** (`todos` — não é mais 1 horário
+por fonte). O motivo: o agendamento gratuito do GitHub atrasa às vezes (ver
+"Limitação conhecida" abaixo) — rodando com mais frequência, mesmo que uma
+vez atrase ou falhe, a próxima (2h depois) já pega o dado atualizado. Sem
+problema rodar sem ter nada novo pra buscar — cada fonte só commita de
+verdade se algo mudou (`git status --porcelain`), então rodar toda hora não
+gera commit/redeploy à toa.
 
-Cada horário do cron chama `shared/executar_atualizacao.py <fonte>` (uma vez
-por fonte daquele horário — 12h roda emergencias e rac em sequência), que:
+| Fonte | Script |
+|---|---|
+| Disponibilidade Diária | `Coordenadoria/05_Scripts/python/extrair_disponibilidade_diaria.py` |
+| Emergências | `Contrato 005/Dashboard/05_Scripts/python/extrair_emergencias.py` |
+| RAC | `Coordenadoria/05_Scripts/python/extrair_rac.py` |
+| Vencimentos TMOT | `Coordenadoria/05_Scripts/python/extrair_vencimentos.py` |
+| Pagamentos | `Contrato 005/Dashboard/05_Scripts/python/extrair_pagamentos.py` |
+| Reparáveis, Vencimentos por Operador, Diagonal de Manutenção, Devoluções/Empréstimos | Manual — Wallace pede na conversa |
+
+`shared/executar_atualizacao.py todos` roda as 5 em sequência (uma de cada
+vez, sincronizando com o GitHub antes de cada uma — ver `_sincronizar_com_remoto`).
+Pra cada fonte:
 1. Roda `python3 <script> --atualizar-do-drive` (busca no Drive, sobrescreve
    a cópia local em `01_Bases_Originais/`, reprocessa).
-2. Se algo mudou de verdade no repositório (`git status --porcelain` não
-   vazio), commita e dá `git push` sozinho — o Streamlit Cloud detecta o
-   push e reimplanta o app automaticamente (~1-2 min).
-3. Registra tudo em `shared/automacao.log` (histórico simples, texto) —
-   dentro do runner do GitHub, então só aparece no log da própria execução
-   em Actions, não fica salvo localmente no Mac.
+2. Se algo mudou de verdade no repositório, commita e dá `git push` sozinho
+   — o Streamlit Cloud detecta o push e reimplanta o app automaticamente
+   (~1-2 min).
+3. Registra tudo em `shared/automacao.log`.
 
-Também dá pra rodar qualquer uma das 4 fontes **na hora**, manualmente, sem
-esperar o horário — aba "Actions" do GitHub → "Atualizações automáticas" →
-"Run workflow" → escolher a fonte.
+Também dá pra rodar `todos` ou uma fonte específica **na hora**, manualmente
+— aba "Actions" do GitHub → "Atualizações automáticas" → "Run workflow" →
+escolher (padrão: `todos`).
 
-**Histórico:** antes disso (2026-07-06, mesmo dia), essas 3 primeiras fontes
-rodavam via `launchd` no Mac do Wallace — funcionava, mas só disparava se o
-Mac estivesse ligado e acordado no horário exato. Migrado pra GitHub Actions
-a pedido do Wallace (autonomia total); os `.plist` locais foram desativados
-e removidos.
+## GitHub Actions + launchd no Mac, ao mesmo tempo
 
-## Duplo caminho — GitHub Actions + launchd no Mac (a partir de 2026-07-08)
+Desde 2026-07-08, os dois caminhos rodam juntos (não é mais um ou outro):
 
-A pedido do Wallace, os agendamentos locais (`launchd`) foram **recriados**,
-rodando **junto** com o GitHub Actions (não é mais um ou outro) — se o Mac
-estiver ligado no horário, ele busca também; se não estiver, o GitHub cobre
-sozinho. 5 arquivos em `~/Library/LaunchAgents/`:
+- **GitHub Actions** (`.github/workflows/atualizacoes.yml`): 1 cron só,
+  `7 11,13,15,17,19,21,23 * * 1-5` (UTC) = 8h07, 10h07, 12h07, 14h07, 16h07,
+  18h07, 20h07 local, seg-sex. Minuto quebrado (não hora cheia) de propósito
+  — reduz o atraso do agendamento gratuito (ver "Limitação conhecida").
+- **Mac (`launchd`)**: 1 arquivo só, `com.pamals.atualizar_tudo.plist`, nos
+  mesmos 7 horários (8h, 10h, 12h, 14h, 16h, 18h, 20h local, seg-sex), na
+  hora cheia (minuto :00, diferente do GitHub de propósito — reduz a chance
+  de os dois tentarem commitar no mesmo segundo).
 
-| Fonte | Horário no Mac (`launchd`) | Horário no GitHub Actions |
-|---|---|---|
-| Disponibilidade Diária | seg-sex 10h00 | seg-sex 13h07 UTC (~10h07) |
-| Emergências | seg-sex 12h00 | seg-sex 15h22 UTC (~12h22) |
-| RAC | seg-sex 12h05 | seg-sex 15h22 UTC (~12h22, junto com Emergências) |
-| Vencimentos TMOT | seg-sex 12h10 | seg-sex 15h22 UTC (~12h22, junto com Emergências/RAC) |
-| Pagamentos | toda segunda 10h05 | toda segunda 13h37 UTC (~10h37) |
-
-Horários do Mac deliberadamente **diferentes** dos do GitHub (minutos
-distintos) — reduz a chance de os dois tentarem commitar bem na mesma hora.
-RAC e Pagamentos também usam minutos diferentes de Disponibilidade/Emergências
-**dentro do próprio Mac**, pelo mesmo motivo (duas `launchd` rodando ao mesmo
-tempo, mexendo no mesmo repositório local, também podem colidir entre si).
+Antes de 2026-07-09 cada fonte tinha seu próprio horário/`.plist` — foi
+simplificado pra "todas de 2 em 2 horas" a pedido do Wallace.
 
 **Proteção adicionada em `shared/executar_atualizacao.py`:** antes de rodar a
 extração, o script agora sincroniza com o GitHub (`git fetch` + `git reset
@@ -75,12 +72,15 @@ Confirmado na prática em 2026-07-07: os horários agendados pra 13h/15h UTC
 só rodaram de verdade às 19h25/21h06 UTC — **~6h de atraso**. O GitHub avisa
 que agendamentos gratuitos podem atrasar em horários de pico, principalmente
 na **hora cheia** (todo mundo agenda "às 13h00", por exemplo). Em
-2026-07-08, os horários foram trocados pra minutos quebrados (13h07, 15h22,
-13h37 UTC) — recomendação oficial do GitHub pra reduzir esse atraso. Não
-existe garantia de horário exato num plano gratuito; se um dia isso importar
-de verdade (ex.: emergência real acontecendo), o caminho mais confiável
-continua sendo pedir pra mim buscar na conversa, ou disparar manualmente
-(aba Actions → "Run workflow").
+2026-07-08, os horários foram trocados pra minutos quebrados (recomendação
+oficial do GitHub pra reduzir esse atraso). Mesmo assim, não existe garantia
+de horário exato num plano gratuito — por isso, em 2026-07-09, passou a
+rodar **todas as fontes de 2 em 2 horas** (seg-sex, 8h-20h) em vez de um
+horário fixo por fonte: mesmo que uma execução atrase ou falhe, a próxima
+(2h depois) cobre. Se um dia isso ainda não for rápido o suficiente (ex.:
+emergência real acontecendo agora), o caminho mais confiável continua sendo
+pedir pra mim buscar na conversa, ou disparar manualmente (aba Actions →
+"Run workflow").
 
 ## Falha observada em 2026-07-07 — 1ª execução agendada não disparou
 
@@ -161,16 +161,21 @@ nova dessas fontes continua sendo pedir na conversa.
 4. Compartilhado como Leitor com `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`:
    pasta "Atualização de Disponibilidade", planilha "Prazo das emergências - C-98",
    planilha "005/CELOG-PAMALS/2025 online", planilha "Análise crítica de
-   emergências C-98 2026" (RAC, adicionada em 2026-07-06).
-5. `.github/workflows/atualizacoes.yml` no repositório, com os 3 horários de
-   cron + `workflow_dispatch` manual.
+   emergências C-98 2026" (RAC, 2026-07-06), planilha "Vencimentos" (TMOT,
+   2026-07-09).
+5. `.github/workflows/atualizacoes.yml` no repositório — 1 cron (de 2 em 2h,
+   seg-sex) + `workflow_dispatch` manual (padrão `todos`).
+6. `~/Library/LaunchAgents/com.pamals.atualizar_tudo.plist` no Mac, nos
+   mesmos horários (minuto diferente do GitHub de propósito).
 
 Se precisar adicionar uma nova fonte ao agendamento: repetir o passo 4 (Share
 com o e-mail da conta de serviço) pra fonte nova, criar a função
-`atualizar_do_drive()` no extrator dela (mesmo padrão das já feitas), adicionar
-a fonte em `shared/executar_atualizacao.py` (dict `SCRIPTS`) e em
-`.github/workflows/atualizacoes.yml` (lista de `options` do `workflow_dispatch`
-+ o `if`/`elif` que decide qual fonte roda em qual horário de cron).
+`atualizar_do_drive()` no extrator dela (mesmo padrão das já feitas), e
+adicionar a fonte em `shared/executar_atualizacao.py` (dict `SCRIPTS`) — ela
+já entra automaticamente em `todos`. Só precisa mexer em
+`.github/workflows/atualizacoes.yml` se quiser adicionar a opção no
+`workflow_dispatch` manual (não obrigatório, é só pra poder rodar ela sozinha
+sob demanda).
 
 ## Escopo por fonte — IDs conhecidos
 

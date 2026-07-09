@@ -1,25 +1,29 @@
 name: Atualizações automáticas
 
-# Horários em UTC (o Brasil, sem horário de verão, é UTC-3). Minutos quebrados
-# (não em hora cheia) de propósito — o GitHub recomenda isso pra reduzir o
-# atraso de agendamentos gratuitos, que ficam sobrecarregados bem na hora
-# cheia (confirmado na prática em 2026-07-07: agendado pra 13h/15h UTC, só
-# rodou de verdade às 19h25/21h06 UTC — ~6h de atraso).
-# Disponibilidade Diária: seg-sex ~10h07 local = 13h07 UTC
-# Emergências + RAC + Vencimentos TMOT: seg-sex ~12h22 local = 15h22 UTC (mesmo horário, rodam os 3)
-# Pagamentos: toda segunda ~10h37 local = 13h37 UTC
+# A pedido do Wallace em 2026-07-09: em vez de 1 horário por fonte, roda
+# TODAS as fontes juntas, de 2 em 2 horas, seg-sex — contorna o atraso do
+# agendamento gratuito do GitHub (confirmado em 2026-07-07: agendado pra
+# 13h/15h UTC, só rodou de verdade às 19h25/21h06 UTC) rodando com mais
+# frequência: mesmo que uma vez atrase ou falhe, a próxima (2h depois) já
+# pega o dado atualizado. Sem problema rodar sem ter nada novo — cada fonte
+# só commita se algo realmente mudou (ver shared/executar_atualizacao.py).
+#
+# Horário UTC (Brasil, sem horário de verão, é UTC-3) — minuto quebrado
+# (:07, não hora cheia) pra reduzir atraso: 11h07, 13h07, 15h07, 17h07,
+# 19h07, 21h07, 23h07 UTC = 8h07, 10h07, 12h07, 14h07, 16h07, 18h07, 20h07
+# local — cobre o horário comercial de 2 em 2 horas.
 on:
   schedule:
-    - cron: "7 13 * * 1-5"
-    - cron: "22 15 * * 1-5"
-    - cron: "37 13 * * 1"
+    - cron: "7 11,13,15,17,19,21,23 * * 1-5"
   workflow_dispatch:
     inputs:
       fonte:
-        description: "Fonte para atualizar manualmente"
+        description: "Fonte para atualizar manualmente (ou 'todos')"
         required: true
         type: choice
+        default: "todos"
         options:
+          - todos
           - disponibilidade_diaria
           - emergencias
           - pagamentos
@@ -56,21 +60,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Determinar quais fontes atualizar
-        id: fonte
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "nomes=${{ inputs.fonte }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "7 13 * * 1-5" ]; then
-            echo "nomes=disponibilidade_diaria" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "22 15 * * 1-5" ]; then
-            echo "nomes=emergencias rac vencimentos_tmot" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event.schedule }}" = "37 13 * * 1" ]; then
-            echo "nomes=pagamentos" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Buscar, reprocessar e enviar pro GitHub
-        run: |
-          for fonte in ${{ steps.fonte.outputs.nomes }}; do
-            python3 shared/executar_atualizacao.py "$fonte"
-          done
+        run: python3 shared/executar_atualizacao.py "${{ inputs.fonte || 'todos' }}"
