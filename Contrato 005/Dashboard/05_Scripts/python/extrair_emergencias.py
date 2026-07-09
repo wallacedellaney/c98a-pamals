@@ -226,6 +226,11 @@ def atualizar_do_drive():
         # "Emergências Totais") sempre em dia — antes só era gerado sob
         # demanda e podia ficar desatualizado por dias (achado em 2026-07-08).
         extrair_historico_completo()
+        # Recalcula o Cômputo Mensal do mês atual junto — a pedido do
+        # Wallace em 2026-07-09, pra não depender só do botão "Recalcular".
+        import calcular_computo_mensal
+        hoje = datetime.now().date()
+        calcular_computo_mensal.calcular_mes(hoje.year, hoje.month)
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "emergencias",
             remote_modified_time=metadados["modifiedTime"],

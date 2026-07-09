@@ -33,7 +33,8 @@ Comparado célula a célula com a planilha oficial (8 dias já decorridos, 23 ae
 
 ## Limitações conhecidas
 
-- **A planilha "Pré RMA" não é buscada automaticamente** — o `historico_completo_emergencias.xlsx` que alimenta o cálculo, esse sim, já atualiza sozinho (junto da atualização automática de Emergências, seg-sex ~12h, tanto no GitHub quanto no Mac — ver `atualizacoes.md`). Mas o cálculo do Cômputo Mensal em si (`calcular_mes`) precisa ser rodado — pelo botão "Recalcular" no site, por enquanto — não está agendado.
+- **A planilha "Pré RMA" não é buscada automaticamente** — só o `historico_completo_emergencias.xlsx` que alimenta o cálculo.
+- **O cálculo em si (`calcular_mes`) já roda sozinho** (a partir de 2026-07-09) — toda vez que a atualização automática de Emergências roda (seg-sex ~12h, GitHub e Mac), `extrair_emergencias.atualizar_do_drive()` também chama `calcular_mes(ano, mes)` pro mês atual, logo depois de regenerar o histórico completo. O botão "Recalcular" no site continua existindo pra rodar na hora, se quiser.
 - **Sem feriados no cálculo de dia útil** — só pula sábado/domingo. Se isso importar, avisar o Wallace pra decidir se vale manter uma lista de feriados.
 - **Não escreve na Pré-RNA real** — é só uma conferência no site. Pra automatizar a escrita de verdade, precisaria: (1) compartilhar o arquivo com a conta de serviço como Editor, e (2) construir a escrita via API do Google Sheets (mais arriscado — pode mexer em célula errada, tem que preservar fórmulas).
 - **Ajustes manuais na planilha oficial não são capturados** — como visto no caso do 2739, alguém pode marcar uma aeronave como desmontada na planilha real sem que exista uma emergência formal registrada no site. A prévia sempre vai refletir só o que está nos registros de emergência.

@@ -127,7 +127,12 @@ Pra Emergências especificamente: mesmo padrão, mas o snapshot é da lista de
 emergências em aberto (`Contrato 005/Dashboard/02_Dados_Tratados/historico_emergencias.csv`)
 — alimenta a seção "Novidades desde a última atualização" na tela
 "Emergências Abertas" (o que entrou/saiu da lista desde o snapshot anterior).
-Ver `Contrato 005/Dashboard/00_Instrucoes/emergencias.md`.
+Ver `Contrato 005/Dashboard/00_Instrucoes/emergencias.md`. Cada rodada de
+Emergências também: (1) regenera o histórico completo (abertas+concluídas,
+usado por "Emergências Totais") e (2) recalcula o Cômputo Mensal do mês
+atual (matriz da Pré-RNA aba 1.2, dentro de "Fechamento Mensal") — nenhuma
+das duas tem agendamento próprio, andam de carona com Emergências. Ver
+`Contrato 005/Dashboard/00_Instrucoes/computo_mensal.md`.
 
 Pra Disponibilidade Diária especificamente: se não houver relatório novo
 ainda (ex.: rodou antes de alguém postar o relatório do dia, ou é fim de
