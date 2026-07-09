@@ -12,6 +12,19 @@ import streamlit as st
 from contrato005.components.paleta import AMBER, CATEGORICA, STATUS, layout_grafico
 
 
+def _linha_mensal(df, coluna_data, cor):
+    serie = df.dropna(subset=[coluna_data]).copy()
+    if serie.empty:
+        st.info("Sem datas registradas ainda.")
+        return
+    serie["mes"] = pd.to_datetime(serie[coluna_data]).dt.to_period("M").astype(str)
+    contagem = serie.groupby("mes").size().reset_index(name="quantidade").sort_values("mes")
+    fig = px.line(contagem, x="mes", y="quantidade", markers=True, color_discrete_sequence=[cor])
+    fig.update_layout(xaxis_title="", yaxis_title="Itens")
+    layout_grafico(fig, altura=230)
+    st.plotly_chart(fig, width="stretch")
+
+
 def render(dados):
     st.title("Empréstimos")
     st.caption(
@@ -73,6 +86,16 @@ def render(dados):
         )
         layout_grafico(fig, altura=230)
         st.plotly_chart(fig, width="stretch")
+
+    st.divider()
+    st.markdown("##### Evolução mensal")
+    col_emp, col_dev = st.columns(2)
+    with col_emp:
+        st.caption("Empréstimos por mês (data do pedido de envio)")
+        _linha_mensal(df, "pedido_envio", AMBER)
+    with col_dev:
+        st.caption("Devoluções por mês (data de devolução)")
+        _linha_mensal(df, "data_devolucao", STATUS["good"])
 
     st.divider()
     st.markdown("##### Todos os itens")

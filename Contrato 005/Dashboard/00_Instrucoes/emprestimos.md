@@ -46,6 +46,7 @@ A pedido do Wallace (2026-07-09): a fonte se chama "Devoluções", mas a tela no
 
 `03_Dashboard/contrato005/secoes/emprestimos.py`, menu do Contrato 005:
 - Visual no topo: cards (total, pendentes, OK, % concluído) + 3 gráficos (pizza de status, barra por categoria, barra por top destinos).
+- **Evolução mensal (a partir de 2026-07-09)**: 2 linhas do tempo lado a lado — "Empréstimos por mês" (conta por mês de `pedido_envio`, a data em que o item saiu do estoque) e "Devoluções por mês" (conta por mês de `data_devolucao`). São datas diferentes de propósito — a maioria dos itens tem `pedido_envio` preenchido (324 de 424) mas poucos têm `data_devolucao` (30 de 424, a maior parte ainda está pendente).
 - Tabela completa embaixo, **sem filtro por padrão** (mostra os 424 itens) — com filtro por Status (Todos/Pendente/OK — esse é "o filtro do OK" pedido), Categoria, Destino e busca livre (PN/descrição/aeronave).
 - Exportação em CSV.
 

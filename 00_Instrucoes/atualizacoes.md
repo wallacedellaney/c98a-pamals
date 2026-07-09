@@ -15,7 +15,7 @@ conversa. Definido em `.github/workflows/atualizacoes.yml`:
 | Emergências | Segunda a sexta | 12h | `Contrato 005/Dashboard/05_Scripts/python/extrair_emergencias.py` |
 | RAC | Segunda a sexta | 12h (junto com Emergências) | `Coordenadoria/05_Scripts/python/extrair_rac.py` |
 | Pagamentos | Toda segunda | 10h | `Contrato 005/Dashboard/05_Scripts/python/extrair_pagamentos.py` |
-| Reparáveis, Vencimentos (TMOT e por operador), Diagonal de Manutenção | — | — | Manual — Wallace pede na conversa |
+| Reparáveis, Vencimentos (TMOT e por operador), Diagonal de Manutenção, Devoluções/Empréstimos | — | — | Manual — Wallace pede na conversa |
 
 Cada horário do cron chama `shared/executar_atualizacao.py <fonte>` (uma vez
 por fonte daquele horário — 12h roda emergencias e rac em sequência), que:
@@ -182,6 +182,7 @@ a fonte em `shared/executar_atualizacao.py` (dict `SCRIPTS`) e em
 | Vencimentos TMOT (Coordenadoria) | ver `VENCIMENTOS_PLANILHA_URL` em `coordenadoria/utils.py` |
 | Disponibilidade Diária (Coordenadoria) | pasta raiz `1JLrUGunWo5ABsR3WuYo88b2WD4QWoxNH` → ano → mês |
 | Vencimentos por Operador (Coordenadoria) | `drive_file_id` no `REGISTRO` — ainda não incorporado |
+| Devoluções/Empréstimos (Contrato 005) | `1czUWXVjQt7fPz7GJgdPp3rsxPn_5Uck44voBsJIiRWI` — manual, ver `Contrato 005/Dashboard/00_Instrucoes/emprestimos.md` |
 
 ## Limitação conhecida — Vencimentos por Operador e Diagonal de Manutenção
 
