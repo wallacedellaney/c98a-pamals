@@ -15,9 +15,9 @@
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-07-09T17:03:34.124Z",
-    "local_updated_at": "2026-07-09T15:31:49.462882",
-    "status": "erro",
+    "local_updated_at": "2026-07-09T18:28:44.281790",
+    "status": "atualizado",
     "record_count": 193,
-    "last_error": "Unable to find the server at oauth2.googleapis.com"
+    "last_error": null
   }
 }
