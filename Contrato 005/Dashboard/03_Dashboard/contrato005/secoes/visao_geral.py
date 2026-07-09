@@ -1,6 +1,8 @@
 """Tela de Visão Geral — resumo de todas as áreas do Contrato 005, com
-atalho para cada uma. Atualizada em 2026-07-09 pra cobrir Empréstimos e
-Fechamento Mensal, que não existiam quando essa tela foi criada.
+atalho para cada uma. Reorganizada em 2026-07-09 em 2 grupos (Operacional
+e Financeiro/Fechamento) em vez de espremer tudo numa linha só — Operacional
+é o que muda dia a dia (Emergências, Reparáveis, Empréstimos); Financeiro é
+mais periódico (Pagamentos, Fechamento Mensal).
 """
 
 from datetime import date
@@ -9,7 +11,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from contrato005.components.paleta import AMBER, CATEGORICA, STATUS, layout_grafico
+from contrato005.components.paleta import CATEGORICA, STATUS, layout_grafico
 from contrato005.data.carregar_dados import carregar_computo_mensal
 
 
@@ -33,23 +35,27 @@ def render(dados):
     hoje = date.today()
     _, _, resumo_computo = carregar_computo_mensal(hoje.year, hoje.month)
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    st.markdown("##### Operacional")
+    col1, col2, col3 = st.columns(3)
 
     with col1:
+        st.subheader("Emergências")
+        st.metric("Em aberto", len(emerg_abertas))
+        st.metric("Atrasadas", len(emerg_atrasadas))
+        cb1, cb2 = st.columns(2)
+        with cb1:
+            if st.button("Abertas →", width="stretch", key="vg_ir_emerg_abertas"):
+                _ir_para("Emergências Abertas")
+        with cb2:
+            if st.button("Totais →", width="stretch", key="vg_ir_emerg_totais"):
+                _ir_para("Emergências Totais")
+
+    with col2:
         st.subheader("Reparáveis")
         st.metric("OS em aberto", len(rep_abertas))
         st.metric("Condenados", int((rep_abertas["condicao"].str.upper() == "CONDENADO").sum()))
         if st.button("Ver Reparáveis →", width="stretch", key="vg_ir_reparaveis"):
             _ir_para("Reparáveis")
-
-    with col2:
-        st.subheader("Emergências")
-        st.metric("Em aberto", len(emerg_abertas))
-        st.metric("Atrasadas", len(emerg_atrasadas))
-        if st.button("Ver Abertas →", width="stretch", key="vg_ir_emerg_abertas"):
-            _ir_para("Emergências Abertas")
-        if st.button("Ver Totais →", width="stretch", key="vg_ir_emerg_totais"):
-            _ir_para("Emergências Totais")
 
     with col3:
         st.subheader("Empréstimos")
@@ -63,39 +69,8 @@ def render(dados):
         if st.button("Ver Empréstimos →", width="stretch", key="vg_ir_emprestimos"):
             _ir_para("Empréstimos")
 
-    with col4:
-        st.subheader("Fechamento Mensal")
-        if resumo_computo and resumo_computo.get("mmam_previa") is not None:
-            st.metric("MMAM prévia (mês atual)", f"{resumo_computo['mmam_previa']}%")
-            st.metric("Dias calculados", f"{resumo_computo['ultimo_dia_calculado']} de {resumo_computo['ultimo_dia_mes']}")
-        else:
-            st.metric("MMAM prévia (mês atual)", "—")
-            st.metric("Dias calculados", "—")
-        if st.button("Ver Fechamento →", width="stretch", key="vg_ir_fechamento"):
-            _ir_para("Fechamento Mensal")
-
-    with col5:
-        st.subheader("Pagamentos")
-        st.metric("Total faturado", f"R$ {df_pag['faturado'].sum():,.2f}")
-        st.metric("Pendente", f"R$ {df_pag['pendente'].sum():,.2f}")
-        if st.button("Ver Pagamentos →", width="stretch", key="vg_ir_pagamentos"):
-            _ir_para("Pagamentos")
-
-    st.divider()
-
-    g1, g2, g3, g4 = st.columns(4)
-
+    g1, g2, g3 = st.columns(3)
     with g1:
-        st.caption("Reparáveis por condição")
-        contagem = rep_abertas["condicao"].value_counts().reset_index()
-        contagem.columns = ["condicao", "quantidade"]
-        fig = px.bar(contagem, x="quantidade", y="condicao", orientation="h",
-                     color_discrete_sequence=[CATEGORICA[0]])
-        fig.update_layout(yaxis_title="", xaxis_title="", showlegend=False)
-        layout_grafico(fig)
-        st.plotly_chart(fig, width="stretch")
-
-    with g2:
         st.caption("Emergências: no prazo x atrasadas")
         resumo = pd.DataFrame({
             "status": ["No prazo", "Atrasada"],
@@ -105,7 +80,17 @@ def render(dados):
                      color="status",
                      color_discrete_map={"No prazo": STATUS["good"], "Atrasada": STATUS["critical"]})
         fig.update_layout(xaxis_title="", yaxis_title="", showlegend=False)
-        layout_grafico(fig)
+        layout_grafico(fig, altura=200)
+        st.plotly_chart(fig, width="stretch")
+
+    with g2:
+        st.caption("Reparáveis por condição")
+        contagem = rep_abertas["condicao"].value_counts().reset_index()
+        contagem.columns = ["condicao", "quantidade"]
+        fig = px.bar(contagem, x="quantidade", y="condicao", orientation="h",
+                     color_discrete_sequence=[CATEGORICA[0]])
+        fig.update_layout(yaxis_title="", xaxis_title="", showlegend=False)
+        layout_grafico(fig, altura=200)
         st.plotly_chart(fig, width="stretch")
 
     with g3:
@@ -118,18 +103,43 @@ def render(dados):
                 color="status", color_discrete_map={"Pendente": STATUS["critical"], "OK": STATUS["good"]},
             )
             fig.update_traces(textinfo="value+percent", textfont_size=11)
-            layout_grafico(fig)
+            layout_grafico(fig, altura=200)
             st.plotly_chart(fig, width="stretch")
         else:
             st.caption("Sem dados ainda.")
 
-    with g4:
-        st.caption("Valor faturado por módulo")
+    st.divider()
+    st.markdown("##### Financeiro e Fechamento")
+    col4, col5 = st.columns(2)
+
+    with col4:
+        st.subheader("Pagamentos")
+        pc1, pc2 = st.columns(2)
+        with pc1:
+            st.metric("Total faturado", f"R$ {df_pag['faturado'].sum():,.0f}")
+        with pc2:
+            st.metric("Pendente", f"R$ {df_pag['pendente'].sum():,.0f}")
+        st.caption(f"Saldo do contrato a faturar: R$ {contrato['saldo_a_faturar']:,.2f}")
+        if st.button("Ver Pagamentos →", width="stretch", key="vg_ir_pagamentos"):
+            _ir_para("Pagamentos")
+
         por_modulo = df_pag.groupby("modulo")["valor_nfs"].sum().reset_index()
         por_modulo["modulo"] = "Módulo " + por_modulo["modulo"].astype(int).astype(str)
         fig = px.bar(por_modulo, x="modulo", y="valor_nfs", color_discrete_sequence=[CATEGORICA[0]])
         fig.update_layout(xaxis_title="", yaxis_title="", showlegend=False)
-        layout_grafico(fig)
+        layout_grafico(fig, altura=200)
         st.plotly_chart(fig, width="stretch")
 
-    st.caption(f"Saldo do contrato a faturar: R$ {contrato['saldo_a_faturar']:,.2f}")
+    with col5:
+        st.subheader("Fechamento Mensal")
+        if resumo_computo and resumo_computo.get("mmam_previa") is not None:
+            fc1, fc2 = st.columns(2)
+            with fc1:
+                st.metric("MMAM prévia (mês atual)", f"{resumo_computo['mmam_previa']}%")
+            with fc2:
+                st.metric("Dias calculados", f"{resumo_computo['ultimo_dia_calculado']} de {resumo_computo['ultimo_dia_mes']}")
+        else:
+            st.metric("MMAM prévia (mês atual)", "—")
+        st.caption("Cômputo Mensal — prévia automática da matriz de aeronaves montadas (Pré-RNA).")
+        if st.button("Ver Fechamento →", width="stretch", key="vg_ir_fechamento"):
+            _ir_para("Fechamento Mensal")
