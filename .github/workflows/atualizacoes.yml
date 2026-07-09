@@ -6,7 +6,7 @@ name: Atualizações automáticas
 # cheia (confirmado na prática em 2026-07-07: agendado pra 13h/15h UTC, só
 # rodou de verdade às 19h25/21h06 UTC — ~6h de atraso).
 # Disponibilidade Diária: seg-sex ~10h07 local = 13h07 UTC
-# Emergências + RAC: seg-sex ~12h22 local = 15h22 UTC (mesmo horário, rodam os dois)
+# Emergências + RAC + Vencimentos TMOT: seg-sex ~12h22 local = 15h22 UTC (mesmo horário, rodam os 3)
 # Pagamentos: toda segunda ~10h37 local = 13h37 UTC
 on:
   schedule:
@@ -24,6 +24,7 @@ on:
           - emergencias
           - pagamentos
           - rac
+          - vencimentos_tmot
 
 permissions:
   contents: write
@@ -63,7 +64,7 @@ jobs:
           elif [ "${{ github.event.schedule }}" = "7 13 * * 1-5" ]; then
             echo "nomes=disponibilidade_diaria" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.schedule }}" = "22 15 * * 1-5" ]; then
-            echo "nomes=emergencias rac" >> "$GITHUB_OUTPUT"
+            echo "nomes=emergencias rac vencimentos_tmot" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.schedule }}" = "37 13 * * 1" ]; then
             echo "nomes=pagamentos" >> "$GITHUB_OUTPUT"
           fi

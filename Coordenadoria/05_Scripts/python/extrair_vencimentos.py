@@ -20,13 +20,24 @@ passou do limite) por aquela quantidade de horas/pousos/dias.
 """
 
 import re
+from datetime import datetime
 
 import openpyxl
 import pandas as pd
 
-from common import BASES_ORIGINAIS, DADOS_TRATADOS, registrar_log
+from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
+from shared import drive_sync, estado
 
 FONTE = BASES_ORIGINAIS / "Vencimentos" / "Vencimentos_C-98U8.xlsx"
+
+# A planilha real "Vencimentos" tem 10 abas (uma por tipo de aeronave — C-97A2,
+# A-29T2, C-98U8, G-19U2, IU-93A6, T-25T9, T-27T1, PNs TGCC, Lixos) — a aba
+# "ativa" por padrão é "C-97A2", não a nossa. Sempre referenciar pelo nome.
+ABA = "C-98U8"
+
+# Ver 00_Instrucoes/vencimentos.md — planilha Google nativa "Vencimentos",
+# compartilhada com a conta de serviço em 2026-07-09.
+DRIVE_FILE_ID = "178vQ-lRP52sw30kQArqcsQGXfj2OLblaFCgjIXWFIl8"
 
 RE_MES_DIA = re.compile(r"^(-?)(\d+)me(\d+)d$", re.IGNORECASE)
 RE_MES = re.compile(r"^(-?\d+(?:[.,]\d+)?)\s*m$", re.IGNORECASE)
@@ -62,7 +73,7 @@ def _classificar_disponibilidade(valor):
 def extrair():
     inconsistencias = []
     wb = openpyxl.load_workbook(FONTE, data_only=True)
-    ws = wb.active
+    ws = wb[ABA]
 
     linhas = []
     for r in range(2, ws.max_row + 1):
@@ -119,6 +130,35 @@ def main():
     if inconsistencias:
         print(f"{len(inconsistencias)} inconsistência(s) encontrada(s), ver log em 06_Logs/.")
 
+    return df
+
+
+def atualizar_do_drive():
+    """Busca a versão mais recente direto do Google Drive, sobrescreve a
+    cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md."""
+    try:
+        metadados = drive_sync.obter_metadados(DRIVE_FILE_ID)
+        conteudo = drive_sync.baixar_arquivo(DRIVE_FILE_ID, exportar_como=drive_sync.XLSX_MIME)
+        FONTE.parent.mkdir(parents=True, exist_ok=True)
+        FONTE.write_bytes(conteudo)
+        df = main()
+        estado.atualizar_estado(
+            ESTADO_ATUALIZACOES, "vencimentos_tmot",
+            remote_modified_time=metadados["modifiedTime"],
+            local_updated_at=datetime.now().isoformat(),
+            status="atualizado",
+            record_count=len(df),
+            last_error=None,
+        )
+    except Exception as e:
+        estado.atualizar_estado(ESTADO_ATUALIZACOES, "vencimentos_tmot", status="erro", last_error=str(e))
+        raise
+    return estado.obter_entrada(ESTADO_ATUALIZACOES, "vencimentos_tmot")
+
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if "--atualizar-do-drive" in sys.argv:
+        atualizar_do_drive()
+    else:
+        main()
