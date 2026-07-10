@@ -28,14 +28,14 @@ def render(ao_voltar=None):
     dados = carregar_tudo()
     pagina = st.session_state["projetos_pagina"]
 
-    col_voltar, _ = st.columns([1, 3])
+    col_voltar, _ = st.columns([2, 3])
     with col_voltar:
         if pagina is None:
-            if ao_voltar is not None and st.button("← Voltar ao menu principal", key="proj_voltar_menu"):
+            if ao_voltar is not None and st.button("← Voltar ao menu principal", key="proj_voltar_menu", width="stretch"):
                 ao_voltar()
                 st.rerun()
         else:
-            if st.button("← Acompanhamento de Projetos", key="proj_voltar_selecao"):
+            if st.button("← Projetos", key="proj_voltar_selecao", width="stretch"):
                 st.session_state["projetos_pagina"] = None
                 st.rerun()
 
