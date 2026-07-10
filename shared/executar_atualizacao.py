@@ -5,7 +5,7 @@ sozinho, pra o Streamlit Cloud atualizar.
 
 Uso: python3 executar_atualizacao.py <fonte|todos>
 
-"todos" roda as 5 fontes em sequência, uma de cada vez, sincronizando com o
+"todos" roda as 7 fontes em sequência, uma de cada vez, sincronizando com o
 GitHub antes de cada uma — usado pelo agendamento de 2 em 2 horas (seg-sex,
 a pedido do Wallace em 2026-07-09, pra contornar o atraso do agendamento
 gratuito do GitHub: rodando com mais frequência, mesmo que uma vez atrase,

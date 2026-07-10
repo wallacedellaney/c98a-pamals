@@ -4,12 +4,12 @@
 
 O site tem sua **própria credencial do Google** (conta de serviço
 `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`, chave
-guardada como Secret do GitHub, nunca no código) e busca 5 fontes **sozinho,
+guardada como Secret do GitHub, nunca no código) e busca 7 fontes **sozinho,
 rodando na nuvem do GitHub (GitHub Actions) e no Mac do Wallace, ao mesmo
 tempo** — não depende do Mac estar ligado (o GitHub cobre sozinho), mas se
 estiver ligado no horário, busca também.
 
-**Desde 2026-07-09 (a pedido do Wallace): todas as 5 fontes rodam juntas,
+**Desde 2026-07-09 (a pedido do Wallace): todas as 7 fontes rodam juntas,
 de 2 em 2 horas, seg-sex, das 8h às 20h** (`todos` — não é mais 1 horário
 por fonte). O motivo: o agendamento gratuito do GitHub atrasa às vezes (ver
 "Limitação conhecida" abaixo) — rodando com mais frequência, mesmo que uma
@@ -157,14 +157,48 @@ agendamento) continuam só reprocessando localmente o que já está em
 `01_Bases_Originais/` — não buscam nada novo sozinhos. Buscar uma versão
 nova dessas fontes continua sendo pedir na conversa.
 
+## Botões "Atualizar X" (MTA, TPJL, Emergências, Reparáveis, Pagamentos) —
+## 3 lugares onde a credencial do Google precisa existir
+
+Esses botões **buscam de verdade** no Drive (`--atualizar-do-drive`),
+diferente dos botões manuais acima. Rodam o extrator como um **subprocesso
+separado** (`subprocess.run`), que só enxerga credencial em **arquivo**, não
+em `st.secrets` (que só existe dentro do processo Streamlit que o chamou).
+Por isso a credencial precisa "existir" de 3 formas diferentes, uma por
+ambiente de execução:
+
+1. **Mac do Wallace** — o arquivo `.secrets/service_account.json` já existe
+   direto no disco (colocado manualmente uma vez, no início do projeto).
+2. **GitHub Actions** — o workflow escreve esse mesmo arquivo dentro do
+   runner, toda execução, a partir do Secret `GOOGLE_SERVICE_ACCOUNT_JSON`
+   do repositório (ver "Configuração feita" abaixo).
+3. **Streamlit Cloud (site publicado)** — descoberto quebrado em 2026-07-10
+   (Wallace clicou "Atualizar MTA" no site e deu erro "Credencial não
+   encontrada"): o app publicado nunca tinha esse arquivo, porque só o
+   GitHub Actions escrevia ele, não o Streamlit Cloud. Corrigido com
+   `shared/drive_sync.garantir_credencial_arquivo()` — chamada antes de
+   cada `subprocess.run` nos 3 `atualizar_drive.py` (Contrato 005,
+   Projetos) — que cria o arquivo sozinha a partir de `st.secrets` **se
+   ele ainda não existir**. Só funciona se o Secret
+   `GOOGLE_SERVICE_ACCOUNT_JSON` também estiver salvo nas **Secrets do
+   próprio Streamlit Cloud** (Settings → Secrets do app — sistema
+   **separado** do GitHub Secrets, precisa configurar os dois; feito em
+   2026-07-10).
+
 ## Configuração feita (não precisa repetir)
 
 1. Projeto `pamals-drive-sync` no Google Cloud Console, API do Drive ativada.
 2. Conta de serviço `pamals-drive-reader` criada, chave JSON baixada.
-3. A chave vive como Secret do GitHub (`GOOGLE_SERVICE_ACCOUNT_JSON`, em
-   Settings → Secrets and variables → Actions do repositório) — o workflow a
-   escreve em `.secrets/service_account.json` só dentro do runner, na hora de
-   rodar; nunca fica salva no repositório.
+3. A chave vive como Secret em **2 lugares separados** (GitHub e Streamlit
+   Cloud não compartilham nada — precisa configurar nos dois):
+   - Secret do GitHub (`GOOGLE_SERVICE_ACCOUNT_JSON`, em Settings → Secrets
+     and variables → Actions do repositório) — o workflow a escreve em
+     `.secrets/service_account.json` só dentro do runner, na hora de rodar.
+   - Secret do Streamlit Cloud (app → Settings → Secrets, mesma chave
+     `GOOGLE_SERVICE_ACCOUNT_JSON`, valor colado como string TOML multi-linha
+     `'''...'''`) — configurado em 2026-07-10, necessário pros botões
+     "Atualizar X" funcionarem no site publicado (ver seção acima).
+   Nunca fica salva no repositório em texto puro nos dois casos.
 4. Compartilhado como Leitor com `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`:
    pasta "Atualização de Disponibilidade", planilha "Prazo das emergências - C-98",
    planilha "005/CELOG-PAMALS/2025 online", planilha "Análise crítica de
