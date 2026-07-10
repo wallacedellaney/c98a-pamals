@@ -8,10 +8,10 @@
   },
   "pagamentos": {
     "remote_modified_time": "2026-07-09T14:14:47.065Z",
-    "local_updated_at": "2026-07-09T23:47:13.552281",
-    "status": "erro",
+    "local_updated_at": "2026-07-10T10:10:35.299556",
+    "status": "atualizado",
     "record_count": 29,
-    "last_error": "Unable to find the server at oauth2.googleapis.com"
+    "last_error": null
   },
   "devolucoes": {
     "remote_modified_time": "2026-07-08T18:34:33.415Z",
