@@ -24,6 +24,28 @@ from googleapiclient.errors import HttpError
 CAMINHO_CREDENCIAIS = Path(__file__).resolve().parent.parent / ".secrets" / "service_account.json"
 ESCOPOS = ["https://www.googleapis.com/auth/drive.readonly"]
 
+
+def garantir_credencial_arquivo():
+    """Materializa .secrets/service_account.json a partir do Secret
+    GOOGLE_SERVICE_ACCOUNT_JSON do Streamlit Cloud, se o arquivo ainda não
+    existir em disco. Necessário porque o botão "Atualizar X" do site roda
+    o extrator como um SUBPROCESSO separado (`subprocess.run`), que não
+    herda `st.secrets` do processo Streamlit pai — só enxerga arquivo em
+    disco. No GitHub Actions (que já escreve esse arquivo num passo do
+    workflow) e localmente (arquivo já existe manualmente) essa função não
+    faz nada. Chamar SEMPRE antes de qualquer `subprocess.run` que dispare
+    um extrator com `--atualizar-do-drive`, nunca dentro de `drive_sync.py`
+    em si (que também é importado pelos scripts standalone, fora do
+    contexto do Streamlit)."""
+    if CAMINHO_CREDENCIAIS.exists():
+        return
+    import streamlit as st
+    conteudo = st.secrets.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if not conteudo:
+        return
+    CAMINHO_CREDENCIAIS.parent.mkdir(parents=True, exist_ok=True)
+    CAMINHO_CREDENCIAIS.write_text(conteudo, encoding="utf-8")
+
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 TEXTO_MIME = "text/plain"
 

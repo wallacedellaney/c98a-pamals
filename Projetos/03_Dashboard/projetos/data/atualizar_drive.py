@@ -10,7 +10,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from shared import estado
+from shared import drive_sync, estado
 
 DASHBOARD_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_DIR = DASHBOARD_ROOT / "05_Scripts" / "python"
@@ -30,6 +30,7 @@ def atualizar_fonte(chave):
     """Roda o extrator daquela fonte em modo Drive; levanta RuntimeError com
     a mensagem já registrada em estado_atualizacoes.json se falhar."""
     script = next(s for c, _, s in FONTES if c == chave)
+    drive_sync.garantir_credencial_arquivo()
     subprocess.run(
         [sys.executable, str(script), "--atualizar-do-drive"],
         cwd=str(script.parent),
