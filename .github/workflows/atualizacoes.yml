@@ -29,6 +29,8 @@ on:
           - pagamentos
           - rac
           - vencimentos_tmot
+          - mta
+          - tpjl
 
 permissions:
   contents: write

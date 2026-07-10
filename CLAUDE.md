@@ -1,27 +1,31 @@
 # C-98A PAMALS
 
-Pasta guarda-chuva com uma única página principal, que dá acesso a 2 áreas:
+Pasta guarda-chuva com uma única página principal, que dá acesso a 3 áreas:
 
 * **Coordenadoria** — RAC, Disponibilidade Diária, Vencimentos (TMOT + Operadores), Diagonal de Manutenção e Dashboard Geral construídos; Previsão Mensal ainda é só um stub. Ver `Coordenadoria/CLAUDE.md`.
 * **Contrato 005/CELOG/2025** — dashboard completo (Visão Geral, Reparáveis, Emergências Abertas, Emergências Totais, Fechamento Mensal, Empréstimos, Pagamentos). Ver `Contrato 005/Dashboard/CLAUDE.md`.
+* **Projetos (MTA/TPJL)** — acompanhamento de solicitações do MTA (DIRMAB) e requisições do TPJL (CABW/EUA), ambos filtrados pro C-98. Dashboards completos desde 2026-07-09 (indicadores, gráficos, filtros, tabela, histórico/"barra temporal"). Ver `Projetos/CLAUDE.md`.
 
 ## Estrutura
 
 ```
 C-98A PAMALS/
-├── app.py                     <- página principal (menu com as 2 áreas)
+├── app.py                     <- página principal (menu com as 3 áreas)
+├── home_hero.py                <- hero animado da home (hangar/avião), ver docstring
+├── imagens/                    <- assets visuais da home (foto do hangar/avião)
 ├── .streamlit/config.toml     <- tema "Torre de Controle", compartilhado
 ├── .secrets/                  <- credencial da conta de serviço do Google (nunca commitar)
-├── shared/                    <- drive_sync.py + estado.py, usados pelas 2 áreas (ver 00_Instrucoes/atualizacoes.md)
+├── shared/                    <- drive_sync.py + estado.py, usados pelas 3 áreas (ver 00_Instrucoes/atualizacoes.md)
 ├── 00_Instrucoes/atualizacoes.md  <- atualização sob demanda por fonte, com Drive real
 ├── Contrato 005/Dashboard/    <- projeto completo do Contrato 005 (ver CLAUDE.md próprio)
-└── Coordenadoria/             <- RAC, Disponibilidade Diária, Vencimentos, Diagonal (ver CLAUDE.md próprio)
+├── Coordenadoria/             <- RAC, Disponibilidade Diária, Vencimentos, Diagonal (ver CLAUDE.md próprio)
+└── Projetos/                  <- MTA e TPJL, completos (ver CLAUDE.md próprio)
 ```
 
-## Atualização de dados — automática (5 fontes) + manual (as demais)
+## Atualização de dados — automática (7 fontes) + manual (as demais)
 
-Disponibilidade Diária, Emergências, RAC, Vencimentos TMOT e Pagamentos
-atualizam **sozinhos, de 2 em 2 horas (seg-sex, 8h-20h), por 2 caminhos ao
+Disponibilidade Diária, Emergências, RAC, Vencimentos TMOT, Pagamentos, MTA
+e TPJL atualizam **sozinhos, de 2 em 2 horas (seg-sex, 8h-20h), por 2 caminhos ao
 mesmo tempo** (a pedido do Wallace, desde 2026-07-09): na nuvem do GitHub
 (`.github/workflows/atualizacoes.yml`, GitHub Actions — não depende do Mac
 ligado) **e** via `launchd` no Mac do Wallace (se estiver ligado no horário,

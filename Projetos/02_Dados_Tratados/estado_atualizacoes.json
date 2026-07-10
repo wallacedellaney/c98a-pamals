@@ -1,0 +1,18 @@
+{
+  "mta": {
+    "remote_modified_time": "2026-07-09T23:26:14.503Z",
+    "local_updated_at": "2026-07-09T21:38:36.258181",
+    "status": "atualizado",
+    "record_count": 81,
+    "last_error": null
+  },
+  "tpjl": {
+    "remote_modified_time": "2026-07-09T23:26:40.718Z",
+    "local_updated_at": "2026-07-09T21:14:00.142114",
+    "status": "atualizado",
+    "record_count": 224,
+    "record_count_2025": 185,
+    "record_count_2026": 39,
+    "last_error": null
+  }
+}

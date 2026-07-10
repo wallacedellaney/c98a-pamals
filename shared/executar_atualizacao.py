@@ -28,6 +28,8 @@ SCRIPTS = {
     "pagamentos": RAIZ / "Contrato 005" / "Dashboard" / "05_Scripts" / "python" / "extrair_pagamentos.py",
     "rac": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_rac.py",
     "vencimentos_tmot": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_vencimentos.py",
+    "mta": RAIZ / "Projetos" / "05_Scripts" / "python" / "extrair_mta.py",
+    "tpjl": RAIZ / "Projetos" / "05_Scripts" / "python" / "extrair_tpjl.py",
 }
 
 

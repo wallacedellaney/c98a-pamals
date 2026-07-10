@@ -25,9 +25,16 @@ gera commit/redeploy à toa.
 | RAC | `Coordenadoria/05_Scripts/python/extrair_rac.py` |
 | Vencimentos TMOT | `Coordenadoria/05_Scripts/python/extrair_vencimentos.py` |
 | Pagamentos | `Contrato 005/Dashboard/05_Scripts/python/extrair_pagamentos.py` |
+| MTA | `Projetos/05_Scripts/python/extrair_mta.py` |
+| TPJL | `Projetos/05_Scripts/python/extrair_tpjl.py` |
 | Reparáveis, Vencimentos por Operador, Diagonal de Manutenção, Devoluções/Empréstimos | Manual — Wallace pede na conversa |
 
-`shared/executar_atualizacao.py todos` roda as 5 em sequência (uma de cada
+MTA e TPJL também gravam um snapshot diário (`historico_mta.csv`/
+`historico_tpjl.csv` em `Projetos/02_Dados_Tratados/`) toda vez que rodam —
+alimenta a "barra temporal" (comparação com dias anteriores) no dashboard,
+pedida pelo Wallace em 2026-07-09. Ver `Projetos/CLAUDE.md`.
+
+`shared/executar_atualizacao.py todos` roda as 7 em sequência (uma de cada
 vez, sincronizando com o GitHub antes de cada uma — ver `_sincronizar_com_remoto`).
 Pra cada fonte:
 1. Roda `python3 <script> --atualizar-do-drive` (busca no Drive, sobrescreve
@@ -189,6 +196,9 @@ sob demanda).
 | Disponibilidade Diária (Coordenadoria) | pasta raiz `1JLrUGunWo5ABsR3WuYo88b2WD4QWoxNH` → ano → mês |
 | Vencimentos por Operador (Coordenadoria) | `drive_file_id` no `REGISTRO` — ainda não incorporado |
 | Devoluções/Empréstimos (Contrato 005) | `1czUWXVjQt7fPz7GJgdPp3rsxPn_5Uck44voBsJIiRWI` — manual, ver `Contrato 005/Dashboard/00_Instrucoes/emprestimos.md` |
+| MTA (Projetos) | `1ZdV1PX4ujqPgQNGk7f_WPkvA42aArVkGS59TVW78zhs` — compartilhada e automatizada em 2026-07-09 |
+| TPJL 2025 (Projetos) | `1zkBB77PXvzRTg-8n-tgNAYX8lJB8KozPvuyGiNtARsA` — compartilhada e automatizada em 2026-07-09 |
+| TPJL 2026 (Projetos) | `1Mf_R70IDJ9auysySW1oATGt3TSrPZE081-O3nB930lc` — compartilhada e automatizada em 2026-07-09 |
 
 ## Limitação conhecida — Vencimentos por Operador e Diagonal de Manutenção
 

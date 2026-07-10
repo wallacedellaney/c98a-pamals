@@ -16,9 +16,12 @@ from pathlib import Path
 
 import streamlit as st
 
+from home_hero import render_hero
+
 RAIZ = Path(__file__).resolve().parent
 CONTRATO_005_DASHBOARD = RAIZ / "Contrato 005" / "Dashboard" / "03_Dashboard"
 COORDENADORIA_DASHBOARD = RAIZ / "Coordenadoria" / "03_Dashboard"
+PROJETOS_DASHBOARD = RAIZ / "Projetos" / "03_Dashboard"
 
 # Permite `from shared import drive_sync, estado` a partir das duas áreas.
 if str(RAIZ) not in sys.path:
@@ -107,291 +110,229 @@ def _aplicar_css_home():
         [data-testid="stToolbar"] {display: none;}
         [data-testid="stDecoration"] {display: none;}
         [data-testid="stAppViewContainer"] {padding-top: 0 !important;}
-        [data-testid="stAppViewBlockContainer"] {padding-top: 1.2rem !important;}
+        [data-testid="stAppViewBlockContainer"] {padding-top: 1.1rem !important;}
 
-        .stApp {
-            background:
-                radial-gradient(circle at 8% 20%, rgba(245, 158, 11, 0.16), transparent 28%),
-                radial-gradient(circle at 93% 88%, rgba(245, 158, 11, 0.18), transparent 26%),
-                radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.9), transparent 34%),
-                linear-gradient(135deg, #05070b 0%, #0b1117 42%, #111827 100%);
-            color: #f9fafb;
-        }
+        .stApp { background: #0B1118; color: #F3F6F9; }
 
-        .block-container {
-            max-width: 1320px;
-            padding-bottom: 2rem;
-        }
-
-        .home-shell {
-            position: relative;
-        }
-
-        .home-shell::before {
-            content: "";
-            position: fixed;
-            left: -180px;
-            top: 260px;
-            width: 520px;
-            height: 520px;
-            border: 1px solid rgba(245, 158, 11, 0.11);
-            border-radius: 50%;
-            box-shadow:
-                0 0 0 45px rgba(245, 158, 11, 0.025),
-                0 0 0 95px rgba(245, 158, 11, 0.018),
-                0 0 0 150px rgba(245, 158, 11, 0.012);
-            pointer-events: none;
-        }
-
-        .home-shell::after {
-            content: "";
-            position: fixed;
-            right: -240px;
-            top: 95px;
-            width: 620px;
-            height: 620px;
-            border: 1px solid rgba(245, 158, 11, 0.10);
-            border-radius: 50%;
-            box-shadow:
-                0 0 0 52px rgba(245, 158, 11, 0.020),
-                0 0 0 105px rgba(245, 158, 11, 0.014),
-                0 0 0 165px rgba(245, 158, 11, 0.010);
-            pointer-events: none;
-        }
+        .block-container { max-width: 1440px; padding-bottom: 2.2rem; }
 
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 58px;
-            padding: 4px 2px;
+            margin-bottom: 20px;
+            padding: 12px 18px;
+            background: rgba(20,25,35,0.55);
+            border: 1px solid rgba(244,166,42,0.16);
+            border-radius: 14px;
         }
 
         .brand-left {
             display: flex;
             align-items: center;
-            font-size: 17px;
-            font-weight: 850;
-            letter-spacing: 0.4px;
-            color: #f9fafb;
-        }
-
-        .top-status {
-            padding: 10px 16px;
-            border-radius: 999px;
-            background: rgba(15, 23, 42, 0.62);
-            border: 1px solid rgba(148, 163, 184, 0.18);
-            color: #9ca3af;
-            font-size: 13px;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 800;
             letter-spacing: 0.2px;
+            color: #F3F6F9;
         }
 
-        .top-status strong {
-            color: #f59e0b;
+        .brand-mark {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(244,166,42,0.12); border: 1px solid rgba(244,166,42,0.4);
+            display: flex; align-items: center; justify-content: center;
+            color: #F4A62A;
         }
 
-        .hero {
-            text-align: center;
-            margin-top: 4px;
-            margin-bottom: 8px;
-        }
-
-        .hero-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
+        .top-pill {
+            padding: 6px 13px;
             border-radius: 999px;
-            background: rgba(245, 158, 11, 0.08);
-            border: 1px solid rgba(245, 158, 11, 0.24);
-            color: #f6c66c;
-            font-size: 13px;
+            background: rgba(244,166,42,0.08);
+            border: 1px solid rgba(244,166,42,0.22);
+            color: #F6C66C;
+            font-size: 12.5px;
             font-weight: 700;
-            letter-spacing: 0.35px;
-            margin-bottom: 22px;
+            margin-left: 10px;
         }
 
-        .hero h1 {
-            margin: 0;
-            font-size: clamp(42px, 4.8vw, 68px);
-            line-height: 1.02;
-            font-weight: 950;
-            letter-spacing: 3px;
-            color: #f9fafb;
-            text-shadow: 0 18px 60px rgba(0,0,0,0.55);
+        .top-right { display: flex; align-items: center; gap: 14px; color: #A6B2C1; font-size: 13px; }
+
+        .top-online {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: #3DBB83; font-weight: 700; font-size: 13px;
+        }
+        .top-online .ponto {
+            width: 8px; height: 8px; border-radius: 50%; background: #3DBB83;
+            box-shadow: 0 0 0 0 rgba(61,187,131,0.6);
+            animation: pulsar 1.8s ease-out infinite;
+        }
+        @keyframes pulsar {
+            0%   { box-shadow: 0 0 0 0 rgba(61,187,131,0.55); }
+            70%  { box-shadow: 0 0 0 7px rgba(61,187,131,0); }
+            100% { box-shadow: 0 0 0 0 rgba(61,187,131,0); }
         }
 
-        .hero h1 span {
-            color: #f59e0b;
-            text-shadow: 0 0 36px rgba(245, 158, 11, 0.20);
+        .hero-wrap {
+            margin-bottom: 26px; border-radius: 20px; overflow: hidden;
+            border: 1px solid rgba(244,166,42,0.16);
+            box-shadow: 0 30px 70px rgba(0,0,0,0.45);
+            animation: subir 0.9s ease-out;
         }
+        @keyframes subir { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .hero h2 {
-            margin-top: 14px;
-            margin-bottom: 18px;
-            color: #9ca3af;
-            font-size: clamp(18px, 1.65vw, 24px);
-            font-weight: 650;
-            letter-spacing: 0.3px;
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 26px;
+            align-items: stretch;
         }
 
         .portal-card {
-            min-height: 300px;
-            border-radius: 26px;
-            padding: 32px 34px 26px 34px;
-            position: relative;
-            overflow: hidden;
-            background:
-                linear-gradient(145deg, rgba(31, 41, 55, 0.78), rgba(15, 23, 42, 0.82));
-            border: 1px solid rgba(245, 158, 11, 0.30);
-            box-shadow:
-                0 30px 80px rgba(0,0,0,0.34),
-                inset 0 1px 0 rgba(255,255,255,0.055);
-            margin-bottom: 18px;
+            border-radius: 18px;
+            padding: 26px 26px 22px 26px;
+            background: rgba(20,25,35,0.70);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(244,166,42,0.22);
+            box-shadow: 0 20px 46px rgba(0,0,0,0.30);
+            display: flex; flex-direction: column;
+            height: 100%;
+            transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+            animation: subir 0.9s ease-out;
+        }
+        .portal-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(244,166,42,0.55);
+            box-shadow: 0 26px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(244,166,42,0.12), 0 0 30px rgba(244,166,42,0.10);
         }
 
-        .portal-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 14%;
-            width: 72%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(245,158,11,0.95), transparent);
-            box-shadow: 0 0 22px rgba(245,158,11,0.55);
-        }
-
-        .portal-card::after {
-            content: "";
-            position: absolute;
-            right: -70px;
-            top: -70px;
-            width: 190px;
-            height: 190px;
-            border-radius: 50%;
-            background: rgba(245, 158, 11, 0.06);
-            filter: blur(2px);
-        }
-
-        .card-head {
-            display: flex;
-            align-items: flex-start;
-            gap: 24px;
-            position: relative;
-            z-index: 2;
+        .card-icone {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(244,166,42,0.12); border: 1px solid rgba(244,166,42,0.35);
+            display: flex; align-items: center; justify-content: center;
+            color: #F4A62A; margin-bottom: 14px;
         }
 
         .card-title {
-            color: #f9fafb;
-            font-size: 27px;
-            line-height: 1.18;
-            font-weight: 900;
-            margin-top: 2px;
-            margin-bottom: 12px;
-            letter-spacing: 0.1px;
+            color: #F3F6F9;
+            font-size: 20px;
+            line-height: 1.2;
+            font-weight: 800;
+            margin-bottom: 10px;
         }
 
-        .card-title.gold {
-            color: #f59e0b;
-        }
+        .card-title.gold { color: #F4A62A; }
 
         .card-description {
-            color: #cbd5e1;
-            font-size: 16px;
-            line-height: 1.65;
-            margin-bottom: 18px;
+            color: #A6B2C1;
+            font-size: 14.5px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            flex-grow: 1;
         }
 
         .card-meta {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
+            margin-bottom: 18px;
         }
 
         .tag {
-            padding: 6px 10px;
+            padding: 5px 11px;
             border-radius: 999px;
-            background: rgba(245, 158, 11, 0.075);
-            border: 1px solid rgba(245, 158, 11, 0.18);
-            color: #f6c66c;
-            font-size: 12px;
+            background: rgba(244,166,42,0.08);
+            border: 1px solid rgba(244,166,42,0.22);
+            color: #F6C66C;
+            font-size: 11.5px;
             font-weight: 700;
         }
 
         div.stButton > button {
             width: 100%;
-            height: 54px;
-            border-radius: 14px;
-            border: 1px solid rgba(245, 158, 11, 0.75);
-            background: rgba(15, 23, 42, 0.7);
-            color: #f59e0b;
-            font-size: 16px;
-            font-weight: 800;
-            letter-spacing: 0.2px;
-            transition: all 0.18s ease-in-out;
+            height: 48px;
+            border-radius: 11px;
+            border: 1px solid rgba(244,166,42,0.55);
+            background: rgba(244,166,42,0.06);
+            color: #F4A62A;
+            font-size: 14.5px;
+            font-weight: 750;
+            transition: all 250ms ease;
         }
 
         div.stButton > button:hover {
-            background: #f59e0b;
-            color: #111827;
-            border: 1px solid #f59e0b;
-            box-shadow: 0 0 28px rgba(245, 158, 11, 0.26);
+            background: #F4A62A;
+            color: #0B1118;
+            border-color: #F4A62A;
+            box-shadow: 0 0 26px rgba(244,166,42,0.35);
+            transform: translateY(-1px);
         }
 
         .footer-home {
             text-align: center;
-            max-width: 780px;
-            margin: 30px auto 0 auto;
-            color: #8b95a5;
-            font-size: 13px;
+            max-width: 820px;
+            margin: 6px auto 0 auto;
+            color: #718096;
+            font-size: 12.5px;
             line-height: 1.7;
         }
 
         @media (max-width: 900px) {
-            .hero h1 {
-                font-size: 40px;
-            }
-
-            .card-head {
-                flex-direction: column;
-            }
+            .cards-grid { grid-template-columns: 1fr; }
         }
     </style>
     """, unsafe_allow_html=True)
 
 
+_ICONE_AVIAO = ('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+                'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+                '<line x1="22" y1="2" x2="11" y2="13"></line>'
+                '<polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>')
+_ICONE_PESSOAS = ('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+                  'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+                  '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'
+                  '<path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>')
+_ICONE_DOCUMENTO = ('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+                    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+                    '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>'
+                    '<polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>'
+                    '<line x1="16" y1="17" x2="8" y2="17"/></svg>')
+_ICONE_PASTA = ('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+                'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+                '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>')
+
+
 def _menu_principal():
     _aplicar_css_home()
 
-    # HTML em uma linha só, sem indentação: uma linha em branco no meio faz o
-    # Markdown do Streamlit sair do "modo HTML" e tratar o resto como texto/código.
     st.markdown(
-        '<div class="home-shell">'
-        '<div class="topbar">'
-        '<div class="brand-left"><div>C-98A PAMA-LS</div></div>'
-        '<div class="top-status">Sistema interno de apoio à gestão • <strong>Ambiente Streamlit</strong></div>'
-        '</div>'
-        '<section class="hero">'
-        '<div class="hero-kicker">Portal gerencial integrado</div>'
-        '<h1>C-98A <span>PAMA-LS</span></h1>'
-        '<h2>Portal Gerencial de Coordenação e Contrato</h2>'
-        '</section>'
-        '</div>',
+        f'<div class="topbar">'
+        f'<div class="brand-left"><div class="brand-mark">{_ICONE_AVIAO}</div>'
+        f'<div>C-98A PAMA-LS</div>'
+        f'<div class="top-pill">Ambiente Streamlit</div></div>'
+        f'<div class="top-right">Sistema interno de apoio à gestão'
+        f'<span class="top-online"><span class="ponto"></span>Online</span></div>'
+        f'</div>',
         unsafe_allow_html=True,
     )
 
-    col1, col2 = st.columns(2, gap="large")
+    st.markdown('<div class="hero-wrap">', unsafe_allow_html=True)
+    render_hero()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns(3, gap="medium")
 
     with col1:
         st.markdown(
-            '<div class="portal-card"><div class="card-head">'
-            '<div><div class="card-title">Coordenadoria</div>'
+            f'<div class="portal-card"><div class="card-icone">{_ICONE_PESSOAS}</div>'
+            '<div class="card-title">Coordenadoria</div>'
             '<div class="card-description">Painel de gestão da coordenação operacional, '
             'acompanhamento de demandas, comunicação institucional, disponibilidade, '
             'inspeções, panes, DPE e DPI.</div>'
             '<div class="card-meta"><div class="tag">Operacional</div><div class="tag">Demandas</div>'
             '<div class="tag">Disponibilidade</div></div>'
-            '</div></div></div>',
+            '</div>',
             unsafe_allow_html=True,
         )
         if st.button("Acessar Coordenadoria  →", key="btn_coordenadoria", width="stretch"):
@@ -400,23 +341,39 @@ def _menu_principal():
 
     with col2:
         st.markdown(
-            '<div class="portal-card"><div class="card-head">'
-            '<div><div class="card-title gold">Contrato 005/CELOG/2025</div>'
+            f'<div class="portal-card"><div class="card-icone">{_ICONE_DOCUMENTO}</div>'
+            '<div class="card-title gold">Contrato 005/CELOG/2025</div>'
             '<div class="card-description">Gestão contratual, execução financeira, pagamentos, '
             'notas fiscais, emergências, reparáveis, recibos, pendências e indicadores de desempenho.</div>'
             '<div class="card-meta"><div class="tag">Pagamentos</div><div class="tag">Notas fiscais</div>'
             '<div class="tag">Emergências</div></div>'
-            '</div></div></div>',
+            '</div>',
             unsafe_allow_html=True,
         )
         if st.button("Acessar Contrato 005/CELOG/2025  →", key="btn_contrato", width="stretch"):
             st.session_state["area"] = "contrato"
             st.rerun()
 
+    with col3:
+        st.markdown(
+            f'<div class="portal-card"><div class="card-icone">{_ICONE_PASTA}</div>'
+            '<div class="card-title">Acompanhamento de Projetos</div>'
+            '<div class="card-description">Solicitações do MTA junto à DIRMAB e requisições de '
+            'compra do TPJL (CABW/EUA) — acompanhamento próprio para os projetos C-98.</div>'
+            '<div class="card-meta"><div class="tag">MTA</div><div class="tag">TPJL</div>'
+            '<div class="tag">CABW</div></div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+        if st.button("Acessar Acompanhamento de Projetos  →", key="btn_projetos", width="stretch"):
+            st.session_state["area"] = "projetos"
+            st.rerun()
+
     st.markdown(
         '<div class="footer-home">Acompanhamento centralizado da frota C-98 — RAC, disponibilidade diária, '
         'vencimentos e diagonal de manutenção (Coordenadoria); emergências, reparáveis, empréstimos, '
-        'pagamentos e fechamento mensal (Contrato 005/CELOG/2025).</div>',
+        'pagamentos e fechamento mensal (Contrato 005/CELOG/2025); solicitações MTA e requisições '
+        'TPJL/CABW (Acompanhamento de Projetos).</div>',
         unsafe_allow_html=True,
     )
 
@@ -435,9 +392,18 @@ def _area_contrato():
     render(ao_voltar=_voltar_ao_menu)
 
 
+def _area_projetos():
+    if str(PROJETOS_DASHBOARD) not in sys.path:
+        sys.path.insert(0, str(PROJETOS_DASHBOARD))
+    from projetos_app import render
+    render(ao_voltar=_voltar_ao_menu)
+
+
 if st.session_state["area"] is None:
     _menu_principal()
 elif st.session_state["area"] == "coordenadoria":
     _area_coordenadoria()
 elif st.session_state["area"] == "contrato":
     _area_contrato()
+elif st.session_state["area"] == "projetos":
+    _area_projetos()
