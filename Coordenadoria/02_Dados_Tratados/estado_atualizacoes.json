@@ -7,11 +7,11 @@
     "record_count": 7
   },
   "rac": {
-    "remote_modified_time": "2026-07-10T11:30:07.170Z",
-    "local_updated_at": "2026-07-10T10:10:46.321717",
-    "status": "erro",
+    "remote_modified_time": "2026-07-10T14:41:12.945Z",
+    "local_updated_at": "2026-07-10T14:00:42.371462",
+    "status": "atualizado",
     "record_count": 30,
-    "last_error": "Unable to find the server at oauth2.googleapis.com"
+    "last_error": null
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-07-09T17:03:34.124Z",
