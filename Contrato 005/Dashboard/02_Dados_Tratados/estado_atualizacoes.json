@@ -1,10 +1,10 @@
 {
   "emergencias": {
-    "remote_modified_time": "2026-07-10T11:47:16.302Z",
-    "local_updated_at": "2026-07-10T10:10:27.927850",
-    "status": "erro",
+    "remote_modified_time": "2026-07-10T14:46:45.571Z",
+    "local_updated_at": "2026-07-10T14:00:23.100642",
+    "status": "atualizado",
     "record_count": 14,
-    "last_error": "Unable to find the server at oauth2.googleapis.com"
+    "last_error": null
   },
   "pagamentos": {
     "remote_modified_time": "2026-07-09T14:14:47.065Z",
