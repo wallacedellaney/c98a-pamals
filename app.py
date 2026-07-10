@@ -326,7 +326,7 @@ def _menu_principal():
     with col1:
         st.markdown(
             f'<div class="portal-card"><div class="card-icone">{_ICONE_PESSOAS}</div>'
-            '<div class="card-title">Coordenadoria</div>'
+            '<div class="card-title gold">Coordenadoria</div>'
             '<div class="card-description">Painel de gestão da coordenação operacional, '
             'acompanhamento de demandas, comunicação institucional, disponibilidade, '
             'inspeções, panes, DPE e DPI.</div>'
@@ -357,7 +357,7 @@ def _menu_principal():
     with col3:
         st.markdown(
             f'<div class="portal-card"><div class="card-icone">{_ICONE_PASTA}</div>'
-            '<div class="card-title">Acompanhamento de Projetos</div>'
+            '<div class="card-title gold">Acompanhamento de Projetos</div>'
             '<div class="card-description">Solicitações do MTA junto à DIRMAB e requisições de '
             'compra do TPJL (CABW/EUA) — acompanhamento próprio para os projetos C-98.</div>'
             '<div class="card-meta"><div class="tag">MTA</div><div class="tag">TPJL</div>'
