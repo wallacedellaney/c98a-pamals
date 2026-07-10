@@ -1,10 +1,10 @@
 {
   "mta": {
     "remote_modified_time": "2026-07-09T23:26:14.503Z",
-    "local_updated_at": "2026-07-09T21:38:36.258181",
-    "status": "erro",
+    "local_updated_at": "2026-07-10T10:11:04.782845",
+    "status": "atualizado",
     "record_count": 81,
-    "last_error": "Unable to find the server at oauth2.googleapis.com"
+    "last_error": null
   },
   "tpjl": {
     "remote_modified_time": "2026-07-09T23:26:40.718Z",
