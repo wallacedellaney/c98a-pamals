@@ -2,17 +2,17 @@
   "mta": {
     "remote_modified_time": "2026-07-09T23:26:14.503Z",
     "local_updated_at": "2026-07-09T21:38:36.258181",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 81,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "tpjl": {
     "remote_modified_time": "2026-07-09T23:26:40.718Z",
-    "local_updated_at": "2026-07-09T21:14:00.142114",
-    "status": "atualizado",
+    "local_updated_at": "2026-07-10T08:12:33.021239",
+    "status": "erro",
     "record_count": 224,
     "record_count_2025": 185,
     "record_count_2026": 39,
-    "last_error": null
+    "last_error": "2025: Unable to find the server at oauth2.googleapis.com; 2026: Unable to find the server at oauth2.googleapis.com"
   }
 }

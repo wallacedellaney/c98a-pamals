@@ -1,7 +1,7 @@
 {
   "disponibilidade_diaria": {
-    "status": "sem_novidade",
-    "last_error": null,
+    "status": "erro",
+    "last_error": "Unable to find the server at oauth2.googleapis.com",
     "remote_modified_time": "2026-07-09T11:46:16.052Z",
     "local_updated_at": "2026-07-09T23:46:48.617751",
     "record_count": 6
@@ -9,15 +9,15 @@
   "rac": {
     "remote_modified_time": "2026-07-09T18:05:59.883Z",
     "local_updated_at": "2026-07-09T23:47:24.087947",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 30,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-07-09T17:03:34.124Z",
     "local_updated_at": "2026-07-09T23:47:30.974740",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 193,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   }
 }

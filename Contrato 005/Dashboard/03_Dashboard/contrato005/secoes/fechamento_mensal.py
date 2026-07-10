@@ -1,6 +1,6 @@
 """Página Fechamento Mensal — seletor de mês + 2 subseções: "Cômputo
-Mensal" (feito, ver 00_Instrucoes/computo_mensal.md) e "Atrasos" (ainda não
-definido — não presumir métricas sem perguntar ao Wallace, ver CLAUDE.md).
+Mensal" (ver 00_Instrucoes/computo_mensal.md) e "Atrasos" (ver
+00_Instrucoes/atrasos.md — regras dadas pelo Wallace em 2026-07-10).
 """
 
 import sys
@@ -28,10 +28,11 @@ MESES_PT = [
 
 
 def _opcoes_mes(dados):
-    """Todos os meses (ano-mês) presentes no histórico de emergências,
-    começando por julho/2026 — se não houver dado ainda, usa só julho/2026."""
+    """Todos os meses (ano-mês) presentes no histórico de emergências —
+    padrão selecionado é junho/2026 (mês fechado, pedido do Wallace em
+    2026-07-10); se não houver dado ainda, usa só esse mês."""
     df = dados.get("emergencias_totais")
-    padrao = pd.Period("2026-07", freq="M")
+    padrao = pd.Period("2026-06", freq="M")
     if df is None or df.empty or "data_abertura" not in df.columns:
         return [padrao]
     periodos = pd.to_datetime(df["data_abertura"].dropna()).dt.to_period("M").unique()
@@ -48,7 +49,7 @@ def render(dados):
     st.caption("Fechamento mensal do Contrato 005 — cômputo do mês e atrasos.")
 
     opcoes = _opcoes_mes(dados)
-    padrao = pd.Period("2026-07", freq="M")
+    padrao = pd.Period("2026-06", freq="M")
     indice_padrao = opcoes.index(padrao) if padrao in opcoes else len(opcoes) - 1
 
     mes_escolhido = st.selectbox(
@@ -66,8 +67,7 @@ def render(dados):
         _computo_mensal(mes_escolhido)
 
     with aba_atrasos:
-        st.subheader(f"Atrasos — {_formatar_mes(mes_escolhido)}")
-        st.info("Ainda não construído — aguardando instruções do Wallace sobre o que exibir aqui.")
+        _atrasos(dados, mes_escolhido)
 
 
 def _mostrar_motivo_celula(matricula, dia, valor, df_motivos):
@@ -114,6 +114,167 @@ def _mostrar_motivo_celula(matricula, dia, valor, df_motivos):
         f'<strong>FAB {matricula}, dia {dia}: desmontada</strong>{linhas_html}</div>',
         unsafe_allow_html=True,
     )
+
+
+def _detalhe_emergencia(registro):
+    campos = {
+        "numero_emergencia": "Emergência", "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
+        "situacao": "Situação", "data_abertura": "Abertura", "data_info": "Informação",
+        "prazo_entrega": "Prazo", "atendido_cancelado_fmt": "Cancelamento/conclusão",
+        "dias_atraso": "Dias de atraso", "estoque": "Estoque",
+    }
+    linhas = []
+    for campo, rotulo in campos.items():
+        valor = registro.get(campo)
+        if valor is None or (isinstance(valor, float) and pd.isna(valor)):
+            texto = "Não informado"
+        else:
+            texto = str(valor)
+        linhas.append(f'<div style="margin-top:0.3rem;"><strong>{rotulo}:</strong> {texto}</div>')
+    st.markdown(
+        f'<div style="background:{PANEL};border:1px solid {LINE};border-left:3px solid {AMBER};'
+        f'border-radius:8px;padding:0.8rem 1rem;">{"".join(linhas)}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def _atrasos(dados, mes_escolhido):
+    st.subheader(f"Atrasos — {_formatar_mes(mes_escolhido)}")
+    st.caption(
+        "Só emergências do provedor VEE ONE (histórico completo já é filtrado assim). "
+        "Ver 00_Instrucoes/atrasos.md."
+    )
+
+    df_totais = dados.get("emergencias_totais")
+    if df_totais is None or df_totais.empty:
+        st.info("Sem dados de emergências carregados ainda — ver aba \"Emergências Totais\".")
+        return
+
+    trabalho = df_totais.copy()
+    trabalho["atendido_cancelado_dt"] = pd.to_datetime(trabalho["atendido_cancelado"], errors="coerce")
+    n_invalidos = int((trabalho["atendido_cancelado"].notna() & trabalho["atendido_cancelado_dt"].isna()).sum())
+    trabalho["atendido_cancelado_fmt"] = trabalho["atendido_cancelado_dt"].dt.strftime("%d/%m/%Y")
+
+    # --- 1) Situação atual: o que está em aberto agora, não importa o mês ---
+    st.markdown("##### Situação atual (em aberto agora)")
+    abertas = trabalho[trabalho["em_aberto"]].copy()
+    total_abertas = len(abertas)
+    atrasadas_agora = int((abertas["dias_atraso"] > 0).sum())
+    no_prazo_agora = total_abertas - atrasadas_agora
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Em aberto (VEE ONE)", total_abertas)
+    c2.metric("Dentro do prazo", no_prazo_agora)
+    c3.metric("Atrasadas", atrasadas_agora, delta_color="inverse")
+
+    if total_abertas:
+        tabela_abertas = abertas[[
+            "numero_emergencia", "matricula_aeronave", "tpemg", "situacao",
+            "data_abertura", "prazo_entrega", "dias_atraso",
+        ]].rename(columns={
+            "numero_emergencia": "Emergência", "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
+            "situacao": "Situação", "data_abertura": "Abertura", "prazo_entrega": "Prazo",
+            "dias_atraso": "Dias de atraso",
+        }).sort_values("Dias de atraso", ascending=False)
+        st.dataframe(tabela_abertas, hide_index=True, width="stretch", height=min(35 * (len(tabela_abertas) + 1) + 3, 320))
+    else:
+        st.success("Nenhuma emergência em aberto no momento.")
+
+    st.divider()
+
+    # --- 2) Entregas concluídas/canceladas dentro do mês de referência,
+    # não importa quando abriu, aeronave ou tipo (regra do Wallace, 2026-07-10) ---
+    st.markdown("##### Entregas no mês de referência (concluídas ou canceladas)")
+    st.caption(
+        "Todo item VEE ONE cancelado ou concluído dentro do mês — não importa quando abriu, "
+        "a aeronave ou o tipo de emergência."
+    )
+
+    inicio_mes = mes_escolhido.start_time
+    fim_mes = mes_escolhido.end_time
+    concluidas_mes = trabalho[
+        (~trabalho["em_aberto"])
+        & (trabalho["atendido_cancelado_dt"] >= inicio_mes)
+        & (trabalho["atendido_cancelado_dt"] <= fim_mes)
+    ].copy()
+
+    total_previstas = len(concluidas_mes)
+    no_prazo = int((concluidas_mes["dias_atraso"] <= 0).sum())
+    atrasadas = total_previstas - no_prazo
+    pct = (100 * no_prazo / total_previstas) if total_previstas else 0.0
+
+    resumo_df = pd.DataFrame([{
+        "Período de apuração": f"{inicio_mes.strftime('%d/%m')} - {fim_mes.strftime('%d/%m')}",
+        "Total de entregas previstas": total_previstas,
+        "Entregas no Prazo": no_prazo,
+        "QTD Mensal (%)": f"{pct:.2f}".replace(".", ",") + "%",
+    }])
+    st.dataframe(resumo_df, hide_index=True, width="stretch")
+
+    if n_invalidos:
+        st.caption(
+            f"⚠️ {n_invalidos} registro(s) com data de cancelamento/conclusão inválida "
+            "(texto em vez de data, ex.: \"verificar data\") — não entraram em nenhuma contagem por mês."
+        )
+
+    if total_previstas == 0:
+        st.info("Nenhuma emergência concluída/cancelada nesse mês.")
+        return
+
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        contagem = pd.DataFrame({
+            "situação": ["No prazo", "Atrasado"],
+            "quantidade": [no_prazo, atrasadas],
+        })
+        fig = px.pie(
+            contagem, names="situação", values="quantidade", hole=0.55,
+            color="situação", color_discrete_map={"No prazo": STATUS["good"], "Atrasado": STATUS["critical"]},
+        )
+        fig.update_traces(textinfo="value+percent", textfont_size=12)
+        layout_grafico(fig, altura=230)
+        st.plotly_chart(fig, width="stretch")
+
+    concluidas_mes["situacao_prazo"] = concluidas_mes["dias_atraso"].apply(lambda d: "No prazo" if d <= 0 else "Atrasado")
+
+    with col2:
+        c1, c2, c3 = st.columns(3)
+        situacao_f = c1.selectbox("Situação", ["Todas", "No prazo", "Atrasado"], key="atrasos_f_situacao")
+        tipo_f = c2.multiselect("Tipo", sorted(concluidas_mes["tpemg"].dropna().unique()), key="atrasos_f_tipo")
+        busca = c3.text_input("🔎 Busca (emergência, aeronave)", key="atrasos_f_busca")
+
+    filtrado = concluidas_mes.copy()
+    if situacao_f != "Todas":
+        filtrado = filtrado[filtrado["situacao_prazo"] == situacao_f]
+    if tipo_f:
+        filtrado = filtrado[filtrado["tpemg"].isin(tipo_f)]
+    if busca:
+        b = busca.strip().lower()
+        filtrado = filtrado[
+            filtrado["numero_emergencia"].astype(str).str.lower().str.contains(b, na=False)
+            | filtrado["matricula_aeronave"].astype(str).str.lower().str.contains(b, na=False)
+        ]
+
+    st.caption(f"Exibindo {len(filtrado)} de {total_previstas} entregas do mês")
+    tabela = filtrado[[
+        "numero_emergencia", "matricula_aeronave", "tpemg", "data_abertura",
+        "prazo_entrega", "atendido_cancelado_fmt", "dias_atraso", "situacao_prazo",
+    ]].rename(columns={
+        "numero_emergencia": "Emergência", "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
+        "data_abertura": "Abertura", "prazo_entrega": "Prazo",
+        "atendido_cancelado_fmt": "Cancelamento/conclusão", "dias_atraso": "Dias de atraso",
+        "situacao_prazo": "Situação",
+    })
+    evento = st.dataframe(
+        tabela, hide_index=True, width="stretch", height=min(35 * (len(tabela) + 1) + 3, 420),
+        on_select="rerun", selection_mode="single-row", key="atrasos_tabela_mes",
+    )
+    linhas_sel = evento.selection.get("rows", []) if evento else []
+    if linhas_sel:
+        _detalhe_emergencia(filtrado.iloc[linhas_sel[0]].to_dict())
+
+    csv = tabela.to_csv(index=False).encode("utf-8")
+    st.download_button("⬇️ Exportar (CSV)", csv, file_name=f"atrasos_{mes_escolhido}.csv", mime="text/csv")
 
 
 def _computo_mensal(mes_escolhido):

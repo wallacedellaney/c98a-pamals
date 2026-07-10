@@ -174,7 +174,7 @@ O dashboard é interativo e dividido em partes, navegáveis por botões/abas na 
 * **Reparáveis** — dados tratados de `base_reparaveis_tratada.xlsx`;
 * **Emergências Abertas** — dados tratados de `base_emergencias_tratada.xlsx`;
 * **Emergências Totais** — histórico completo (abertas + concluídas, VEE ONE) de `historico_completo_emergencias.xlsx`, ver `00_Instrucoes/emergencias.md`;
-* **Fechamento Mensal** — seletor de mês + 2 subseções: **"Cômputo Mensal"** (feito, ver `00_Instrucoes/computo_mensal.md` — prévia automática da matriz aeronave x dia da Pré-RNA a partir das emergências AIFP/IPLR) e **"Atrasos"** (ainda sem conteúdo definido — não presumir métricas, aguardar instrução do Wallace);
+* **Fechamento Mensal** — seletor de mês + 2 subseções: **"Cômputo Mensal"** (ver `00_Instrucoes/computo_mensal.md` — prévia automática da matriz aeronave x dia da Pré-RNA a partir das emergências AIFP/IPLR) e **"Atrasos"** (ver `00_Instrucoes/atrasos.md` — situação atual em aberto + entregas concluídas/canceladas no mês de referência, todos os tipos/aeronaves, com % no prazo);
 * **Empréstimos** — material retirado do estoque/emprestado e pendente de devolução, de `base_devolucoes_tratada.xlsx` (fonte: planilha "Devoluções"), ver `00_Instrucoes/emprestimos.md`;
 * **Pagamentos** — dados tratados de `base_pagamentos_tratada.xlsx`.
 
