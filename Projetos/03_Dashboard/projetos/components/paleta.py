@@ -122,10 +122,34 @@ def injetar_tema():
         f"""
         <style>
         .stApp {{ background: {BG}; }}
+
+        /* Corrige conteúdo cortado (ex.: botão "Voltar ao menu principal" no
+           topo do TPJL) — nunca prender a altura do container principal,
+           sempre deixar a página crescer e rolar normalmente. Pedido
+           explícito do Wallace em 2026-07-09. */
+        html, body, [data-testid="stAppViewContainer"] {{
+            min-height: 100%;
+            height: auto;
+            overflow-y: auto !important;
+        }}
+
+        [data-testid="stMain"],
+        [data-testid="stMainBlockContainer"],
+        .block-container {{
+            width: 100%;
+            max-width: none;
+            height: auto !important;
+            min-height: 100vh;
+            overflow: visible !important;
+            padding-top: 2rem !important;
+            padding-bottom: 3rem !important;
+            padding-left: 2.5rem !important;
+            padding-right: 2.5rem !important;
+            margin-top: 0 !important;
+        }}
+
         .block-container {{
             max-width: {MAX_WIDTH};
-            padding-top: 1.4rem;
-            padding-bottom: 2.5rem;
         }}
 
         h1, h2, h3, h4, h5 {{ color: {INK} !important; letter-spacing: 0 !important; }}
