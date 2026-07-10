@@ -49,7 +49,7 @@ IMAGEM_HERO_PATH = RAIZ / "imagens" / "hero_hangar.jpg"
 
 # Posição aproximada do centro da hélice na foto (% da largura/altura da
 # CENA, não da imagem original) — calibrado visualmente pra hero_hangar.jpg.
-HELICE_X_PCT = 71.5
+HELICE_X_PCT = 68.4
 HELICE_Y_PCT = 56
 
 
@@ -101,27 +101,32 @@ def render_hero(altura=440):
         @keyframes fade-in {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
 
         .foto {{
-            position: absolute; inset: -3%;
+            position: absolute; inset: 0;
             background-image: url('{fundo}');
             background-size: cover; background-position: center;
-            animation: kenburns 50s ease-in-out infinite alternate;
+            image-rendering: -webkit-optimize-contrast;
+            animation: kenburns 55s ease-in-out infinite alternate;
         }}
+        /* Zoom bem discreto — a foto tem 1536px de largura, quase igual à
+           largura máxima do container (1440px); um zoom exagerado ampliaria
+           além da resolução real da imagem e ficaria com aparência borrada. */
         @keyframes kenburns {{
             0%   {{ transform: scale(1.0) translate(0, 0); }}
-            100% {{ transform: scale(1.07) translate(-0.8%, -0.6%); }}
+            100% {{ transform: scale(1.025) translate(-0.5%, -0.4%); }}
         }}
 
         .vinheta {{
             position: absolute; inset: 0;
             background:
                 radial-gradient(ellipse 90% 70% at 50% 40%, transparent 55%, rgba(5,7,10,0.55) 100%),
-                linear-gradient(180deg, rgba(5,7,10,0.12) 0%, transparent 18%, transparent 78%, rgba(5,7,10,0.35) 100%);
+                linear-gradient(180deg, rgba(5,7,10,0.12) 0%, transparent 18%, transparent 78%, rgba(5,7,10,0.35) 100%),
+                linear-gradient(90deg, rgba(5,7,10,0.85) 0%, transparent 7%, transparent 93%, rgba(5,7,10,0.85) 100%);
             pointer-events: none;
         }}
 
         /* --- Anéis de luz sobrepostos ao anel já pintado na foto --- */
         .plataforma-wrap {{
-            position: absolute; left: 63%; bottom: 2%; transform: translateX(-50%);
+            position: absolute; left: 60%; bottom: 2%; transform: translateX(-50%);
             width: 46%; aspect-ratio: 640 / 130; pointer-events: none;
         }}
         .anel {{
