@@ -9,6 +9,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from contrato005.components import data_global
 from contrato005.components.paleta import AMBER, CATEGORICA, STATUS, layout_grafico
 
 
@@ -26,6 +27,9 @@ def _linha_mensal(df, coluna_data, cor):
 
 
 def render(dados):
+    if data_global.mostrar_snapshot_se_necessario(dados, "devolucoes"):
+        return
+
     st.title("Empréstimos")
     st.caption(
         "Material retirado do estoque/emprestado e pendente de devolução — fonte: planilha \"Devoluções\". "

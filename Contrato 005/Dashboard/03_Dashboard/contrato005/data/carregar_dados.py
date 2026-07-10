@@ -38,6 +38,7 @@ def carregar_historico_emergencias():
         return pd.DataFrame(columns=[
             "data_snapshot", "numero_emergencia", "om", "matricula_aeronave", "pn",
             "nomenclatura", "situacao", "tpemg", "data_abertura", "prazo_entrega", "dpe", "dias_atraso",
+            "estoque",
         ])
     mtime = caminho.stat().st_mtime
     df = _ler_csv(str(caminho), mtime, dtype={"matricula_aeronave": str, "numero_emergencia": str})
@@ -96,6 +97,35 @@ def carregar_reparaveis():
     return _ler_excel(str(caminho), caminho.stat().st_mtime), caminho.stat().st_mtime
 
 
+def _carregar_historico_generico(nome_arquivo, dtype=None):
+    """Loader genérico pros históricos diários usados no controle de data
+    global (ver components/data_global.py) — todos seguem o mesmo formato
+    (1 coluna data_snapshot + colunas específicas da fonte)."""
+    caminho = DADOS_TRATADOS / nome_arquivo
+    if not caminho.exists():
+        return pd.DataFrame(columns=["data_snapshot"])
+    mtime = caminho.stat().st_mtime
+    return _ler_csv(str(caminho), mtime, dtype=dtype or {})
+
+
+def carregar_historico_reparaveis():
+    """Snapshot diário das OS em aberto — só existe a partir de 2026-07-10
+    (dia em que essa gravação começou). Ver 00_Instrucoes/analise_periodo.md."""
+    return _carregar_historico_generico("historico_reparaveis.csv", dtype={"os": str})
+
+
+def carregar_historico_pagamentos():
+    """Snapshot diário dos lançamentos de pagamento — só existe a partir de
+    2026-07-10. Ver 00_Instrucoes/analise_periodo.md."""
+    return _carregar_historico_generico("historico_pagamentos.csv")
+
+
+def carregar_historico_devolucoes():
+    """Snapshot diário dos itens de Empréstimos — só existe a partir de
+    2026-07-10. Ver 00_Instrucoes/analise_periodo.md."""
+    return _carregar_historico_generico("historico_devolucoes.csv", dtype={"numero_ordem": str})
+
+
 def carregar_pagamentos():
     caminho = DADOS_TRATADOS / "base_pagamentos_tratada.xlsx"
     mtime = caminho.stat().st_mtime
@@ -119,8 +149,11 @@ def carregar_tudo():
         "emergencias_totais_atualizado_em": mtime_emerg_totais,
         "devolucoes": df_devolucoes,
         "devolucoes_atualizado_em": mtime_devolucoes,
+        "historico_devolucoes": carregar_historico_devolucoes(),
         "reparaveis": df_reparaveis,
+        "historico_reparaveis": carregar_historico_reparaveis(),
         "pagamentos": df_pagamentos,
+        "historico_pagamentos": carregar_historico_pagamentos(),
         "contrato": contrato,
         "empenhos": empenhos,
         "atualizado_em": max(mtime_emerg, mtime_rep, mtime_pag),

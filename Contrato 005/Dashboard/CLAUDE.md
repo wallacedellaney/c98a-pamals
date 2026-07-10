@@ -10,7 +10,7 @@
 
 Ver `C-98A PAMALS/CLAUDE.md`. Resumo: regenerar dados com `05_Scripts/python/gerar_dados_tratados.py`, depois subir `C-98A PAMALS/app.py` (não o `app.py` desta pasta) na porta 8501.
 
-**O comando "executar" em si não busca dados novos do Google Sheets** — só reprocessa o que já está em `01_Bases_Originais/`. Emergências e Pagamentos já têm busca automática própria (agendada, seg-sex/segunda — ver `C-98A PAMALS/00_Instrucoes/atualizacoes.md`), separada do "executar". Reparáveis continua sem conexão ao vivo — se o Wallace quiser os dados mais recentes de lá, precisa pedir explicitamente ("atualiza os dados do drive"/"busca de novo").
+**O comando "executar" em si não busca dados novos do Google Sheets** — só reprocessa o que já está em `01_Bases_Originais/`. Emergências, Pagamentos, Reparáveis e Empréstimos já têm busca automática própria (de 2 em 2h, seg-sex — ver `C-98A PAMALS/00_Instrucoes/atualizacoes.md`), separada do "executar". **Reparáveis deixou de ser manual em 2026-07-10** (decisão revertida a pedido do Wallace, pra alimentar o histórico diário usado no controle de data global — ver `00_Instrucoes/analise_periodo.md`).
 
 ---
 
@@ -174,6 +174,7 @@ O dashboard é interativo e dividido em partes, navegáveis por botões/abas na 
 * **Reparáveis** — dados tratados de `base_reparaveis_tratada.xlsx`;
 * **Emergências Abertas** — dados tratados de `base_emergencias_tratada.xlsx`;
 * **Emergências Totais** — histórico completo (abertas + concluídas, VEE ONE) de `historico_completo_emergencias.xlsx`, ver `00_Instrucoes/emergencias.md`;
+* **Análise de Período** — central dinâmica sobre o histórico diário de emergências: slider de intervalo, comparação automática com o período anterior equivalente, cards (novas/concluídas/entraram-saíram de atraso/mudança de estoque), gráfico de evolução diária, tabela filtrável, botão "Gerar resumo" e narrativa "O que mudou?" — ver `00_Instrucoes/analise_periodo.md`;
 * **Fechamento Mensal** — seletor de mês + 2 subseções: **"Cômputo Mensal"** (ver `00_Instrucoes/computo_mensal.md` — prévia automática da matriz aeronave x dia da Pré-RNA a partir das emergências AIFP/IPLR) e **"Atrasos"** (ver `00_Instrucoes/atrasos.md` — situação atual em aberto + entregas concluídas/canceladas no mês de referência, todos os tipos/aeronaves, com % no prazo);
 * **Empréstimos** — material retirado do estoque/emprestado e pendente de devolução, de `base_devolucoes_tratada.xlsx` (fonte: planilha "Devoluções"), ver `00_Instrucoes/emprestimos.md`;
 * **Pagamentos** — dados tratados de `base_pagamentos_tratada.xlsx`.

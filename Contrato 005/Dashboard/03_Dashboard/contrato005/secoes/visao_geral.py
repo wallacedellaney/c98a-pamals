@@ -11,6 +11,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from contrato005.components import data_global
 from contrato005.components.paleta import CATEGORICA, STATUS, layout_grafico
 from contrato005.data.carregar_dados import carregar_computo_mensal
 
@@ -21,6 +22,7 @@ def _ir_para(pagina):
 
 
 def render(dados):
+    data_global.mostrar_nota_historica_se_necessario(dados)
 
     df_emerg = dados["emergencias"]
     df_rep = dados["reparaveis"]

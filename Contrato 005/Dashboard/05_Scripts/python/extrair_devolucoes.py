@@ -34,6 +34,15 @@ COLUNAS = [
     "observacao_fiscal", "observacao_empresa", "status",
 ]
 
+# Snapshot diário dos itens (numero_ordem é único por linha, confirmado em
+# 2026-07-10) — mesmo padrão de Emergências/RAC/MTA/TPJL. Só existe
+# histórico a partir de quando essa gravação começou. Ver
+# 00_Instrucoes/analise_periodo.md.
+HISTORICO_DEVOLUCOES = DADOS_TRATADOS / "historico_devolucoes.csv"
+COLUNAS_HISTORICO = [
+    "numero_ordem", "part_number", "categoria", "destino", "anv", "status",
+]
+
 
 def _texto(valor):
     if valor is None:
@@ -119,6 +128,22 @@ def main():
     return df
 
 
+def _registrar_historico(df):
+    """Acrescenta o snapshot de hoje (1 linha por item) — se já rodou hoje
+    antes, substitui só as linhas de hoje (não duplica)."""
+    hoje = datetime.now().date().isoformat()
+    novo = df[COLUNAS_HISTORICO].copy()
+    novo.insert(0, "data_snapshot", hoje)
+
+    if HISTORICO_DEVOLUCOES.exists():
+        historico = pd.read_csv(HISTORICO_DEVOLUCOES, dtype={"numero_ordem": str})
+        historico = historico[historico["data_snapshot"] != hoje]
+        historico = pd.concat([historico, novo], ignore_index=True)
+    else:
+        historico = novo
+    historico.to_csv(HISTORICO_DEVOLUCOES, index=False)
+
+
 def atualizar_do_drive():
     """Busca a versão mais recente direto do Google Drive, sobrescreve a
     cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md."""
@@ -128,6 +153,7 @@ def atualizar_do_drive():
         FONTE.parent.mkdir(parents=True, exist_ok=True)
         FONTE.write_bytes(conteudo)
         df = main()
+        _registrar_historico(df)
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "devolucoes",
             remote_modified_time=metadados["modifiedTime"],

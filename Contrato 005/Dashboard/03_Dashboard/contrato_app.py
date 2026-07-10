@@ -16,11 +16,12 @@ from pathlib import Path
 
 import streamlit as st
 
+from contrato005.components import data_global
 from contrato005.components.paleta import AMBER, SECONDARY, LINE
 from contrato005.data.carregar_dados import carregar_tudo
 from contrato005.secoes import (
     visao_geral, reparaveis, emergencias, emergencias_totais,
-    fechamento_mensal, emprestimos, pagamentos,
+    fechamento_mensal, emprestimos, pagamentos, analise_periodo,
 )
 
 PAGINAS = {
@@ -28,6 +29,7 @@ PAGINAS = {
     "Reparáveis": reparaveis,
     "Emergências Abertas": emergencias,
     "Emergências Totais": emergencias_totais,
+    "Análise de Período": analise_periodo,
     "Fechamento Mensal": fechamento_mensal,
     "Empréstimos": emprestimos,
     "Pagamentos": pagamentos,
@@ -136,6 +138,9 @@ def render(ao_voltar=None):
             with st.spinner("Atualizando..."):
                 _atualizar_dados()
             st.rerun()
+
+    data_global.render_seletor_global(dados)
+    st.divider()
 
     PAGINAS[st.session_state["pagina"]].render(dados)
 

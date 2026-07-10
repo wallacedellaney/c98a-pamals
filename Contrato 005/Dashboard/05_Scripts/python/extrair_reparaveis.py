@@ -36,6 +36,15 @@ COLUNAS = [
     "data_retorno_prevista", "sn_trocado_exchange", "termo_recebimento",
 ]
 
+# Snapshot diário das OS em aberto — mesmo padrão de Emergências/RAC/MTA/TPJL.
+# Só existe histórico a partir de quando essa gravação começou (não dá pra
+# reconstruir o passado). Ver 00_Instrucoes/analise_periodo.md.
+HISTORICO_REPARAVEIS = DADOS_TRATADOS / "historico_reparaveis.csv"
+COLUNAS_HISTORICO = [
+    "os", "pn", "nomenclatura", "unidade_solicitante", "situacao",
+    "condicao", "onde_se_encontra", "tat_siloms",
+]
+
 DATA_RE = re.compile(r"^\d{1,2}/\d{1,2}/\d{2,4}$")
 
 # Grafias diferentes para o mesmo estado, encontradas na planilha (ver reparaveis.md)
@@ -155,6 +164,22 @@ def main():
     return df
 
 
+def _registrar_historico(df):
+    """Acrescenta o snapshot de hoje (1 linha por OS em aberto) — se já
+    rodou hoje antes, substitui só as linhas de hoje (não duplica)."""
+    hoje = datetime.now().date().isoformat()
+    novo = df[COLUNAS_HISTORICO].copy()
+    novo.insert(0, "data_snapshot", hoje)
+
+    if HISTORICO_REPARAVEIS.exists():
+        historico = pd.read_csv(HISTORICO_REPARAVEIS, dtype={"os": str})
+        historico = historico[historico["data_snapshot"] != hoje]
+        historico = pd.concat([historico, novo], ignore_index=True)
+    else:
+        historico = novo
+    historico.to_csv(HISTORICO_REPARAVEIS, index=False)
+
+
 def atualizar_do_drive():
     """Busca a versão mais recente direto do Google Drive, sobrescreve a
     cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md."""
@@ -164,6 +189,7 @@ def atualizar_do_drive():
         FONTE.parent.mkdir(parents=True, exist_ok=True)
         FONTE.write_bytes(conteudo)
         df = main()
+        _registrar_historico(df)
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "reparaveis",
             remote_modified_time=metadados["modifiedTime"],

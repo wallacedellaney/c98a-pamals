@@ -36,6 +36,7 @@ HISTORICO_EMERGENCIAS = DADOS_TRATADOS / "historico_emergencias.csv"
 COLUNAS_HISTORICO = [
     "numero_emergencia", "om", "matricula_aeronave", "pn", "nomenclatura",
     "situacao", "tpemg", "data_abertura", "prazo_entrega", "dpe", "dias_atraso",
+    "estoque",
 ]
 
 COLUNAS = [

@@ -31,6 +31,8 @@ on:
           - vencimentos_tmot
           - mta
           - tpjl
+          - reparaveis
+          - devolucoes
 
 permissions:
   contents: write

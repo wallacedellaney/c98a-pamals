@@ -21,6 +21,17 @@ warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 # "005/CELOG-PAMALS/2025 online", dono wallacedellaney@gmail.com.
 DRIVE_FILE_ID = "1zV_SQKlcXVYeaqCbV0X-PiWnzdzOZPt5esaXp_4k6_o"
 
+# Snapshot diário dos lançamentos — mesmo padrão de Emergências/RAC/MTA/TPJL.
+# Sem um ID único na planilha; a chave usada pra comparar dia a dia é a
+# combinação (tipo_registro, modulo, referencia, numero_recibo,
+# numero_nota_fiscal). Só existe histórico a partir de quando essa gravação
+# começou. Ver 00_Instrucoes/analise_periodo.md.
+HISTORICO_PAGAMENTOS = DADOS_TRATADOS / "historico_pagamentos.csv"
+COLUNAS_HISTORICO = [
+    "tipo_registro", "modulo", "referencia", "numero_recibo", "numero_nota_fiscal",
+    "valor_nfs", "faturado", "pendente", "situacao",
+]
+
 # Colunas C..N da aba Controle de Pagamentos (mesma estrutura nos dois blocos de
 # lançamentos: mensal e por módulo/orçamento). Ver pagamentos.md.
 COLS_PAGAMENTO = [
@@ -189,6 +200,22 @@ def main():
     return df
 
 
+def _registrar_historico(df):
+    """Acrescenta o snapshot de hoje (1 linha por lançamento) — se já
+    rodou hoje antes, substitui só as linhas de hoje (não duplica)."""
+    hoje = datetime.now().date().isoformat()
+    novo = df[COLUNAS_HISTORICO].copy()
+    novo.insert(0, "data_snapshot", hoje)
+
+    if HISTORICO_PAGAMENTOS.exists():
+        historico = pd.read_csv(HISTORICO_PAGAMENTOS)
+        historico = historico[historico["data_snapshot"] != hoje]
+        historico = pd.concat([historico, novo], ignore_index=True)
+    else:
+        historico = novo
+    historico.to_csv(HISTORICO_PAGAMENTOS, index=False)
+
+
 def atualizar_do_drive():
     """Busca a versão mais recente direto do Google Drive, sobrescreve a
     cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md."""
@@ -198,6 +225,7 @@ def atualizar_do_drive():
         XLSX_PAGAMENTOS.parent.mkdir(parents=True, exist_ok=True)
         XLSX_PAGAMENTOS.write_bytes(conteudo)
         df = main()
+        _registrar_historico(df)
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "pagamentos",
             remote_modified_time=metadados["modifiedTime"],

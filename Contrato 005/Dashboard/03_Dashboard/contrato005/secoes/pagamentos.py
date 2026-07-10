@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from contrato005.components import data_global
 from contrato005.components.paleta import CATEGORICA, layout_grafico
 
 MODULOS = [1, 2, 3]
@@ -28,6 +29,9 @@ def _chave_cronologica(row):
 
 
 def render(dados):
+    if data_global.mostrar_snapshot_se_necessario(dados, "pagamentos"):
+        return
+
     st.title("Pagamentos")
 
     df = dados["pagamentos"]

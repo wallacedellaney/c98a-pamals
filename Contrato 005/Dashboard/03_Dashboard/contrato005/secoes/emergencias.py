@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from contrato005.components import data_global
 from contrato005.components.paleta import AMBER, CATEGORICA, layout_grafico
 
 TPEMG_PRIORIDADE = ("AIFP", "IPLR")  # prazo de 6 e 10 dias corridos (ver emergencias.md) — ANCE tem 30
@@ -31,6 +32,9 @@ def _destacar_prioridade(row):
 
 
 def render(dados):
+    if data_global.mostrar_snapshot_se_necessario(dados, "emergencias"):
+        return
+
     st.title("Emergências Abertas")
 
     df = dados["emergencias"]

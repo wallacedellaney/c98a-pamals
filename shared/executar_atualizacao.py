@@ -5,7 +5,7 @@ sozinho, pra o Streamlit Cloud atualizar.
 
 Uso: python3 executar_atualizacao.py <fonte|todos>
 
-"todos" roda as 7 fontes em sequência, uma de cada vez, sincronizando com o
+"todos" roda as 9 fontes em sequência, uma de cada vez, sincronizando com o
 GitHub antes de cada uma — usado pelo agendamento de 2 em 2 horas (seg-sex,
 a pedido do Wallace em 2026-07-09, pra contornar o atraso do agendamento
 gratuito do GitHub: rodando com mais frequência, mesmo que uma vez atrase,
@@ -30,6 +30,12 @@ SCRIPTS = {
     "vencimentos_tmot": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_vencimentos.py",
     "mta": RAIZ / "Projetos" / "05_Scripts" / "python" / "extrair_mta.py",
     "tpjl": RAIZ / "Projetos" / "05_Scripts" / "python" / "extrair_tpjl.py",
+    # A partir de 2026-07-10: Reparáveis e Empréstimos passam a atualizar
+    # sozinhos também, pra alimentar o histórico diário usado no controle de
+    # data global (antes, Reparáveis era só manual — decisão revertida a
+    # pedido do Wallace, ver 00_Instrucoes/analise_periodo.md).
+    "reparaveis": RAIZ / "Contrato 005" / "Dashboard" / "05_Scripts" / "python" / "extrair_reparaveis.py",
+    "devolucoes": RAIZ / "Contrato 005" / "Dashboard" / "05_Scripts" / "python" / "extrair_devolucoes.py",
 }
 
 

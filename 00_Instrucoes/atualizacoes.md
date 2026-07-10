@@ -4,12 +4,12 @@
 
 O site tem sua **própria credencial do Google** (conta de serviço
 `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`, chave
-guardada como Secret do GitHub, nunca no código) e busca 7 fontes **sozinho,
+guardada como Secret do GitHub, nunca no código) e busca 9 fontes **sozinho,
 rodando na nuvem do GitHub (GitHub Actions) e no Mac do Wallace, ao mesmo
 tempo** — não depende do Mac estar ligado (o GitHub cobre sozinho), mas se
 estiver ligado no horário, busca também.
 
-**Desde 2026-07-09 (a pedido do Wallace): todas as 7 fontes rodam juntas,
+**Desde 2026-07-09 (a pedido do Wallace): todas as 9 fontes rodam juntas,
 de 2 em 2 horas, seg-sex, das 8h às 20h** (`todos` — não é mais 1 horário
 por fonte). O motivo: o agendamento gratuito do GitHub atrasa às vezes (ver
 "Limitação conhecida" abaixo) — rodando com mais frequência, mesmo que uma
@@ -27,14 +27,22 @@ gera commit/redeploy à toa.
 | Pagamentos | `Contrato 005/Dashboard/05_Scripts/python/extrair_pagamentos.py` |
 | MTA | `Projetos/05_Scripts/python/extrair_mta.py` |
 | TPJL | `Projetos/05_Scripts/python/extrair_tpjl.py` |
-| Reparáveis, Vencimentos por Operador, Diagonal de Manutenção, Devoluções/Empréstimos | Manual — Wallace pede na conversa |
+| Reparáveis | `Contrato 005/Dashboard/05_Scripts/python/extrair_reparaveis.py` |
+| Devoluções/Empréstimos | `Contrato 005/Dashboard/05_Scripts/python/extrair_devolucoes.py` |
+| Vencimentos por Operador, Diagonal de Manutenção | Manual — Wallace pede na conversa |
+
+Reparáveis e Devoluções entraram na automação em 2026-07-10 (antes eram
+manuais) pra alimentar o **controle de data global** do Contrato 005 — ver
+`Contrato 005/Dashboard/00_Instrucoes/analise_periodo.md`. Também passaram a
+gravar snapshot diário (`historico_reparaveis.csv`/`historico_devolucoes.csv`),
+mesmo padrão do RAC/Emergências/MTA/TPJL.
 
 MTA e TPJL também gravam um snapshot diário (`historico_mta.csv`/
 `historico_tpjl.csv` em `Projetos/02_Dados_Tratados/`) toda vez que rodam —
 alimenta a "barra temporal" (comparação com dias anteriores) no dashboard,
 pedida pelo Wallace em 2026-07-09. Ver `Projetos/CLAUDE.md`.
 
-`shared/executar_atualizacao.py todos` roda as 7 em sequência (uma de cada
+`shared/executar_atualizacao.py todos` roda as 9 em sequência (uma de cada
 vez, sincronizando com o GitHub antes de cada uma — ver `_sincronizar_com_remoto`).
 Pra cada fonte:
 1. Roda `python3 <script> --atualizar-do-drive` (busca no Drive, sobrescreve
