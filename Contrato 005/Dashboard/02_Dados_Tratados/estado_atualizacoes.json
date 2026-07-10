@@ -2,16 +2,16 @@
   "emergencias": {
     "remote_modified_time": "2026-07-10T11:47:16.302Z",
     "local_updated_at": "2026-07-10T10:10:27.927850",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 14,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "pagamentos": {
     "remote_modified_time": "2026-07-09T14:14:47.065Z",
     "local_updated_at": "2026-07-10T10:10:35.299556",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 29,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "devolucoes": {
     "remote_modified_time": "2026-07-08T18:34:33.415Z",
