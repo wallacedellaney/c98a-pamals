@@ -209,9 +209,14 @@ def injetar_tema():
 
         div.stButton > button {{
             border-radius: 9px !important; font-weight: 700 !important;
-            border: 1px solid {LINE} !important; background: {PANEL_2} !important; color: {INK} !important;
+            border: 1px solid rgba(244,166,42,0.55) !important;
+            background: {PRIMARY_SOFT} !important; color: {PRIMARY} !important;
         }}
-        div.stButton > button:hover {{ border-color: {PRIMARY} !important; color: {PRIMARY} !important; }}
+        div.stButton > button:hover {{
+            background: {PRIMARY} !important; color: #0B1118 !important;
+            border-color: {PRIMARY} !important;
+            box-shadow: 0 0 22px rgba(244,166,42,0.30);
+        }}
 
         [data-testid="stDataFrame"] {{ border: 1px solid {LINE}; border-radius: 10px; }}
         </style>

@@ -25,12 +25,17 @@ tecnicamente honesto fazer:
   plataforma.
 
 Solução aplicada — o que dá pra fazer de verdade com uma foto só, sem
-quebrar visualmente: a foto fica fixa como pano de fundo fotográfico, com
-um zoom/pan bem lento (efeito "Ken Burns", como documentários/vitrines de
-produto usam) pra dar sensação de câmera viva, e tudo que PODE girar de
-verdade gira: os anéis de luz âmbar (desenhados em CSS, sobrepostos ao
-anel já existente na foto), partículas de poeira flutuando, e um leve
-brilho pulsante na hélice (já visível na foto) simulando giro.
+quebrar visualmente e SEM cortar nada (pedido explícito do Wallace em
+2026-07-09: "a aeronave deve aparecer inteira, exatamente como na imagem
+original"): a foto vira um `<img>` de verdade com `object-fit: contain`
+dentro de um palco cuja proporção (`aspect-ratio`) é EXATAMENTE a da imagem
+original — não `cover` (corta as pontas da asa) nem uma altura fixa
+arbitrária (sobra tarja ou corta, dependendo da tela). Sem zoom/pan na foto
+em si (qualquer zoom arriscaria cortar a ponta da asa, que já fica bem perto
+da borda) — o "vivo" fica por conta do que PODE se mover sem tocar na foto:
+os anéis de luz âmbar (desenhados em CSS, sobrepostos ao anel já existente
+na foto), partículas de poeira flutuando, e um leve brilho pulsante na
+hélice (já visível na foto) simulando giro.
 
 Se o Wallace mandar uma versão do avião com fundo transparente (recorte
 isolado, sem o hangar junto), aí sim dá pra fazer a rotação 3D de verdade —
@@ -43,6 +48,7 @@ import random
 from pathlib import Path
 
 import streamlit as st
+from PIL import Image
 
 RAIZ = Path(__file__).resolve().parent
 IMAGEM_HERO_PATH = RAIZ / "imagens" / "hero_hangar.jpg"
@@ -77,11 +83,16 @@ def _particulas_html(qtd=22):
     return "".join(divs)
 
 
-def render_hero(altura=440):
+def render_hero(altura=None):
+    """`altura` é ignorado pro tamanho do palco (a cena usa aspect-ratio da
+    imagem real, pra nunca cortar nada — pedido do Wallace em 2026-07-09:
+    "a aeronave deve aparecer inteira, exatamente como na imagem original").
+    Mantido como parâmetro só por compatibilidade, sem uso."""
     if not IMAGEM_HERO_PATH.exists():
         st.info("Imagem do hero não encontrada em imagens/hero_hangar.jpg.")
         return
 
+    largura_img, altura_img = Image.open(IMAGEM_HERO_PATH).size
     fundo = _imagem_base64(IMAGEM_HERO_PATH)
     html = f"""
     <!doctype html>
@@ -90,10 +101,17 @@ def render_hero(altura=440):
     <meta charset="utf-8" />
     <style>
         * {{ box-sizing: border-box; }}
-        html, body {{ margin: 0; padding: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }}
+        html, body {{ margin: 0; padding: 0; width: 100%; background: transparent; }}
 
+        /* A cena usa a MESMA proporção da imagem original (largura_img /
+           altura_img) — assim a imagem preenche o quadro inteiro sem
+           precisar cortar nem sobrar tarja (letterbox). Nada de
+           background-size: cover (corta as pontas da asa) nem contain com
+           proporção diferente (sobraria tarja) — a proporção do container
+           É a da foto. */
         .cena {{
-            position: relative; width: 100%; height: {altura}px;
+            position: relative; width: 100%;
+            aspect-ratio: {largura_img} / {altura_img};
             border-radius: 20px; overflow: hidden;
             background: #05070a;
             animation: fade-in 1.1s ease-out;
@@ -101,18 +119,9 @@ def render_hero(altura=440):
         @keyframes fade-in {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
 
         .foto {{
-            position: absolute; inset: 0;
-            background-image: url('{fundo}');
-            background-size: cover; background-position: center;
-            image-rendering: -webkit-optimize-contrast;
-            animation: kenburns 55s ease-in-out infinite alternate;
-        }}
-        /* Zoom bem discreto — a foto tem 1536px de largura, quase igual à
-           largura máxima do container (1440px); um zoom exagerado ampliaria
-           além da resolução real da imagem e ficaria com aparência borrada. */
-        @keyframes kenburns {{
-            0%   {{ transform: scale(1.0) translate(0, 0); }}
-            100% {{ transform: scale(1.025) translate(-0.5%, -0.4%); }}
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: contain; object-position: center;
+            display: block;
         }}
 
         .vinheta {{
@@ -174,7 +183,7 @@ def render_hero(altura=440):
     </head>
     <body>
         <div class="cena">
-            <div class="foto"></div>
+            <img class="foto" src="{fundo}" alt="C-98A no hangar" />
             <div class="plataforma-wrap">
                 <div class="anel anel-1"></div>
                 <div class="anel anel-2"></div>
@@ -186,7 +195,7 @@ def render_hero(altura=440):
     </body>
     </html>
     """
-    st.iframe(html, height=altura, width="stretch")
+    st.iframe(html, height="content", width="stretch")
 
 
 # ---------------------------------------------------------------------------
