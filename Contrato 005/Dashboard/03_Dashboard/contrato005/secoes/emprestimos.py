@@ -78,20 +78,39 @@ def render(dados):
     )
 
     st.write("")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.caption("Status (por quantidade)")
-        contagem = df.groupby("status")["quantidade_efetiva"].sum().reset_index()
-        contagem.columns = ["status", "quantidade"]
+    col_linha, col_qtd = st.columns(2)
+    with col_linha:
+        st.caption("Devolvido: por linha (itens/pedidos)")
+        contagem_linha = df["status"].value_counts().reset_index()
+        contagem_linha.columns = ["status", "linhas"]
         fig = px.pie(
-            contagem, names="status", values="quantidade", hole=0.55,
+            contagem_linha, names="status", values="linhas", hole=0.55,
             color="status", color_discrete_map={"Pendente": STATUS["critical"], "OK": STATUS["good"]},
         )
         fig.update_traces(textinfo="value+percent", textfont_size=11)
         layout_grafico(fig, altura=230)
         st.plotly_chart(fig, width="stretch")
 
-    with col2:
+    with col_qtd:
+        st.caption("Devolvido: por quantidade (unidades)")
+        contagem_qtd = df.groupby("status")["quantidade_efetiva"].sum().reset_index()
+        contagem_qtd.columns = ["status", "quantidade"]
+        fig = px.pie(
+            contagem_qtd, names="status", values="quantidade", hole=0.55,
+            color="status", color_discrete_map={"Pendente": STATUS["critical"], "OK": STATUS["good"]},
+        )
+        fig.update_traces(textinfo="value+percent", textfont_size=11)
+        layout_grafico(fig, altura=230)
+        st.plotly_chart(fig, width="stretch")
+    st.caption(
+        "Os dois gráficos mostram a mesma coisa (Pendente x OK), só que um conta linhas de pedido e o "
+        "outro soma a quantidade real de itens — compare os dois pra não se enganar com uma linha de "
+        "quantidade grande dando a impressão de mais coisa devolvida do que realmente foi."
+    )
+
+    st.write("")
+    col1, col2 = st.columns(2)
+    with col1:
         st.caption("Por categoria (C/T/R) — por quantidade")
         cat = df.groupby("categoria")["quantidade_efetiva"].sum().reset_index()
         cat.columns = ["categoria", "quantidade"]
@@ -100,7 +119,7 @@ def render(dados):
         layout_grafico(fig, altura=230)
         st.plotly_chart(fig, width="stretch")
 
-    with col3:
+    with col2:
         st.caption("Top unidades (destino) — por quantidade")
         destino = df.groupby("destino")["quantidade_efetiva"].sum().sort_values(ascending=False).head(8).reset_index()
         destino.columns = ["destino", "quantidade"]

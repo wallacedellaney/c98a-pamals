@@ -66,6 +66,19 @@ Depois da correção (8 linhas viraram "Desconsiderado"): Total de itens
 (quantidade) caiu de 912 pra **59** — agora bate com a percepção real do
 Wallace.
 
+**Confirmado que "Desconsiderado" já não aparece em lugar nenhum** —
+inclusive na tabela "Todos os itens" (filtro acontece antes de qualquer
+uso do dataframe, `carregar_devolucoes()`), testado explicitamente com
+`AppTest` em 2026-07-13.
+
+**Gráfico "por linha x por quantidade" (pedido do Wallace, mesma
+conversa)**: 2 gráficos de rosca lado a lado, "Devolvido: por linha
+(itens/pedidos)" e "Devolvido: por quantidade (unidades)" — mesmos dados
+(Pendente x OK), uma visão conta linha e a outra soma quantidade, pra
+comparar os dois de propósito e não se enganar com uma linha de
+quantidade grande distorcendo a leitura (foi exatamente isso que
+aconteceu antes da correção do "Desconsiderado").
+
 ## Por que "Empréstimos" e não "Devoluções"
 
 A pedido do Wallace (2026-07-09): a fonte se chama "Devoluções", mas a tela no site chama "Empréstimos" — é sobre material retirado do estoque/emprestado e o que ainda falta devolver (Status = Pendente), não só o que já foi devolvido.
