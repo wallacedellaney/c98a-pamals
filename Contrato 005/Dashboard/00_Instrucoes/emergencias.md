@@ -29,7 +29,7 @@ Com isso, de ~1.150 linhas históricas sobram só as emergências realmente em a
 | OM_EMG | Organização Militar / base da emergência (ex.: 313, 329, 384, 396, 419, 304, 685, 690) |
 | OM | Sigla da unidade/base (ex.: BAMN, BABR, PAMA-LS, DACTA II, BABE, CLA, PAMA-SP, BANT, BACG) |
 | EMERGÊNCIA | Número do processo de emergência |
-| PN | Part Number da peça |
+| PN | Part Number da peça — sempre normalizado pra texto na extração (`parse_texto_pn`), mesmo quando a célula original só tem dígitos (o openpyxl leria como número, deixando a coluna com tipo misto e quebrando `sorted()`/filtros — bug real visto em 2026-07-13, corrigido também em Reparáveis, ver `reparaveis.md`) |
 | NOMENCLATURA | Descrição da peça |
 | CAT | Categoria (T / C / R) |
 | MATR | Matrícula da aeronave |
