@@ -4,7 +4,18 @@
 
 Planilha Google Sheets **"Devoluções"** (conta `aux.coord.c98@gmail.com`), aba **"DEVOLUÇÃO"** (a mais atual — a planilha também tem "DEVOLUÇÃO COMPLETO" (mais antiga), "HISTORICO", "Tabela dinâmica 2", "ESTOQUE VEE ONE" e "Dados de PN", nenhuma dessas usada por enquanto).
 
-424 linhas de dados (linha 1 = título/data, linha 2 = cabeçalho, dados a partir da linha 3). Já compartilhada com a conta de serviço da automação (`pamals-drive-reader@...`) — não precisou de nova permissão.
+330 linhas de dados reais (linha 1 = título/data, linha 2 = cabeçalho, dados a partir da linha 3). Já compartilhada com a conta de serviço da automação (`pamals-drive-reader@...`) — não precisou de nova permissão.
+
+**⚠️ 2026-07-13: bug real na extração, corrigido.** A extração original
+só pulava a linha se `numero_ordem` (Nº de Ordem, coluna A) estivesse
+vazio — mas a planilha tinha esse número arrastado por fórmula bem além
+dos itens de verdade, deixando **94 linhas totalmente em branco** (só o
+número sequencial, 332 a 425, tudo mais vazio) contadas como itens reais
+"Pendente" — inflando o total pra 424 em vez dos 330 reais. Achado pelo
+Wallace ("acho que são 416 linhas não, vai até 300 e pouco" — 416 já
+tinha o "Desconsiderado" descontado, mas ainda incluía essas 94 linhas
+fantasma). Corrigido exigindo Part Number também preenchido pra
+considerar a linha real (`extrair_devolucoes.py`).
 
 ## Estrutura da aba "DEVOLUÇÃO"
 

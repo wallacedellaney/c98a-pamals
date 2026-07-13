@@ -4,7 +4,10 @@ Carrega a planilha "Devoluções" (Google Sheets, aba "DEVOLUÇÃO") e gera
 (nome pedido pelo Wallace em 2026-07-09; a fonte se chama "Devoluções", mas
 a tela é sobre material emprestado/devolvido pra manutenção).
 
-Sem filtro na extração — todas as 424 linhas (ver 00_Instrucoes/emprestimos.md).
+Sem filtro de status na extração — mas pula linhas sem Part Number
+(linhas "fantasma" com só um número de ordem arrastado por fórmula e
+mais nada preenchido; bug real visto em 2026-07-13, ~330 itens reais,
+ver 00_Instrucoes/emprestimos.md).
 
 A aba tem 2 colunas "QTD" (uma em texto com unidade, ex. "01 EA", outra só o
 número) e 2 colunas "Status" (uma é detalhe de entrega em texto livre, a
@@ -68,7 +71,13 @@ def extrair():
     ws = wb[ABA]
 
     for i, row in enumerate(ws.iter_rows(min_row=3, max_col=23, values_only=True), start=3):
-        if not row[0]:
+        # A coluna "Nº de Ordem" (row[0]) vem preenchida por arrasto de
+        # fórmula bem além dos itens reais (linhas 332-425 têm só o
+        # número sequencial, tudo mais em branco) — bug real visto em
+        # 2026-07-13, achado pelo Wallace ("acho que são 416 linhas não,
+        # vai até 300 e pouco"). Exigir Part Number também preenchido pra
+        # considerar linha real.
+        if not row[0] or not row[1]:
             continue
 
         pedido_emg = row[7]
