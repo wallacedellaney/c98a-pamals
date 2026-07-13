@@ -38,14 +38,17 @@ Reunião" dentro de Fechamento Mensal (`secoes/fechamento_mensal.py`).
   B) — tabelas completas anexadas ao final do documento (igual ao padrão
   da Ata de maio, que também usa "Anexo A/B" em vez de tabela no corpo),
   de `base_devolucoes_tratada.xlsx` (filtrado pelo mês de `pedido_envio`)
-  e `base_reparaveis_tratada.xlsx` (só os itens em aberto). **O Anexo A
-  (Empréstimos) é uma IMAGEM** (renderizada com Pillow, `_renderizar_tabela_imagem`
-  em `gerar_ata_reuniao.py`), não uma tabela nativa do Word — pedido do
+  e `base_reparaveis_tratada.xlsx` (só os itens em aberto). **Os dois
+  anexos (A e B) são IMAGENS** (renderizadas com Pillow,
+  `_renderizar_tabela_imagem`), não tabelas nativas do Word — pedido do
   Wallace em 2026-07-13 ("queria tipo imagem para caber melhor igual ta
-  no exemplo"): a Ata assinada de maio também traz o Anexo A como
-  captura de tela, não tabela editável. O Anexo B (Reparáveis) continua
-  como tabela nativa por enquanto — perguntar ao Wallace se quer o mesmo
-  tratamento lá (323 linhas viraria uma imagem bem grande/apertada).
+  no exemplo"): a Ata assinada de maio também traz os anexos como
+  captura de tela, não tabela editável. **Paginadas** (`_construir_anexo_imagem_paginado()`,
+  45 linhas por página, com "(página X de Y)" entre elas) em vez de uma
+  imagem gigante só — pedido do Wallace, mesma conversa ("divide para
+  caber tudo, acho que imagem dividida fica melhor"), depois de ver o
+  Anexo A inteiro numa imagem só. Pra Junho/2026: Anexo A (48 linhas) = 2
+  páginas, Anexo B (323 linhas, em aberto) = 8 páginas.
 - **Apuração de Entregas (IMR)** — mesma regra da aba "Atrasos" do site
   (`_atrasos`, ponto 2): tudo concluído/cancelado dentro do mês de
   referência, não importa quando abriu.

@@ -445,6 +445,25 @@ def _renderizar_tabela_imagem(df, colunas, caminho_png, largura_px=2000, altura_
     return caminho_png, largura_px, altura_px
 
 
+def _construir_anexo_imagem_paginado(doc, df, colunas, caminho_base, linhas_por_pagina=45):
+    """Anexo em imagem, dividido em quantas páginas forem necessárias pra
+    caber tudo sem espremer demais — pedido do Wallace em 2026-07-13
+    ("divide para caber tudo, acho que imagem dividida fica melhor"),
+    depois de ver o Anexo A inteiro numa imagem só."""
+    total = len(df)
+    n_paginas = max(-(-total // linhas_por_pagina), 1)  # arredonda pra cima
+    for i in range(n_paginas):
+        pagina_df = df.iloc[i * linhas_por_pagina:(i + 1) * linhas_por_pagina]
+        if i > 0:
+            doc.add_page_break()
+        if n_paginas > 1:
+            _paragrafo(doc, f"(página {i + 1} de {n_paginas})")
+        caminho_imagem = caminho_base.parent / f"{caminho_base.stem}_{i + 1}.png"
+        _renderizar_tabela_imagem(pagina_df, colunas, caminho_imagem)
+        doc.add_picture(str(caminho_imagem), width=Inches(6.5))
+        caminho_imagem.unlink()
+
+
 def _formatar_valor_generico(valor):
     if valor is None or (isinstance(valor, (float, pd.Timestamp, type(pd.NaT))) and pd.isna(valor)):
         return ""
@@ -699,16 +718,15 @@ def gerar_ata(ano, mes, caminho_saida, forcar_transcricao=False):
         "numero_ordem", "part_number", "descricao", "quantidade_texto", "pedido_emg",
         "motivo", "anv", "destino", "status",
     ]
-    caminho_imagem_emp = caminho_saida.parent / f"_anexo_a_emprestimos_{ano}-{mes:02d}.png"
-    _renderizar_tabela_imagem(emprestimos_mes, colunas_emp, caminho_imagem_emp)
-    doc.add_picture(str(caminho_imagem_emp), width=Inches(6.5))
-    caminho_imagem_emp.unlink()  # já embutida no .docx, não precisa sobrar no disco
+    caminho_base_emp = caminho_saida.parent / f"_anexo_a_emprestimos_{ano}-{mes:02d}"
+    _construir_anexo_imagem_paginado(doc, emprestimos_mes, colunas_emp, caminho_base_emp)
 
     doc.add_page_break()
     _titulo(doc, "ANEXO B — Controle de Reparáveis (C-98, em aberto)")
     _paragrafo(doc, f"Contrato nº 005/CELOG-PAMALS/2025 — extraído em {datetime.now().strftime('%d/%m/%Y')}", negrito=True)
     colunas_rep = ["os", "pn", "nomenclatura", "unidade_solicitante", "situacao", "onde_se_encontra", "tat_siloms"]
-    _tabela(doc, colunas_rep, reparaveis[colunas_rep].fillna("—").values.tolist())
+    caminho_base_rep = caminho_saida.parent / f"_anexo_b_reparaveis_{ano}-{mes:02d}"
+    _construir_anexo_imagem_paginado(doc, reparaveis, colunas_rep, caminho_base_rep)
 
     if transcricao:
         doc.add_page_break()
