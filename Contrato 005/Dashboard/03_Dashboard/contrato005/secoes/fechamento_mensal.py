@@ -61,13 +61,16 @@ def render(dados):
     )
 
     st.divider()
-    aba_computo, aba_atrasos = st.tabs(["Cômputo Mensal", "Atrasos"])
+    aba_computo, aba_atrasos, aba_ata = st.tabs(["Cômputo Mensal", "Atrasos", "Ata de Reunião"])
 
     with aba_computo:
         _computo_mensal(mes_escolhido)
 
     with aba_atrasos:
         _atrasos(dados, mes_escolhido)
+
+    with aba_ata:
+        _ata_reuniao(mes_escolhido)
 
 
 def _mostrar_motivo_celula(matricula, dia, valor, df_motivos):
@@ -275,6 +278,46 @@ def _atrasos(dados, mes_escolhido):
 
     csv = tabela.to_csv(index=False).encode("utf-8")
     st.download_button("⬇️ Exportar (CSV)", csv, file_name=f"atrasos_{mes_escolhido}.csv", mime="text/csv")
+
+
+def _ata_reuniao(mes_escolhido):
+    st.subheader(f"Ata de Reunião — {_formatar_mes(mes_escolhido)}")
+    st.caption(
+        "Gera automaticamente um rascunho editável (.docx) da Ata de Reunião mensal, buscando sempre no Drive: "
+        "o áudio da reunião (transcrito localmente, ~10 min na primeira vez do mês) e a planilha oficial "
+        "'RMA em andamento' (horas de voo, MMAM/Pontuação/IFD, valores já com o Índice de Desempenho aplicado). "
+        "Reparáveis, Empréstimos, Pagamentos e a apuração de entregas vêm da nossa própria base tratada. "
+        "Ver 00_Instrucoes/ata_reuniao.md."
+    )
+    st.warning(
+        "⚠️ Seções que dependem de julgamento humano (abertura/objetivo, discussão dos Módulos 2/3, MAPEM, "
+        "encerramento e a tabela de Pendências) ficam marcadas '[revisar a partir da transcrição]' — a transcrição "
+        "completa vai anexada ao final do documento. Revisar e assinar somente depois de completar essas seções."
+    )
+
+    ano, mes = mes_escolhido.year, mes_escolhido.month
+    if st.button("📝 Gerar Ata de Reunião", key="ata_gerar", width="stretch"):
+        with st.spinner("Buscando áudio e planilha no Drive, transcrevendo (pode levar ~10 min na primeira vez deste mês) e montando o documento..."):
+            try:
+                import gerar_ata_reuniao
+                nome_arquivo = f"Ata_RMA_{MESES_PT[mes - 1]}_{ano}_rascunho.docx"
+                caminho_saida = gerar_ata_reuniao.DADOS_TRATADOS / "atas" / nome_arquivo
+                gerar_ata_reuniao.gerar_ata(ano, mes, caminho_saida)
+                st.session_state["ata_gerada_caminho"] = str(caminho_saida)
+                st.session_state["ata_gerada_nome"] = nome_arquivo
+            except Exception as e:
+                st.error(f"Falha ao gerar a Ata: {e}")
+
+    if st.session_state.get("ata_gerada_caminho"):
+        caminho = Path(st.session_state["ata_gerada_caminho"])
+        if caminho.exists():
+            st.success("Ata gerada — revisar as seções marcadas antes de assinar.")
+            with open(caminho, "rb") as f:
+                st.download_button(
+                    "⬇️ Baixar Ata (.docx)", f.read(),
+                    file_name=st.session_state["ata_gerada_nome"],
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
 
 
 def _computo_mensal(mes_escolhido):

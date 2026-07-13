@@ -1,0 +1,88 @@
+*C-98 - 13/07/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+14 D / 18 M
+(09 DI / 05 DO / 03 II / 03 IN / 01 ITR / 06 IS / 02 IP)
+ 
+*Previsão até o final do dia: 14 D / 18 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis:* 17
+- 2709, 2738, 2743.
+
+
+*Montadas:* 21
+- 2709, 2721, 2723
+
+
+*Esforço  Aéreo*
+Anual: 10070:00 / 4534:25 / 45,03%
+
+
+*Motores disponíveis: 24*
+
+
+*CLA*
+[ ] 2723 - IS - Itens entregues. Agd AT de hélice para definição de recolhimento ou translado da aeronave para o Parque - DPE: 02 DIAS após chegada do item - Solicitado alteração de DPE e situação no SILOMS.
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*PAMA-LS*
+[ ] 2704 - DI
+[ ] 2706 - IP - 75 APE- DPE: A ser definido.
+[ ] 2724 - IP - ANV acidentada.
+[ ] 2726 - IS - 91 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2728 - IN - REALIZANDO SERVIÇO DE MONTAGEM APÓS A AVALIAÇÃO DE SINISTRO - DPE: 30/09
+[ ] 2730 - IS - SEM MOTOR - 44 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - II - ANV REALIZANDO INSPEÇÃO PROGRAMADA ID5-15-06/+4200FH DO MOTOR/48M, 01 IPLR de FCU - DPE: 14/07
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - DO
+
+
+*1º/5º GAV*
+[ ] 2702 - DI
+[ ] 2703 - DO
+[ ] 2708 - DO
+[ ] 2729 - II - Realizando inspeções ID 0A,02,07,10,11,12,21,22 / 2900FH/HSI - DPE: 31/07
+
+
+*2º ETA*
+[ ] 2719 - DO
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - II - ANV REALIZANDO INSPEÇÕES ID5-15-0A/07 E 4400FH - DPE: 17/07
+
+
+*6º ETA*
+[ ] 2709 - ITR - Agd transmissão do atuador do flape - DPE: 13/07
+[ ] 2720 - DI
+[ ] 2721 - IS - Motor recolhido para reparo na geradora de gases - DPE: 13/07
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2738 - IN - ALARME ENGINE FIRE TOCANDO EM VOO MESMO COM OS PARÂMETROS NORMAIS - DPE: 14/07
+[ ] 2740 - DI
+[ ] 2741 - IN - MOTOR EM RECOLHIMENTO AO PAMASP. OS 3130021786.- DPE: 07/08
