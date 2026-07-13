@@ -38,7 +38,8 @@ from datetime import datetime
 import pandas as pd
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt, RGBColor
+from docx.shared import Pt, RGBColor, Inches
+from PIL import Image, ImageDraw, ImageFont
 
 from common import DADOS_TRATADOS, LOGS, registrar_log
 from shared import drive_sync
@@ -108,6 +109,30 @@ def _baixar_audio_reuniao(arquivos_pasta):
         return None, None
     conteudo = drive_sync.baixar_arquivo(audio["id"])
     return conteudo, audio["name"]
+
+
+def _baixar_transcricao_manual(arquivos_pasta):
+    """Transcrição escrita à mão pelo Wallace, salva no Drive (pasta do
+    mês) com "transcri" no nome — preferida à transcrição automática do
+    áudio (Whisper), pedido do Wallace em 2026-07-13 ("agora a
+    transcrição eu vou colocar por escrito mesmo, no drive"). Suporta
+    Google Doc nativo (exporta como texto) ou um .docx/.txt já enviado
+    (baixa e extrai o texto)."""
+    candidato = next((f for f in arquivos_pasta if "transcri" in f["name"].lower()), None)
+    if candidato is None:
+        return None
+
+    if candidato["mimeType"] == "application/vnd.google-apps.document":
+        conteudo = drive_sync.baixar_arquivo(candidato["id"], exportar_como=drive_sync.TEXTO_MIME)
+        return conteudo.decode("utf-8") if isinstance(conteudo, bytes) else str(conteudo)
+
+    conteudo = drive_sync.baixar_arquivo(candidato["id"])
+    if candidato["name"].lower().endswith(".docx"):
+        import io as _io
+        from docx import Document as _Document
+        doc = _Document(_io.BytesIO(conteudo))
+        return "\n".join(p.text for p in doc.paragraphs)
+    return conteudo.decode("utf-8") if isinstance(conteudo, bytes) else str(conteudo)
 
 
 def _baixar_rma_em_andamento(arquivos_pasta):
@@ -352,6 +377,84 @@ def _tabela(doc, cabecalho, linhas):
     return tabela
 
 
+FONTE_TABELA_IMAGEM = "/System/Library/Fonts/Supplemental/Arial.ttf"
+COR_CABECALHO_IMAGEM = (232, 232, 232)
+COR_BORDA_IMAGEM = (170, 170, 170)
+
+
+def _renderizar_tabela_imagem(df, colunas, caminho_png, largura_px=2000, altura_linha=32, tamanho_fonte=16):
+    """Desenha `df[colunas]` como uma imagem de tabela (não uma tabela
+    nativa do Word) — pedido do Wallace em 2026-07-13 ("queria tipo
+    imagem para caber melhor igual ta no exemplo"): a Ata assinada de
+    maio também traz o Anexo A como imagem (captura de tela), não como
+    tabela editável. Larguras de coluna proporcionais ao maior texto de
+    cada coluna (cabeçalho + dados), sem depender de nenhuma lib pesada
+    (só Pillow, que já vem instalado)."""
+    try:
+        fonte = ImageFont.truetype(FONTE_TABELA_IMAGEM, tamanho_fonte)
+        fonte_negrito = ImageFont.truetype(FONTE_TABELA_IMAGEM.replace("Arial.ttf", "Arial Bold.ttf"), tamanho_fonte)
+    except OSError:
+        fonte = fonte_negrito = ImageFont.load_default()
+
+    cabecalhos = colunas
+    dados = [[_formatar_valor_generico(registro.get(c)) for c in colunas] for _, registro in df.iterrows()]
+
+    img_medida = Image.new("RGB", (10, 10))
+    desenho_medida = ImageDraw.Draw(img_medida)
+
+    def _largura_texto(texto, fnt):
+        return desenho_medida.textbbox((0, 0), texto, font=fnt)[2]
+
+    larguras = []
+    for i, col in enumerate(cabecalhos):
+        maior = _largura_texto(str(col), fonte_negrito)
+        for linha in dados:
+            maior = max(maior, _largura_texto(linha[i], fonte))
+        larguras.append(maior + 24)
+
+    largura_total_conteudo = sum(larguras)
+    escala = largura_px / largura_total_conteudo if largura_total_conteudo else 1
+    larguras = [int(w * escala) for w in larguras]
+    largura_px = sum(larguras)
+    altura_px = altura_linha * (len(dados) + 1)
+
+    img = Image.new("RGB", (largura_px, altura_px), "white")
+    desenho = ImageDraw.Draw(img)
+
+    def _linha(y, valores, fnt, cor_fundo):
+        if cor_fundo:
+            desenho.rectangle([0, y, largura_px, y + altura_linha], fill=cor_fundo)
+        x = 0
+        for i, valor in enumerate(valores):
+            desenho.text((x + 6, y + (altura_linha - tamanho_fonte) // 2 - 2), valor, font=fnt, fill=(20, 20, 20))
+            x += larguras[i]
+        desenho.line([(0, y), (largura_px, y)], fill=COR_BORDA_IMAGEM, width=1)
+
+    _linha(0, [str(c) for c in cabecalhos], fonte_negrito, COR_CABECALHO_IMAGEM)
+    for i, linha in enumerate(dados, start=1):
+        _linha(i * altura_linha, linha, fonte, None)
+    desenho.line([(0, altura_px - 1), (largura_px, altura_px - 1)], fill=COR_BORDA_IMAGEM, width=1)
+    x = 0
+    for w in larguras:
+        desenho.line([(x, 0), (x, altura_px)], fill=COR_BORDA_IMAGEM, width=1)
+        x += w
+    desenho.line([(largura_px - 1, 0), (largura_px - 1, altura_px)], fill=COR_BORDA_IMAGEM, width=1)
+
+    caminho_png.parent.mkdir(parents=True, exist_ok=True)
+    img.save(caminho_png)
+    return caminho_png, largura_px, altura_px
+
+
+def _formatar_valor_generico(valor):
+    if valor is None or (isinstance(valor, (float, pd.Timestamp, type(pd.NaT))) and pd.isna(valor)):
+        return ""
+    if isinstance(valor, (pd.Timestamp, datetime)):
+        return valor.strftime("%d/%m/%Y")
+    if isinstance(valor, float) and valor.is_integer():
+        return str(int(valor))
+    return str(valor)
+
+
 def _texto_revisar(doc, rotulo):
     p = doc.add_paragraph()
     run = p.add_run(f"[{rotulo} — revisar a partir da transcrição da reunião, ao final deste documento]")
@@ -404,12 +507,19 @@ def gerar_ata(ano, mes, caminho_saida, forcar_transcricao=False):
     arquivos_lidos.append(f"Drive: RMA em andamento {MESES_PT[mes-1]}.xlsx")
     indicadores = extrair_indicadores_rma(conteudo_rma, ano, mes)
 
-    conteudo_audio, nome_audio = _baixar_audio_reuniao(arquivos_pasta)
-    transcricao = ""
-    if conteudo_audio:
-        arquivos_lidos.append(f"Drive: {nome_audio}")
-        caminho_cache = PASTA_ATAS / f"transcricao_{ano}-{mes:02d}.txt"
-        transcricao = transcrever_audio(conteudo_audio, forcar=forcar_transcricao, caminho_cache=caminho_cache)
+    # Transcrição manual (escrita pelo Wallace, salva no Drive) tem
+    # prioridade sobre a automática por áudio — pedido do Wallace em
+    # 2026-07-13. Só cai pro áudio+Whisper se não achar nenhum arquivo de
+    # transcrição na pasta do mês.
+    transcricao = _baixar_transcricao_manual(arquivos_pasta) or ""
+    if transcricao:
+        arquivos_lidos.append("Drive: transcrição (escrita manualmente)")
+    else:
+        conteudo_audio, nome_audio = _baixar_audio_reuniao(arquivos_pasta)
+        if conteudo_audio:
+            arquivos_lidos.append(f"Drive: {nome_audio}")
+            caminho_cache = PASTA_ATAS / f"transcricao_{ano}-{mes:02d}.txt"
+            transcricao = transcrever_audio(conteudo_audio, forcar=forcar_transcricao, caminho_cache=caminho_cache)
 
     reparaveis = carregar_reparaveis_abertas()
     arquivos_lidos.append("base_reparaveis_tratada.xlsx")
@@ -589,7 +699,10 @@ def gerar_ata(ano, mes, caminho_saida, forcar_transcricao=False):
         "numero_ordem", "part_number", "descricao", "quantidade_texto", "pedido_emg",
         "motivo", "anv", "destino", "status",
     ]
-    _tabela(doc, colunas_emp, emprestimos_mes[colunas_emp].fillna("—").values.tolist())
+    caminho_imagem_emp = caminho_saida.parent / f"_anexo_a_emprestimos_{ano}-{mes:02d}.png"
+    _renderizar_tabela_imagem(emprestimos_mes, colunas_emp, caminho_imagem_emp)
+    doc.add_picture(str(caminho_imagem_emp), width=Inches(6.5))
+    caminho_imagem_emp.unlink()  # já embutida no .docx, não precisa sobrar no disco
 
     doc.add_page_break()
     _titulo(doc, "ANEXO B — Controle de Reparáveis (C-98, em aberto)")

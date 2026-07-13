@@ -38,7 +38,14 @@ Reunião" dentro de Fechamento Mensal (`secoes/fechamento_mensal.py`).
   B) — tabelas completas anexadas ao final do documento (igual ao padrão
   da Ata de maio, que também usa "Anexo A/B" em vez de tabela no corpo),
   de `base_devolucoes_tratada.xlsx` (filtrado pelo mês de `pedido_envio`)
-  e `base_reparaveis_tratada.xlsx` (só os itens em aberto).
+  e `base_reparaveis_tratada.xlsx` (só os itens em aberto). **O Anexo A
+  (Empréstimos) é uma IMAGEM** (renderizada com Pillow, `_renderizar_tabela_imagem`
+  em `gerar_ata_reuniao.py`), não uma tabela nativa do Word — pedido do
+  Wallace em 2026-07-13 ("queria tipo imagem para caber melhor igual ta
+  no exemplo"): a Ata assinada de maio também traz o Anexo A como
+  captura de tela, não tabela editável. O Anexo B (Reparáveis) continua
+  como tabela nativa por enquanto — perguntar ao Wallace se quer o mesmo
+  tratamento lá (323 linhas viraria uma imagem bem grande/apertada).
 - **Apuração de Entregas (IMR)** — mesma regra da aba "Atrasos" do site
   (`_atrasos`, ponto 2): tudo concluído/cancelado dentro do mês de
   referência, não importa quando abriu.
@@ -54,7 +61,19 @@ transcrição completa do áudio vai anexada ao final do documento
 ("Transcrição da Reunião — rascunho automático") pra ele usar de
 referência ao completar essas seções no Word.
 
-## Transcrição do áudio
+## Transcrição — manual (preferida) ou por áudio (fallback)
+
+**Desde 2026-07-13, o Wallace prefere escrever a transcrição ele mesmo** e
+salvar na pasta do mês no Drive, num arquivo com "transcri" no nome
+(Google Doc nativo, ou um `.docx`/`.txt` enviado) — `_baixar_transcricao_manual()`
+procura esse arquivo primeiro e usa o texto dele diretamente, SEM rodar
+Whisper (mais rápido, sem gastar os ~10 min de processamento, e sem
+depender do modelo pesado). Só cai pro áudio+Whisper automaticamente se
+não achar nenhum arquivo de transcrição na pasta do mês — esse caminho
+continua funcionando (documentado abaixo) como reserva, mas não é mais o
+fluxo principal esperado.
+
+## Transcrição por áudio (fallback, se não houver transcrição manual)
 
 Testado em 2026-07-13 com o áudio real de Junho/2026 (7,2 min,
 `PALS Prefeitura de Aeronáutica de Lagoa Santa 3.m4a`):
