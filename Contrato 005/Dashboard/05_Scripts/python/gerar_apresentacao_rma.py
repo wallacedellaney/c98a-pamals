@@ -62,6 +62,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 import pandas as pd
+from PIL import Image, ImageDraw, ImageFont
 from pptx import Presentation
 from pptx.util import Emu, Pt
 from pptx.dml.color import RGBColor
@@ -71,6 +72,7 @@ from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION
 
 from common import DADOS_TRATADOS, RELATORIOS
+from gerar_ata_reuniao import _localizar_pasta_mes, _baixar_rma_em_andamento, extrair_indicadores_rma
 
 REFERENCIA = RELATORIOS / "RMA_referencia.pptx"
 
@@ -95,6 +97,15 @@ VALORES_ONDE_ENCONTRA_EMPRESA_TERCEIRIZADA = VALORES_ONDE_ENCONTRA_EMPRESA + VAL
 
 SLIDES_AERONAVE_INICIO = 3
 SLIDES_AERONAVE_FIM = 8
+
+# Slides da referência com conteúdo COPIADO da empresa (imagem/tabela da
+# apresentação real deles, não produzido por nós) — Utilização (fonte é
+# um PDF externo, fora do nosso alcance), tabela de Faturamento e Notas
+# Fiscais. Removidos sempre — pedido do Wallace em 2026-07-13 ("as
+# informações do slide são todas produzidas pela gente, o que tiver
+# copiado tira"). Se um dia produzirmos esses dados nós mesmos, substituir
+# por um slide nativo em vez de só remover.
+SLIDES_COPIADOS_EXTRAS = (10, 11, 12)
 
 COLUNAS_EMERGENCIA = [
     ("om_emg", "OM_EMG", 0.6), ("om", "OM", 0.7), ("numero_emergencia", "EMERGÊNCIA", 1.1),
@@ -167,6 +178,11 @@ COR_GRAFICO_AMBER = RGBColor(242, 169, 59)
 COR_GRAFICO_CYAN = RGBColor(95, 208, 217)
 COR_STATUS_BOM = RGBColor(79, 180, 119)
 COR_STATUS_CRITICO = RGBColor(226, 86, 79)
+
+# Fonte/cor usadas na renderização em imagem da matriz (Tabela 1.2) — ver
+# _renderizar_matriz_imagem.
+FONTE_TABELA_IMAGEM = "/System/Library/Fonts/Supplemental/Arial.ttf"
+COR_CABECALHO_IMAGEM = (232, 232, 232)
 
 
 def _formatar_valor(valor):
@@ -444,85 +460,123 @@ def _remover_imagens(slide):
             shape._element.getparent().remove(shape._element)
 
 
-def _construir_tabela_matriz(slide, df_matriz_mes, pontuadas, fora_listadas, resumo, ano, mes, largura_total, altura_total):
-    """Reconstrói a Tabela 1.2 (matriz aeronave x dia + MMAM/P/PMAX/IFD)
-    como tabela nativa, no lugar da imagem da referência — mesmas cores
-    (verde/amarelo) e mesmas fórmulas da planilha oficial (conferidas célula
-    a célula em 2026-07-11, ver calcular_computo_mensal.py)."""
-    _remover_imagens(slide)
+def _renderizar_matriz_imagem(df_matriz_mes, pontuadas, fora_listadas, resumo, ano, mes, caminho_png,
+                               largura_px=2400, largura_rotulo_px=90, altura_linha_px=26, altura_cabecalho_px=40):
+    """Desenha a Tabela 1.2 (matriz aeronave x dia) como IMAGEM, produzida
+    por nós a partir do Cômputo Mensal (`resumo`/`df_matriz_mes`, mesmos
+    dados da aba 1.2 da RMA oficial) — pedido do Wallace em 2026-07-13
+    ("a imagem [...] ficou ruim, vamos colocar como uma foto que a gente
+    produz com base no fechamento e com base na aba 1.2 da rma"). Antes
+    disso era uma tabela nativa do pptx (ficou feia com 30 colunas
+    espremidas); como imagem dá pra controlar o layout com precisão,
+    igual as tabelas de anexo da Ata de Reunião (Pillow, sem lib pesada)."""
+    try:
+        fonte = ImageFont.truetype(FONTE_TABELA_IMAGEM, 12)
+        fonte_negrito = ImageFont.truetype(FONTE_TABELA_IMAGEM.replace("Arial.ttf", "Arial Bold.ttf"), 12)
+    except OSError:
+        fonte = fonte_negrito = ImageFont.load_default()
+
     ultimo_dia = resumo["ultimo_dia_mes"]
     todas_aeronaves = list(pontuadas) + list(fora_listadas)
-    n_linhas = len(todas_aeronaves) + 2  # cabeçalho + aeronaves + linha "Média Diária"
-    n_colunas = ultimo_dia + 1
+    largura_dia_px = (largura_px - largura_rotulo_px) // ultimo_dia
+    largura_px = largura_rotulo_px + largura_dia_px * ultimo_dia
+    n_linhas_dado = len(todas_aeronaves) + 1  # aeronaves + "Média Diária"
+    altura_px = altura_cabecalho_px + n_linhas_dado * altura_linha_px
 
-    # A altura REAL da tabela depois de setar `rows[r].height` linha a linha
-    # é a soma dessas alturas — não o `altura_total` declarado no
-    # `add_table` (mesmo bug de "declarado vs. real" já visto em outras
-    # tabelas do projeto). Por isso a altura de cada linha de dado é
-    # calculada aqui a partir de um orçamento fixo (reserva espaço pra
-    # caixa de resumo abaixo), em vez de um valor fixo que poderia
-    # sobrepor a caixa de resumo com muitas aeronaves no mês.
-    ALTURA_CABECALHO = 140000
-    RESERVA_RESUMO = 750000  # caixa de resumo (600000) + respiro (150000)
-    orcamento_dados = int(altura_total) - ALTURA_CABECALHO - RESERVA_RESUMO
-    altura_linha_dado = max(min(orcamento_dados // (n_linhas - 1), 280000), 120000)
-    altura_real_tabela = ALTURA_CABECALHO + (n_linhas - 1) * altura_linha_dado
+    img = Image.new("RGB", (largura_px, altura_px), "white")
+    desenho = ImageDraw.Draw(img)
 
-    tabela_shape = slide.shapes.add_table(
-        n_linhas, n_colunas, Emu(120000), Emu(1300000), Emu(largura_total - 240000), Emu(altura_real_tabela),
-    )
-    tabela = tabela_shape.table
-    tabela.columns[0].width = Emu(130000)
-    for c in range(1, n_colunas):
-        tabela.columns[c].width = Emu(80000)
-    tabela.rows[0].height = Emu(ALTURA_CABECALHO)
-    for r in range(1, n_linhas):
-        tabela.rows[r].height = Emu(altura_linha_dado)
+    def _celula(x, y, w, h, cor_fundo, texto=None, fnt=None, cor_texto=(20, 20, 20), centralizado=True):
+        if cor_fundo:
+            desenho.rectangle([x, y, x + w, y + h], fill=cor_fundo)
+        desenho.rectangle([x, y, x + w, y + h], outline=(190, 190, 190))
+        if texto:
+            fnt = fnt or fonte
+            bbox = desenho.textbbox((0, 0), texto, font=fnt)
+            tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            tx = x + (w - tw) // 2 if centralizado else x + 4
+            ty = y + (h - th) // 2 - bbox[1]
+            desenho.text((tx, ty), texto, font=fnt, fill=cor_texto)
 
-    _preencher_celula(tabela.cell(0, 0), "DIA\nANV", negrito=True, tamanho=FONTE_TAMANHO_MATRIZ, cor_fundo=COR_CABECALHO)
+    _celula(0, 0, largura_rotulo_px, altura_cabecalho_px, COR_CABECALHO_IMAGEM, "DIA/ANV", fonte_negrito)
     for dia in range(1, ultimo_dia + 1):
         wd = date(ano, mes, dia).weekday()
-        cor_texto = COR_FIM_DE_SEMANA_TEXTO if wd >= 5 else None
-        _preencher_celula(tabela.cell(0, dia), f"{dia}\n{ABREV_SEMANA[wd]}", negrito=True,
-                           tamanho=FONTE_TAMANHO_MATRIZ, cor_fundo=COR_CABECALHO, cor_texto=cor_texto)
+        cor_texto = (204, 0, 0) if wd >= 5 else (20, 20, 20)
+        x = largura_rotulo_px + (dia - 1) * largura_dia_px
+        _celula(x, 0, largura_dia_px, altura_cabecalho_px, COR_CABECALHO_IMAGEM, f"{dia}\n{ABREV_SEMANA[wd]}", fonte_negrito, cor_texto)
 
     pivot = df_matriz_mes.set_index(["matricula", "dia"])["montada"] if not df_matriz_mes.empty else None
-    for i, matricula in enumerate(todas_aeronaves, start=1):
-        _preencher_celula(tabela.cell(i, 0), str(matricula), negrito=True, tamanho=FONTE_TAMANHO_MATRIZ, cor_fundo=COR_CABECALHO)
+    y = altura_cabecalho_px
+    for matricula in todas_aeronaves:
+        _celula(0, y, largura_rotulo_px, altura_linha_px, COR_CABECALHO_IMAGEM, str(matricula), fonte_negrito)
         for dia in range(1, ultimo_dia + 1):
+            x = largura_rotulo_px + (dia - 1) * largura_dia_px
             if matricula in fora_listadas:
-                _preencher_celula(tabela.cell(i, dia), "", cor_fundo=COR_FORA_CONTRATO, tamanho=FONTE_TAMANHO_MATRIZ)
+                _celula(x, y, largura_dia_px, altura_linha_px, (255, 249, 230))
                 continue
             valor = pivot.get((matricula, dia)) if pivot is not None else None
             if valor is None or pd.isna(valor):
-                _preencher_celula(tabela.cell(i, dia), "", tamanho=FONTE_TAMANHO_MATRIZ)
+                _celula(x, y, largura_dia_px, altura_linha_px, None)
             else:
-                cor = COR_MONTADA if valor == 1 else COR_DESMONTADA
-                _preencher_celula(tabela.cell(i, dia), str(int(valor)), cor_fundo=cor, tamanho=FONTE_TAMANHO_MATRIZ)
+                cor = (217, 234, 211) if valor == 1 else (255, 242, 204)
+                _celula(x, y, largura_dia_px, altura_linha_px, cor, str(int(valor)), fonte)
+        y += altura_linha_px
 
-    linha_media = n_linhas - 1
-    _preencher_celula(tabela.cell(linha_media, 0), "Média Diária", negrito=True, tamanho=FONTE_TAMANHO_MATRIZ, cor_fundo=COR_CABECALHO)
-    medias = resumo.get("medias_diarias", {})
+    # "Média Diária" calculada por nós, direto da matriz (não depende de
+    # `calcular_computo_mensal.py` ter salvo um resumo pré-calculado — esse
+    # script parou de gravar esses campos extras, ver docstring do módulo).
+    medias_diarias = (
+        df_matriz_mes.dropna(subset=["montada"]).groupby("dia")["montada"].mean() * 100
+        if not df_matriz_mes.empty else pd.Series(dtype=float)
+    )
+    _celula(0, y, largura_rotulo_px, altura_linha_px, COR_CABECALHO_IMAGEM, "Média Diária", fonte_negrito)
     for dia in range(1, ultimo_dia + 1):
-        valor = medias.get(str(dia)) or medias.get(dia)
-        texto = f"{valor:.2f}".replace(".", ",") + "%" if valor is not None else "—"
-        _preencher_celula(tabela.cell(linha_media, dia), texto, tamanho=FONTE_TAMANHO_MATRIZ, cor_fundo=COR_CABECALHO)
+        x = largura_rotulo_px + (dia - 1) * largura_dia_px
+        valor = medias_diarias.get(dia)
+        texto = f"{valor:.0f}%" if valor is not None and not pd.isna(valor) else "—"
+        _celula(x, y, largura_dia_px, altura_linha_px, COR_CABECALHO_IMAGEM, texto, fonte)
 
-    caixa_resumo = slide.shapes.add_textbox(Emu(120000), Emu(1300000 + altura_real_tabela + 150000), Emu(largura_total - 240000), Emu(600000))
+    caminho_png.parent.mkdir(parents=True, exist_ok=True)
+    img.save(caminho_png)
+    return caminho_png, largura_px, altura_px
+
+
+def _construir_tabela_matriz(slide, df_matriz_mes, pontuadas, fora_listadas, resumo, indicadores_oficiais, ano, mes, largura_total, altura_total, caminho_temp):
+    """Insere a Tabela 1.2 (matriz aeronave x dia + MMAM/P/PMAX/IFD) como
+    imagem produzida por nós (ver `_renderizar_matriz_imagem`), no lugar
+    da imagem copiada da referência. Os 4 números do resumo (MMAM/P/PMAX/
+    IFD) vêm de `indicadores_oficiais` — a mesma planilha "RMA em
+    andamento" oficial usada pela Ata de Reunião (`gerar_ata_reuniao.py`),
+    não de `calcular_computo_mensal.py` (que parou de salvar esses campos
+    e, de qualquer forma, tem uma pequena divergência conhecida vs. o
+    número oficial da empresa — ver computo_mensal.md)."""
+    _remover_imagens(slide)
+
+    largura_imagem_emu = largura_total - 240000
+    caminho_png, largura_px, altura_px = _renderizar_matriz_imagem(df_matriz_mes, pontuadas, fora_listadas, resumo, ano, mes, caminho_temp)
+    altura_imagem_emu = int(largura_imagem_emu * altura_px / largura_px)
+    slide.shapes.add_picture(str(caminho_png), Emu(120000), Emu(1300000), width=Emu(largura_imagem_emu))
+    caminho_png.unlink()
+
+    RESERVA_RESUMO = 750000
+    if altura_imagem_emu + RESERVA_RESUMO > int(altura_total):
+        altura_imagem_emu = int(altura_total) - RESERVA_RESUMO
+
+    caixa_resumo = slide.shapes.add_textbox(Emu(120000), Emu(1300000 + altura_imagem_emu + 150000), Emu(largura_total - 240000), Emu(600000))
     linhas_resumo = [
-        ("Média Mensal de Aeronaves Montadas MMAM", f"{resumo.get('mmam_previa', '—')}%"),
-        ("PONTUAÇÃO OBTIDA (P)", str(resumo.get("pontuacao_obtida", "—"))),
-        ("PONT. MAX NO MÊS (PMAX)", str(resumo.get("pont_max_mes", "—"))),
-        ("Índice Final de Desempenho IFD", str(resumo.get("ifd", "—"))),
+        ("Média Mensal de Aeronaves Montadas MMAM", f"{indicadores_oficiais['mmam'] * 100:.2f}%".replace(".", ",")),
+        ("PONTUAÇÃO OBTIDA (P)", f"{indicadores_oficiais['pontuacao_obtida']:.0f}"),
+        ("PONT. MAX NO MÊS (PMAX)", f"{indicadores_oficiais['pont_max']:.0f}"),
+        ("Índice Final de Desempenho IFD", f"{indicadores_oficiais['ifd']:.2f}".replace(".", ",")),
     ]
     tf = caixa_resumo.text_frame
     for i, (rotulo, valor) in enumerate(linhas_resumo):
         p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
         run = p.add_run()
         run.text = f"{rotulo}: {valor}"
-        run.font.size = Pt(10)
+        run.font.size = Pt(11)
         run.font.bold = True
-        run.font.color.rgb = COR_BRANCO
+        run.font.color.rgb = COR_AMBER
 
 
 def _titulo_slide(slide, texto, largura_total, margem=Emu(340000), topo=Emu(340000), tamanho=Pt(20)):
@@ -876,12 +930,21 @@ def gerar_apresentacao(ano, mes, caminho_saida, caminho_referencia=None):
 
     _atualizar_titulo_objetivo(prs, mes)
 
+    # MMAM/P/PMAX/IFD oficiais — mesma planilha "RMA em andamento" que a
+    # Ata de Reunião usa, não o resumo (local) do Cômputo Mensal (ver
+    # docstring de `_construir_tabela_matriz`).
+    arquivos_pasta_mes = _localizar_pasta_mes(ano, mes)
+    conteudo_rma_oficial = _baixar_rma_em_andamento(arquivos_pasta_mes)
+    indicadores_oficiais = extrair_indicadores_rma(conteudo_rma_oficial, ano, mes)
+
+    caminho_saida_tmp = Path(caminho_saida)
     df_matriz_mes = pd.read_csv(DADOS_TRATADOS / "computo_mensal" / f"{ano}-{mes:02d}_matriz.csv", dtype={"matricula": str})
-    for indice_matriz in SLIDES_MATRIZ:
+    for i, indice_matriz in enumerate(SLIDES_MATRIZ):
         _construir_tabela_matriz(
             prs.slides[indice_matriz], df_matriz_mes,
             resumo["aeronaves_pontuadas"], resumo["aeronaves_fora_listadas"],
-            resumo, ano, mes, largura_total, altura_total - Emu(1300000),
+            resumo, indicadores_oficiais, ano, mes, largura_total, altura_total - Emu(1300000),
+            caminho_saida_tmp.parent / f"_matriz_{ano}-{mes:02d}_{i}.png",
         )
 
     df_pagamentos, contrato_resumo = _carregar_dados_pagamentos()
@@ -898,6 +961,13 @@ def gerar_apresentacao(ano, mes, caminho_saida, caminho_referencia=None):
     elemento_reparaveis_todas = list(xml_slides)[SLIDES_REPARAVEIS[0]]
     elemento_reparaveis_filtradas = list(xml_slides)[SLIDES_REPARAVEIS[1]]
     elemento_dashboard_atrasos = list(xml_slides)[SLIDE_ATRASOS_DASHBOARD]
+    # Slides com conteúdo COPIADO da referência que nunca é regenerado por
+    # nós — capturados AQUI (antes de qualquer inserção) pra remover no
+    # final, mesmo padrão de identidade estável de elemento XML usado pros
+    # outros slides antigos. Ver SLIDES_COPIADOS_EXTRAS e docstring do
+    # módulo (pedido do Wallace, 2026-07-13).
+    elementos_aeronave_antigos = [list(xml_slides)[i] for i in range(SLIDES_AERONAVE_INICIO, SLIDES_AERONAVE_FIM + 1)]
+    elementos_copiados_extras = [list(xml_slides)[i] for i in SLIDES_COPIADOS_EXTRAS]
 
     # --- 1 slide por aeronave que negativou, inserido logo após o início
     # do bloco de aeronaves da referência ---
@@ -936,7 +1006,12 @@ def gerar_apresentacao(ano, mes, caminho_saida, caminho_referencia=None):
     slide_atrasos_entregas = _slide_em_branco(prs, indice_dashboard_atrasos_atual)
     _construir_slide_atrasos_entregas(slide_atrasos_entregas, atrasos_concluidas_mes, atrasos_resumo, largura_total)
 
-    for elemento in (elemento_emprestimos, elemento_dashboard_emprestimos, elemento_reparaveis_todas, elemento_reparaveis_filtradas, elemento_dashboard_atrasos):
+    elementos_remover = (
+        [elemento_emprestimos, elemento_dashboard_emprestimos, elemento_reparaveis_todas,
+         elemento_reparaveis_filtradas, elemento_dashboard_atrasos]
+        + elementos_aeronave_antigos + elementos_copiados_extras
+    )
+    for elemento in elementos_remover:
         indice_atual = list(xml_slides).index(elemento)
         _remover_slides(prs, indice_atual, indice_atual)
 

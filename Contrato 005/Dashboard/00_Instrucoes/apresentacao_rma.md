@@ -39,9 +39,18 @@ no topo do script precisam ser conferidos de novo.
 - **Slide 1 (título) e 2 (objetivo)**: só troca o nome do mês (o mês é um
   RUN isolado no texto), resto intocado.
 - **Slides 3 e 10 (Tabela 1.2 — matriz aeronave x dia + MMAM/P/PMAX/IFD)**:
-  tabela nativa a partir do Cômputo Mensal (`calcular_computo_mensal.py`),
-  mesmas cores (verde = montada, amarelo = desmontada, bege = fora do
-  contrato) e os mesmos números já calculados lá (MMAM/P/PMAX/IFD).
+  **imagem** (não tabela nativa — pedido do Wallace em 2026-07-13, "a
+  imagem [...] ficou ruim, vamos colocar como uma foto que a gente produz
+  com base no fechamento e com base na aba 1.2 da rma"), renderizada com
+  Pillow (`_renderizar_matriz_imagem`, mesmo padrão dos anexos da Ata de
+  Reunião). A grade aeronave x dia (verde/amarelo/bege) e a linha "Média
+  Diária" vêm do Cômputo Mensal local (`df_matriz_mes`, calculado por nós);
+  os 4 números do resumo (MMAM/P/PMAX/IFD) vêm da planilha oficial "RMA em
+  andamento {MÊS}.xlsx" no Drive — mesma fonte que a Ata de Reunião usa
+  (`extrair_indicadores_rma`, importado de `gerar_ata_reuniao.py`), **não**
+  do resumo salvo por `calcular_computo_mensal.py` (que parou de gravar
+  esses 4 campos e, de qualquer forma, tinha uma pequena divergência
+  conhecida vs. o número oficial — ver `computo_mensal.md`).
 - **1 slide por aeronave que negativou** no mês: linha 1/0 do mês +
   tabela das emergências responsáveis.
 - **Pagamentos**: tabela nativa (`base_pagamentos_tratada.xlsx`) + resumo
@@ -59,10 +68,20 @@ no topo do script precisam ser conferidos de novo.
 - **Removido** da referência: os slides-imagem dos antigos dashboards de
   Empréstimos e Atrasos (eram só capturas de tela do nosso próprio site).
 
-## Mantido da referência, sem regenerar (fora do nosso alcance)
+## Removido (era conteúdo copiado, não produzido por nós)
 
-Utilização (imagem — fonte é um PDF externo), tabela de faturamento e
-notas fiscais.
+**2026-07-13**: Wallace — "lembra que as informações do slide são todas
+produzidas pela gente, o que tiver copiado tira". Achado um bug real: os
+slides 3-8 da referência (6 lâminas, tabelas com as emergências REAIS da
+empresa pra aeronaves específicas daquele mês) nunca eram removidos —
+ficavam sobrando no arquivo final, ao lado dos nossos slides novos por
+aeronave. Também os slides 10-12 (Utilização — fonte é um PDF externo,
+fora do nosso alcance —, tabela de Faturamento e Notas Fiscais) são só
+imagem copiada da apresentação real deles, nunca regenerada por nós.
+Os dois grupos agora são removidos sempre (`SLIDES_COPIADOS_EXTRAS = (10,
+11, 12)` + `elementos_aeronave_antigos`, mesmo padrão de identidade
+estável de elemento XML). Se um dia produzirmos Utilização/Faturamento/
+Notas Fiscais nós mesmos, trocar a remoção por um slide nativo.
 
 ## Sem "brand" de slide
 
