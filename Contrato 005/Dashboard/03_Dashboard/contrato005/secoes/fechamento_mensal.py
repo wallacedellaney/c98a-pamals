@@ -61,13 +61,18 @@ def render(dados):
     )
 
     st.divider()
-    aba_computo, aba_atrasos, aba_ata = st.tabs(["Cômputo Mensal", "Atrasos", "Ata de Reunião"])
+    aba_computo, aba_atrasos, aba_apresentacao, aba_ata = st.tabs(
+        ["Cômputo Mensal", "Atrasos", "Apresentação (RMA)", "Ata de Reunião"]
+    )
 
     with aba_computo:
         _computo_mensal(mes_escolhido)
 
     with aba_atrasos:
         _atrasos(dados, mes_escolhido)
+
+    with aba_apresentacao:
+        _apresentacao_rma(mes_escolhido)
 
     with aba_ata:
         _ata_reuniao(mes_escolhido)
@@ -278,6 +283,40 @@ def _atrasos(dados, mes_escolhido):
 
     csv = tabela.to_csv(index=False).encode("utf-8")
     st.download_button("⬇️ Exportar (CSV)", csv, file_name=f"atrasos_{mes_escolhido}.csv", mime="text/csv")
+
+
+def _apresentacao_rma(mes_escolhido):
+    st.subheader(f"Apresentação (RMA) — {_formatar_mes(mes_escolhido)}")
+    st.caption(
+        "Gera a apresentação de PowerPoint da RMA do mês, puxando tudo da nossa própria plataforma "
+        "(Cômputo Mensal, Reparáveis, Empréstimos, Pagamentos, Atrasos) — a partir do layout de "
+        "`04_Relatorios/RMA_referencia.pptx`. Ver 00_Instrucoes/apresentacao_rma.md. Só o download — "
+        "não sobe pro Drive sozinho (a conta de serviço não tem cota própria de armazenamento)."
+    )
+
+    ano, mes = mes_escolhido.year, mes_escolhido.month
+    if st.button("📊 Gerar Apresentação (RMA)", key="apresentacao_gerar", width="stretch"):
+        with st.spinner("Montando a apresentação..."):
+            try:
+                import gerar_apresentacao_rma
+                nome_arquivo = f"RMA_{MESES_PT[mes - 1]}_{ano}.pptx"
+                caminho_saida = gerar_apresentacao_rma.DADOS_TRATADOS / "atas" / nome_arquivo
+                gerar_apresentacao_rma.gerar_apresentacao(ano, mes, caminho_saida)
+                st.session_state["apresentacao_gerada_caminho"] = str(caminho_saida)
+                st.session_state["apresentacao_gerada_nome"] = nome_arquivo
+            except Exception as e:
+                st.error(f"Falha ao gerar a apresentação: {e}")
+
+    if st.session_state.get("apresentacao_gerada_caminho"):
+        caminho = Path(st.session_state["apresentacao_gerada_caminho"])
+        if caminho.exists():
+            st.success("Apresentação gerada.")
+            with open(caminho, "rb") as f:
+                st.download_button(
+                    "⬇️ Baixar Apresentação (.pptx)", f.read(),
+                    file_name=st.session_state["apresentacao_gerada_nome"],
+                    mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                )
 
 
 def _ata_reuniao(mes_escolhido):

@@ -15,6 +15,7 @@ if str(RAIZ_PROJETO) not in sys.path:
 
 BASES_ORIGINAIS = DASHBOARD_ROOT / "01_Bases_Originais"
 DADOS_TRATADOS = DASHBOARD_ROOT / "02_Dados_Tratados"
+RELATORIOS = DASHBOARD_ROOT / "04_Relatorios"
 LOGS = DASHBOARD_ROOT / "06_Logs"
 ESTADO_ATUALIZACOES = DADOS_TRATADOS / "estado_atualizacoes.json"
 
