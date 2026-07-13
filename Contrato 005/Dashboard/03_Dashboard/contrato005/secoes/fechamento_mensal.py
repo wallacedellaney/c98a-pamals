@@ -12,6 +12,7 @@ import plotly.express as px
 import streamlit as st
 
 from contrato005.components.paleta import AMBER, LINE, PANEL, STATUS, layout_grafico
+from contrato005.components.utils import ordenar_unicos
 
 ABREV_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
@@ -248,7 +249,7 @@ def _atrasos(dados, mes_escolhido):
     with col2:
         c1, c2, c3 = st.columns(3)
         situacao_f = c1.selectbox("Situação", ["Todas", "No prazo", "Atrasado"], key="atrasos_f_situacao")
-        tipo_f = c2.multiselect("Tipo", sorted(concluidas_mes["tpemg"].dropna().unique()), key="atrasos_f_tipo")
+        tipo_f = c2.multiselect("Tipo", ordenar_unicos(concluidas_mes["tpemg"]), key="atrasos_f_tipo")
         busca = c3.text_input("🔎 Busca (emergência, aeronave)", key="atrasos_f_busca")
 
     filtrado = concluidas_mes.copy()

@@ -17,6 +17,7 @@ from contrato005.components.comparacao_periodo import (
     datas_disponiveis, diff_periodo, linha_do_tempo, periodo_anterior_equivalente,
 )
 from contrato005.components.paleta import AMBER, CATEGORICA, CYAN, LINE, PANEL, SECONDARY, STATUS, layout_grafico
+from contrato005.components.utils import ordenar_unicos
 
 NOMES_COLUNAS = {
     "numero_emergencia": "Emergência", "om": "Unidade", "matricula_aeronave": "Aeronave",
@@ -222,11 +223,11 @@ def render(dados):
         return
 
     c1, c2, c3, c4, c5 = st.columns(5)
-    tipo_f = c1.multiselect("Tipo", sorted(snapshot_fim["tpemg"].dropna().unique()), key="analise_f_tipo")
-    aeronave_f = c2.multiselect("Aeronave", sorted(snapshot_fim["matricula_aeronave"].dropna().unique()), key="analise_f_aeronave")
-    pn_f = c3.multiselect("PN", sorted(snapshot_fim["pn"].dropna().unique()), key="analise_f_pn")
-    status_f = c4.multiselect("Status", sorted(snapshot_fim["situacao"].dropna().unique()), key="analise_f_status")
-    unidade_f = c5.multiselect("Unidade", sorted(snapshot_fim["om"].dropna().unique()), key="analise_f_unidade")
+    tipo_f = c1.multiselect("Tipo", ordenar_unicos(snapshot_fim["tpemg"]), key="analise_f_tipo")
+    aeronave_f = c2.multiselect("Aeronave", ordenar_unicos(snapshot_fim["matricula_aeronave"]), key="analise_f_aeronave")
+    pn_f = c3.multiselect("PN", ordenar_unicos(snapshot_fim["pn"]), key="analise_f_pn")
+    status_f = c4.multiselect("Status", ordenar_unicos(snapshot_fim["situacao"]), key="analise_f_status")
+    unidade_f = c5.multiselect("Unidade", ordenar_unicos(snapshot_fim["om"]), key="analise_f_unidade")
 
     if st.button("✕ Limpar filtros", key="analise_periodo_limpar"):
         for chave in ("analise_f_tipo", "analise_f_aeronave", "analise_f_pn", "analise_f_status", "analise_f_unidade"):

@@ -78,6 +78,19 @@ def parse_inteiro(valor):
         return None
 
 
+def parse_texto_pn(valor):
+    """PN é sempre texto conceitualmente, mas às vezes é lido como número
+    quando a célula só tem dígitos — deixando a coluna com tipos
+    misturados (int e str), o que quebra `sorted()` e a conversão pra
+    Arrow do `st.dataframe` (bug real visto em 2026-07-13). Normaliza
+    tudo pra string aqui na extração."""
+    if valor is None or valor == "":
+        return None
+    if isinstance(valor, float) and valor.is_integer():
+        return str(int(valor))
+    return str(valor).strip()
+
+
 def extrair(historico_completo=False):
     """Se historico_completo=False (padrão): só emergências em aberto do
     provedor VEE ONE (os 3 filtros de sempre). Se True: TODO o histórico da
@@ -119,7 +132,7 @@ def extrair(historico_completo=False):
             "om_emg": row[0],
             "om": row[1],
             "numero_emergencia": row[2],
-            "pn": row[3],
+            "pn": parse_texto_pn(row[3]),
             "nomenclatura": row[4],
             "categoria": row[5],
             "matricula_aeronave": row[6],

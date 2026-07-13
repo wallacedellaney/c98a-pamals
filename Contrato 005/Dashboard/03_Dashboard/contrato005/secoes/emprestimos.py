@@ -11,6 +11,7 @@ import streamlit as st
 
 from contrato005.components import data_global
 from contrato005.components.paleta import AMBER, CATEGORICA, STATUS, layout_grafico
+from contrato005.components.utils import ordenar_unicos
 
 
 def _linha_mensal(df, coluna_data, cor):
@@ -108,9 +109,9 @@ def render(dados):
     with c1:
         status_f = st.selectbox("Status", ["Todos", "Pendente", "OK"], key="emp_f_status")
     with c2:
-        categorias_f = st.multiselect("Categoria", sorted(df["categoria"].dropna().unique()), key="emp_f_categoria")
+        categorias_f = st.multiselect("Categoria", ordenar_unicos(df["categoria"]), key="emp_f_categoria")
     with c3:
-        destinos_f = st.multiselect("Destino", sorted(df["destino"].dropna().unique()), key="emp_f_destino")
+        destinos_f = st.multiselect("Destino", ordenar_unicos(df["destino"]), key="emp_f_destino")
     with c4:
         busca = st.text_input("🔎 Busca (PN, descrição, aeronave)", key="emp_f_busca")
 

@@ -7,6 +7,7 @@ import plotly.express as px
 import streamlit as st
 
 from contrato005.components.paleta import CATEGORICA, layout_grafico
+from contrato005.components.utils import ordenar_unicos
 
 COLUNAS_TABELA = [
     "om_emg", "om", "numero_emergencia", "pn", "nomenclatura", "categoria",
@@ -58,22 +59,22 @@ def render(dados):
     st.markdown("##### Busca e filtros")
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        pns = st.multiselect("PN", sorted(df["pn"].dropna().unique()), key="et_f_pns")
+        pns = st.multiselect("PN", ordenar_unicos(df["pn"]), key="et_f_pns")
     with c2:
-        aeronaves = st.multiselect("Aeronave (MATR)", sorted(df["matricula_aeronave"].dropna().unique()), key="et_f_aeronaves")
+        aeronaves = st.multiselect("Aeronave (MATR)", ordenar_unicos(df["matricula_aeronave"]), key="et_f_aeronaves")
     with c3:
-        oms = st.multiselect("OM", sorted(df["om"].dropna().unique()), key="et_f_oms")
+        oms = st.multiselect("OM", ordenar_unicos(df["om"]), key="et_f_oms")
     with c4:
         status = st.selectbox("Situação geral", ["Todas", "Em aberto", "Concluídas"], key="et_f_status")
 
     with st.expander("Filtros avançados"):
         c5, c6, c7 = st.columns(3)
         with c5:
-            categorias = st.multiselect("Categoria (CAT)", sorted(df["categoria"].dropna().unique()), key="et_f_categorias")
+            categorias = st.multiselect("Categoria (CAT)", ordenar_unicos(df["categoria"]), key="et_f_categorias")
         with c6:
-            situacoes = st.multiselect("Situação (ST_EMG)", sorted(df["situacao"].dropna().unique()), key="et_f_situacoes")
+            situacoes = st.multiselect("Situação (ST_EMG)", ordenar_unicos(df["situacao"]), key="et_f_situacoes")
         with c7:
-            tpemgs = st.multiselect("TPEMG", sorted(df["tpemg"].dropna().unique()), key="et_f_tpemgs")
+            tpemgs = st.multiselect("TPEMG", ordenar_unicos(df["tpemg"]), key="et_f_tpemgs")
 
         c8, c9, c10 = st.columns(3)
         with c8:

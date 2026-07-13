@@ -6,6 +6,7 @@ import streamlit as st
 
 from contrato005.components import data_global
 from contrato005.components.paleta import AMBER, CATEGORICA, layout_grafico
+from contrato005.components.utils import ordenar_unicos
 
 TPEMG_PRIORIDADE = ("AIFP", "IPLR")  # prazo de 6 e 10 dias corridos (ver emergencias.md) — ANCE tem 30
 
@@ -42,13 +43,13 @@ def render(dados):
 
     col_f0, col_f1, col_f2, col_f3, col_f4 = st.columns(5)
     with col_f0:
-        pns = st.multiselect("PN", sorted(df["pn"].dropna().unique()))
+        pns = st.multiselect("PN", ordenar_unicos(df["pn"]))
     with col_f1:
-        aeronaves = st.multiselect("Aeronave (MATR)", sorted(df["matricula_aeronave"].dropna().unique()))
+        aeronaves = st.multiselect("Aeronave (MATR)", ordenar_unicos(df["matricula_aeronave"]))
     with col_f2:
-        situacoes = st.multiselect("Situação (ST_EMG)", sorted(df["situacao"].dropna().unique()))
+        situacoes = st.multiselect("Situação (ST_EMG)", ordenar_unicos(df["situacao"]))
     with col_f3:
-        tpemgs = st.multiselect("TPEMG", sorted(df["tpemg"].dropna().unique()))
+        tpemgs = st.multiselect("TPEMG", ordenar_unicos(df["tpemg"]))
     with col_f4:
         so_atrasadas = st.checkbox("Mostrar só atrasadas")
 

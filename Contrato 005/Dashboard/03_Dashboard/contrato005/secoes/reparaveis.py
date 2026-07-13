@@ -5,6 +5,7 @@ import streamlit as st
 
 from contrato005.components import data_global
 from contrato005.components.paleta import CATEGORICA, layout_grafico
+from contrato005.components.utils import ordenar_unicos
 
 
 def render(dados):
@@ -17,18 +18,18 @@ def render(dados):
 
     col_f0, col_f1, col_f2, col_f3, col_f4 = st.columns(5)
     with col_f0:
-        pns = st.multiselect("PN", sorted(df["pn"].dropna().unique()))
+        pns = st.multiselect("PN", ordenar_unicos(df["pn"]))
     with col_f1:
         situacoes = st.multiselect(
-            "Situação (ST_OS)", sorted(df["situacao"].dropna().unique()),
+            "Situação (ST_OS)", ordenar_unicos(df["situacao"]),
             help="Por padrão mostra só as OS em aberto. Selecione 'OS concluída' aqui para vê-las também.",
         )
     with col_f2:
-        condicoes = st.multiselect("Condição", sorted(df["condicao"].dropna().unique()))
+        condicoes = st.multiselect("Condição", ordenar_unicos(df["condicao"]))
     with col_f3:
-        locais = st.multiselect("Onde se encontra", sorted(df["onde_se_encontra"].dropna().unique()))
+        locais = st.multiselect("Onde se encontra", ordenar_unicos(df["onde_se_encontra"]))
     with col_f4:
-        unidades = st.multiselect("Unidade solicitante", sorted(df["unidade_solicitante"].dropna().unique()))
+        unidades = st.multiselect("Unidade solicitante", ordenar_unicos(df["unidade_solicitante"]))
 
     # Situação escolhida manualmente manda mais que o padrão "só em aberto" —
     # assim dá pra escolher "OS concluída" e ver as que já foram fechadas.

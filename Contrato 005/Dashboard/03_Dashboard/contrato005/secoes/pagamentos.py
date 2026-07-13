@@ -6,6 +6,7 @@ import streamlit as st
 
 from contrato005.components import data_global
 from contrato005.components.paleta import CATEGORICA, layout_grafico
+from contrato005.components.utils import ordenar_unicos
 
 MODULOS = [1, 2, 3]
 
@@ -63,13 +64,13 @@ def render(dados):
     # --- Filtros e visão geral do contrato ---
     col_f1, col_f2, col_f3, col_f4 = st.columns(4)
     with col_f1:
-        modulos = st.multiselect("Módulo", sorted(df["modulo"].dropna().unique().astype(int)))
+        modulos = st.multiselect("Módulo", ordenar_unicos(df["modulo"].dropna().astype(int)))
     with col_f2:
-        situacoes = st.multiselect("Situação", sorted(df["situacao"].dropna().unique()))
+        situacoes = st.multiselect("Situação", ordenar_unicos(df["situacao"]))
     with col_f3:
-        referencias = st.multiselect("Referência", sorted(df["referencia"].dropna().unique()))
+        referencias = st.multiselect("Referência", ordenar_unicos(df["referencia"]))
     with col_f4:
-        notas = st.multiselect("Nº Nota Fiscal", sorted(df["numero_nota_fiscal"].dropna().unique()))
+        notas = st.multiselect("Nº Nota Fiscal", ordenar_unicos(df["numero_nota_fiscal"]))
 
     filtrado = df.copy()
     if modulos:
@@ -100,9 +101,9 @@ def render(dados):
     with st.expander("Empenhos"):
         ef1, ef2 = st.columns(2)
         with ef1:
-            nes = st.multiselect("Nº Empenho (NE)", sorted(empenhos["numero_empenho"].dropna().unique()))
+            nes = st.multiselect("Nº Empenho (NE)", ordenar_unicos(empenhos["numero_empenho"]))
         with ef2:
-            responsaveis = st.multiselect("Responsável", sorted(empenhos["responsavel"].dropna().unique()))
+            responsaveis = st.multiselect("Responsável", ordenar_unicos(empenhos["responsavel"]))
 
         empenhos_filtrados = empenhos.copy()
         if nes:

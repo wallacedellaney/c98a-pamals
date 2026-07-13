@@ -78,6 +78,20 @@ def parse_inteiro(valor):
         return None
 
 
+def parse_texto_pn(valor):
+    """PN é sempre texto conceitualmente, mas o Google Sheets/openpyxl às
+    vezes lê uma célula sem letras (só dígitos) como número — deixando a
+    coluna com tipos misturados (int e str), o que quebra `sorted()` e a
+    conversão pra Arrow do `st.dataframe` (bug real visto em 2026-07-13,
+    depois de uma atualização com PN novo só numérico). Normaliza tudo
+    pra string aqui na extração, uma vez só."""
+    if valor is None or valor == "":
+        return None
+    if isinstance(valor, float) and valor.is_integer():
+        return str(int(valor))
+    return str(valor).strip()
+
+
 def extrair():
     inconsistencias = []
     linhas = []
@@ -115,7 +129,7 @@ def extrair():
 
         linhas.append({
             "os": os_num,
-            "pn": row[2],
+            "pn": parse_texto_pn(row[2]),
             "cff": row[3],
             "nomenclatura": row[4],
             "sn": row[5],
