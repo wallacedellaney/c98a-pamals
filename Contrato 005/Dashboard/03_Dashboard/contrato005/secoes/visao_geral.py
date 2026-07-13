@@ -63,11 +63,14 @@ def render(dados):
         st.subheader("Empréstimos")
         if df_emp is not None and not df_emp.empty:
             pendentes = int((df_emp["status"] == "Pendente").sum())
+            total_qtd = df_emp["quantidade"].fillna(1).sum()
             st.metric("Pendentes", pendentes)
-            st.metric("Total de itens", len(df_emp))
+            st.metric("Total de itens (linhas)", len(df_emp))
+            st.metric("Total de quantidade", f"{total_qtd:,.0f}".replace(",", "."))
         else:
             st.metric("Pendentes", "—")
-            st.metric("Total de itens", "—")
+            st.metric("Total de itens (linhas)", "—")
+            st.metric("Total de quantidade", "—")
         if st.button("Ver Empréstimos →", width="stretch", key="vg_ir_emprestimos"):
             _ir_para("Empréstimos")
 
@@ -96,9 +99,11 @@ def render(dados):
         st.plotly_chart(fig, width="stretch")
 
     with g3:
-        st.caption("Empréstimos: status")
+        st.caption("Empréstimos: status (por quantidade)")
         if df_emp is not None and not df_emp.empty:
-            contagem_emp = df_emp["status"].value_counts().reset_index()
+            df_emp_qtd = df_emp.copy()
+            df_emp_qtd["quantidade_efetiva"] = df_emp_qtd["quantidade"].fillna(1)
+            contagem_emp = df_emp_qtd.groupby("status")["quantidade_efetiva"].sum().reset_index()
             contagem_emp.columns = ["status", "quantidade"]
             fig = px.pie(
                 contagem_emp, names="status", values="quantidade", hole=0.55,

@@ -50,6 +50,16 @@ A pedido do Wallace (2026-07-09): a fonte se chama "Devoluções", mas a tela no
 - Tabela completa embaixo, **sem filtro por padrão** (mostra os 424 itens) — com filtro por Status (Todos/Pendente/OK — esse é "o filtro do OK" pedido), Categoria, Destino e busca livre (PN/descrição/aeronave).
 - Exportação em CSV.
 
+## Visão Geral (card resumo)
+
+**2026-07-13**: o card de Empréstimos na Visão Geral (`secoes/visao_geral.py`)
+só mostrava "Total de itens" (contagem de linhas) — era a única tela que
+tinha ficado de fora quando a ponderação por quantidade foi aplicada em
+todo o resto (site, apresentação, Ata). Corrigido: agora mostra "Total de
+itens (linhas)" e "Total de quantidade" lado a lado, e o gráfico de pizza
+"Empréstimos: status" também pesa por quantidade (`quantidade_efetiva`),
+igual à tela de Empréstimos.
+
 ## Atualização
 
 `extrair_devolucoes.py` segue o mesmo padrão das outras fontes com credencial própria (`atualizar_do_drive()`, xlsx binário, sem risco de bug de encoding). **Ainda não está no agendamento automático** — roda manual por enquanto (`python3 extrair_devolucoes.py --atualizar-do-drive`, ou pedir na conversa). Perguntar ao Wallace se quer adicionar a uma cadência quando fizer sentido.
