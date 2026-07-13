@@ -20,9 +20,9 @@ def _linha_mensal(df, coluna_data, cor):
         st.info("Sem datas registradas ainda.")
         return
     serie["mes"] = pd.to_datetime(serie[coluna_data]).dt.to_period("M").astype(str)
-    contagem = serie.groupby("mes").size().reset_index(name="quantidade").sort_values("mes")
+    contagem = serie.groupby("mes")["quantidade_efetiva"].sum().reset_index(name="quantidade").sort_values("mes")
     fig = px.line(contagem, x="mes", y="quantidade", markers=True, color_discrete_sequence=[cor])
-    fig.update_layout(xaxis_title="", yaxis_title="Itens")
+    fig.update_layout(xaxis_title="", yaxis_title="Quantidade")
     layout_grafico(fig, altura=230)
     st.plotly_chart(fig, width="stretch")
 
@@ -46,22 +46,42 @@ def render(dados):
     if atualizado_em:
         st.caption(f"Última atualização: **{datetime.fromtimestamp(atualizado_em).strftime('%d/%m/%Y %H:%M')}**")
 
+    # Uma linha de pedido pode ser de mais de 1 unidade (ex.: "10 EA" numa
+    # linha só) — pra estatística de quantidade, pesamos pela coluna
+    # "quantidade" (não só contamos linhas). Pedido do Wallace em
+    # 2026-07-12 e reconfirmado em 2026-07-13 ("tem q multiplicar as
+    # linhas pela quantidade, ai a gente consegue ver quantos itens foram
+    # emprestados e quantos foram devolvidos"). Linha sem quantidade
+    # registrada conta como 1 (mesma unidade mínima de antes).
+    df = df.copy()
+    df["quantidade_efetiva"] = df["quantidade"].fillna(1)
+
     total = len(df)
+    total_qtd = df["quantidade_efetiva"].sum()
     pendentes = int((df["status"] == "Pendente").sum())
     ok = int((df["status"] == "OK").sum())
+    pendentes_qtd = df.loc[df["status"] == "Pendente", "quantidade_efetiva"].sum()
+    ok_qtd = df.loc[df["status"] == "OK", "quantidade_efetiva"].sum()
     pct_ok = round(100 * ok / total) if total else 0
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total de itens", total)
-    c2.metric("Pendentes", pendentes, delta_color="inverse")
-    c3.metric("OK (devolvidos)", ok)
-    c4.metric("% concluído", f"{pct_ok}%")
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Total de itens (linhas)", total)
+    c2.metric("Total de quantidade", f"{total_qtd:,.0f}".replace(",", "."))
+    c3.metric("Emprestados, pendentes (quantidade)", f"{pendentes_qtd:,.0f}".replace(",", "."), delta_color="inverse")
+    c4.metric("Devolvidos, OK (quantidade)", f"{ok_qtd:,.0f}".replace(",", "."))
+    c5.metric("% concluído", f"{pct_ok}%")
+    st.caption(
+        "\"Total de quantidade\" soma a coluna Quantidade de cada linha (não é a mesma unidade de "
+        "medida sempre — EA, GM, LB etc. somados juntos), pra dar noção de volume além da contagem de "
+        "linhas. \"Pendentes\"/\"OK\" em quantidade mostram quantos itens ainda faltam devolver x quantos "
+        "já foram devolvidos, de verdade (não só quantas linhas de pedido)."
+    )
 
     st.write("")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.caption("Status")
-        contagem = df["status"].value_counts().reset_index()
+        st.caption("Status (por quantidade)")
+        contagem = df.groupby("status")["quantidade_efetiva"].sum().reset_index()
         contagem.columns = ["status", "quantidade"]
         fig = px.pie(
             contagem, names="status", values="quantidade", hole=0.55,
@@ -72,8 +92,8 @@ def render(dados):
         st.plotly_chart(fig, width="stretch")
 
     with col2:
-        st.caption("Por categoria (C/T/R)")
-        cat = df["categoria"].value_counts().reset_index()
+        st.caption("Por categoria (C/T/R) — por quantidade")
+        cat = df.groupby("categoria")["quantidade_efetiva"].sum().reset_index()
         cat.columns = ["categoria", "quantidade"]
         fig = px.bar(cat, x="categoria", y="quantidade", color_discrete_sequence=[CATEGORICA[0]])
         fig.update_layout(xaxis_title="", yaxis_title="")
@@ -81,8 +101,8 @@ def render(dados):
         st.plotly_chart(fig, width="stretch")
 
     with col3:
-        st.caption("Top unidades (destino)")
-        destino = df["destino"].value_counts().head(8).reset_index()
+        st.caption("Top unidades (destino) — por quantidade")
+        destino = df.groupby("destino")["quantidade_efetiva"].sum().sort_values(ascending=False).head(8).reset_index()
         destino.columns = ["destino", "quantidade"]
         fig = px.bar(destino, x="quantidade", y="destino", orientation="h", color_discrete_sequence=[CATEGORICA[1]])
         fig.update_layout(
@@ -96,10 +116,10 @@ def render(dados):
     st.markdown("##### Evolução mensal")
     col_emp, col_dev = st.columns(2)
     with col_emp:
-        st.caption("Empréstimos por mês (data do pedido de envio)")
+        st.caption("Empréstimos por mês (data do pedido de envio) — por quantidade")
         _linha_mensal(df, "pedido_envio", AMBER)
     with col_dev:
-        st.caption("Devoluções por mês (data de devolução)")
+        st.caption("Devoluções por mês (data de devolução) — por quantidade")
         _linha_mensal(df, "data_devolucao", STATUS["good"])
 
     st.divider()
