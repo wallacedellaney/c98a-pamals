@@ -274,8 +274,11 @@ def carregar_reparaveis_abertas():
 
 
 def carregar_emprestimos_mes(ano, mes):
+    """Status "Desconsiderado" nunca entra (pedido do Wallace, 2026-07-13
+    — ver carregar_dados.py::carregar_devolucoes, no site)."""
     caminho = DADOS_TRATADOS / "base_devolucoes_tratada.xlsx"
     df = pd.read_excel(caminho)
+    df = df[df["status"] != "Desconsiderado"].copy()
     df["pedido_envio"] = pd.to_datetime(df["pedido_envio"], errors="coerce")
     df["quantidade_efetiva"] = df["quantidade"].fillna(1)
     return df[

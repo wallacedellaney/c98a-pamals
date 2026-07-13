@@ -81,7 +81,12 @@ def carregar_computo_mensal(ano, mes):
 
 def carregar_devolucoes():
     """Empréstimos/devoluções de material — planilha "Devoluções". Ver
-    00_Instrucoes/emprestimos.md."""
+    00_Instrucoes/emprestimos.md. Status "Desconsiderado" (pedido do
+    Wallace, 2026-07-13: "arrumei os status desses itens, chama
+    desconsiderado, nao entra nunca na conta de nada") é removido aqui,
+    antes de qualquer estatística/gráfico/tabela — itens que distorciam
+    a soma por quantidade (linhas de quantidade grande já resolvidas por
+    outro motivo, não uma devolução real)."""
     caminho = DADOS_TRATADOS / "base_devolucoes_tratada.xlsx"
     if not caminho.exists():
         return pd.DataFrame(), None
@@ -89,6 +94,7 @@ def carregar_devolucoes():
     df = _ler_excel(str(caminho), mtime)
     df["pedido_envio"] = pd.to_datetime(df["pedido_envio"], errors="coerce")
     df["data_devolucao"] = pd.to_datetime(df["data_devolucao"], errors="coerce")
+    df = df[df["status"] != "Desconsiderado"].copy()
     return df, mtime
 
 

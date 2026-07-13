@@ -34,9 +34,37 @@ A planilha tem **2 colunas "QTD" e 2 colunas "Status"** (nomes duplicados na ori
 | Data de Devolução | `data_devolucao` | |
 | Observação Fiscal | `observacao_fiscal` | texto livre |
 | Observação Empresa | `observacao_empresa` | texto livre |
-| Status (2ª, última) | `status` | **o status real** — "OK"/"Ok" (normalizado pra "OK") ou vazio (normalizado pra "Pendente") |
+| Status (2ª, última) | `status` | **o status real** — "OK"/"Ok" (normalizado pra "OK"), vazio (normalizado pra "Pendente"), ou **"Desconsiderado"** (novo em 2026-07-13 — ver seção própria abaixo) |
 
 Sem filtro na extração — as 424 linhas entram, o filtro é só no dashboard (por Status, Categoria, Destino, busca livre).
+
+## Status "Desconsiderado" — nunca entra em nenhuma conta
+
+**2026-07-13**: o Wallace percebeu que "eles devolveram quase nada"
+(olhando o card "% concluído" por linha, 8%) enquanto a estatística por
+**quantidade** mostrava quase metade devolvida (912 de 1.952) — a causa:
+poucas linhas de status "OK" tinham quantidade GIGANTE (500 GM de um
+parafuso, três linhas de 100 EA cada), inflando a soma por quantidade
+sem representar a realidade (a devolução daquelas linhas específicas não
+era uma devolução real de material emprestado). O Wallace corrigiu na
+própria planilha "Devoluções", criando o status **"Desconsiderado"**
+pra essas linhas: "arrumei os status desses itens, chama desconsiderado,
+nao entra nunca na conta de nada".
+
+Filtrado (`df = df[df["status"] != "Desconsiderado"]`) logo depois de
+carregar os dados, nos 3 lugares que leem `base_devolucoes_tratada.xlsx`
+direto — nunca aparece em estatística, gráfico, card ou total de nenhum
+dos três:
+- Site: `contrato005/data/carregar_dados.py::carregar_devolucoes()`
+  (usado por `emprestimos.py` E pelo card de Empréstimos em
+  `visao_geral.py`, ambos automaticamente).
+- Apresentação (RMA): `gerar_apresentacao_rma.py::_carregar_dados_emprestimos()`.
+  Ata de Reunião: `gerar_ata_reuniao.py::carregar_emprestimos_mes()`.
+
+Depois da correção (8 linhas viraram "Desconsiderado"): Total de itens
+416 (era 424), Total de quantidade 1.099 (era 1.952), Devolvidos OK
+(quantidade) caiu de 912 pra **59** — agora bate com a percepção real do
+Wallace.
 
 ## Por que "Empréstimos" e não "Devoluções"
 

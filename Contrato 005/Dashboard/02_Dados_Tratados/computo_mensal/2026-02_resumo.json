@@ -1,0 +1,44 @@
+{
+  "ano": 2026,
+  "mes": 2,
+  "aeronaves_pontuadas": [
+    "2702",
+    "2703",
+    "2704",
+    "2708",
+    "2709",
+    "2719",
+    "2720",
+    "2721",
+    "2722",
+    "2723",
+    "2727",
+    "2728",
+    "2729",
+    "2731",
+    "2733",
+    "2736",
+    "2737",
+    "2738",
+    "2739",
+    "2740",
+    "2741",
+    "2742",
+    "2743"
+  ],
+  "aeronaves_fora_listadas": [
+    "2726",
+    "2730",
+    "2732",
+    "2734"
+  ],
+  "ultimo_dia_calculado": 28,
+  "ultimo_dia_mes": 28,
+  "mmam_previa": 86.49,
+  "inconsistencias": [
+    "Emergência 396250015798 (FAB 2733): campo 'Atd/cancelada' tem valor não reconhecido como data ('verificar data') — tratada como já encerrada antes do mês de referência (não entra no cômputo). Verificar manualmente.",
+    "Emergência 690260002219 (FAB 2727, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 396260016001 (FAB 2739, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 304260075552 (FAB 2704, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente."
+  ]
+}

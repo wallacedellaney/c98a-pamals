@@ -205,8 +205,10 @@ def _carregar_dados_emprestimos(ano, mes):
     "quantidade_efetiva" pra estatística ponderada pela quantidade real
     (pedido do Wallace: "a quantidade multiplica la pela quantidade ...
     as vezes uma linha tem 10 ea") — linha sem quantidade registrada conta
-    como 1."""
+    como 1. Status "Desconsiderado" nunca entra (pedido do Wallace,
+    2026-07-13 — ver carregar_dados.py::carregar_devolucoes)."""
     df = pd.read_excel(DADOS_TRATADOS / "base_devolucoes_tratada.xlsx")
+    df = df[df["status"] != "Desconsiderado"].copy()
     df["pedido_envio_dt"] = pd.to_datetime(df["pedido_envio"], errors="coerce")
     df["quantidade_efetiva"] = df["quantidade"].fillna(1)
     df = df.sort_values("numero_ordem")

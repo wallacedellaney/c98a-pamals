@@ -1,0 +1,53 @@
+{
+  "ano": 2025,
+  "mes": 12,
+  "aeronaves_pontuadas": [
+    "2702",
+    "2703",
+    "2704",
+    "2708",
+    "2709",
+    "2719",
+    "2720",
+    "2721",
+    "2722",
+    "2723",
+    "2727",
+    "2728",
+    "2729",
+    "2731",
+    "2733",
+    "2736",
+    "2737",
+    "2738",
+    "2739",
+    "2740",
+    "2741",
+    "2742",
+    "2743"
+  ],
+  "aeronaves_fora_listadas": [
+    "2726",
+    "2730",
+    "2732",
+    "2734"
+  ],
+  "ultimo_dia_calculado": 31,
+  "ultimo_dia_mes": 31,
+  "mmam_previa": 100.0,
+  "inconsistencias": [
+    "Emergência 685250010033 (FAB 2728, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 685250010202 (FAB 2719, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 685250010206 (FAB 2719, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017310 (FAB 2741, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 685250010245 (FAB 2719, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 396250015798 (FAB 2733): campo 'Atd/cancelada' tem valor não reconhecido como data ('verificar data') — tratada como já encerrada antes do mês de referência (não entra no cômputo). Verificar manualmente.",
+    "Emergência 386250012956 (FAB 2743, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017311 (FAB 2741, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017308 (FAB 2741, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 419250000528 (FAB 2723, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 690250002202 (FAB 2727, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 396250015960 (FAB 2733, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 685250010347 (FAB 2719, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente."
+  ]
+}
