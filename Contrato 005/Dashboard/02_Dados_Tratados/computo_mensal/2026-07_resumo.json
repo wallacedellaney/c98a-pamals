@@ -32,9 +32,9 @@
     "2732",
     "2734"
   ],
-  "ultimo_dia_calculado": 11,
+  "ultimo_dia_calculado": 13,
   "ultimo_dia_mes": 31,
-  "mmam_previa": 93.28,
+  "mmam_previa": 91.64,
   "inconsistencias": [
     "Emergência 396250015798 (FAB 2733): campo 'Atd/cancelada' tem valor não reconhecido como data ('verificar data') — tratada como já encerrada antes do mês de referência (não entra no cômputo). Verificar manualmente."
   ]
