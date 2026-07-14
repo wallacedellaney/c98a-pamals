@@ -14,5 +14,15 @@
     "record_count_2025": 185,
     "record_count_2026": 42,
     "last_error": null
+  },
+  "tpjl_extras": {
+    "status": "atualizado",
+    "last_error": null,
+    "local_updated_at": "2026-07-14T13:52:03",
+    "record_count": 21668,
+    "remote_modified_time": "2026-07-14T16:38:21Z",
+    "record_count_consumo": 11298,
+    "record_count_estoque": 9774,
+    "record_count_solicitacoes": 596
   }
 }
