@@ -72,6 +72,18 @@ def carregar_tpjl():
     return dados, mtime
 
 
+def carregar_historico_tpjl_solicitacoes():
+    """Snapshot diário de Solicitações (barra temporal, pedido do Wallace em
+    2026-07-14) — só existe a partir do dia em que essa gravação começou."""
+    caminho = DADOS_TRATADOS / "historico_tpjl_solicitacoes.csv"
+    if not caminho.exists():
+        return pd.DataFrame(columns=[
+            "data_snapshot", "numero_solicitacao", "pn", "categoria", "quantidade",
+            "tipo", "status", "solicitante", "data_criacao", "ultima_atualizacao",
+        ])
+    return _ler_csv(str(caminho), caminho.stat().st_mtime, dtype={"numero_solicitacao": str, "pn": str})
+
+
 def carregar_tpjl_extras():
     """Consumo/Estoque/Solicitações — 3 fontes extras da pasta Drive
     "Planilhas TPLJ" incorporadas em 2026-07-14, ver 00_Instrucoes/tpjl.md."""
@@ -104,4 +116,5 @@ def carregar_tudo():
         "tpjl_extras": df_tpjl_extras,
         "tpjl_extras_atualizado_em": mtime_tpjl_extras,
         "tpjl_extras_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "tpjl_extras"),
+        "tpjl_extras_historico_solicitacoes": carregar_historico_tpjl_solicitacoes(),
     }

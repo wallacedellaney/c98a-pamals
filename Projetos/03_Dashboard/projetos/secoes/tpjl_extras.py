@@ -19,6 +19,7 @@ import plotly.express as px
 import streamlit as st
 
 from projetos.components.atualizacao import botao_atualizar, status_atualizacao_html
+from projetos.components.evolucao import secao_evolucao
 from projetos.components.paleta import (
     COR_STATUS_SOLICITACAO, STATUS,
     PRIMARY as AMBER,
@@ -254,7 +255,7 @@ def _secao_estoque(df, estado_atual):
     st.download_button("⬇️ Exportar (CSV)", csv, file_name="tpjl_estoque.csv", mime="text/csv", key="tpjl_estoque_csv")
 
 
-def _secao_solicitacoes(df, estado_atual):
+def _secao_solicitacoes(df, estado_atual, historico=None):
     _cabecalho_fonte("Solicitações — log de pedidos (Projeto U8)", estado_atual, "solicitacoes")
     st.caption('Fonte: relatório "Solicitações" da pasta Drive "Planilhas TPLJ".')
 
@@ -366,6 +367,16 @@ def _secao_solicitacoes(df, estado_atual):
     csv = tabela.to_csv(index=False).encode("utf-8")
     st.download_button("⬇️ Exportar (CSV)", csv, file_name="tpjl_solicitacoes.csv", mime="text/csv", key="tpjl_sol_csv")
 
+    st.divider()
+    secao_evolucao(
+        historico, chave=["numero_solicitacao"], key_slider="tpjl_sol_evolucao_slider",
+        colunas_exibir=["numero_solicitacao", "pn", "status", "quantidade", "solicitante", "ultima_atualizacao"],
+        nomes_colunas={
+            "numero_solicitacao": "Nº Solicitação", "pn": "PN", "status": "Status",
+            "quantidade": "Quantidade", "solicitante": "Solicitante", "ultima_atualizacao": "Última Atualização",
+        },
+    )
+
 
 def render_consumo(dados):
     extras = dados.get("tpjl_extras") or {}
@@ -379,4 +390,7 @@ def render_estoque(dados):
 
 def render_solicitacoes(dados):
     extras = dados.get("tpjl_extras") or {}
-    _secao_solicitacoes(extras.get("solicitacoes"), dados.get("tpjl_extras_estado", {}))
+    _secao_solicitacoes(
+        extras.get("solicitacoes"), dados.get("tpjl_extras_estado", {}),
+        historico=dados.get("tpjl_extras_historico_solicitacoes"),
+    )

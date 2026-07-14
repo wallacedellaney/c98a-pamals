@@ -27,6 +27,12 @@ ARQUIVOS_FONTE = {
     "solicitacoes": BASES_ORIGINAIS / "TPJL_Solicitacoes" / "relatorio_solicitacoes.xlsx",
 }
 
+HISTORICO_SOLICITACOES = DADOS_TRATADOS / "historico_tpjl_solicitacoes.csv"
+COLUNAS_HISTORICO_SOLICITACOES = [
+    "numero_solicitacao", "pn", "categoria", "quantidade", "tipo", "status",
+    "solicitante", "data_criacao", "ultima_atualizacao",
+]
+
 COLUNAS_CONSUMO = {
     "Part Number": "pn", "CFF": "cff", "Projeto": "projeto", "Descrição": "descricao",
     "Categoria": "categoria", "Mês Competência": "mes", "Ano Competência": "ano",
@@ -128,6 +134,28 @@ def main():
     return dados
 
 
+def _registrar_historico_solicitacoes(df_solicitacoes):
+    """Acrescenta o snapshot de hoje (1 linha por Nº Solicitação) — se já
+    rodou hoje antes, substitui só as linhas de hoje (não duplica). Base pra
+    barra temporal pedida pelo Wallace em 2026-07-14 ("opcao de rolagem ...
+    buscando um historico e mostrando a evolucao"), mesmo componente já
+    usado em MTA/TPJL (`projetos/components/evolucao.py`). Só existe
+    história a partir do dia em que essa função passou a rodar."""
+    hoje = datetime.now().date().isoformat()
+    novo = df_solicitacoes[COLUNAS_HISTORICO_SOLICITACOES].copy()
+    novo["data_criacao"] = novo["data_criacao"].astype(str)
+    novo["ultima_atualizacao"] = novo["ultima_atualizacao"].astype(str)
+    novo.insert(0, "data_snapshot", hoje)
+
+    if HISTORICO_SOLICITACOES.exists():
+        historico = pd.read_csv(HISTORICO_SOLICITACOES)
+        historico = historico[historico["data_snapshot"] != hoje]
+        historico = pd.concat([historico, novo], ignore_index=True)
+    else:
+        historico = novo
+    historico.to_csv(HISTORICO_SOLICITACOES, index=False)
+
+
 def atualizar_do_drive():
     """Busca a versão mais recente das 3 planilhas no Google Drive,
     sobrescreve as cópias locais e reprocessa. Se uma falhar, as outras
@@ -146,6 +174,7 @@ def atualizar_do_drive():
 
     try:
         dados = main()
+        _registrar_historico_solicitacoes(dados["solicitacoes"])
     except Exception as e:
         estado.atualizar_estado(ESTADO_ATUALIZACOES, "tpjl_extras", status="erro", last_error=str(e))
         raise

@@ -171,8 +171,32 @@ formos automatizar).
 ### Cada aba nova (Consumo/Estoque/Solicitações)
 
 Mesmo padrão visual das abas 2025/2026 (indicadores em cards, filtros,
-gráficos, tabela operacional com exportação CSV) — sem histórico/"barra
-temporal" (não pedido pro Wallace nessas 3 fontes).
+gráficos, tabela operacional com exportação CSV).
+
+### Barra temporal — Solicitações (2026-07-14)
+
+Pedido do Wallace: "coloca um opcao de rolagem la em baixo das planilha de
+solicitacoes para ir avancando com o tempo buscando um historio e mostrando
+a evolucao". Mesmo componente já usado em MTA/TPJL
+(`projetos/components/evolucao.py::secao_evolucao`) — slider de datas +
+novos/removidos/alterados, comparando o dia escolhido com o mais recente.
+
+- `extrair_tpjl_extras.py::_registrar_historico_solicitacoes` grava 1
+  snapshot por dia em `02_Dados_Tratados/historico_tpjl_solicitacoes.csv`
+  (chave: Nº Solicitação) — chamada dentro de `atualizar_do_drive()`, roda
+  mesmo se o download do Drive falhar (mesmo padrão de `extrair_tpjl.py`:
+  o snapshot é do que já está localmente, não trava por causa do Drive).
+  Idempotente — rodar de novo no mesmo dia substitui as linhas de hoje, não
+  duplica.
+- Consumo e Estoque **não** ganharam barra temporal (não foi pedido pro
+  Wallace nessas 2 — só Solicitações, onde o campo Status muda de verdade
+  ao longo do tempo).
+- Primeiro snapshot gravado manualmente em 2026-07-14 (dia em que essa
+  função passou a existir) — só existe história a partir daí, mesma regra
+  de MTA/TPJL. Como as 3 fontes ainda não têm compartilhamento com a conta
+  de serviço (ver seção acima), a barra só vai ganhar novos dias quando
+  alguém rodar a extração de novo (manual, por enquanto) — não acompanha o
+  ciclo automático de 2 em 2h até isso ser resolvido.
 
 - **Consumo**: indicadores (linhas, quantidade total, PNs distintos, período
   coberto); filtros (Ano, Mês, Categoria, busca PN/Descrição); gráficos
