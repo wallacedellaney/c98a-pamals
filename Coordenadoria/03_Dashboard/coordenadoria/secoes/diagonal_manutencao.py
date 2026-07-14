@@ -22,6 +22,18 @@ FONTE_REAL = "Real (hoje)"
 FONTE_PROGRAMADO = "Programado"
 PATTERN_FONTE = {FONTE_REAL: "", FONTE_PROGRAMADO: "/"}
 
+# Frota "dentro do contrato" — pré-selecionada por padrão no filtro de
+# Aeronave (pedido do Wallace em 2026-07-14), pra não precisar marcar toda
+# vez; continua editável (dá pra tirar/incluir depois, é só o valor
+# inicial). Ver 00_Instrucoes/computo_mensal.md pra aeronaves fora do
+# contrato (2726, 2730, 2732, 2734) e sem condições (2701, 2706, 2724),
+# que ficam de fora dessa lista de propósito.
+AERONAVES_PADRAO = {
+    "2702", "2703", "2704", "2708", "2709", "2720", "2719", "2721", "2722", "2723",
+    "2727", "2728", "2729", "2731", "2733", "2736", "2737", "2738", "2739", "2740",
+    "2741", "2742", "2743",
+}
+
 
 def _eventos_reais(disp_aeronaves):
     """Constrói os eventos "de verdade" a partir do relatório mais recente da
@@ -97,8 +109,10 @@ def render(dados):
     with c1:
         operadores = st.multiselect("Operador", sorted(df["operador"].unique()), key="diagonal_filtro_operador")
     with c2:
+        opcoes_aeronave = sorted(df["aeronave"].dropna().unique(), key=str)
+        padrao_aeronave = [a for a in opcoes_aeronave if str(a) in AERONAVES_PADRAO]
         aeronaves_f = st.multiselect(
-            "Aeronave", sorted(df["aeronave"].dropna().unique(), key=str), key="diagonal_filtro_aeronave"
+            "Aeronave", opcoes_aeronave, default=padrao_aeronave, key="diagonal_filtro_aeronave"
         )
     with c3:
         meses_a_frente = st.slider("Meses à frente", min_value=1, max_value=18, value=6, key="diagonal_meses")

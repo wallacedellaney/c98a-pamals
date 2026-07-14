@@ -99,3 +99,12 @@ eventos com fim >= hoje), filtro por operador, por **aeronave** (multiselect,
 pra incluir/excluir aeronaves específicas do gráfico — pedido do Wallace em
 2026-07-14) e por quantos meses à frente olhar, resumo de aeronaves
 indisponíveis por mês, e tabela detalhada com filtro por coluna.
+
+**Aeronave pré-selecionada por padrão (2026-07-14)**: o filtro de Aeronave já
+vem marcado com as 23 aeronaves "dentro do contrato"
+(`AERONAVES_PADRAO` em `diagonal_manutencao.py`) — 2702, 2703, 2704, 2708,
+2709, 2719, 2720, 2721, 2722, 2723, 2727, 2728, 2729, 2731, 2733, 2736,
+2737, 2738, 2739, 2740, 2741, 2742, 2743. Deixa de fora, de propósito, as
+fora do contrato (2726, 2730, 2732, 2734) e sem condições (2701, 2706,
+2724) — ver `computo_mensal.md`. É só o valor inicial: continua editável,
+dá pra marcar/desmarcar normalmente depois.
