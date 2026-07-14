@@ -27,7 +27,9 @@ LIMITE_ALERTA = {"Hora": 100, "Pouso": 50, "Calendário": 90}
 
 
 def _status_vencimento(row):
-    if row["vencido"]:
+    # Célula vazia no Excel volta como NaN; bool(NaN) é True em Python e
+    # marcava incorretamente "Condição"/"Não instalado" como vencido.
+    if pd.notna(row["vencido"]) and bool(row["vencido"]):
         return "Vencido"
     if row["tipo_vencimento"] not in LIMITE_ALERTA:
         # Tipos sem vencimento programado por hora/pouso/calendário (ex.:

@@ -6,8 +6,9 @@ Granularidade: a maioria dos operadores é semanal (com rótulo "Semana N") ou
 usa faixas de dias sem rótulo padronizado — nesses casos guardamos só o mês
 (perde a semana exata, mas evita inventar uma correspondência que a fonte não
 dá com segurança). BAMN é mensal por natureza (4 colunas por mês, sem rótulo
-de semana). PAMA-LS e BACG vieram por texto simplificado (o binário original
-não transferiu íntegro) — marcados com confianca="aproximada".
+de semana). PAMA-LS continua vindo por texto simplificado — seus registros são
+marcados com confianca="aproximada". O BACG passou a usar a planilha íntegra
+recebida em julho/2026.
 """
 
 import re
@@ -19,22 +20,20 @@ from common import BASES_ORIGINAIS, DADOS_TRATADOS, registrar_log
 from diagonal_parse import ler_grade_generica, periodo_para_datas, RE_PLACEHOLDER, RE_NAO_PROGRAMADO
 
 DIAGONAL_DIR = BASES_ORIGINAIS / "Diagonal_Manutencao"
-VENCIMENTOS_OPERADORES_DIR = BASES_ORIGINAIS / "Vencimentos" / "Operadores"
 
 REGISTRO_GRADE = [
-    {"operador": "BANT", "arquivo": VENCIMENTOS_OPERADORES_DIR / "BANT" / "DIAGONAL_E_VENC_ITENS_C98_JUN26_BANT.xlsx", "aba": "DIAGONAL C-98"},
-    {"operador": "DACTA II", "arquivo": DIAGONAL_DIR / "DACTA_II" / "Diagonal_de_Inspecao_CINDACTA-II_JUN2026.ods", "aba": "DIAGONAL 2026"},
-    {"operador": "BABR", "arquivo": DIAGONAL_DIR / "BABR" / "Diagonal_do_C98_6ETA_GLOG-BR_MAIO2026.xlsx", "aba": "DIAGONAL 2026"},
-    {"operador": "BABE", "arquivo": DIAGONAL_DIR / "BABE" / "Controle_Diagonal_BABE_JUN2026.xlsx", "aba": "DIAGONAL 2026"},
-    {"operador": "BACO", "arquivo": DIAGONAL_DIR / "BACO" / "Controle_Diagonal_BACO_JUN2026.xlsx", "aba": "DIAGONAL 2026"},
+    {"operador": "BANT", "arquivo": DIAGONAL_DIR / "BANT" / "DIAGONAL_C-98_e_Controle_de_Itens_JUL2026.xlsx", "aba": "DIAGONAL C-98"},
+    {"operador": "DACTA II", "arquivo": DIAGONAL_DIR / "DACTA_II" / "Diagonal_de_Inspecao_CINDACTA-II_JUL2026.ods", "aba": "DIAGONAL 2026"},
+    {"operador": "BABR", "arquivo": DIAGONAL_DIR / "BABR" / "Diagonal_do_C98_6ETA_GLOG-BR_JULHO2026.xlsx", "aba": "DIAGONAL 2026"},
+    {"operador": "BABE", "arquivo": DIAGONAL_DIR / "BABE" / "Controle_Diagonal_BABE_JUL2026.xlsx", "aba": "DIAGONAL 2026"},
+    {"operador": "BACO", "arquivo": DIAGONAL_DIR / "BACO" / "Controle_Diagonal_BACO_JUL2026.xlsx", "aba": "DIAGONAL 2026"},
+    {"operador": "BACG", "arquivo": DIAGONAL_DIR / "BACG" / "Controle_Diagonal_BACG_JUL2026.xlsx", "aba": "DIAGONAL 2025"},
     {"operador": "CLA", "arquivo": DIAGONAL_DIR / "CLA" / "Controle_de_Diagonal_CLA_JUN26_A_OUT26.xlsx", "aba": "JUN"},
 ]
 
-BAMN_ARQUIVO = VENCIMENTOS_OPERADORES_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_JUNHO_2026.ods"
+BAMN_ARQUIVO = DIAGONAL_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_JULHO_2026.ods"
 
-# PAMA-LS e BACG: o binário original não transferiu íntegro (arquivo
-# corrompido/transferência incompleta, ver notas nos .txt correspondentes em
-# 01_Bases_Originais/Diagonal_Manutencao/<OPERADOR>/). Dados reconstruídos a
+# PAMA-LS: o binário original não transferiu íntegro. Dados reconstruídos a
 # partir de texto simplificado — a atribuição exata mês-a-mês é aproximada,
 # não uma leitura direta de coluna. Marcados com confianca="aproximada".
 EVENTOS_APROXIMADOS = [
@@ -42,13 +41,6 @@ EVENTOS_APROXIMADOS = [
     {"operador": "PAMA-LS", "aeronave": "2704", "ano_mes": "2021-10", "motivo": "ID5-15-0A ID5-15-01 ID5-15-02 ID5-15-07 ID5-15-09 ID5-15-11 ID5-15-21 IM1800 (1800)"},
     {"operador": "PAMA-LS", "aeronave": "2704", "ano_mes": "2024-04", "motivo": "ID5-15-06 ID5-15-15 BM100 (1900)"},
     {"operador": "PAMA-LS", "aeronave": "2704", "ano_mes": "2024-08", "motivo": "ID5-15-0A ID5-15-12 ID5-15-MG IM2000 (2000) INSP 2 MOLAS TPP LPS3"},
-    {"operador": "BACG", "aeronave": "2727", "ano_mes": "2026-07", "motivo": "ID5-15-0A (HORA) 100H (MOTOR)"},
-    {"operador": "BACG", "aeronave": "2727", "ano_mes": "2026-08", "motivo": "ID5-15-06B (DATA)"},
-    {"operador": "BACG", "aeronave": "2727", "ano_mes": "2026-09", "motivo": "ID5-15-16 (HORA) 200H (MOTOR)"},
-    {"operador": "BACG", "aeronave": "2727", "ano_mes": "2026-10", "motivo": "ID5-15-07 (DATA)"},
-    {"operador": "BACG", "aeronave": "2727", "ano_mes": "2026-11", "motivo": "ID5-15-06B ID5-15-01 ID5-15-02 ID5-15-03 ID5-15-09 ID5-15-11 ID5-15-20 ID5-15-21 (DATA)"},
-    {"operador": "BACG", "aeronave": "2727", "ano_mes": "2026-12", "motivo": "ID5-15-0A (HORA) 300H (MOTOR)"},
-    {"operador": "BACG", "aeronave": "2727", "ano_mes": "2027-01", "motivo": "ID5-15-06B (HORA) 400H (MOTOR)"},
 ]
 
 
@@ -197,6 +189,17 @@ def extrair():
         })
 
     df = pd.DataFrame(linhas)
+    if not df.empty:
+        # Algumas grades repetem o mesmo texto em células mescladas/espelhadas.
+        # Isso não representa dois eventos: no Gantt produziria barras e
+        # contagens duplicadas. Só removemos cópias integralmente idênticas.
+        df = (
+            df.drop_duplicates(
+                subset=["operador", "aeronave", "periodo_inicio", "periodo_fim", "motivo", "confianca"]
+            )
+            .sort_values(["periodo_inicio", "operador", "aeronave", "motivo"])
+            .reset_index(drop=True)
+        )
     return df, inconsistencias
 
 

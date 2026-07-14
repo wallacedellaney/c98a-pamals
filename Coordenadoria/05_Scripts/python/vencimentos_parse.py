@@ -20,7 +20,7 @@ RE_ANO = re.compile(r"^(-?\d+(?:[.,]\d+)?)\s*a(?:no)?(?:s)?\.?$", re.IGNORECASE)
 RE_POUSO = re.compile(r"^(-?\d+(?:[.,]\d+)?)\s*p(?:ouso)?(?:s)?\.?$", re.IGNORECASE)
 # Hora aceita tanto dígitos corridos ("3321:35") quanto com ponto de milhar
 # ("4.938:00", visto na BANT) — os dois formatos convivem na mesma fonte.
-RE_HORA_TEXTO = re.compile(r"^-?(\d{1,3}(?:\.\d{3})+|\d{1,5}):\d{2}(?::\d{2})?$")
+RE_HORA_TEXTO = re.compile(r"^-?(\d{1,3}(?:\.\d{3})+|\d{1,5}):\d{2}(?::\d{2}(?:\.\d{1,3})?)?$")
 RE_NUMERO_PURO = re.compile(r"^-?\d+(?:[.,]\d+)?$")
 # Algumas linhas da BANT anotam o equivalente em meses entre parênteses
 # depois do valor de horas (ex.: "1.337:20 (19,8 M)") — é só informativo,
@@ -39,6 +39,11 @@ VALORES_NAO_INSTALADO = {"ANV S/ MOTOR", "NÃO INSTALADO", "NÃO INSTALADA", "N�
 # "Vencida" (BANT): a fonte escreveu que já venceu, mas sem informar o valor
 # (quanto passou do limite) — sabemos que é vencido, não sabemos por quanto.
 VALORES_VENCIDO_SEM_VALOR = {"VENCIDA", "VENCIDO"}
+
+# "N/A" (BAMN): item sem vencimento aplicável na fonte. É uma categoria
+# válida, equivalente em tratamento a "Condição"/"Não instalado", não um
+# valor ausente que devamos tentar converter.
+VALORES_NAO_APLICAVEL = {"N/A", "NA", "N.A.", "NÃO APLICÁVEL", "NAO APLICAVEL"}
 
 MESES_PT = {
     "jan": 1, "fev": 2, "mar": 3, "abr": 4, "mai": 5, "jun": 6,
@@ -77,13 +82,15 @@ def classificar_disponibilidade(valor):
             return "Não instalado", None, texto
         if texto.upper() in VALORES_VENCIDO_SEM_VALOR:
             return "Vencido (sem valor)", None, texto
+        if texto.upper() in VALORES_NAO_APLICAVEL:
+            return "Não aplicável", None, texto
         texto_sem_anotacao = RE_ANOTACAO_FINAL.sub("", texto)
         if RE_HORA_TEXTO.match(texto_sem_anotacao):
             partes = texto_sem_anotacao.replace(".", "").split(":")
             sinal = -1 if partes[0].startswith("-") else 1
             h = abs(int(partes[0]))
             m = int(partes[1])
-            s = int(partes[2]) if len(partes) > 2 else 0
+            s = float(partes[2]) if len(partes) > 2 else 0
             return "Hora", sinal * round(h + m / 60 + s / 3600, 2), None
         m = RE_MES_DIA.match(texto)
         if m:

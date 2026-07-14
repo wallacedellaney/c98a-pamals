@@ -60,7 +60,8 @@ está carregado da Disponibilidade Diária.
 | BANT, BABR, BACO, BABE, CLA | Semanal ("Semana N") ou por faixa de dias | Cabeçalho de mês pode vir uma vez só no topo ou repetido por bloco de aeronave (BABE repete; BANT/BABR/BACO/CLA vem uma vez). Matrícula pode estar na linha "HORAS VOO" (BANT/BABR/BACO) OU na linha "INSP. PROG." (BABE) — o parser checa as duas. |
 | DACTA II | Semanal, mas cabeçalho de mês com espaçamento irregular (ex.: "DEZEMBRO" seguido de uma coluna de TSN antes do próximo mês) | Atribuição de semana pode ficar levemente imprecisa nessas transições — aceito como aproximação razoável. |
 | BAMN | Mensal (4 colunas por mês, sem rótulo de semana) — vem numa aba "DIAGONAL" dentro do arquivo combinado, com células mescladas verticalmente (matrícula/esquadrão só na primeira linha do bloco) | Reaproveita a leitura merge-aware já usada em vencimentos_parse. |
-| PAMA-LS, BACG | **Aproximada** — o binário original (.xlsx/.ods) não transferiu íntegro do Drive (mesma falha de transferência documentada em vencimentos.md pro BACG), dados reconstruídos a partir de texto simplificado (`read_file_content`). A correspondência exata "código → mês" pode ter perdido precisão na conversão. Marcado com `confianca="aproximada"` na base tratada — não inventamos uma correspondência que não temos certeza. |
+| BACG | Semanal desde julho/2026 — a planilha íntegra passou a ser recebida e substituiu a reconstrução aproximada usada anteriormente. |
+| PAMA-LS | **Aproximada** — o binário original não transferiu íntegro do Drive; os dados disponíveis continuam reconstruídos a partir de texto simplificado. A correspondência exata "código → mês" pode ter perdido precisão na conversão. Marcado com `confianca="aproximada"` na base tratada — não inventamos uma correspondência que não temos certeza. |
 
 `CLA` tinha um bloco de exemplo/modelo no topo do arquivo ("XX:XX",
 "INSP-XXX") que **não é dado real** — filtrado automaticamente (ver
@@ -78,7 +79,17 @@ Parser compartilhado em `diagonal_parse.py` (`ler_grade_generica`, usado por
 todos os operadores com arquivo próprio em grade — xlsx via openpyxl, ods via
 odfpy) + um leitor dedicado só pra BAMN (`_ler_bamn`, dentro do próprio
 `extrair_diagonal_manutencao.py`, por causa das células mescladas e ordem de
-colunas diferente) + uma lista fixa `EVENTOS_APROXIMADOS` pro PAMA-LS/BACG.
+colunas diferente) + uma lista fixa `EVENTOS_APROXIMADOS` somente pro PAMA-LS.
+
+## Atualização de julho/2026
+
+Fontes novas incorporadas para BANT, DACTA II, BABR, BABE, BACO, BAMN e
+BACG. O BACG passou de aproximado para leitura direta da planilha. CLA foi
+mantido na fonte de junho (ela já cobre até outubro) e PAMA-LS permaneceu na
+última fonte aproximada, pois esses dois operadores não tinham arquivo novo na
+pasta mensal consultada em 14/07/2026. A consolidação também passou a remover
+duplicatas exatas de operador/aeronave/período/motivo/confiança, necessárias
+porque a grade do BANT repete alguns textos em células mescladas.
 
 ## Site
 
