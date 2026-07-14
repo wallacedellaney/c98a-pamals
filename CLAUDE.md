@@ -50,10 +50,14 @@ para a arquitetura completa e como adicionar uma fonte nova ao agendamento.
 Cada uma das 3 áreas tem, no rodapé do dashboard, um botão pequeno e
 centralizado **"ℹ️ Fonte dos dados"** (nome escolhido pelo Wallace em
 2026-07-14) — ao clicar, mostra uma tabela (Informação / De onde vem / Como
-é atualizado / Frequência) com **todas** as fontes daquela área.
-Implementado em `<area>/components/fontes_dados.py` (duplicado por área,
-sem import entre pacotes — mesmo motivo de sempre), chamado no fim do
-`render()` de `contrato_app.py`/`coordenadoria_app.py`/`projetos_app.py`.
+é atualizado / Frequência / **Última atualização**) com **todas** as fontes
+daquela área. A coluna "Última atualização" busca a data de modificação real
+do arquivo tratado (via a chave `_chave` de cada linha, mapeada pra uma
+chave já carregada por `carregar_dados.py`) — não é um valor fixo; fontes
+calculadas na hora (Cômputo Mensal, Apresentação, Ata, Dashboard Geral)
+mostram "—". Implementado em `<area>/components/fontes_dados.py` (duplicado
+por área, sem import entre pacotes — mesmo motivo de sempre), chamado no fim
+do `render()` de `contrato_app.py`/`coordenadoria_app.py`/`projetos_app.py`.
 **Manter essa tabela atualizada** sempre que uma fonte mudar de nome, de
 mecanismo de atualização (manual → automático) ou de frequência.
 

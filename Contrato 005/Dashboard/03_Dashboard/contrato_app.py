@@ -157,4 +157,4 @@ def render(ao_voltar=None):
 
     st.caption(f"Dados atualizados em {datetime.fromtimestamp(dados['atualizado_em']).strftime('%d/%m/%Y %H:%M')}")
 
-    secao_fontes_dados()
+    secao_fontes_dados(dados)

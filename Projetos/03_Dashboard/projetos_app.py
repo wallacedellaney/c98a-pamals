@@ -45,4 +45,4 @@ def render(ao_voltar=None):
     else:
         PAGINAS[pagina].render(dados)
 
-    secao_fontes_dados()
+    secao_fontes_dados(dados)

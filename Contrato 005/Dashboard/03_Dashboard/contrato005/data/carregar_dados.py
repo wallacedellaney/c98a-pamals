@@ -156,6 +156,7 @@ def carregar_tudo():
     df_pagamentos, contrato, empenhos, mtime_pag = carregar_pagamentos()
     return {
         "emergencias": df_emergencias,
+        "emergencias_atualizado_em": mtime_emerg,
         "historico_emergencias": historico_emergencias,
         "emergencias_totais": df_emergencias_totais,
         "emergencias_totais_atualizado_em": mtime_emerg_totais,
@@ -163,8 +164,10 @@ def carregar_tudo():
         "devolucoes_atualizado_em": mtime_devolucoes,
         "historico_devolucoes": carregar_historico_devolucoes(),
         "reparaveis": df_reparaveis,
+        "reparaveis_atualizado_em": mtime_rep,
         "historico_reparaveis": carregar_historico_reparaveis(),
         "pagamentos": df_pagamentos,
+        "pagamentos_atualizado_em": mtime_pag,
         "historico_pagamentos": carregar_historico_pagamentos(),
         "contrato": contrato,
         "empenhos": empenhos,
