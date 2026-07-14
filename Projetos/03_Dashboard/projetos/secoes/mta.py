@@ -20,6 +20,7 @@ import streamlit as st
 
 from projetos.components.atualizacao import botao_atualizar, status_atualizacao_html
 from projetos.components.evolucao import secao_evolucao
+from projetos.components.filtros import filtro_colunas
 from projetos.components.paleta import (
     CATEGORICA, COR_SITUACAO_MTA, INK, LINE, PANEL, SECONDARY, STATUS,
     PRIMARY as AMBER,
@@ -323,13 +324,16 @@ def render(dados):
 
     st.markdown('<div class="pj-titulo-secao">Tabela operacional</div>', unsafe_allow_html=True)
     tabela = filtrado[COLUNAS_TABELA].rename(columns=NOMES_COLUNAS)
+    tabela = filtro_colunas(tabela, key_prefix="mta")
+    st.caption(f"{len(tabela)} linha(s) após os filtros por coluna.")
     evento = st.dataframe(
         tabela, hide_index=True, width="stretch", height=420,
         on_select="rerun", selection_mode="single-row", key="mta_tabela",
     )
     linhas_selecionadas = evento.selection.get("rows", []) if evento else []
     if linhas_selecionadas:
-        registro = filtrado.iloc[linhas_selecionadas[0]].to_dict()
+        registro = tabela.iloc[linhas_selecionadas[0]]
+        registro = filtrado[filtrado["linha"] == registro["Linha"]].iloc[0].to_dict()
         _painel_detalhe(registro)
 
     csv = tabela.to_csv(index=False).encode("utf-8")

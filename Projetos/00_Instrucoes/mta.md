@@ -67,6 +67,17 @@ Executora, Pacote, Para Contrato, Para Motores, Mês previsto. Ordenação,
 filtro, pesquisa, paginação, exportação, painel de detalhes ao clicar na
 linha (campos vazios = "Não informado").
 
+**Filtro por coluna na própria tabela (2026-07-14, pedido do Wallace):**
+expander "🔍 Filtros por coluna" logo acima da tabela — um multiselect por
+coluna já formatada pra exibição (estilo AutoFiltro do Excel), além dos
+filtros de topo já existentes (Situação/Executora/Pacote/Mês/busca).
+Componente `projetos/components/filtros.py::filtro_colunas` — duplicado do
+mesmo componente já usado na Diagonal de Manutenção da Coordenadoria (não
+importado de lá, por causa da regra de não misturar pacotes entre áreas).
+O painel de detalhes ao clicar numa linha busca o registro completo em
+`filtrado` pela **Linha** (chave única), não pela posição — a posição muda
+depois do filtro por coluna reduzir a tabela.
+
 Cores de status discretas: verde (atendido), azul/amarelo (em andamento),
 cinza (sem informação), vermelho discreto (não aprovado/pendência relevante).
 
