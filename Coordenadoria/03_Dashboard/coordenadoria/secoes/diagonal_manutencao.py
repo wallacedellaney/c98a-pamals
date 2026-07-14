@@ -93,16 +93,22 @@ def render(dados):
 
     hoje = pd.Timestamp.now().normalize()
 
-    c1, c2 = st.columns([1, 3])
+    c1, c2, c3 = st.columns([1, 1, 2])
     with c1:
         operadores = st.multiselect("Operador", sorted(df["operador"].unique()), key="diagonal_filtro_operador")
     with c2:
+        aeronaves_f = st.multiselect(
+            "Aeronave", sorted(df["aeronave"].dropna().unique(), key=str), key="diagonal_filtro_aeronave"
+        )
+    with c3:
         meses_a_frente = st.slider("Meses à frente", min_value=1, max_value=18, value=6, key="diagonal_meses")
 
     limite = hoje + pd.DateOffset(months=meses_a_frente)
     filtrado = df[(df["periodo_fim"] >= hoje) & (df["periodo_inicio"] <= limite)].copy()
     if operadores:
         filtrado = filtrado[filtrado["operador"].isin(operadores)]
+    if aeronaves_f:
+        filtrado = filtrado[filtrado["aeronave"].isin(aeronaves_f)]
 
     if filtrado.empty:
         st.caption("Nenhum evento de indisponibilidade no período/filtro selecionado.")

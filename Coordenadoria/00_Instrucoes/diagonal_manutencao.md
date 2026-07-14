@@ -95,6 +95,7 @@ porque a grade do BANT repete alguns textos em células mescladas.
 
 Página "Diagonal de Manutenção" na Coordenadoria (entre Disponibilidade
 Diária e Vencimentos) — Gantt (Plotly `timeline`), corte em "hoje" (só mostra
-eventos com fim >= hoje), filtro por operador e por quantos meses à frente
-olhar, resumo de aeronaves indisponíveis por mês, e tabela detalhada com
-filtro por coluna.
+eventos com fim >= hoje), filtro por operador, por **aeronave** (multiselect,
+pra incluir/excluir aeronaves específicas do gráfico — pedido do Wallace em
+2026-07-14) e por quantos meses à frente olhar, resumo de aeronaves
+indisponíveis por mês, e tabela detalhada com filtro por coluna.
