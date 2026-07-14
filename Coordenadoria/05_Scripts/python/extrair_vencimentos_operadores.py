@@ -23,14 +23,11 @@ Formatos incorporados até agora:
   baixo" o último valor real da coluna), matrícula sem prefixo "FAB" (só o
   número), e tem formatos de valor extras: sufixo "A"/"Anos" (anos), "Nm e Nd"
   (mês + dia com espaços), datas "MM/AA" (só mês/ano, sem dia).
-* BACG — arquivo único (Diagonal+MAPEM+Vencimentos), mas a seção "Controle de
-  Vencimentos" em si usa a ordem de colunas padrão, só que com AERONAVE sem
-  prefixo "FAB" (igual à BAMN). O .ods baixado do Drive veio com o
-  `content.xml` corrompido (não descomprime) nas duas vezes que foi buscado —
-  os dados foram reconstruídos a partir do texto plano (`read_file_content`)
-  e salvos como CSV local. Tem muitos itens com DISPONIBILIDADE "O/C" (On
-  Condition — sem vencimento programado), tratado como um tipo_vencimento
-  próprio ("Condição"), não como inconsistência.
+* BACG — a fonte de julho/2026 veio íntegra em .xlsx, com a aba "Controle de
+  Vencimentos" e AERONAVE sem prefixo "FAB" (igual à BAMN). Substituiu o CSV
+  reconstruído de abril. Tem itens com DISPONIBILIDADE "O/C" (On Condition —
+  sem vencimento programado), tratados como tipo próprio ("Condição"), não
+  como inconsistência.
 
 * BANT — arquivo único (Diagonal+MAPEM+Vencimento) com 3 abas; a aba
   "Controle de Vencimento de Itens" já usa a ordem de colunas padrão, só que
@@ -71,9 +68,9 @@ REGISTRO = [
     },
     {
         "operador": "DACTA II",
-        "arquivo": OPERADORES_DIR / "DACTA_II" / "Controle_de_Vencimentos_DACTAII_JUN_2026.ods",
+        "arquivo": OPERADORES_DIR / "DACTA_II" / "Controle_de_Vencimentos_DACTAII_JUL_2026.ods",
         "tipo": "ods",
-        "mes_fonte": "2026-06",
+        "mes_fonte": "2026-07",
     },
     {
         # Confirmado pelo Wallace: a pasta "PAMA-LS" do Drive (maio) e a pasta
@@ -81,24 +78,26 @@ REGISTRO = [
         # a base BABR mesmo, só a pasta mudou de nome. 2704 é a única
         # aeronave que é de fato do PAMA-LS (ver registro seguinte).
         "operador": "BABR",
-        "arquivo": OPERADORES_DIR / "BABR" / "Controle_de_Vencimentos_BABR_JUN_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BABR" / "Controle_de_Vencimentos_BABR_JUL_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-06",
+        "mes_fonte": "2026-07",
     },
     {
         "operador": "BABE",
+        # A fonte de julho veio sem DISPONIBILIDADE nas duas linhas, portanto
+        # não permite classificar o vencimento sem inventar valor. Pela regra
+        # de busca, mantemos o último arquivo utilizável deste operador.
         "arquivo": OPERADORES_DIR / "BABE" / "Controle_de_Vencimentos_BABE_JUN_2026.xlsx",
         "tipo": "xlsx",
         "mes_fonte": "2026-06",
     },
     {
-        # Achado depois de checar: a pasta de junho da BACO tem, além do PDF,
-        # um .xlsx quase com o mesmo nome ("Controle_de_Vencimentos_JUN_2026(1).xlsx")
-        # — formato padrão igual aos outros, não precisava do PDF.
+        # Formato padrão igual aos demais operadores; usamos o XLSX, não o
+        # PDF duplicado da mesma pasta.
         "operador": "BACO",
-        "arquivo": OPERADORES_DIR / "BACO" / "Controle_de_Vencimentos_BACO_JUN_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BACO" / "Controle_de_Vencimentos_BACO_JUL_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-06",
+        "mes_fonte": "2026-07",
     },
     {
         # Formato diferente dos demais: sem seções POR HORA/POUSO/CALENDÁRIO,
@@ -115,25 +114,19 @@ REGISTRO = [
         # Vem numa aba "VENCIMENTO" dentro do arquivo de Diagonal, com células
         # mescladas verticalmente e ordem de colunas própria.
         "operador": "BAMN",
-        "arquivo": OPERADORES_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_JUNHO_2026.ods",
+        "arquivo": OPERADORES_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_JULHO_2026.ods",
         "tipo": "ods_bamn",
-        "mes_fonte": "2026-06",
+        "mes_fonte": "2026-07",
         "aba": "VENCIMENTO",
     },
     {
-        # Arquivo único (Diagonal+MAPEM+Vencimentos) — o .ods baixado do Drive
-        # veio com o content.xml corrompido (não descomprime, mesmo com o
-        # tamanho batendo com o relatado pelo Drive — falha reproduzida 2x).
-        # Dados reconstruídos a partir do texto plano de `read_file_content`
-        # (mesma técnica usada pro PAMA-LS), validados linha a linha com
-        # csv.reader antes de salvar. Ordem de colunas igual à padrão, mas
-        # AERONAVE vem sem prefixo "FAB" (só o número, como na BAMN). Só uma
-        # aeronave (2727) e uma unidade (1º/15º GAV) nesse arquivo. Muitos
-        # itens têm DISPONIBILIDADE "O/C" (On Condition, ver vencimentos_parse).
+        # Fonte íntegra de julho/2026. A ordem é a padrão, mas AERONAVE vem
+        # sem prefixo "FAB" (só o número, como na BAMN).
         "operador": "BACG",
-        "arquivo": OPERADORES_DIR / "BACG" / "Controle_de_Vencimentos_BACG_ABR_2026.csv",
-        "tipo": "csv_padrao_bare",
-        "mes_fonte": "2026-04",
+        "arquivo": OPERADORES_DIR / "BACG" / "Controle_de_Vencimentos_BACG_JUL_2026.xlsx",
+        "tipo": "xlsx_aba_bare",
+        "mes_fonte": "2026-07",
+        "aba": "Controle de Vencimentos",
     },
     {
         # Arquivo único (Diagonal+MAPEM+Vencimento) com 3 abas — a aba
@@ -146,9 +139,9 @@ REGISTRO = [
         # sabido, mas sem valor informado). "JUL / 27" (mês/ano com espaços)
         # também apareceu na coluna de data.
         "operador": "BANT",
-        "arquivo": OPERADORES_DIR / "BANT" / "DIAGONAL_E_VENC_ITENS_C98_JUN26_BANT.xlsx",
+        "arquivo": OPERADORES_DIR / "BANT" / "DIAGONAL_E_VENC_ITENS_C98_JUL26_BANT.xlsx",
         "tipo": "xlsx_aba_bare",
-        "mes_fonte": "2026-06",
+        "mes_fonte": "2026-07",
         "aba": "Controle de Vencimento de Itens",
     },
 ]
@@ -410,6 +403,10 @@ def extrair():
         todos_itens.extend(itens)
 
     df = pd.DataFrame(todos_itens)
+    if not df.empty:
+        # Células mescladas/repetidas em algumas fontes produzem cópias
+        # integralmente idênticas. Mantê-las duplicaria itens e indicadores.
+        df = df.drop_duplicates().reset_index(drop=True)
     return df, inconsistencias
 
 
