@@ -108,3 +108,85 @@ Dentro da página "TPJL — Controle CABW": 3 abas —
 - **Comparativo** — indicadores lado a lado, gráfico "Valor total por ano" e
   "Comparação 2025 x 2026" (itens 4/5 da seção Gráficos), sem misturar as
   tabelas operacionais dos dois anos numa só.
+
+## Consumo / Estoque / Solicitações (2026-07-14)
+
+Pedido do Wallace: "puxaar mais 3 informcacoes que sao as 3 planilhas que
+estao na pasta planilhas TPLJ, que sao informacoes consumo, estoque e
+solciitacoes ... estruture uma forma de colcoar tudo nessa parte, no mesmo
+layout das coisas que estao ai, inclusive dentro". Não são um projeto novo —
+são 3 fontes extras **dentro** da mesma página "TPJL — Controle CABW", 3
+abas a mais depois de "Comparativo": **Consumo**, **Estoque**,
+**Solicitações**. Cada uma com seu próprio botão "Atualizar" (mesmo padrão
+das outras fontes — sem "atualizar tudo").
+
+### Fontes (pasta Drive "Planilhas TPLJ", 3 subpastas)
+
+- **Consumo** — `relatorio_consumo_*.xlsx` (`1guih043Q3hNZOMx3YQX6LD4h2wSqUd20`).
+  Histórico mensal de consumo: Part Number, CFF, Projeto, Descrição,
+  Categoria (C/R/T), Mês Competência, Ano Competência, Qtd Consumo.
+- **Estoque** — `relatorio_estoque_*.xlsx` (`1mmVUl8QO5PHecu56Goqw0WUbvwdMAhqU`).
+  Situação atual: Part Number, CFF, Projeto, Descrição, Categoria (C/R/T),
+  Qtd em Estoque, Setor (TSAU/TSAU2/SUTI/TSAM/ESUP/TSAS/SALI/TSUI), Unidade
+  (base/operador — nomenclatura em parte igual à de Vencimentos, ex. BAMN/
+  BABE/BACG/CLA/BABR/BANT/BACO/DACTA II, mais códigos que só aparecem aqui:
+  PAMALS, BASM, PAMASP, EEAR, PAMAGL, BABV, EPCAR, PAMB, BAAN, BAPV, CCA SJ,
+  BAGL, GEIV).
+- **Solicitações** — `relatorio_solicitacoes_*.xlsx`
+  (`1J0Yi7JdWYHgqaCxS-Vnv9o2ViHG8jm0T`). Log de pedidos: Nº Solicitação,
+  Projeto, Part Number, CFF, Nomenclatura, Categoria (C/T/R/P), Quantidade,
+  Tipo (Emergência/Caderno de Compras/Pedido Normal/Outros/Reposição de
+  Estoque), Status (Finalizada/Pendente/Aprovada/Negada/Atender/Deletado),
+  Unidade de Estocagem, Solicitante, Data de Criação, Última Atualização
+  (texto "DD/MM/AAAA HH:MM" na fonte, convertido pra data/hora no
+  tratamento).
+
+Arquivos reais `.xlsx` enviados ao Drive (não Planilhas Google nativas) —
+baixados sem `exportar_como`, mesmo padrão de Vencimentos por Operador.
+
+**"Categoria" (C/R/T/P), "Setor" e "Unidade" ficam exatamente como a
+planilha escreve** — o significado exato de cada sigla não foi confirmado
+com o Wallace, então não convertemos pra um rótulo "amigável" inventado.
+
+Todas as 3 já vêm 100% filtradas em Projeto = "U8" na própria fonte
+(confirmado na extração) — filtramos de novo mesmo assim, defensivamente,
+por princípio (formato de fonte pode mudar a qualquer mês).
+
+**Consumo teve 412 linhas completamente duplicadas** (idênticas em todas as
+colunas) na extração inicial — removidas, mesma regra já usada no TPJL
+principal ("só remover linha quando for duplicação completamente idêntica
+dentro da mesma fonte").
+
+### Extração
+
+`05_Scripts/python/extrair_tpjl_extras.py` — gera
+`02_Dados_Tratados/base_tpjl_extras.xlsx` (3 abas: Consumo/Estoque/
+Solicitacoes). Config em `projetos/config/tpjl_config.py::FONTES_EXTRAS`.
+Botão único "Atualizar" nas 3 abas novas (mesmo `atualizar_fonte("tpjl_extras")`,
+já que é 1 script/1 arquivo tratado com 3 abas — mesmo padrão de Pagamentos
+no Contrato 005). Ainda **não** entrou na cadência automática de 2 em 2h —
+manual por enquanto (ver `00_Instrucoes/atualizacoes.md`, raiz, se/quando
+formos automatizar).
+
+### Cada aba nova (Consumo/Estoque/Solicitações)
+
+Mesmo padrão visual das abas 2025/2026 (indicadores em cards, filtros,
+gráficos, tabela operacional com exportação CSV) — sem histórico/"barra
+temporal" (não pedido pro Wallace nessas 3 fontes).
+
+- **Consumo**: indicadores (linhas, quantidade total, PNs distintos, período
+  coberto); filtros (Ano, Mês, Categoria, busca PN/Descrição); gráficos
+  (quantidade por ano, quantidade por categoria, top 10 PN mais consumidos);
+  tabela + CSV.
+- **Estoque**: indicadores (itens, quantidade total, PNs distintos, nº de
+  unidades); filtros (Unidade, Setor, Categoria, busca PN/Descrição);
+  gráficos (quantidade por unidade — top 10, quantidade por setor, top 10 PN
+  com mais estoque); tabela + CSV.
+- **Solicitações**: indicadores (total, pendentes, aprovadas, finalizadas,
+  negadas); filtros (Tipo, Status, Solicitante, busca Nº/PN/Nomenclatura);
+  gráficos (distribuição por Status — cores fixas em
+  `paleta.py::COR_STATUS_SOLICITACAO`, distribuição por Tipo, top 10
+  solicitantes, solicitações por mês de criação); tabela + CSV.
+
+Implementado em `projetos/secoes/tpjl_extras.py`, chamado a partir de 3 abas
+novas em `projetos/secoes/tpjl.py::render()`.

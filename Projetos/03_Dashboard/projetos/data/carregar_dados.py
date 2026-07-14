@@ -72,9 +72,26 @@ def carregar_tpjl():
     return dados, mtime
 
 
+def carregar_tpjl_extras():
+    """Consumo/Estoque/Solicitações — 3 fontes extras da pasta Drive
+    "Planilhas TPLJ" incorporadas em 2026-07-14, ver 00_Instrucoes/tpjl.md."""
+    caminho = DADOS_TRATADOS / "base_tpjl_extras.xlsx"
+    if not caminho.exists():
+        return None, None
+    mtime = caminho.stat().st_mtime
+    consumo = _ler_excel(str(caminho), mtime, sheet_name="Consumo")
+    estoque = _ler_excel(str(caminho), mtime, sheet_name="Estoque")
+    solicitacoes = _ler_excel(str(caminho), mtime, sheet_name="Solicitacoes")
+    solicitacoes["data_criacao"] = pd.to_datetime(solicitacoes["data_criacao"], errors="coerce")
+    solicitacoes["ultima_atualizacao"] = pd.to_datetime(solicitacoes["ultima_atualizacao"], errors="coerce")
+    dados = {"consumo": consumo, "estoque": estoque, "solicitacoes": solicitacoes}
+    return dados, mtime
+
+
 def carregar_tudo():
     df_mta, mtime_mta = carregar_mta()
     df_tpjl, mtime_tpjl = carregar_tpjl()
+    df_tpjl_extras, mtime_tpjl_extras = carregar_tpjl_extras()
     return {
         "mta": df_mta,
         "mta_atualizado_em": mtime_mta,
@@ -84,4 +101,7 @@ def carregar_tudo():
         "tpjl_atualizado_em": mtime_tpjl,
         "tpjl_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "tpjl"),
         "tpjl_historico": carregar_historico_tpjl(),
+        "tpjl_extras": df_tpjl_extras,
+        "tpjl_extras_atualizado_em": mtime_tpjl_extras,
+        "tpjl_extras_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "tpjl_extras"),
     }

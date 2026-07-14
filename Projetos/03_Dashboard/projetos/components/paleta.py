@@ -70,6 +70,16 @@ COR_SITUACAO_PREVISAO = {
     "Sem data definida": STATUS["neutro"],
 }
 
+# Cores fixas de "Status" das Solicitações (TPJL — Consumo/Estoque/Solicitações).
+COR_STATUS_SOLICITACAO = {
+    "Finalizada": STATUS["good"],
+    "Aprovada": STATUS["info"],
+    "Pendente": STATUS["warning"],
+    "Atender": STATUS["warning"],
+    "Negada": STATUS["critical"],
+    "Deletado": STATUS["neutro"],
+}
+
 FONTE_BASE = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif"
 FONTE_MONO = "SF Mono, Roboto Mono, ui-monospace, Menlo, monospace"
 

@@ -32,6 +32,7 @@ from projetos.components.paleta import (
     cabecalho_pagina, cartao_indicador, grade_indicadores, layout_grafico, moeda_compacta, moeda_completa,
 )
 from projetos.regras.tpjl_regras import eh_pendencia, normalizar
+from projetos.secoes import tpjl_extras
 
 COLUNAS_TABELA = [
     "numero_requisicao", "pn", "descricao", "qtd", "valor_unit", "valor_total",
@@ -405,7 +406,11 @@ def render(dados):
 
     historico = dados.get("tpjl_historico")
 
-    aba_consolidada, aba_2025, aba_2026, aba_comparativo = st.tabs(["Visão consolidada", "2025", "2026", "Comparativo"])
+    (aba_consolidada, aba_2025, aba_2026, aba_comparativo,
+     aba_consumo, aba_estoque, aba_solicitacoes) = st.tabs([
+        "Visão consolidada", "2025", "2026", "Comparativo",
+        "Consumo", "Estoque", "Solicitações",
+    ])
     with aba_consolidada:
         _pagina(_concatenar(dados_por_ano), "consolidado", historico=historico)
     with aba_2025:
@@ -416,3 +421,9 @@ def render(dados):
         _pagina(dados_por_ano.get(2026), "2026", historico=hist_2026)
     with aba_comparativo:
         _comparativo(dados_por_ano)
+    with aba_consumo:
+        tpjl_extras.render_consumo(dados)
+    with aba_estoque:
+        tpjl_extras.render_estoque(dados)
+    with aba_solicitacoes:
+        tpjl_extras.render_solicitacoes(dados)

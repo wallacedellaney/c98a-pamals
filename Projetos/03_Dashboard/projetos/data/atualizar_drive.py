@@ -19,6 +19,7 @@ ESTADO_ATUALIZACOES = DASHBOARD_ROOT / "02_Dados_Tratados" / "estado_atualizacoe
 FONTES = [
     ("mta", "MTA", SCRIPTS_DIR / "extrair_mta.py"),
     ("tpjl", "TPJL", SCRIPTS_DIR / "extrair_tpjl.py"),
+    ("tpjl_extras", "Consumo/Estoque/Solicitações", SCRIPTS_DIR / "extrair_tpjl_extras.py"),
 ]
 
 

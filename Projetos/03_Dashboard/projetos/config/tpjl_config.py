@@ -39,3 +39,28 @@ FONTES = {
 # vencido (ver tpjl_regras.py). "Cancelada"/"Cancelado" já chegam agrupados
 # pelo status_atual.
 STATUS_FINAIS = {"Empenhado", "Cancelado", "Item Deserto", "Item Fracassado"}
+
+# 3 fontes extras incorporadas em 2026-07-14 (pedido do Wallace: "puxaar mais
+# 3 informcacoes que sao as 3 planilhas que estao na pasta planilhas TPLJ, que
+# sao informacoes consumo, estoque e solciitacoes") — pasta Drive "Planilhas
+# TPLJ", cada uma num arquivo .xlsx real (não Google Sheets nativo), sem
+# exportar_como no download. Todas já vêm filtradas em Projeto = "U8" na
+# própria fonte (confirmado 100% U8 nas 3, na análise inicial). Ver
+# 00_Instrucoes/tpjl.md, seção "Consumo / Estoque / Solicitações".
+FONTES_EXTRAS = {
+    "consumo": {
+        "drive_file_id": "1guih043Q3hNZOMx3YQX6LD4h2wSqUd20",
+        "planilha": "relatorio_consumo",
+        "aba": "Relatório",
+    },
+    "estoque": {
+        "drive_file_id": "1mmVUl8QO5PHecu56Goqw0WUbvwdMAhqU",
+        "planilha": "relatorio_estoque",
+        "aba": "Relatório",
+    },
+    "solicitacoes": {
+        "drive_file_id": "1J0Yi7JdWYHgqaCxS-Vnv9o2ViHG8jm0T",
+        "planilha": "relatorio_solicitacoes",
+        "aba": "Relatório",
+    },
+}
