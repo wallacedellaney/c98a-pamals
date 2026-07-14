@@ -29,11 +29,12 @@ MESES_PT = [
 
 
 def _opcoes_mes(dados):
-    """Todos os meses (ano-mês) presentes no histórico de emergências —
-    padrão selecionado é junho/2026 (mês fechado, pedido do Wallace em
-    2026-07-10); se não houver dado ainda, usa só esse mês."""
+    """Todos os meses (ano-mês) presentes no histórico de emergências — o
+    padrão selecionado é sempre o MÊS ATUAL (pedido do Wallace em
+    2026-07-14: "é para sempre aparecer no mes atual"), não um mês fixo; se
+    não houver dado ainda, usa só o mês atual."""
     df = dados.get("emergencias_totais")
-    padrao = pd.Period("2026-06", freq="M")
+    padrao = pd.Timestamp.now().to_period("M")
     if df is None or df.empty or "data_abertura" not in df.columns:
         return [padrao]
     periodos = pd.to_datetime(df["data_abertura"].dropna()).dt.to_period("M").unique()
@@ -50,7 +51,7 @@ def render(dados):
     st.caption("Fechamento mensal do Contrato 005 — cômputo do mês e atrasos.")
 
     opcoes = _opcoes_mes(dados)
-    padrao = pd.Period("2026-06", freq="M")
+    padrao = pd.Timestamp.now().to_period("M")
     indice_padrao = opcoes.index(padrao) if padrao in opcoes else len(opcoes) - 1
 
     mes_escolhido = st.selectbox(

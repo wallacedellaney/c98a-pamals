@@ -5,3 +5,6 @@ plotly
 odfpy
 google-api-python-client
 google-auth
+python-pptx
+python-docx
+Pillow

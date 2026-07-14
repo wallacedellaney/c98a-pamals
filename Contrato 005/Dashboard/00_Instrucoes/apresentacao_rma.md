@@ -93,6 +93,19 @@ slide/fundo.
 
 ## Bugs já corrigidos (documentados pra não reintroduzir)
 
+- **`python-pptx` faltando no `requirements.txt` do site publicado**
+  (2026-07-14, achado pelo Wallace: "apreserntacao mensal deu Falha ao
+  gerar a apresentação: No module named 'pptx'"): `gerar_apresentacao_rma.py`
+  é importado DIRETO no processo do Streamlit (`import gerar_apresentacao_rma`
+  em `fechamento_mensal.py`, não via subprocess) — então precisa das MESMAS
+  dependências do app no ambiente de deploy (Streamlit Cloud instala do zero
+  a partir do `requirements.txt` da raiz, diferente do Mac local, que já
+  tinha tudo instalado). O `requirements.txt` raiz só listava
+  streamlit/pandas/openpyxl/plotly/odfpy/google — faltava `python-pptx`
+  (Apresentação), e também `python-docx`/`Pillow` (usados por
+  `gerar_ata_reuniao.py`, importado do mesmo jeito pela aba "Ata de
+  Reunião" — teria quebrado igual na sequência). Adicionados os 3 no
+  `requirements.txt` raiz e no de `03_Dashboard/`.
 - **`motivos.csv` vazio quebrava com `EmptyDataError`** (2026-07-14, achado
   pelo Wallace: "checa a apresentação de slide, deu erro"): um mês sem
   nenhuma negativação de aeronave (ex.: 2025-12, fora do período com

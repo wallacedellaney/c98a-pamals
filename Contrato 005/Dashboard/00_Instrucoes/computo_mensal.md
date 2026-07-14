@@ -31,6 +31,17 @@ Tela: `03_Dashboard/contrato005/secoes/fechamento_mensal.py`, aba "Cômputo Mens
 
 Comparado célula a célula com a planilha oficial (8 dias já decorridos, 23 aeronaves = 184 células): **bateu em 183 de 184** (99,5%). A única aeronave onde a prévia divergiu foi a **2739** (planilha oficial marca o dia 8 como negativado; não foi encontrado nenhum registro de emergência AIFP/IPLR que explique isso — provavelmente um ajuste manual feito direto na planilha, sem uma emergência formal por trás). MMAM prévia calculada: 97,28% (oficial, com o ajuste manual do 2739: 96,74%).
 
+## Seletor de mês (compartilhado por toda a página Fechamento Mensal)
+
+O seletor de "Mês de referência" no topo de `fechamento_mensal.py::render()`
+vale pras 4 abas (Cômputo Mensal, Atrasos, Apresentação RMA, Ata de Reunião).
+**2026-07-14, correção**: o padrão selecionado estava fixo em junho/2026
+(`pd.Period("2026-06", ...)`, hardcoded) — Wallace: "é para sempre aparecer
+no mes atual". Trocado pra `pd.Timestamp.now().to_period("M")` em
+`_opcoes_mes()` e `render()`, então o mês atual real sempre aparece
+selecionado (e sempre aparece na lista de opções, mesmo sem nenhuma
+emergência registrada nele ainda).
+
 ## Limitações conhecidas
 
 - **A planilha "Pré RMA" não é buscada automaticamente** — só o `historico_completo_emergencias.xlsx` que alimenta o cálculo.
