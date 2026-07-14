@@ -13,6 +13,7 @@ from datetime import datetime
 
 import streamlit as st
 
+from coordenadoria.components.fontes_dados import secao_fontes_dados
 from coordenadoria.components.paleta import AMBER, SECONDARY, LINE, PANEL, STATUS, INK
 from coordenadoria.data.carregar_dados import carregar_tudo
 from coordenadoria.secoes import dashboard_geral, rac, disponibilidade_diaria, diagonal_manutencao, vencimentos, previsao_mensal
@@ -133,3 +134,5 @@ h1 {{
                 st.rerun()
 
     st.caption(f"Dados atualizados em {datetime.fromtimestamp(dados['atualizado_em']).strftime('%d/%m/%Y %H:%M')}")
+
+    secao_fontes_dados()

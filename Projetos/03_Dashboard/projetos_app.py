@@ -14,6 +14,7 @@ PAMALS" (ver ../../app.py), com um botão de voltar.
 import streamlit as st
 
 from projetos.components import paleta
+from projetos.components.fontes_dados import secao_fontes_dados
 from projetos.data.carregar_dados import carregar_tudo
 from projetos.secoes import selecao, mta, tpjl
 
@@ -43,3 +44,5 @@ def render(ao_voltar=None):
         selecao.render(dados)
     else:
         PAGINAS[pagina].render(dados)
+
+    secao_fontes_dados()

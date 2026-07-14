@@ -17,6 +17,7 @@ from pathlib import Path
 import streamlit as st
 
 from contrato005.components import data_global
+from contrato005.components.fontes_dados import secao_fontes_dados
 from contrato005.components.paleta import AMBER, SECONDARY, LINE
 from contrato005.data.carregar_dados import carregar_tudo
 from contrato005.secoes import (
@@ -155,3 +156,5 @@ def render(ao_voltar=None):
                 st.rerun()
 
     st.caption(f"Dados atualizados em {datetime.fromtimestamp(dados['atualizado_em']).strftime('%d/%m/%Y %H:%M')}")
+
+    secao_fontes_dados()

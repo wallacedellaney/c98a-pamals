@@ -45,6 +45,18 @@ demais fontes (Vencimentos por Operador, Diagonal de Manutenção) continuam
 manuais — Wallace pede na conversa. Ver `00_Instrucoes/atualizacoes.md`
 para a arquitetura completa e como adicionar uma fonte nova ao agendamento.
 
+## Painel "Fonte dos dados" (rodapé de cada área)
+
+Cada uma das 3 áreas tem, no rodapé do dashboard, um botão pequeno e
+centralizado **"ℹ️ Fonte dos dados"** (nome escolhido pelo Wallace em
+2026-07-14) — ao clicar, mostra uma tabela (Informação / De onde vem / Como
+é atualizado / Frequência) com **todas** as fontes daquela área.
+Implementado em `<area>/components/fontes_dados.py` (duplicado por área,
+sem import entre pacotes — mesmo motivo de sempre), chamado no fim do
+`render()` de `contrato_app.py`/`coordenadoria_app.py`/`projetos_app.py`.
+**Manter essa tabela atualizada** sempre que uma fonte mudar de nome, de
+mecanismo de atualização (manual → automático) ou de frequência.
+
 ## Comando "executar" / "roda"
 
 Quando o Wallace disser "executa" ou "roda" (sem mais detalhes), fazer:

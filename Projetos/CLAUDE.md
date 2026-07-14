@@ -79,6 +79,13 @@ seu próprio dashboard, com botão de voltar pra seleção ou pro menu principal
   planilha não permite calcular); TPJL ganhou uma 4ª aba "Visão consolidada"
   (2025+2026 juntos) antes de "2025"/"2026"/"Comparativo".
 
+## Descrição da página de seleção (2026-07-14)
+
+Subtítulo de "Acompanhamento de Projetos" (`projetos/secoes/selecao.py`)
+atualizado pra citar Consumo/Estoque/Solicitações do TPJL — Wallace: "arruma
+a definicao do acompanhamento do projeto" (a descrição antiga só mencionava
+"requisições do TPJL", desatualizada depois que essas 3 fontes entraram).
+
 ## Atualização de dados
 
 Cada módulo tem botão próprio ("Atualizar MTA", "Atualizar TPJL") — **sem**
