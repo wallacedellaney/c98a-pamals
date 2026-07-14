@@ -61,6 +61,13 @@ do `render()` de `contrato_app.py`/`coordenadoria_app.py`/`projetos_app.py`.
 **Manter essa tabela atualizada** sempre que uma fonte mudar de nome, de
 mecanismo de atualização (manual → automático) ou de frequência.
 
+**Também existe na página principal** (`app.py::_fontes_dados_geral()`,
+pedido do Wallace em 2026-07-14: "quero que coloca na pagina principal
+tb") — versão combinada das 3 tabelas, uma embaixo da outra com uma coluna
+"Área" a mais. Cada área é carregada com try/except própria: se uma falhar
+(ex.: arquivo tratado ainda não gerado), as outras 2 continuam aparecendo
+normalmente, sem derrubar a home.
+
 ## Comando "executar" / "roda"
 
 Quando o Wallace disser "executa" ou "roda" (sem mais detalhes), fazer:

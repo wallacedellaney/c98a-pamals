@@ -27,6 +27,15 @@ PROJETOS_DASHBOARD = RAIZ / "Projetos" / "03_Dashboard"
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
+# As 3 áreas precisam estar no sys.path já na home (não só ao navegar pra
+# dentro) pro painel combinado "Fonte dos dados" conseguir importar os
+# carregadores de dados + tabelas de fonte de cada uma — ver
+# _fontes_dados_geral(). Cada área tem seu próprio pacote (contrato005/
+# coordenadoria/projetos), sem colisão de nomes entre si.
+for _pasta in (CONTRATO_005_DASHBOARD, COORDENADORIA_DASHBOARD, PROJETOS_DASHBOARD):
+    if str(_pasta) not in sys.path:
+        sys.path.insert(0, str(_pasta))
+
 st.set_page_config(
     page_title="C-98A PAMA-LS",
     page_icon="🛡️",
@@ -303,6 +312,56 @@ _ICONE_PASTA = ('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" str
                 '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>')
 
 
+def _formatar_ultima_atualizacao(mtime):
+    if not mtime:
+        return "—"
+    from datetime import datetime
+    return datetime.fromtimestamp(mtime).strftime("%d/%m/%Y %H:%M")
+
+
+def _fontes_dados_geral():
+    """Painel combinado "Fonte dos dados" na home — mesma tabela (Informação
+    / De onde vem / Como é atualizado / Frequência / Última atualização) de
+    cada área, uma embaixo da outra com uma coluna "Área" a mais. Pedido do
+    Wallace em 2026-07-14: "quero que coloca na pagina principal tb". Cada
+    área é carregada com try/except própria — se uma falhar (ex.: arquivo
+    tratado ainda não gerado), as outras 2 continuam aparecendo normalmente,
+    sem derrubar a home."""
+    import importlib
+
+    import pandas as pd
+
+    st.divider()
+    _, col, _ = st.columns([1, 2, 1])
+    with col:
+        with st.expander("ℹ️ Fonte dos dados", expanded=False):
+            linhas = []
+            avisos = []
+            for area, modulo_fontes, modulo_dados in (
+                ("Coordenadoria", "coordenadoria.components.fontes_dados", "coordenadoria.data.carregar_dados"),
+                ("Contrato 005", "contrato005.components.fontes_dados", "contrato005.data.carregar_dados"),
+                ("Projetos", "projetos.components.fontes_dados", "projetos.data.carregar_dados"),
+            ):
+                try:
+                    fontes_mod = importlib.import_module(modulo_fontes)
+                    dados_mod = importlib.import_module(modulo_dados)
+                    dados = dados_mod.carregar_tudo()
+                    for fonte in fontes_mod.FONTES:
+                        linha = {"Área": area}
+                        linha.update({k: v for k, v in fonte.items() if k != "_chave"})
+                        linha["Última atualização"] = _formatar_ultima_atualizacao(
+                            dados.get(fonte["_chave"]) if fonte["_chave"] else None
+                        )
+                        linhas.append(linha)
+                except Exception as e:
+                    avisos.append(f"{area}: não foi possível carregar ({e})")
+
+            if linhas:
+                st.dataframe(pd.DataFrame(linhas), hide_index=True, width="stretch")
+            for aviso in avisos:
+                st.caption(f"⚠️ {aviso}")
+
+
 def _menu_principal():
     _aplicar_css_home()
 
@@ -376,6 +435,8 @@ def _menu_principal():
         'TPJL/CABW (Acompanhamento de Projetos).</div>',
         unsafe_allow_html=True,
     )
+
+    _fontes_dados_geral()
 
 
 def _area_coordenadoria():
