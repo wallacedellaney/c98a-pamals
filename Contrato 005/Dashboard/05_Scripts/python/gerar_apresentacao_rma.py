@@ -284,7 +284,15 @@ def _carregar_dados_mes(ano, mes):
     pasta = DADOS_TRATADOS / "computo_mensal"
     mes_ref = f"{ano}-{mes:02d}"
     df_matriz = pd.read_csv(pasta / f"{mes_ref}_matriz.csv", dtype={"matricula": str})
-    df_motivos = pd.read_csv(pasta / f"{mes_ref}_motivos.csv", dtype={"matricula": str})
+    try:
+        # Mês sem nenhuma negativação (ex.: sem emergências AIFP/IPLR naquele
+        # período) grava um motivos.csv vazio (0 bytes) — pd.read_csv quebra
+        # com EmptyDataError nesse caso; tratamos como "nenhuma aeronave
+        # negativou" (bug real visto em 2026-07-14, reproduzido com
+        # 2025-12, mês sem histórico de emergências).
+        df_motivos = pd.read_csv(pasta / f"{mes_ref}_motivos.csv", dtype={"matricula": str})
+    except pd.errors.EmptyDataError:
+        df_motivos = pd.DataFrame(columns=["matricula", "numero_emergencia"])
     with open(pasta / f"{mes_ref}_resumo.json", encoding="utf-8") as f:
         resumo = json.load(f)
 

@@ -93,6 +93,14 @@ slide/fundo.
 
 ## Bugs já corrigidos (documentados pra não reintroduzir)
 
+- **`motivos.csv` vazio quebrava com `EmptyDataError`** (2026-07-14, achado
+  pelo Wallace: "checa a apresentação de slide, deu erro"): um mês sem
+  nenhuma negativação de aeronave (ex.: 2025-12, fora do período com
+  histórico de emergências) grava um `_motivos.csv` de 0 bytes —
+  `pd.read_csv` direto quebrava. `_carregar_dados_mes` agora trata
+  `pd.errors.EmptyDataError` como "nenhuma aeronave negativou" (mesmo
+  resultado do `ValueError` já esperado pra esse caso), mesma correção
+  aplicada em `gerar_ata_reuniao.py` e no `carregar_computo_mensal` do site.
 - **Duplicidade de nome de parte XML**: sempre inserir TODOS os slides
   novos antes de remover qualquer slide antigo, usando identidade estável
   de elemento XML (não índice inteiro calculado à mão) — ver

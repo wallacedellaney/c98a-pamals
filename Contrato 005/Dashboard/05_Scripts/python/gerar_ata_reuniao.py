@@ -302,7 +302,13 @@ def carregar_aeronaves_negativadas(ano, mes):
     caminho_motivos = pasta / f"{ano}-{mes:02d}_motivos.csv"
     if not caminho_motivos.exists():
         return {}
-    df_motivos = pd.read_csv(caminho_motivos, dtype={"matricula": str})
+    try:
+        # Mês sem nenhuma negativação grava um motivos.csv vazio (0 bytes) —
+        # pd.read_csv quebra com EmptyDataError nesse caso (bug real visto em
+        # 2026-07-14, reproduzido com 2025-12, mês sem histórico de emergências).
+        df_motivos = pd.read_csv(caminho_motivos, dtype={"matricula": str})
+    except pd.errors.EmptyDataError:
+        return {}
     if df_motivos.empty:
         return {}
 

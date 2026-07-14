@@ -69,10 +69,16 @@ def carregar_computo_mensal(ano, mes):
         return None, None, None
     mtime = caminho_matriz.stat().st_mtime
     df_matriz = _ler_csv(str(caminho_matriz), mtime, dtype={"matricula": str})
-    df_motivos = (
-        _ler_csv(str(caminho_motivos), caminho_motivos.stat().st_mtime, dtype={"matricula": str})
-        if caminho_motivos.exists() else pd.DataFrame()
-    )
+    try:
+        # Mês sem nenhuma negativação grava um motivos.csv vazio (0 bytes) —
+        # pd.read_csv quebra com EmptyDataError nesse caso (bug real visto em
+        # 2026-07-14, reproduzido com 2025-12, mês sem histórico de emergências).
+        df_motivos = (
+            _ler_csv(str(caminho_motivos), caminho_motivos.stat().st_mtime, dtype={"matricula": str})
+            if caminho_motivos.exists() else pd.DataFrame()
+        )
+    except pd.errors.EmptyDataError:
+        df_motivos = pd.DataFrame()
     import json
     with open(caminho_resumo, encoding="utf-8") as f:
         resumo = json.load(f)
