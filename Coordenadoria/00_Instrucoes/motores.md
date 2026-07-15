@@ -81,13 +81,19 @@ inventar significado pros outros marcadores.
 
 **Linha do tempo (2026-07-14, redesenho executivo — pedido original do
 Wallace era uma matriz Serial × Mês, depois refeito como linha do tempo
-pra bater com a spec de reorganização executiva da página)** — Plotly
-scatter: eixo X o mês (2026-2030), eixo Y "SN {serial} — FAB {ANV}", cor
-por TBO (âmbar) / HSI (ciano), símbolo de estrela na célula que tem
-comentário anexado (vs. círculo normal) — passar o mouse mostra o
-comentário, a unidade e o tipo de evento. Linha vertical tracejada marca
-"hoje". 4 cards acima classificam os eventos por proximidade (Vencido,
-Próximos 90/180/365 dias).
+pra bater com a spec de reorganização executiva da página; 2026-07-15,
+virou Gantt — "mesmo padrao da diagoanl [de manutenção]" — barra de 1 mês
+por evento, `y="SN {serial} — FAB {ANV}"`, cor por TBO (âmbar) / HSI
+(ciano), listrado (`pattern_shape`) na barra que tem comentário anexado —
+passar o mouse mostra o comentário, a unidade e o tipo de evento. Linha
+vertical tracejada marca "hoje". 4 cards acima classificam os eventos por
+proximidade (Vencido, Próximos 90/180/365 dias).
+
+**Janela sempre de 2 anos (2026-07-15)** — Wallace: "vamos deixar sempre 2
+anos na linha do tempo de tbo e hsi". Antes era um intervalo fixo
+(2026-2030); agora é sempre **ano atual + próximo** (`datetime.now().year`
+até `+1`), rolando sozinho conforme os anos passam — não precisa mexer no
+código de novo ano que vier.
 
 **Comentários de célula** (pedido do Wallace: "ja vi que tem comentarios
 dentro da caixas de tbo, hsi. vamos usar essas informacoes tb") — a

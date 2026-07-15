@@ -1,14 +1,14 @@
 {
   "disponibilidade_diaria": {
-    "status": "sem_novidade",
+    "status": "atualizado",
     "last_error": null,
-    "remote_modified_time": "2026-07-14T11:43:12.177Z",
-    "local_updated_at": "2026-07-15T00:05:27.869674",
-    "record_count": 9
+    "remote_modified_time": "2026-07-15T11:32:19.783Z",
+    "local_updated_at": "2026-07-15T10:42:42.368267",
+    "record_count": 10
   },
   "rac": {
-    "remote_modified_time": "2026-07-14T18:18:29.763Z",
-    "local_updated_at": "2026-07-15T00:06:01.807606",
+    "remote_modified_time": "2026-07-15T13:05:35.467Z",
+    "local_updated_at": "2026-07-15T10:42:39.861362",
     "status": "atualizado",
     "record_count": 30,
     "last_error": null

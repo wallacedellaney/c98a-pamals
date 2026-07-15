@@ -26,7 +26,6 @@ from coordenadoria.utils import atualizar_dados_motores
 
 EVENTOS_TBO_HSI = {"TBO", "TBO*", "HSI"}
 MESES_PT = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
-ANO_INICIO_TIMELINE = 2026
 
 COR_CONDICAO = {
     "APL": STATUS["good"], "OS": STATUS["critical"], "REPARA": AMBER,
@@ -348,9 +347,15 @@ def _aba_diagonal(df, situacao, historico=None):
         filtrado = filtrado[filtrado["comentario"].notna()]
     st.caption(f"Exibindo {len(filtrado)} de {len(eventos)} eventos TBO/HSI")
 
-    st.markdown(f"##### Linha do tempo — TBO/HSI ({ANO_INICIO_TIMELINE} a 2030)")
+    # Janela sempre de 2 anos (ano atual + próximo), rolando sozinha
+    # conforme o tempo passa — pedido do Wallace em 2026-07-15: "vamos
+    # deixar sempre 2 anos na linha do tempo de tbo e hsi" (antes era um
+    # intervalo fixo 2026-2030).
+    ano_inicio_janela = datetime.now().year
+    ano_fim_janela = ano_inicio_janela + 1
+    st.markdown(f"##### Linha do tempo — TBO/HSI ({ano_inicio_janela} a {ano_fim_janela})")
     st.caption("Mesmo padrão da Diagonal de Manutenção — barra por mês, cor por tipo de evento, listrado = tem comentário.")
-    linha_tempo = filtrado[filtrado["ano"] >= ANO_INICIO_TIMELINE].copy()
+    linha_tempo = filtrado[(filtrado["ano"] >= ano_inicio_janela) & (filtrado["ano"] <= ano_fim_janela)].copy()
     if linha_tempo.empty:
         st.caption("Nenhum evento no período/filtro selecionado.")
     else:
