@@ -1,28 +1,28 @@
 {
   "emergencias": {
-    "remote_modified_time": "2026-07-14T16:00:11.619Z",
-    "local_updated_at": "2026-07-14T16:03:43.573695",
+    "remote_modified_time": "2026-07-14T18:50:47.141Z",
+    "local_updated_at": "2026-07-15T00:05:48.555520",
     "status": "atualizado",
     "record_count": 18,
     "last_error": null
   },
   "pagamentos": {
     "remote_modified_time": "2026-07-09T14:14:47.065Z",
-    "local_updated_at": "2026-07-14T16:03:48.192948",
+    "local_updated_at": "2026-07-15T00:05:53.045356",
     "status": "atualizado",
     "record_count": 29,
     "last_error": null
   },
   "devolucoes": {
     "remote_modified_time": "2026-07-13T22:43:51.313Z",
-    "local_updated_at": "2026-07-14T16:05:19.464361",
+    "local_updated_at": "2026-07-15T00:07:22.889671",
     "status": "atualizado",
     "record_count": 330,
     "last_error": null
   },
   "reparaveis": {
     "remote_modified_time": "2026-07-14T14:10:36.424Z",
-    "local_updated_at": "2026-07-14T16:05:13.552654",
+    "local_updated_at": "2026-07-15T00:07:17.602182",
     "status": "atualizado",
     "record_count": 446,
     "last_error": null

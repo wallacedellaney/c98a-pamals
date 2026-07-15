@@ -3,19 +3,19 @@
     "status": "sem_novidade",
     "last_error": null,
     "remote_modified_time": "2026-07-14T11:43:12.177Z",
-    "local_updated_at": "2026-07-14T16:03:25.083758",
+    "local_updated_at": "2026-07-15T00:05:27.869674",
     "record_count": 9
   },
   "rac": {
-    "remote_modified_time": "2026-07-14T13:50:24.997Z",
-    "local_updated_at": "2026-07-14T16:03:59.860208",
+    "remote_modified_time": "2026-07-14T18:18:29.763Z",
+    "local_updated_at": "2026-07-15T00:06:01.807606",
     "status": "atualizado",
     "record_count": 30,
     "last_error": null
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-07-09T17:03:34.124Z",
-    "local_updated_at": "2026-07-14T16:04:06.776954",
+    "local_updated_at": "2026-07-15T00:06:09.260560",
     "status": "atualizado",
     "record_count": 193,
     "last_error": null
