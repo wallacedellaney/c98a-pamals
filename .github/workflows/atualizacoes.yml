@@ -33,6 +33,7 @@ on:
           - tpjl
           - reparaveis
           - devolucoes
+          - motores
 
 permissions:
   contents: write

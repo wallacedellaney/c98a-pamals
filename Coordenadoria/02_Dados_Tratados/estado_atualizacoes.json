@@ -19,5 +19,12 @@
     "status": "atualizado",
     "record_count": 193,
     "last_error": null
+  },
+  "motores": {
+    "remote_modified_time": "2026-07-15T11:56:32.614Z",
+    "local_updated_at": "2026-07-15T09:47:02.186372",
+    "status": "atualizado",
+    "record_count": 39,
+    "last_error": null
   }
 }

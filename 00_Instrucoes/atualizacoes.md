@@ -4,12 +4,12 @@
 
 O site tem sua **própria credencial do Google** (conta de serviço
 `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`, chave
-guardada como Secret do GitHub, nunca no código) e busca 9 fontes **sozinho,
+guardada como Secret do GitHub, nunca no código) e busca 10 fontes **sozinho,
 rodando na nuvem do GitHub (GitHub Actions) e no Mac do Wallace, ao mesmo
 tempo** — não depende do Mac estar ligado (o GitHub cobre sozinho), mas se
 estiver ligado no horário, busca também.
 
-**Desde 2026-07-09 (a pedido do Wallace): todas as 9 fontes rodam juntas,
+**Desde 2026-07-09 (a pedido do Wallace): todas as fontes rodam juntas,
 de 2 em 2 horas, seg-sex, das 8h às 20h** (`todos` — não é mais 1 horário
 por fonte). O motivo: o agendamento gratuito do GitHub atrasa às vezes (ver
 "Limitação conhecida" abaixo) — rodando com mais frequência, mesmo que uma
@@ -29,7 +29,14 @@ gera commit/redeploy à toa.
 | TPJL | `Projetos/05_Scripts/python/extrair_tpjl.py` |
 | Reparáveis | `Contrato 005/Dashboard/05_Scripts/python/extrair_reparaveis.py` |
 | Devoluções/Empréstimos | `Contrato 005/Dashboard/05_Scripts/python/extrair_devolucoes.py` |
+| Motores | `Coordenadoria/05_Scripts/python/extrair_motores.py` |
 | Vencimentos por Operador, Diagonal de Manutenção | Manual — Wallace pede na conversa |
+
+**Motores entrou em 2026-07-15** (planilha pessoal do Wallace "MOTORES
+C-98", compartilhada com a conta de serviço nessa data — ver
+`Coordenadoria/00_Instrucoes/motores.md`). Também grava 2 snapshots diários
+(`historico_motores_situacao.csv`/`historico_motores_diagonal.csv`), mesmo
+padrão do RAC/MTA/TPJL.
 
 Reparáveis e Devoluções entraram na automação em 2026-07-10 (antes eram
 manuais) pra alimentar o **controle de data global** do Contrato 005 — ver

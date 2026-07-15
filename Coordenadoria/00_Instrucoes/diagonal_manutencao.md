@@ -108,3 +108,94 @@ vem marcado com as 23 aeronaves "dentro do contrato"
 fora do contrato (2726, 2730, 2732, 2734) e sem condições (2701, 2706,
 2724) — ver `computo_mensal.md`. É só o valor inicial: continua editável,
 dá pra marcar/desmarcar normalmente depois.
+
+## Motores por aeronave + simulação de horas de voo (2026-07-15)
+
+Pedido do Wallace: "vamos tentar inserir de forma inteligente essas
+ifnormacoes de motor la na diagonal das aeronaves, de forma discreta, que
+so aparece os detalhes se eu clicar, insere tb uma forma [...] da media
+mensal de horas de voo por aeronave, no qual eu consiga clicar e se eu
+alterar ali, ajeita a possicao da na diagonal geral, a do motor é fixa
+seguindo sempre a tabela original com o historico".
+
+Painel "🔧 Motores por aeronave" — 1 expander colapsado por aeronave (grade
+de 3 colunas, discreto, só mostra o motor se clicar), logo acima do Gantt.
+Cada expander mostra o motor vinculado àquela aeronave (SN, condição, %TBO
+voada — via `motores_situacao`, cruzando pelo SN) e os dados de
+planejamento da Diagonal Nova (`motores_diagonal_meta`: Hr disponível, Voo
+mensal, Mês disponível), cruzando pelo **ANV** (não precisa de matrícula →
+SN, a Diagonal Nova já tem o ANV direto).
+
+**Simulação "e se eu voar mais/menos por mês"**: campo editável "Simular
+horas de voo por mês" dentro do expander, começando no valor atual (Voo
+mensal da planilha). Se o valor digitado for diferente do original,
+recalcula `novos_meses = Hr disponível / novo valor` e projeta uma nova
+data (`hoje + novos_meses de DateOffset`) — **só como "e se", nunca grava
+em nenhum arquivo** (a planilha de Motores/Diagonal Nova continua sempre
+fixa, seguindo o histórico real, exatamente como o Wallace pediu). Quando
+existe um ajuste, um evento extra aparece no Gantt com fonte "Programado
+(ajustado)"/operador "Simulação", padrão visual xadrez (╳) — ver
+`FONTE_AJUSTADO`/`PATTERN_FONTE` em `diagonal_manutencao.py`.
+
+Implementado em `_dados_motor_aeronave()` (cruzamento) e
+`_secao_motores_por_aeronave()` (painel + recálculo), ambos em
+`coordenadoria/secoes/diagonal_manutencao.py`. Fonte da extração:
+`extrair_motores.py::_extrair_diagonal_metadados()` (aba "DiagonalMeta" do
+arquivo tratado) — ver `00_Instrucoes/motores.md`.
+
+**Rótulo da aeronave já traz o motor escrito (2026-07-15)** — Wallace: "ta
+dificil de ver a informacao do motor na diagonal geral, deixa de forma
+mais visivel, escreve la". `_rotulo_motor()` monta um resumo curto (ex.:
+"SN PCE-PC2050 (12% TBO)") que vira parte do rótulo do eixo Y do Gantt
+("FAB 2702 — SN PCE-PC2050 (12% TBO)") — sem precisar clicar em nada. O
+expander de simulação continua existindo só pra quem quiser mexer nas
+horas de voo.
+
+**Painel do simulador virou 1 único expander fechado (2026-07-15)** —
+Wallace: "deixa ele minimizado, ai quando clicr que aparce as aeronaves
+para simular". Antes cada aeronave já aparecia com seu próprio expander
+solto na tela; agora tudo fica dentro de um expander externo único "🔧
+Simulador de horas de voo por aeronave", fechado por padrão — só abre a
+grade de aeronaves depois de clicar nele.
+
+## Eventos TBO/HSI da planilha de Motores, direto no Gantt (2026-07-15)
+
+Wallace: "onde tem a diagonal das aeronaves quando for hsi ou tbo, colocar
+um quadradinho escrito dentro hsi ou tbo para visualizacao, essas
+informacoes sao sempre vinculada com a planilha de motores". `_eventos_motor()`
+pega os eventos TBO/HSI/TBO\* de `motores_diagonal` (Diagonal Nova, sempre a
+fonte fixa, nunca a simulação) e escreve o texto direto no Gantt, na mesma
+linha da aeronave (via ANV):
+
+- Cor por tipo de evento — âmbar = TBO, ciano = HSI (`COR_OPERADOR_MOTOR`).
+- Hover com o SN do motor + comentário da célula, quando existir.
+
+**Ajuste em 2026-07-15**: a 1ª versão desenhava uma barra do mês inteiro
+(igual Real/Programado). Wallace: "o tbo e hsi coloca so o ponto de
+inicio, nao coloca o mes inteiro, pq geralmente tem a troca de motor, é so
+para estar escrito tbo ou hsi msm, sem linha pontinha ou bolinha" — trocado
+por um `go.Scatter(mode="text")` só com o texto "TBO"/"HSI" no dia 1 do mês
+projetado, **sem barra, sem marcador, sem padrão de linha** (o padrão
+pontilhado que existia foi removido de `PATTERN_FONTE`) — só a palavra
+escrita no ponto exato de início.
+
+**Bug corrigido**: a coluna "aeronave" vinha com tipos diferentes entre as
+3 fontes (Disponibilidade/Diagonal de operador = int, Motores = string) —
+misturado isso fazia `.unique()` tratar `2722` (int) e `"2722"` (str) como
+valores diferentes, duplicando a aeronave nos filtros e derrubando a
+página com `StreamlitDuplicateElementKey` (chave repetida no expander do
+simulador). Corrigido forçando string em toda a coluna `aeronave` logo
+depois do `pd.concat`. Também descartado ANV = 0 (célula vazia/`False` na
+planilha original vira `0` depois do ida-e-volta pelo Excel — nenhuma
+aeronave da frota tem essa matrícula).
+
+## Histórico de evolução da projeção (Motores, 2026-07-15)
+
+Wallace: "mostrar na diagonal dos motores tb, um historico de evolucao" —
+a projeção de TBO/HSI pode mudar de um dia pro outro (mês empurrado, virou
+HSI em vez de TBO, comentário novo/editado). `extrair_motores.py::
+_registrar_historico_diagonal()` grava 1 snapshot por dia dos eventos
+TBO/HSI/TBO\* em `historico_motores_diagonal.csv` (chave: serial+ano+mês),
+mesmo padrão da Situação. Exibido num expander "🕐 Evolução" na aba
+"Diagonal TBO/HSI" de Motores (não na Diagonal de Manutenção — lá o foco é
+a aeronave, o histórico da projeção do motor fica na página de Motores).

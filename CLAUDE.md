@@ -22,10 +22,10 @@ C-98A PAMALS/
 └── Projetos/                  <- MTA e TPJL, completos (ver CLAUDE.md próprio)
 ```
 
-## Atualização de dados — automática (9 fontes) + manual (as demais)
+## Atualização de dados — automática (10 fontes) + manual (as demais)
 
 Disponibilidade Diária, Emergências, RAC, Vencimentos TMOT, Pagamentos, MTA,
-TPJL, Reparáveis e Empréstimos atualizam **sozinhos, de 2 em 2 horas
+TPJL, Reparáveis, Empréstimos e Motores atualizam **sozinhos, de 2 em 2 horas
 (seg-sex, 8h-20h), por 2 caminhos ao mesmo tempo** (a pedido do Wallace,
 desde 2026-07-09): na nuvem do GitHub
 (`.github/workflows/atualizacoes.yml`, GitHub Actions — não depende do Mac
@@ -40,10 +40,13 @@ sozinho — o Streamlit Cloud reimplanta automaticamente). Emergências Totais
 não têm agendamento próprio — recalculam de carona toda vez que Emergências
 atualiza. **Reparáveis e Empréstimos entraram na automação em 2026-07-10**
 (antes eram manuais — decisão revertida pra alimentar o controle de data
-global, ver `Contrato 005/Dashboard/00_Instrucoes/analise_periodo.md`). As
-demais fontes (Vencimentos por Operador, Diagonal de Manutenção) continuam
-manuais — Wallace pede na conversa. Ver `00_Instrucoes/atualizacoes.md`
-para a arquitetura completa e como adicionar uma fonte nova ao agendamento.
+global, ver `Contrato 005/Dashboard/00_Instrucoes/analise_periodo.md`).
+**Motores entrou em 2026-07-15** (planilha pessoal do Wallace, compartilhada
+com a conta de serviço nessa data — antes disso não dava, ver
+`Coordenadoria/00_Instrucoes/motores.md`). As demais fontes (Vencimentos por
+Operador, Diagonal de Manutenção) continuam manuais — Wallace pede na
+conversa. Ver `00_Instrucoes/atualizacoes.md` para a arquitetura completa e
+como adicionar uma fonte nova ao agendamento.
 
 ## Painel "Fonte dos dados" (rodapé de cada área)
 

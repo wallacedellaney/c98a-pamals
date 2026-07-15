@@ -12,6 +12,7 @@ SCRIPT_GERAR_DISPONIBILIDADE = DASHBOARD_ROOT / "05_Scripts" / "python" / "extra
 SCRIPT_GERAR_VENCIMENTOS = DASHBOARD_ROOT / "05_Scripts" / "python" / "extrair_vencimentos.py"
 SCRIPT_GERAR_VENCIMENTOS_OPERADORES = DASHBOARD_ROOT / "05_Scripts" / "python" / "extrair_vencimentos_operadores.py"
 SCRIPT_GERAR_DIAGONAL_MANUTENCAO = DASHBOARD_ROOT / "05_Scripts" / "python" / "extrair_diagonal_manutencao.py"
+SCRIPT_GERAR_MOTORES = DASHBOARD_ROOT / "05_Scripts" / "python" / "extrair_motores.py"
 
 RAC_PLANILHA_URL = "https://docs.google.com/spreadsheets/d/1o8supQLcHkC1WZZCZDAtuRKGB_VUlQ8qBlYj7racsGQ/edit"
 DISPONIBILIDADE_PASTA_URL = "https://drive.google.com/drive/folders/1JLrUGunWo5ABsR3WuYo88b2WD4QWoxNH"
@@ -98,3 +99,21 @@ def atualizar_dados_diagonal_manutencao():
         st.toast("Dados de Diagonal de Manutenção atualizados.", icon="✅")
     else:
         st.error(f"Erro ao atualizar Diagonal de Manutenção:\n\n{resultado.stderr or resultado.stdout}")
+
+
+def atualizar_dados_motores():
+    """Reprocessa a cópia local de 01_Bases_Originais/Motores/ (buscar uma
+    versão nova no Drive — planilha pessoal do Wallace, ainda sem
+    compartilhamento confirmado com a conta de serviço — é feito pelo Claude
+    na conversa, não por aqui)."""
+    resultado = subprocess.run(
+        [sys.executable, str(SCRIPT_GERAR_MOTORES)],
+        cwd=str(SCRIPT_GERAR_MOTORES.parent),
+        capture_output=True,
+        text=True,
+    )
+    st.cache_data.clear()
+    if resultado.returncode == 0:
+        st.toast("Dados de Motores atualizados.", icon="✅")
+    else:
+        st.error(f"Erro ao atualizar Motores:\n\n{resultado.stderr or resultado.stdout}")
