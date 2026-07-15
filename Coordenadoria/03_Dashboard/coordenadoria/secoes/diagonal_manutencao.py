@@ -23,7 +23,7 @@ FONTE_PROGRAMADO = "Programado"
 FONTE_AJUSTADO = "Programado (ajustado)"
 FONTE_MOTOR = "Motor (planilha)"
 PATTERN_FONTE = {FONTE_REAL: "", FONTE_PROGRAMADO: "/", FONTE_AJUSTADO: "x"}
-COR_OPERADOR_MOTOR = {"TBO": AMBER, "HSI": CYAN, "Simulação": CATEGORICA[2]}
+COR_OPERADOR_MOTOR = {"TBO": AMBER, "HSI": CYAN, "Simulação": CATEGORICA[2], "Sem evento": "rgba(0,0,0,0)"}
 
 # Frota "dentro do contrato" — pré-selecionada por padrão no filtro de
 # Aeronave (pedido do Wallace em 2026-07-14), pra não precisar marcar toda
@@ -113,6 +113,18 @@ def _eventos_motor(motores_diagonal):
     return eventos[colunas]
 
 
+def _mapa_situacao_hoje(disp_aeronaves):
+    """Situação de hoje (DI/DO/II/IN/ITR/IS/IP) por matrícula, a partir do
+    relatório mais recente da Disponibilidade Diária. Pedido do Wallace em
+    2026-07-15: "vamos colcoar a condicao da aeronave no dia ... colcoando
+    di, do, IN, IS (informacoes da disp)"."""
+    if disp_aeronaves is None or disp_aeronaves.empty:
+        return {}
+    ultima_data = disp_aeronaves["data_referencia"].max()
+    hoje_snapshot = disp_aeronaves[disp_aeronaves["data_referencia"] == ultima_data]
+    return dict(zip(hoje_snapshot["matricula"].astype(str), hoje_snapshot["situacao"]))
+
+
 def _dados_motor_aeronave(aeronave, diagonal_meta, situacao):
     """Motor(es) vinculado(s) a uma aeronave — cruza pelo ANV da Diagonal
     Nova (metadados de planejamento: Hr disponível, Voo mensal, Mês
@@ -157,39 +169,54 @@ def _rotulo_motor(aeronave, diagonal_meta, situacao):
     return " · ".join(partes)
 
 
-def _secao_motores_por_aeronave(aeronaves, diagonal_meta, situacao, hoje):
+NOME_SITUACAO_CURTO = {
+    "DI": "Disponível", "DO": "Disp. c/ restrição", "II": "Manut. programada",
+    "IN": "Manut. não programada", "ITR": "Aguardando transporte",
+    "IS": "Aguardando suprimento", "IP": "Indisp. prolongada",
+}
+
+
+def _secao_detalhe_aeronave(aeronaves, diagonal_meta, situacao, hoje, rac_aeronaves, rac_pendencias, mapa_situacao_hoje):
     """Painel discreto — 1 expander por aeronave (colapsado por padrão),
-    mostrando o motor vinculado + um campo editável de "Voo mensal" pra
-    simular "e se eu voar mais/menos por mês". Pedido do Wallace em
-    2026-07-15: "inserir de forma inteligente essas informacoes de motor
-    la na diagonal das aeronaves, de forma discreta ... insere tb uma
-    forma ... da media mensal de horas de voo por aeronave, no qual eu
-    consiga clicar e se eu alterar ali, ajeita a possicao ... na diagonal
-    geral" — a planilha de Motores (Diagonal Nova) continua sempre fixa,
-    só essa simulação aqui é editável (não grava em nenhum arquivo).
-
-    2026-07-15: o painel inteiro virou um único expander fechado por
-    padrão (pedido do Wallace: "deixa ele minimizado, ai quando clicar que
-    aparece as aeronaves para simular") — antes cada aeronave já aparecia
-    aberta na tela; agora só a lista de aeronaves aparece depois de abrir
-    o expander de fora."""
-    with st.expander("🔧 Simulador de horas de voo por aeronave"):
-        if diagonal_meta is None or diagonal_meta.empty:
-            st.caption('Sem dados de motor carregados — ver página "Motores".')
-            return []
-
+    consolidando: motor vinculado (+ simulação "e se eu voar mais/menos
+    por mês"), pendências do RAC e situação de hoje (Disponibilidade
+    Diária). Pedido do Wallace em 2026-07-15: "pensem em ser clicavel a
+    coluna Y (quadradinho com a aeronave clicavel), ai ali se tiver
+    faltando algum item aparece tb ... a gente soma a [informação de]
+    disponibilidade colocando di, do, in, is" + pedido original de
+    2026-07-15 sobre o simulador de horas de voo (mantido aqui dentro).
+    A planilha de Motores (Diagonal Nova) continua sempre fixa, só a
+    simulação de voo é editável (não grava em nenhum arquivo)."""
+    with st.expander("🔍 Detalhe da aeronave (motor, RAC, disponibilidade)"):
         eventos_ajustados = []
         cols = st.columns(3)
         for i, aeronave in enumerate(aeronaves):
-            motores_aer = _dados_motor_aeronave(aeronave, diagonal_meta, situacao)
+            motores_aer = _dados_motor_aeronave(aeronave, diagonal_meta, situacao) if diagonal_meta is not None else []
+            situacao_hoje = mapa_situacao_hoje.get(aeronave)
             with cols[i % 3]:
-                with st.expander(f"🔧 FAB {aeronave}"):
+                with st.expander(f"🔍 FAB {aeronave}"):
+                    if situacao_hoje:
+                        st.caption(f"**Situação hoje:** {situacao_hoje} — {NOME_SITUACAO_CURTO.get(situacao_hoje, situacao_hoje)}")
+                    else:
+                        st.caption("**Situação hoje:** sem relatório de Disponibilidade Diária pra essa aeronave.")
+
+                    if rac_pendencias is not None and not rac_pendencias.empty:
+                        pend_aer = rac_pendencias[rac_pendencias["matricula"].astype(str) == str(aeronave)]
+                        if pend_aer.empty:
+                            st.caption("**RAC:** sem pendências.")
+                        else:
+                            st.caption(f"**RAC:** {len(pend_aer)} item(ns) faltando (sem DPE — o RAC não tem essa informação):")
+                            for _, p in pend_aer.sort_values("quantidade_faltante", ascending=False).head(6).iterrows():
+                                st.caption(f"　• {p['pn']} — {p['nomenclatura']} ({int(p['quantidade_faltante'])} un.)")
+                            if len(pend_aer) > 6:
+                                st.caption(f"　… mais {len(pend_aer) - 6} item(ns), ver aba RAC.")
+
                     if not motores_aer:
-                        st.caption("Sem motor vinculado nos dados de planejamento (Diagonal Nova).")
+                        st.caption("**Motor:** sem motor vinculado nos dados de planejamento (Diagonal Nova).")
                         continue
                     for m in motores_aer:
                         pct_txt = f" · {m['pct_tbo_voada']:.0f}% TBO voada" if pd.notna(m["pct_tbo_voada"]) else ""
-                        st.caption(f"SN {m['serial']} — {m['condicao'] or '—'}{pct_txt}")
+                        st.caption(f"**Motor:** SN {m['serial']} — {m['condicao'] or '—'}{pct_txt}")
                         if pd.isna(m["voo_mensal"]) or pd.isna(m["hr_disp"]):
                             st.caption("Sem dado de planejamento (Voo mensal/Hr disponível) pra esse motor.")
                             continue
@@ -273,23 +300,30 @@ def render(dados):
     with c3:
         meses_a_frente = st.slider("Meses à frente", min_value=1, max_value=18, value=6, key="diagonal_meses")
 
+    # Aeronaves-alvo: sempre TODAS as selecionadas (ou as 23 dentro do
+    # contrato, se o filtro estiver limpo) — pedido do Wallace em
+    # 2026-07-15: "vamos colcoar todas aeronave" — cada uma vira uma linha
+    # no Gantt mesmo sem nenhum evento de indisponibilidade.
+    aeronaves_alvo = aeronaves_f if aeronaves_f else padrao_aeronave
+    if not aeronaves_alvo:
+        st.caption("Nenhuma aeronave selecionada.")
+        return
+
     limite = hoje + pd.DateOffset(months=meses_a_frente)
     filtrado = df[(df["periodo_fim"] >= hoje) & (df["periodo_inicio"] <= limite)].copy()
     if operadores:
         filtrado = filtrado[filtrado["operador"].isin(operadores)]
-    if aeronaves_f:
-        filtrado = filtrado[filtrado["aeronave"].isin(aeronaves_f)]
-
-    if filtrado.empty:
-        st.caption("Nenhum evento de indisponibilidade no período/filtro selecionado.")
-        return
+    filtrado = filtrado[filtrado["aeronave"].isin(aeronaves_alvo)]
 
     diagonal_meta = dados.get("motores_diagonal_meta")
     situacao_motores = dados.get("motores_situacao")
+    mapa_situacao_hoje = _mapa_situacao_hoje(dados.get("disp_aeronaves"))
 
     st.divider()
-    aeronaves_no_filtro = sorted(filtrado["aeronave"].dropna().unique(), key=str)
-    eventos_ajustados = _secao_motores_por_aeronave(aeronaves_no_filtro, diagonal_meta, situacao_motores, hoje)
+    eventos_ajustados = _secao_detalhe_aeronave(
+        aeronaves_alvo, diagonal_meta, situacao_motores, hoje,
+        dados.get("rac_aeronaves"), dados.get("rac_pendencias"), mapa_situacao_hoje,
+    )
     if eventos_ajustados:
         filtrado = pd.concat([filtrado, pd.DataFrame(eventos_ajustados)], ignore_index=True)
 
@@ -297,17 +331,44 @@ def render(dados):
     # vezes nomeiam o operador diferente pra mesma aeronave (ex.: Diagonal diz
     # "BABR", Disponibilidade Diária diz "6º ETA") — a matrícula é o dado que
     # não muda entre fontes, então é ela que decide a linha no gráfico.
-    # O rótulo já traz o motor (SN + %TBO) escrito direto — pedido do
-    # Wallace em 2026-07-15, "escreve la" — sem precisar clicar em nada.
-    mapa_rotulo_motor = {
-        a: _rotulo_motor(a, diagonal_meta, situacao_motores) for a in filtrado["aeronave"].dropna().unique()
-    }
-    filtrado["aeronave_label"] = (
-        "FAB " + filtrado["aeronave"].astype(str) + " — " + filtrado["aeronave"].map(mapa_rotulo_motor)
-    )
+    # O rótulo já traz o motor (SN + %TBO) e a situação de hoje (DI/DO/II/
+    # IN/ITR/IS/IP) escritos direto — pedido do Wallace em 2026-07-15,
+    # "escreve la" / "colcoar a condicao da aeronave no dia" — sem precisar
+    # clicar em nada pro básico.
+    def _rotulo_completo(aeronave):
+        sit = mapa_situacao_hoje.get(str(aeronave))
+        sit_txt = f"[{sit}] " if sit else ""
+        motor_txt = _rotulo_motor(aeronave, diagonal_meta, situacao_motores)
+        return f"FAB {aeronave} {sit_txt}— {motor_txt}"
+
+    todas_aeronaves = sorted(set(aeronaves_alvo) | set(filtrado["aeronave"].dropna().unique()), key=str)
+    mapa_rotulo = {a: _rotulo_completo(a) for a in todas_aeronaves}
+    filtrado["aeronave_label"] = filtrado["aeronave"].map(mapa_rotulo)
+
+    # Aeronave-alvo sem nenhum evento no período ainda precisa de uma linha
+    # no Gantt — um "espaço reservado" transparente (sem cor visível)
+    # garante a categoria no eixo Y mesmo com 0 evento de verdade.
+    aeronaves_com_evento = set(filtrado["aeronave"].dropna().unique())
+    aeronaves_sem_evento = [a for a in aeronaves_alvo if a not in aeronaves_com_evento]
+    if aeronaves_sem_evento:
+        reservados = pd.DataFrame([{
+            "operador": "Sem evento", "aeronave": a,
+            "periodo_inicio": hoje, "periodo_fim": hoje + pd.Timedelta(hours=1),
+            "motivo": "Sem indisponibilidade registrada no período/filtro selecionado.",
+            "confianca": "—", "fonte": FONTE_REAL, "texto_evento": "",
+            "aeronave_label": mapa_rotulo[a],
+        } for a in aeronaves_sem_evento])
+        filtrado = pd.concat([filtrado, reservados], ignore_index=True)
+
+    if filtrado.empty:
+        st.caption("Nenhuma aeronave/evento no período/filtro selecionado.")
+        return
 
     st.divider()
-    st.caption(f"{filtrado['aeronave'].nunique()} aeronave(s) com indisponibilidade (real ou projetada) · {len(filtrado)} evento(s) na janela selecionada")
+    st.caption(
+        f"{len(aeronaves_alvo)} aeronave(s) exibida(s) · {len(aeronaves_com_evento)} com indisponibilidade "
+        f"(real ou projetada) · {len(filtrado) - len(aeronaves_sem_evento)} evento(s) na janela selecionada"
+    )
 
     # Eventos de motor (TBO/HSI) não viram barra de mês inteiro — geralmente
     # tem troca de motor no meio do período, então a barra mentiria sobre a
@@ -345,13 +406,19 @@ def render(dados):
         "\"TBO\"/\"HSI\" escrito (âmbar/ciano), sem barra, marca só o início do mês previsto "
         "pela planilha de Motores (a barra inteira enganaria, geralmente troca de motor no meio) · "
         "xadrez (╳), operador \"Simulação\" = previsão recalculada com as horas de voo ajustadas "
-        "no painel \"🔧 Simulador\" acima."
+        "no painel \"🔍 Detalhe da aeronave\" acima · linha sem barra nenhuma = sem indisponibilidade "
+        "no período. Rótulo da aeronave já traz a situação de hoje (Disponibilidade Diária) entre "
+        "colchetes e o motor vinculado (SN + % TBO)."
     )
+
+    # Linhas "espaço reservado" (aeronave sem nenhum evento) não são
+    # indisponibilidade de verdade — fora do resumo e da tabela.
+    eventos_reais = filtrado[filtrado["operador"] != "Sem evento"]
 
     st.divider()
     st.caption("Aeronaves indisponíveis por mês (soma de eventos na janela selecionada)")
     resumo = (
-        filtrado.assign(mes=filtrado["periodo_inicio"].dt.to_period("M").dt.to_timestamp())
+        eventos_reais.assign(mes=eventos_reais["periodo_inicio"].dt.to_period("M").dt.to_timestamp())
         .groupby("mes")["aeronave"].nunique().reset_index(name="qtd_aeronaves")
     )
     fig2 = px.bar(resumo, x="mes", y="qtd_aeronaves", color_discrete_sequence=[CATEGORICA[0]])
@@ -360,7 +427,7 @@ def render(dados):
     st.plotly_chart(fig2, width="stretch")
 
     st.divider()
-    tabela = filtrado[["fonte", "operador", "aeronave", "periodo_inicio", "periodo_fim", "motivo", "confianca"]].rename(columns={
+    tabela = eventos_reais[["fonte", "operador", "aeronave", "periodo_inicio", "periodo_fim", "motivo", "confianca"]].rename(columns={
         "fonte": "Fonte", "operador": "Operador", "aeronave": "Aeronave", "periodo_inicio": "Início",
         "periodo_fim": "Fim", "motivo": "Motivo", "confianca": "Confiança",
     }).sort_values("Início")

@@ -199,3 +199,42 @@ TBO/HSI/TBO\* em `historico_motores_diagonal.csv` (chave: serial+ano+mês),
 mesmo padrão da Situação. Exibido num expander "🕐 Evolução" na aba
 "Diagonal TBO/HSI" de Motores (não na Diagonal de Manutenção — lá o foco é
 a aeronave, o histórico da projeção do motor fica na página de Motores).
+
+## Todas as aeronaves + condição do dia + detalhe unificado (2026-07-15)
+
+Pedido do Wallace: "nessa diagonal das aeroanves vamos colcoar todas
+aeronave, vamos colcoar a condicao da aeronave no dia, pensem em ser
+clicavel a coluna Y (quadradinho com a aeronave clicavel), ai ali se tiver
+faltando algum item aparece tb, o DPE do item, na linha x, a gente soma a
+[informação de] disponibilidade colcoando di, do, IN, IS". Esclarecido com
+o Wallace: "todas aeronave" = todas as 23 dentro do contrato (não fora do
+contrato); o "clicável" = o painel de detalhe por aeronave (expander),
+mostrando RAC (pendências) + Disponibilidade Diária (situação de hoje) +
+Motor, tudo junto.
+
+- **Todas as 23 aeronaves dentro do contrato sempre aparecem como linha no
+  Gantt** (`aeronaves_alvo`), mesmo sem nenhum evento de indisponibilidade
+  real/programado/motor no período — antes, uma aeronave 100% disponível
+  sem eventos simplesmente não tinha linha. Linha "espaço reservado"
+  (`operador="Sem evento"`, cor `rgba(0,0,0,0)` — totalmente transparente)
+  garante a categoria no eixo Y sem desenhar nenhuma barra visível; fica de
+  fora do resumo mensal e da tabela detalhada (não é indisponibilidade de
+  verdade).
+- **Rótulo da aeronave** ganhou a situação de hoje entre colchetes —
+  `_mapa_situacao_hoje()` pega o código (DI/DO/II/IN/ITR/IS/IP) do
+  relatório mais recente da Disponibilidade Diária. Ex.: "FAB 2702 [DI] —
+  SN PCE-PC2050 (12% TBO)".
+- **Painel "🔍 Detalhe da aeronave (motor, RAC, disponibilidade)"**
+  (renomeado de "🔧 Simulador de horas de voo por aeronave" — mesmo
+  expander único fechado por padrão, grade de 3 colunas por dentro) agora
+  mostra, por aeronave: situação de hoje (nome completo, não só o código),
+  pendências do RAC (PN, nomenclatura, quantidade faltante — top 6 + "ver
+  aba RAC" se tiver mais), e o motor vinculado (com o simulador de horas
+  de voo que já existia).
+  **Gap real de dado**: o RAC (`extrair_rac.py`) não tem nenhum campo de
+  DPE — é uma matriz PN × aeronave só com quantidade faltante, sem data
+  prevista de entrega. Mostrado assim mesmo (sem inventar a data), com o
+  aviso "sem DPE — o RAC não tem essa informação" ao lado de cada lista de
+  pendências. Se um dia precisar do DPE de verdade, teria que vir de outro
+  lugar (ex.: cruzar com Emergências do Contrato 005, que tem prazo de
+  entrega — não implementado ainda, é outra área/pacote).
