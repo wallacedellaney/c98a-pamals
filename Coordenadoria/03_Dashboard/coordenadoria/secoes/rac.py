@@ -228,12 +228,19 @@ def _pontos_atencao(aeronaves, pendencias):
     st.markdown("##### Pontos de atenção")
     itens = []
 
-    sem_condicoes = aeronaves[aeronaves["disponibilidade"] == "Sem condições"]
+    # Só aeronaves DENTRO do contrato — pedido do Wallace em 2026-07-15:
+    # "tira coisas das aeronaves fora do contrato nos pontos de atencao"
+    # (fora do contrato já tem seu próprio selo/quantitativo em outro lugar
+    # da tela, não precisa repetir aqui).
+    aeronaves_contrato = aeronaves[aeronaves["contrato"] == "Dentro do contrato"]
+    pendencias_contrato = pendencias[pendencias["matricula"].isin(aeronaves_contrato["matricula"])]
+
+    sem_condicoes = aeronaves_contrato[aeronaves_contrato["disponibilidade"] == "Sem condições"]
     if len(sem_condicoes):
         matriculas = ", ".join(f"FAB {m}" for m in sem_condicoes["matricula"])
         itens.append(f"⛔ {len(sem_condicoes)} aeronave(s) sem condições: {matriculas}.")
 
-    top_aer = aeronaves.sort_values("soma_unidades_faltantes", ascending=False).head(3)
+    top_aer = aeronaves_contrato.sort_values("soma_unidades_faltantes", ascending=False).head(3)
     for _, row in top_aer.iterrows():
         if row["soma_unidades_faltantes"] > 0:
             itens.append(
@@ -241,17 +248,11 @@ def _pontos_atencao(aeronaves, pendencias):
                 f"faltantes ({int(row['total_pendencias'])} PNs)."
             )
 
-    if not pendencias.empty:
-        top_pn = pendencias.groupby(["pn", "nomenclatura"])["matricula"].nunique().sort_values(ascending=False)
+    if not pendencias_contrato.empty:
+        top_pn = pendencias_contrato.groupby(["pn", "nomenclatura"])["matricula"].nunique().sort_values(ascending=False)
         if len(top_pn) and top_pn.iloc[0] > 1:
             pn, nome = top_pn.index[0]
             itens.append(f"🔩 PN {pn} ({nome}) afeta {top_pn.iloc[0]} aeronaves.")
-
-    fora_operacionais = aeronaves[
-        (aeronaves["contrato"] == "Fora do contrato") & (aeronaves["disponibilidade"] != "Sem condições")
-    ]
-    if len(fora_operacionais):
-        itens.append(f"🚫 {len(fora_operacionais)} aeronave(s) montadas/desmontadas estão fora do contrato.")
 
     if not itens:
         st.markdown(

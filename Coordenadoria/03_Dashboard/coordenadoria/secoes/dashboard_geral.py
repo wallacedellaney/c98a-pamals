@@ -210,12 +210,17 @@ def _pontos_atencao(aeronaves, pendencias, aer_hoje, rel_hoje, venc_tmot=None, v
     st.markdown("##### Pontos de atenção")
     itens = []
 
-    sem_condicoes = aeronaves[aeronaves["disponibilidade"] == "Sem condições"]
+    # Só aeronaves DENTRO do contrato — pedido do Wallace em 2026-07-15:
+    # "tira coisas das aeronaves fora do contrato nos pontos de atencao".
+    aeronaves_contrato = aeronaves[aeronaves["contrato"] == "Dentro do contrato"]
+    pendencias_contrato = pendencias[pendencias["matricula"].isin(aeronaves_contrato["matricula"])]
+
+    sem_condicoes = aeronaves_contrato[aeronaves_contrato["disponibilidade"] == "Sem condições"]
     if len(sem_condicoes):
         matriculas = ", ".join(f"FAB {m}" for m in sem_condicoes["matricula"])
         itens.append(f"⛔ RAC: {len(sem_condicoes)} aeronave(s) sem condições: {matriculas}.")
 
-    top_aer = aeronaves.sort_values("soma_unidades_faltantes", ascending=False).head(3)
+    top_aer = aeronaves_contrato.sort_values("soma_unidades_faltantes", ascending=False).head(3)
     for _, row in top_aer.iterrows():
         if row["soma_unidades_faltantes"] > 0:
             itens.append(
@@ -223,14 +228,17 @@ def _pontos_atencao(aeronaves, pendencias, aer_hoje, rel_hoje, venc_tmot=None, v
                 f"faltantes ({int(row['total_pendencias'])} PNs)."
             )
 
-    if not pendencias.empty:
-        top_pn = pendencias.groupby(["pn", "nomenclatura"])["matricula"].nunique().sort_values(ascending=False)
+    if not pendencias_contrato.empty:
+        top_pn = pendencias_contrato.groupby(["pn", "nomenclatura"])["matricula"].nunique().sort_values(ascending=False)
         if len(top_pn) and top_pn.iloc[0] > 1:
             pn, nome = top_pn.index[0]
             itens.append(f"🔩 RAC: PN {pn} ({nome}) afeta {top_pn.iloc[0]} aeronaves.")
 
+    matriculas_contrato = set(aeronaves_contrato["matricula"].astype(str))
+
     if aer_hoje is not None and not aer_hoje.empty:
         criticos = aer_hoje[aer_hoje["_alerta"] == "critico"]
+        criticos = criticos[criticos["matricula"].astype(str).isin(matriculas_contrato)]
         if len(criticos):
             matriculas = ", ".join(f"FAB {m}" for m in criticos["matricula"])
             itens.append(f"🚨 Disp. Diária: {len(criticos)} aeronave(s) em alerta crítico hoje: {matriculas}.")
@@ -250,6 +258,7 @@ def _pontos_atencao(aeronaves, pendencias, aer_hoje, rel_hoje, venc_tmot=None, v
     if diagonal is not None and not diagonal.empty:
         hoje_ts = pd.Timestamp.now().normalize()
         indisponiveis_agora = diagonal[(diagonal["periodo_inicio"] <= hoje_ts) & (diagonal["periodo_fim"] >= hoje_ts)]
+        indisponiveis_agora = indisponiveis_agora[indisponiveis_agora["aeronave"].astype(str).isin(matriculas_contrato)]
         n_diagonal = indisponiveis_agora["aeronave"].nunique()
         if n_diagonal:
             aeronaves_diag = ", ".join(f"FAB {a}" for a in sorted(indisponiveis_agora["aeronave"].unique()))

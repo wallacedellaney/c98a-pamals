@@ -129,3 +129,16 @@ Em vez de "% de completude" (sem base de cálculo confiável — a planilha só 
 * Mais de 15 unidades faltantes.
 
 Implementado em `paleta.py` (`faixa_pendencia`, `ORDEM_FAIXAS`).
+
+## "Pontos de atenção" só considera aeronaves dentro do contrato (2026-07-15)
+
+Pedido do Wallace: "ajeita o dashboard inteiro com as novas informacoes,
+tira coisas das aeronaves fora do contrato nos pontos de atencao".
+`_pontos_atencao()` (RAC e Dashboard Geral) filtra `aeronaves` por
+`contrato == "Dentro do contrato"` antes de montar qualquer item da lista
+(sem condições, top pendências, PN mais crítico) — aeronave fora do
+contrato já tem seu próprio quantitativo em outro lugar da tela (cards),
+não precisa repetir aqui. No Dashboard Geral, os alertas de Disponibilidade
+Diária e Diagonal de Manutenção também passaram a excluir aeronaves fora
+do contrato (cruzando pela matrícula com o RAC), pro "pontos de atenção"
+ficar consistente em todas as fontes que ele combina.
