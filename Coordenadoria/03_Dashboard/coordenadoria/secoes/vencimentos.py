@@ -25,6 +25,29 @@ UNIDADE_TIPO = {"Hora": "horas", "Pouso": "pousos", "Calendário": "dias"}
 # 3 meses (3*30 = 90 dias, já que Calendário é armazenado em dias).
 LIMITE_ALERTA = {"Hora": 100, "Pouso": 50, "Calendário": 90}
 
+# Termos que escondem o item por padrão no filtro inicial de Nomenclatura da
+# aba Operadores (pedido do Wallace em 2026-07-16: são peças de motor/hélice,
+# já cobertas pela página "Motores") — "contém" em qualquer posição do texto
+# (não só no início), confirmado com o Wallace, por isso "BERÇO DO MOTOR"
+# também entra (contém "MOTOR") mesmo não começando com o termo. "ENGI" (não
+# "ENGINE") de propósito, pra pegar também "RING AY-ENGI" (nomenclatura vem
+# truncada na fonte, sem o "NE" final) — mas "RING SNAP – ANEL FRENO" (peça
+# de freio) fica de fora, já que não contém nenhum desses termos. Segue
+# sempre editável no filtro — é só o valor inicial.
+TERMOS_MOTOR_HELICE_OCULTOS = [
+    "DISK", "ANEL DO", "ENGI", "MOTOR", "HUB", "IMPELLER", "HÉLICE", "KIT HSI",
+]
+
+# Situação pré-selecionada por padrão no filtro inicial da aba Operadores
+# (pedido do Wallace em 2026-07-16) — "Ok"/"Condição"/"Não instalado"/"Não
+# aplicável" ficam de fora do padrão, mas continuam selecionáveis.
+SITUACAO_PADRAO_OPERADORES = ["Vencido", "Próximo"]
+
+
+def _nomenclatura_motor_helice(nomenclatura):
+    texto = str(nomenclatura or "").upper()
+    return any(termo in texto for termo in TERMOS_MOTOR_HELICE_OCULTOS)
+
 
 def _status_vencimento(row):
     # Célula vazia no Excel volta como NaN; bool(NaN) é True em Python e
@@ -143,6 +166,14 @@ def _operadores(dados):
     df = df.copy()
     df["_status"] = df.apply(_status_vencimento, axis=1)
 
+    aeronaves_rac = dados.get("rac_aeronaves")
+    if aeronaves_rac is not None and not aeronaves_rac.empty:
+        matriculas_contrato = set(
+            aeronaves_rac.loc[aeronaves_rac["contrato"] == "Dentro do contrato", "matricula"].astype(str)
+        )
+    else:
+        matriculas_contrato = set()
+
     st.divider()
     total = len(df)
     vencidos = int((df["_status"] == "Vencido").sum())
@@ -157,7 +188,7 @@ def _operadores(dados):
     abas = st.tabs([f"Por {t.lower()}" for t in TIPOS])
     for aba, tipo in zip(abas, TIPOS):
         with aba:
-            _secao_tipo_operadores(df, tipo)
+            _secao_tipo_operadores(df, tipo, matriculas_contrato)
 
 
 def _card(col, valor, label, sub, cor):
@@ -265,7 +296,7 @@ def _secao_tipo(df, tipo):
     st.dataframe(tabela, hide_index=True, width="stretch")
 
 
-def _secao_tipo_operadores(df, tipo):
+def _secao_tipo_operadores(df, tipo, matriculas_contrato):
     sub = df[df["tipo_vencimento"] == tipo].copy()
     if sub.empty:
         st.caption("Nenhum item nessa categoria.")
@@ -285,9 +316,36 @@ def _secao_tipo_operadores(df, tipo):
     with c2:
         operadores = st.multiselect("Operador", sorted(sub["operador"].unique()), key=f"venc_op_filtro_{tipo}")
 
+    aeronaves_disponiveis = sorted(sub["matricula"].astype(str).unique())
+    padrao_aeronaves = [a for a in aeronaves_disponiveis if a in matriculas_contrato] or aeronaves_disponiveis
+    situacoes_disponiveis = sorted(sub["_status"].unique())
+    padrao_situacoes = [s for s in SITUACAO_PADRAO_OPERADORES if s in situacoes_disponiveis] or situacoes_disponiveis
+
+    c3, c4, c5 = st.columns([1.4, 1.4, 1])
+    with c3:
+        aeronaves_f = st.multiselect(
+            "Aeronave", aeronaves_disponiveis, default=padrao_aeronaves, key=f"venc_op_aeronave_{tipo}",
+        )
+    with c4:
+        situacoes_f = st.multiselect(
+            "Situação", situacoes_disponiveis, default=padrao_situacoes, key=f"venc_op_situacao_{tipo}",
+        )
+    with c5:
+        ocultar_motor_helice = st.checkbox(
+            "Ocultar motor/hélice", value=True, key=f"venc_op_ocultar_motor_{tipo}",
+            help="Esconde por padrão itens de motor/hélice (Disk, Engine, Motor, Hub Compressor, "
+                 "Impeller, Hélice, Kit HSI) — já cobertos pela página Motores. Desmarque pra ver todos.",
+        )
+
     filtrado = sub[sub["disponibilidade_valor"].between(faixa[0], faixa[1])]
     if operadores:
         filtrado = filtrado[filtrado["operador"].isin(operadores)]
+    if aeronaves_f:
+        filtrado = filtrado[filtrado["matricula"].astype(str).isin(aeronaves_f)]
+    if situacoes_f:
+        filtrado = filtrado[filtrado["_status"].isin(situacoes_f)]
+    if ocultar_motor_helice:
+        filtrado = filtrado[~filtrado["nomenclatura"].apply(_nomenclatura_motor_helice)]
 
     vencidos = int((filtrado["_status"] == "Vencido").sum())
     proximos = int((filtrado["_status"] == "Próximo").sum())

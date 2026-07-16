@@ -127,3 +127,30 @@ Mesma lógica do TMOT (Hora = timedelta ou "HH:MM" texto; Pouso = número puro o
 * Dividir em 3 partes: vencimento por hora, por pouso, por calendário.
 * Em cada parte, uma **linha do tempo arrastável** — um filtro de intervalo (slider) pra selecionar uma faixa de horas/pousos/dias e ver só os itens naquela faixa.
 * A parte "Operadores" fica de fora por enquanto (fonte ainda não definida) — só um card clicável reservando o lugar.
+
+## Filtro inicial da aba Operadores (2026-07-16)
+
+Pedido do Wallace: ajustar o filtro inicial (o padrão ao abrir a tela, não
+trava — tudo continua editável) das 3 abas (Por hora/Por pouso/Por
+calendário) dentro de Vencimentos → Operadores:
+
+1. **Aeronave**: só as aeronaves **dentro do contrato** vêm pré-selecionadas
+   (cruzando `matricula` com `rac_aeronaves["contrato"]`, mesmo campo usado
+   no RAC/Dashboard Geral) — as fora do contrato ficam de fora do padrão,
+   mas dá pra adicionar de volta no multiselect.
+2. **Situação**: só **Vencido** e **Próximo** vêm marcados por padrão — os
+   outros valores possíveis (`Ok`, `Condição`, `Não instalado`, `Não
+   aplicável`, ver seção "Tipos de vencimento especiais" acima) ficam fora
+   do padrão, mas continuam no multiselect pra quem quiser ver.
+3. **Nomenclatura — checkbox "Ocultar motor/hélice"** (marcado por padrão):
+   esconde itens de motor/hélice, já cobertos pela página **Motores**.
+   Confirmado com o Wallace que é por **conteúdo** (não só início do texto)
+   — por isso "BERÇO DO MOTOR" também entra (contém "MOTOR"), mesmo não
+   começando com o termo. Termos usados (`TERMOS_MOTOR_HELICE_OCULTOS` em
+   `vencimentos.py`): DISK, ANEL DO, ENGI, MOTOR, HUB, IMPELLER, HÉLICE, KIT
+   HSI. **"ENGI" (não "ENGINE")** de propósito — a nomenclatura
+   `RING AY-ENGI` vem truncada na própria fonte (falta o "NE" final), e sem
+   isso esse item não seria escondido. `RING SNAP – ANEL FRENO` (peça de
+   freio) fica de fora do padrão de propósito — não contém nenhum desses
+   termos. 131 dos 780 itens da base (na conferência de 2026-07-16) batem
+   com algum termo.
