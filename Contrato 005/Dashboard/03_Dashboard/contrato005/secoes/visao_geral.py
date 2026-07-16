@@ -117,7 +117,7 @@ def render(dados):
 
     st.divider()
     st.markdown("##### Financeiro e Fechamento")
-    col4, col5 = st.columns(2)
+    col4, col5, col6 = st.columns(3)
 
     with col4:
         st.subheader("Pagamentos")
@@ -150,3 +150,16 @@ def render(dados):
         st.caption("Cômputo Mensal — prévia automática da matriz de aeronaves montadas (Pré-RNA).")
         if st.button("Ver Fechamento →", width="stretch", key="vg_ir_fechamento"):
             _ir_para("Fechamento Mensal")
+
+    with col6:
+        st.subheader("Reajuste")
+        ind_reajuste = dados.get("reajuste_indicadores")
+        if ind_reajuste is not None and not ind_reajuste.empty:
+            v_1 = ind_reajuste.loc[ind_reajuste["indicador"] == "Valor do Contrato após 1° Reajuste", "valor"]
+            v_2 = ind_reajuste.loc[ind_reajuste["indicador"] == "Valor do Contrato após 2° Reajuste", "valor"]
+            st.metric("Valor do contrato (após 1° Reajuste)", f"R$ {v_1.iloc[0]:,.2f}" if len(v_1) else "—")
+            st.caption(f"Após 2° Reajuste (projeção): R$ {v_2.iloc[0]:,.2f}" if len(v_2) else "—")
+        else:
+            st.metric("Valor do contrato (após reajuste)", "—")
+        if st.button("Ver Reajuste →", width="stretch", key="vg_ir_reajuste"):
+            _ir_para("Reajuste")

@@ -22,7 +22,7 @@ from contrato005.components.paleta import AMBER, SECONDARY, LINE
 from contrato005.data.carregar_dados import carregar_tudo
 from contrato005.secoes import (
     visao_geral, reparaveis, emergencias, emergencias_totais,
-    fechamento_mensal, emprestimos, pagamentos, analise_periodo,
+    fechamento_mensal, emprestimos, pagamentos, analise_periodo, reajuste,
 )
 
 PAGINAS = {
@@ -34,6 +34,7 @@ PAGINAS = {
     "Fechamento Mensal": fechamento_mensal,
     "Empréstimos": emprestimos,
     "Pagamentos": pagamentos,
+    "Reajuste": reajuste,
 }
 
 DASHBOARD_ROOT = Path(__file__).resolve().parents[1]

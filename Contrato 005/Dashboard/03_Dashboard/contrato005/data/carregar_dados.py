@@ -147,6 +147,22 @@ def carregar_pagamentos():
     return df, contrato, empenhos, mtime
 
 
+def carregar_reajuste():
+    """Planilha Demonstrativa -2_Reajuste- (valor do contrato, saldos por
+    módulo, notas fiscais e cronograma físico financeiro). Ver
+    00_Instrucoes/reajuste.md."""
+    caminho = DADOS_TRATADOS / "base_reajuste_tratada.xlsx"
+    if not caminho.exists():
+        vazio = pd.DataFrame()
+        return vazio, vazio, vazio, vazio, None
+    mtime = caminho.stat().st_mtime
+    indicadores = _ler_excel(str(caminho), mtime, sheet_name="Indicadores")
+    notas_fiscais = _ler_excel(str(caminho), mtime, sheet_name="NotasFiscais")
+    cronograma_mensal = _ler_excel(str(caminho), mtime, sheet_name="CronogramaMensal")
+    cronograma_resumo = _ler_excel(str(caminho), mtime, sheet_name="CronogramaResumo")
+    return indicadores, notas_fiscais, cronograma_mensal, cronograma_resumo, mtime
+
+
 def carregar_tudo():
     df_emergencias, mtime_emerg = carregar_emergencias()
     historico_emergencias = carregar_historico_emergencias()
@@ -154,6 +170,7 @@ def carregar_tudo():
     df_devolucoes, mtime_devolucoes = carregar_devolucoes()
     df_reparaveis, mtime_rep = carregar_reparaveis()
     df_pagamentos, contrato, empenhos, mtime_pag = carregar_pagamentos()
+    reajuste_indicadores, reajuste_nf, reajuste_cronograma, reajuste_resumo, mtime_reajuste = carregar_reajuste()
     return {
         "emergencias": df_emergencias,
         "emergencias_atualizado_em": mtime_emerg,
@@ -171,5 +188,10 @@ def carregar_tudo():
         "historico_pagamentos": carregar_historico_pagamentos(),
         "contrato": contrato,
         "empenhos": empenhos,
+        "reajuste_indicadores": reajuste_indicadores,
+        "reajuste_notas_fiscais": reajuste_nf,
+        "reajuste_cronograma_mensal": reajuste_cronograma,
+        "reajuste_cronograma_resumo": reajuste_resumo,
+        "reajuste_atualizado_em": mtime_reajuste,
         "atualizado_em": max(mtime_emerg, mtime_rep, mtime_pag),
     }
