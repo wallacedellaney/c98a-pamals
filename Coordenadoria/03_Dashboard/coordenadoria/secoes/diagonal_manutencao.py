@@ -40,10 +40,34 @@ AERONAVES_PADRAO = {
 }
 
 
+def _inicio_real(disp_aeronaves, matricula, situacao_atual, data_mais_recente):
+    """Anda pra trás no histórico já carregado de Disponibilidade Diária
+    (vários dias, não só o relatório de hoje) procurando o primeiro dia em
+    que a aeronave já aparecia com essa MESMA situação — pra não mostrar
+    toda indisponibilidade real como se tivesse começado hoje (bug achado
+    pelo Wallace em 2026-07-16: "vi que o inicio ta sempre o dia atual").
+    Se a situação já existia no dia mais antigo carregado, não dá pra saber
+    o início de verdade (pode ser bem anterior a isso) — sinalizado com
+    `incerto=True`, sem inventar uma data anterior ao que temos."""
+    hist = disp_aeronaves[
+        (disp_aeronaves["matricula"] == matricula) & (disp_aeronaves["data_referencia"] <= data_mais_recente)
+    ].sort_values("data_referencia")
+    inicio = data_mais_recente
+    incerto = True
+    for data, sit in zip(hist["data_referencia"][::-1], hist["situacao"][::-1]):
+        if sit != situacao_atual:
+            incerto = False
+            break
+        inicio = data
+    return inicio, incerto
+
+
 def _eventos_reais(disp_aeronaves):
     """Constrói os eventos "de verdade" a partir do relatório mais recente da
     Disponibilidade Diária — aeronaves com situação != DI/DO (ver
-    00_Instrucoes/disponibilidade_diaria.md pro significado de cada código)."""
+    00_Instrucoes/disponibilidade_diaria.md pro significado de cada código).
+    `periodo_inicio` é o primeiro dia real (dentro do histórico carregado)
+    em que a aeronave já estava nessa situação, não sempre "hoje"."""
     if disp_aeronaves is None or disp_aeronaves.empty:
         return pd.DataFrame(columns=["operador", "aeronave", "periodo_inicio", "periodo_fim", "motivo", "confianca", "fonte"])
 
@@ -58,17 +82,24 @@ def _eventos_reais(disp_aeronaves):
             return row["dpe_data"]
         return row["data_referencia"] + timedelta(days=14)
 
-    def _motivo(row):
+    def _inicio_e_incerteza(row):
+        return _inicio_real(disp_aeronaves, row["matricula"], row["situacao"], row["data_referencia"])
+
+    def _motivo(row, incerto):
         base = row["situacao"]
         if pd.notna(row["ocorrencia"]) and str(row["ocorrencia"]).strip():
             base = f"{row['situacao']}: {row['ocorrencia']}"
+        if incerto:
+            base += " (em aberto desde antes do início do nosso histórico — data real pode ser anterior)"
         if pd.isna(row["dpe_data"]):
             base += " (sem previsão de retorno — +14d de referência)"
         return base
 
-    indisponiveis["periodo_inicio"] = indisponiveis["data_referencia"]
+    inicio_incerteza = indisponiveis.apply(_inicio_e_incerteza, axis=1, result_type="expand")
+    indisponiveis["periodo_inicio"] = inicio_incerteza[0]
+    indisponiveis["_incerto"] = inicio_incerteza[1]
     indisponiveis["periodo_fim"] = indisponiveis.apply(_fim, axis=1)
-    indisponiveis["motivo"] = indisponiveis.apply(_motivo, axis=1)
+    indisponiveis["motivo"] = indisponiveis.apply(lambda r: _motivo(r, r["_incerto"]), axis=1)
     indisponiveis["operador"] = indisponiveis["unidade"]
     indisponiveis["confianca"] = "Real"
     indisponiveis["fonte"] = FONTE_REAL

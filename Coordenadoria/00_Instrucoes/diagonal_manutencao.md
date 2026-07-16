@@ -43,8 +43,20 @@ Diagonal chama de "BABR", Disponibilidade Diária chama de "6º ETA"):
 * **Real (hoje)** — tirado do relatório **mais recente** da Disponibilidade
   Diária: toda aeronave com situação diferente de DI/DO (ver
   `disponibilidade_diaria.md` pro significado de cada código) vira uma barra
-  desde a data do relatório até a data prevista (DPE) — ou +14 dias, só de
-  referência visual, se não tiver DPE informado. Barra **sólida**.
+  até a data prevista (DPE) — ou +14 dias, só de referência visual, se não
+  tiver DPE informado. Barra **sólida**.
+  **Início da barra (corrigido em 2026-07-16)**: não é mais sempre "hoje" —
+  `_inicio_real()` anda pra trás no histórico já carregado de
+  Disponibilidade Diária (vários dias, não só o relatório de hoje)
+  procurando o primeiro dia em que a aeronave já aparecia com essa MESMA
+  situação. Bug achado pelo Wallace: "vi que o inicio ta sempre o dia
+  atual" — antes, uma aeronave que já estava "II" há 8 dias aparecia como
+  se a inspeção tivesse começado hoje. Se a situação já existia no dia mais
+  antigo carregado (histórico só tem alguns dias — a Disponibilidade Diária
+  não grava snapshot próprio, ver limitações abaixo), não dá pra saber o
+  início de verdade — o motivo mostra um aviso "(em aberto desde antes do
+  início do nosso histórico...)" em vez de inventar uma data anterior ao
+  que temos.
 * **Programado** — a projeção futura de inspeções, vinda da Diagonal de
   Manutenção de cada operador (ver seções acima). Barra **listrada** (`/`,
   `pattern_shape` do Plotly).
