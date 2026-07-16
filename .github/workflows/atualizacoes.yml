@@ -31,6 +31,7 @@ on:
           - vencimentos_tmot
           - mta
           - tpjl
+          - tpjl_extras
           - reparaveis
           - devolucoes
           - motores

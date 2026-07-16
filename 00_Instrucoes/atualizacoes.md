@@ -4,7 +4,7 @@
 
 O site tem sua **própria credencial do Google** (conta de serviço
 `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`, chave
-guardada como Secret do GitHub, nunca no código) e busca 10 fontes **sozinho,
+guardada como Secret do GitHub, nunca no código) e busca 11 fontes **sozinho,
 rodando na nuvem do GitHub (GitHub Actions) e no Mac do Wallace, ao mesmo
 tempo** — não depende do Mac estar ligado (o GitHub cobre sozinho), mas se
 estiver ligado no horário, busca também.
@@ -27,6 +27,7 @@ gera commit/redeploy à toa.
 | Pagamentos | `Contrato 005/Dashboard/05_Scripts/python/extrair_pagamentos.py` |
 | MTA | `Projetos/05_Scripts/python/extrair_mta.py` |
 | TPJL | `Projetos/05_Scripts/python/extrair_tpjl.py` |
+| TPJL — Consumo/Estoque/Solicitações | `Projetos/05_Scripts/python/extrair_tpjl_extras.py` |
 | Reparáveis | `Contrato 005/Dashboard/05_Scripts/python/extrair_reparaveis.py` |
 | Devoluções/Empréstimos | `Contrato 005/Dashboard/05_Scripts/python/extrair_devolucoes.py` |
 | Motores | `Coordenadoria/05_Scripts/python/extrair_motores.py` |
@@ -49,7 +50,7 @@ MTA e TPJL também gravam um snapshot diário (`historico_mta.csv`/
 alimenta a "barra temporal" (comparação com dias anteriores) no dashboard,
 pedida pelo Wallace em 2026-07-09. Ver `Projetos/CLAUDE.md`.
 
-`shared/executar_atualizacao.py todos` roda as 9 em sequência (uma de cada
+`shared/executar_atualizacao.py todos` roda as 11 em sequência (uma de cada
 vez, sincronizando com o GitHub antes de cada uma — ver `_sincronizar_com_remoto`).
 Pra cada fonte:
 1. Roda `python3 <script> --atualizar-do-drive` (busca no Drive, sobrescreve
@@ -248,6 +249,36 @@ sob demanda).
 | MTA (Projetos) | `1ZdV1PX4ujqPgQNGk7f_WPkvA42aArVkGS59TVW78zhs` — compartilhada e automatizada em 2026-07-09 |
 | TPJL 2025 (Projetos) | `1zkBB77PXvzRTg-8n-tgNAYX8lJB8KozPvuyGiNtARsA` — compartilhada e automatizada em 2026-07-09 |
 | TPJL 2026 (Projetos) | `1Mf_R70IDJ9auysySW1oATGt3TSrPZE081-O3nB930lc` — compartilhada e automatizada em 2026-07-09 |
+| TPJL Consumo (Projetos) | `1guih043Q3hNZOMx3YQX6LD4h2wSqUd20` — **não compartilhada** com a conta de serviço (404) |
+| TPJL Estoque (Projetos) | `1mmVUl8QO5PHecu56Goqw0WUbvwdMAhqU` — **não compartilhada** com a conta de serviço (404) |
+| TPJL Solicitações (Projetos) | `1J0Yi7JdWYHgqaCxS-Vnv9o2ViHG8jm0T` — **não compartilhada** com a conta de serviço (404) |
+| Motores (Coordenadoria) | planilha pessoal do Wallace, compartilhada e automatizada em 2026-07-15 |
+
+## Achado em 2026-07-16 — TPJL Extras fora do agendamento (e ainda bloqueado)
+
+Numa checagem geral do site (pedido do Wallace: "checa todo nosso site,
+documentacao, atualizacao"), achado que `extrair_tpjl_extras.py`
+(Consumo/Estoque/Solicitações) já tinha `atualizar_do_drive()` escrito
+desde 2026-07-14, mas nunca tinha sido cadastrado em `SCRIPTS` de
+`shared/executar_atualizacao.py` — por isso nunca rodava no ciclo de 2 em 2
+horas, só ficou parado na primeira extração manual (`estado_atualizacoes.json`
+mostrava `tpjl_extras` desatualizado há 2 dias enquanto as outras fontes do
+mesmo arquivo mostravam poucos minutos). Adicionado ao dict `SCRIPTS` e à
+opção do `workflow_dispatch`.
+
+**Mas ao testar de verdade (rodando `--atualizar-do-drive` manualmente),
+as 3 planilhas retornaram erro 404** — não estão compartilhadas com a conta
+de serviço `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`
+(diferente das outras fontes do TPJL, que já foram compartilhadas em
+2026-07-09). Provavelmente essas 3 nunca chegaram a ser testadas com a
+credencial real da automação — só com o meu (Claude) acesso próprio ao
+Drive durante a conversa em que foram criadas. **Falta o Wallace
+compartilhar como Leitor** as 3 planilhas da pasta "Planilhas TPLJ"
+(Consumo, Estoque, Solicitações) com esse e-mail — depois disso, a próxima
+rodada do ciclo automático já busca. Até lá, `tpjl_extras` fica com
+`status: "erro"` no estado e os dados continuam parados em 2026-07-14
+(reprocessamento local dos arquivos já baixados continua funcionando,
+só a busca no Drive que falha).
 
 ## Limitação conhecida — Vencimentos por Operador e Diagonal de Manutenção
 

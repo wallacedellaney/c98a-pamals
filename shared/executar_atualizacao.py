@@ -5,7 +5,7 @@ sozinho, pra o Streamlit Cloud atualizar.
 
 Uso: python3 executar_atualizacao.py <fonte|todos>
 
-"todos" roda as 10 fontes em sequência, uma de cada vez, sincronizando com o
+"todos" roda as 11 fontes em sequência, uma de cada vez, sincronizando com o
 GitHub antes de cada uma — usado pelo agendamento de 2 em 2 horas (seg-sex,
 a pedido do Wallace em 2026-07-09, pra contornar o atraso do agendamento
 gratuito do GitHub: rodando com mais frequência, mesmo que uma vez atrase,
@@ -30,6 +30,10 @@ SCRIPTS = {
     "vencimentos_tmot": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_vencimentos.py",
     "mta": RAIZ / "Projetos" / "05_Scripts" / "python" / "extrair_mta.py",
     "tpjl": RAIZ / "Projetos" / "05_Scripts" / "python" / "extrair_tpjl.py",
+    # Consumo/Estoque/Solicitações do TPJL (pasta Drive "Planilhas TPLJ") —
+    # tinha atualizar_do_drive() pronto desde 2026-07-14, mas nunca tinha
+    # sido cadastrada aqui; achado numa checagem geral em 2026-07-16.
+    "tpjl_extras": RAIZ / "Projetos" / "05_Scripts" / "python" / "extrair_tpjl_extras.py",
     # A partir de 2026-07-10: Reparáveis e Empréstimos passam a atualizar
     # sozinhos também, pra alimentar o histórico diário usado no controle de
     # data global (antes, Reparáveis era só manual — decisão revertida a
