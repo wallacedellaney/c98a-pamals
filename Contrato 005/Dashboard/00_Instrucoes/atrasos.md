@@ -39,6 +39,14 @@ da contagem por mês (não dá pra saber a qual mês pertencem) e um aviso
 aparece na tela informando quantos foram ignorados. Não interrompe a
 página.
 
+## PN e Nomenclatura (2026-07-16)
+
+Pedido do Wallace — ver `computo_mensal.md`, mesma seção. As tabelas de
+"Situação atual" e "Entregas no mês de referência", e o painel de detalhe
+ao clicar numa linha, agora mostram PN e Nomenclatura logo depois da
+Emergência (já vinham na fonte `emergencias_totais`, só não apareciam
+aqui).
+
 ## Validado em
 
 2026-07-10, julho/2026: 10 entregas no mês, 8 no prazo (80%), 1 registro

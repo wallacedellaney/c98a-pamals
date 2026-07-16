@@ -36,7 +36,6 @@
   "ultimo_dia_mes": 28,
   "mmam_previa": 86.49,
   "inconsistencias": [
-    "Emergência 396250015798 (FAB 2733): campo 'Atd/cancelada' tem valor não reconhecido como data ('verificar data') — tratada como já encerrada antes do mês de referência (não entra no cômputo). Verificar manualmente.",
     "Emergência 690260002219 (FAB 2727, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
     "Emergência 396260016001 (FAB 2739, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
     "Emergência 304260075552 (FAB 2704, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente."

@@ -42,6 +42,21 @@ no mes atual". Trocado pra `pd.Timestamp.now().to_period("M")` em
 selecionado (e sempre aparece na lista de opções, mesmo sem nenhuma
 emergência registrada nele ainda).
 
+## PN e Nomenclatura na justificativa (2026-07-16)
+
+Pedido do Wallace: "no fechamento mensal do lado da emergencia trazer o PN
+e depois a nomenclatura em tudo que tiver ... justificativa". O motivo da
+negativação (`calcular_mes` → `_motivos.csv`) já vinha com o número da
+emergência, mas não o PN/Nomenclatura do item — a fonte
+(`historico_completo_emergencias.xlsx`) sempre teve essas 2 colunas, só
+não estavam sendo copiadas pro cômputo. Adicionadas logo depois de
+"Emergência" (PN primeiro, Nomenclatura depois — ordem pedida) em:
+o card de motivo ao clicar numa célula da matriz, a tabela "Justificativa
+das negativações", e as tabelas/detalhe de "Atrasos" (situação atual,
+entregas do mês). Meses já calculados precisaram ser recalculados uma vez
+pra essas 2 colunas aparecerem retroativamente (`calcular_mes` de novo
+pra cada mês em cache).
+
 ## Limitações conhecidas
 
 - **A planilha "Pré RMA" não é buscada automaticamente** — só o `historico_completo_emergencias.xlsx` que alimenta o cálculo.

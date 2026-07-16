@@ -110,9 +110,12 @@ def _mostrar_motivo_celula(matricula, dia, valor, df_motivos):
     linhas_html = ""
     for _, m in encontrados.iterrows():
         cancelamento = m["data_cancelamento"] if pd.notna(m["data_cancelamento"]) else "ainda aberta"
+        pn = m["pn"] if pd.notna(m.get("pn")) else "não informado"
+        nomenclatura = m["nomenclatura"] if pd.notna(m.get("nomenclatura")) else "não informada"
         linhas_html += (
             f'<div style="margin-top:0.4rem;">'
             f'Emergência <strong>{m["numero_emergencia"]}</strong> ({m["tipo"]}) — '
+            f'PN <strong>{pn}</strong> — {nomenclatura}<br>'
             f'aberta em {m["data_abertura"]}, informada em {m["data_info"]}, sem estoque.<br>'
             f'Negativado de {m["periodo_no_mes_inicio"]} até {m["periodo_no_mes_fim"]} · '
             f'cancelamento/conclusão: {cancelamento}</div>'
@@ -128,7 +131,8 @@ def _mostrar_motivo_celula(matricula, dia, valor, df_motivos):
 
 def _detalhe_emergencia(registro):
     campos = {
-        "numero_emergencia": "Emergência", "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
+        "numero_emergencia": "Emergência", "pn": "PN", "nomenclatura": "Nomenclatura",
+        "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
         "situacao": "Situação", "data_abertura": "Abertura", "data_info": "Informação",
         "prazo_entrega": "Prazo", "atendido_cancelado_fmt": "Cancelamento/conclusão",
         "dias_atraso": "Dias de atraso", "estoque": "Estoque",
@@ -179,10 +183,11 @@ def _atrasos(dados, mes_escolhido):
 
     if total_abertas:
         tabela_abertas = abertas[[
-            "numero_emergencia", "matricula_aeronave", "tpemg", "situacao",
+            "numero_emergencia", "pn", "nomenclatura", "matricula_aeronave", "tpemg", "situacao",
             "data_abertura", "prazo_entrega", "dias_atraso",
         ]].rename(columns={
-            "numero_emergencia": "Emergência", "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
+            "numero_emergencia": "Emergência", "pn": "PN", "nomenclatura": "Nomenclatura",
+            "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
             "situacao": "Situação", "data_abertura": "Abertura", "prazo_entrega": "Prazo",
             "dias_atraso": "Dias de atraso",
         }).sort_values("Dias de atraso", ascending=False)
@@ -267,10 +272,11 @@ def _atrasos(dados, mes_escolhido):
 
     st.caption(f"Exibindo {len(filtrado)} de {total_previstas} entregas do mês")
     tabela = filtrado[[
-        "numero_emergencia", "matricula_aeronave", "tpemg", "data_abertura",
+        "numero_emergencia", "pn", "nomenclatura", "matricula_aeronave", "tpemg", "data_abertura",
         "prazo_entrega", "atendido_cancelado_fmt", "dias_atraso", "situacao_prazo",
     ]].rename(columns={
-        "numero_emergencia": "Emergência", "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
+        "numero_emergencia": "Emergência", "pn": "PN", "nomenclatura": "Nomenclatura",
+        "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
         "data_abertura": "Abertura", "prazo_entrega": "Prazo",
         "atendido_cancelado_fmt": "Cancelamento/conclusão", "dias_atraso": "Dias de atraso",
         "situacao_prazo": "Situação",
@@ -460,7 +466,8 @@ def _computo_mensal(mes_escolhido):
         st.success("Nenhuma negativação no período — todas as aeronaves pontuadas ficaram montadas.")
     else:
         tabela = df_motivos.rename(columns={
-            "matricula": "Matrícula", "numero_emergencia": "Emergência", "tipo": "Tipo",
+            "matricula": "Matrícula", "numero_emergencia": "Emergência", "pn": "PN",
+            "nomenclatura": "Nomenclatura", "tipo": "Tipo",
             "data_abertura": "Data abertura", "data_info": "Data informação", "estoque": "Estoque",
             "inicio_negativacao": "Início negativação", "data_cancelamento": "Cancelamento/conclusão",
             "periodo_no_mes_inicio": "Negativado de", "periodo_no_mes_fim": "Negativado até",

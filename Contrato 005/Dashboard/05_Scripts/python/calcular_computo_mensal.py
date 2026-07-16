@@ -160,6 +160,8 @@ def calcular_mes(ano, mes, hoje=None):
         periodos.append({
             "matricula": matricula,
             "numero_emergencia": row["numero_emergencia"],
+            "pn": row.get("pn"),
+            "nomenclatura": row.get("nomenclatura"),
             "tipo": row["tpemg"],
             "data_abertura": data_abertura,
             "data_info": data_info,
