@@ -15,7 +15,9 @@ import plotly.express as px
 import streamlit as st
 
 from coordenadoria.components.filtros import filtro_colunas
-from coordenadoria.components.paleta import AMBER, CATEGORICA, CYAN, INK, LINE, PANEL, SECONDARY, layout_grafico
+from coordenadoria.components.paleta import (
+    AMBER, CATEGORICA, COR_SITUACAO, CYAN, INK, LINE, NOME_SITUACAO, PANEL, SECONDARY, layout_grafico,
+)
 from coordenadoria.utils import atualizar_dados_diagonal_manutencao
 
 FONTE_REAL = "Real (hoje)"
@@ -123,6 +125,74 @@ def _mapa_situacao_hoje(disp_aeronaves):
     ultima_data = disp_aeronaves["data_referencia"].max()
     hoje_snapshot = disp_aeronaves[disp_aeronaves["data_referencia"] == ultima_data]
     return dict(zip(hoje_snapshot["matricula"].astype(str), hoje_snapshot["situacao"]))
+
+
+def _previsao_situacao_7dias(disp_aeronaves, df_programado, aeronaves_alvo, hoje):
+    """Previsão da situação (DI/DO/II/IN/ITR/IS/IP) de cada aeronave-alvo
+    para os próximos 7 dias (hoje + 6) — pedido do Wallace em 2026-07-16,
+    substitui o resumo mensal de eventos ("ficou ruim"): "pegar a mensagem
+    diaria analisar ela e colocar ali a previsao po dia com base na mensagem
+    diaria, base vai ser sempre ela, se tiver previsao de inspcao programado
+    (diagonal) pode inserir tb".
+
+    A base é sempre a situação real do relatório mais recente (mensagem
+    diária) — dia 0 (hoje) usa exatamente o código do relatório, sem
+    nenhuma suposição. Pros dias seguintes, 2 regras de projeção (nossas,
+    pra estimar o que a mensagem ainda não cobre — o relatório do dia
+    seguinte, quando chegar, é sempre a fonte real):
+    1. Aeronave indisponível hoje mantém o mesmo código até a Data Prevista
+       de Entrega (DPE, ou +14 dias de referência se não houver) — no dia
+       seguinte à DPE, assume que volta a "DI" (disponibilidade plena).
+    2. Aeronave disponível hoje (DI/DO) que tiver uma inspeção programada
+       da Diagonal de Manutenção (fonte "Programado") cobrindo aquele dia
+       passa a "II" (indisponível por manutenção programada) nesse dia."""
+    dias = [hoje + pd.Timedelta(days=i) for i in range(7)]
+
+    situacao_atual, retorno_previsto = {}, {}
+    if disp_aeronaves is not None and not disp_aeronaves.empty:
+        ultima_data = disp_aeronaves["data_referencia"].max()
+        hoje_snapshot = disp_aeronaves[disp_aeronaves["data_referencia"] == ultima_data].copy()
+        hoje_snapshot["matricula"] = hoje_snapshot["matricula"].astype(str)
+        for _, row in hoje_snapshot.iterrows():
+            matricula = row["matricula"]
+            situacao_atual[matricula] = row["situacao"]
+            if row["situacao"] not in ("DI", "DO"):
+                retorno_previsto[matricula] = (
+                    row["dpe_data"] if pd.notna(row["dpe_data"]) else row["data_referencia"] + timedelta(days=14)
+                )
+
+    eventos_programados = {}
+    if df_programado is not None and not df_programado.empty:
+        for aeronave, grupo in df_programado.groupby("aeronave"):
+            eventos_programados[aeronave] = list(zip(grupo["periodo_inicio"], grupo["periodo_fim"]))
+
+    def _tem_inspecao_programada(aeronave, dia):
+        return any(inicio <= dia <= fim for inicio, fim in eventos_programados.get(aeronave, []))
+
+    linhas = []
+    for dia in dias:
+        for aeronave in aeronaves_alvo:
+            situacao_base = situacao_atual.get(aeronave, "DI")
+            if dia == hoje:
+                situacao = situacao_base
+            elif aeronave in retorno_previsto and pd.Timestamp(dia) <= pd.Timestamp(retorno_previsto[aeronave]):
+                # ainda dentro da previsão de retorno (DPE ou +14d) — mantém o
+                # mesmo código de indisponibilidade de hoje.
+                situacao = situacao_base
+            elif situacao_base in ("DI", "DO"):
+                # já estava disponível hoje (com ou sem restrição) — sem
+                # informação nova, continua exatamente como estava, não reseta
+                # pra "DI" (evita apagar a restrição "DO" sem motivo).
+                situacao = situacao_base
+            else:
+                # estava indisponível e já passou da previsão de retorno —
+                # assume disponibilidade plena.
+                situacao = "DI"
+            if situacao in ("DI", "DO") and _tem_inspecao_programada(aeronave, dia):
+                situacao = "II"
+            linhas.append({"dia": dia, "aeronave": aeronave, "situacao": situacao})
+
+    return pd.DataFrame(linhas)
 
 
 def _dados_motor_aeronave(aeronave, diagonal_meta, situacao):
@@ -275,6 +345,8 @@ def render(dados):
             return None
         return str(int(v)) if isinstance(v, float) and float(v).is_integer() else str(v)
     df["aeronave"] = df["aeronave"].apply(_aeronave_str)
+    if not df_programado.empty:
+        df_programado["aeronave"] = df_programado["aeronave"].apply(_aeronave_str)
 
     if df.empty:
         st.info("Nenhum dado carregado ainda. Peça ao Claude para buscar a Diagonal de Manutenção de cada operador.")
@@ -416,15 +488,31 @@ def render(dados):
     eventos_reais = filtrado[filtrado["operador"] != "Sem evento"]
 
     st.divider()
-    st.caption("Aeronaves indisponíveis por mês (soma de eventos na janela selecionada)")
-    resumo = (
-        eventos_reais.assign(mes=eventos_reais["periodo_inicio"].dt.to_period("M").dt.to_timestamp())
-        .groupby("mes")["aeronave"].nunique().reset_index(name="qtd_aeronaves")
+    st.caption(
+        "Previsão de situação — próximos 7 dias, com base na Disponibilidade Diária de hoje "
+        "(+ inspeção programada da Diagonal, se houver)"
     )
-    fig2 = px.bar(resumo, x="mes", y="qtd_aeronaves", color_discrete_sequence=[CATEGORICA[0]])
-    fig2.update_layout(xaxis_title="", yaxis_title="Aeronaves")
-    layout_grafico(fig2, altura=180)
-    st.plotly_chart(fig2, width="stretch")
+    previsao = _previsao_situacao_7dias(dados.get("disp_aeronaves"), df_programado, aeronaves_alvo, hoje)
+    if previsao.empty:
+        st.caption("Sem dado de Disponibilidade Diária pra montar a previsão.")
+    else:
+        resumo7 = previsao.groupby(["dia", "situacao"]).size().reset_index(name="qtd_aeronaves")
+        fig2 = px.bar(
+            resumo7, x="dia", y="qtd_aeronaves", color="situacao",
+            color_discrete_map=COR_SITUACAO, category_orders={"situacao": list(COR_SITUACAO)},
+            labels={"situacao": "Situação"},
+        )
+        fig2.update_layout(xaxis_title="", yaxis_title="Aeronaves", barmode="stack")
+        fig2.update_xaxes(tickformat="%d/%m", dtick=86400000)
+        layout_grafico(fig2, altura=240)
+        st.plotly_chart(fig2, width="stretch")
+        st.caption(
+            "Hoje vem direto do relatório mais recente. Dias seguintes são estimativa: aeronave "
+            "indisponível hoje mantém a mesma situação até a Data Prevista de Entrega (ou +14 dias, "
+            "sem previsão), depois assume \"Disponível\"; aeronave disponível com inspeção programada "
+            "prevista pra esse dia (Diagonal) entra como \"Manutenção programada\". "
+            + " · ".join(f"{cod} = {NOME_SITUACAO[cod]}" for cod in COR_SITUACAO)
+        )
 
     st.divider()
     tabela = eventos_reais[["fonte", "operador", "aeronave", "periodo_inicio", "periodo_fim", "motivo", "confianca"]].rename(columns={

@@ -238,3 +238,41 @@ Motor, tudo junto.
   pendências. Se um dia precisar do DPE de verdade, teria que vir de outro
   lugar (ex.: cruzar com Emergências do Contrato 005, que tem prazo de
   entrega — não implementado ainda, é outra área/pacote).
+
+## Previsão de situação — próximos 7 dias (2026-07-16, substitui o resumo mensal)
+
+Pedido do Wallace: "soma de eventos por mes ficou ruim, colcoa previsao de
+IN DO DI,IS pelos proximos 7 dias, coloca o dia de hoje ai vc ja e os
+proximos, tipo pegar a mensagem diaria analisar ela e colocar ali a
+previsao po dia com base na mensagem diaria, base vai ser sempre ela, se
+tiver previsao de inspcao programado (diagonal) pode inserir tb".
+**Importante**: só o gráfico embaixo do Gantt principal foi trocado (o
+antigo "Aeronaves indisponíveis por mês, soma de eventos na janela") — o
+Gantt em si, o painel de detalhe e a tabela não mudaram.
+
+`_previsao_situacao_7dias()`: gráfico de barras empilhadas (DI/DO/II/IN/
+ITR/IS/IP, mesma paleta/nomes de `paleta.COR_SITUACAO`/`NOME_SITUACAO` já
+usada na Disponibilidade Diária) mostrando a contagem de aeronaves-alvo em
+cada situação, um dia por vez, de hoje até hoje+6.
+
+- **Hoje (dia 0) é sempre o código real** do relatório mais recente da
+  Disponibilidade Diária — a "base" pedida pelo Wallace, sem nenhuma
+  suposição.
+- **Dias seguintes são projeção** (a mensagem em si não tem previsão
+  dia-a-dia, só "previsão até o final do dia" e um total semanal — por
+  isso projetamos, deixando bem claro na legenda que é estimativa):
+  1. Aeronave indisponível hoje mantém o mesmo código até a Data Prevista
+     de Entrega (`dpe_data`, ou +14 dias de referência sem previsão) —
+     depois disso assume "DI" (disponibilidade plena).
+  2. Aeronave já disponível hoje (DI ou DO) continua exatamente como
+     estava — **não** reseta a "DI" sozinha (evitaria apagar uma restrição
+     "DO" sem informação nova pra isso).
+  3. Se tiver uma inspeção programada da própria Diagonal de Manutenção
+     (fonte "Programado") cobrindo aquele dia, e a aeronave estiver
+     disponível (DI/DO), ela entra como "II" (indisponível por manutenção
+     programada) nesse dia — pedido do Wallace: "se tiver previsao de
+     inspcao programado (diagonal) pode inserir tb".
+- Quando o relatório do dia seguinte chegar de verdade, ele sempre
+  substitui a projeção (a Disponibilidade Diária continua sendo a única
+  fonte de verdade pro "hoje" de cada dia, esse gráfico só estima o que
+  ela ainda não cobre).
