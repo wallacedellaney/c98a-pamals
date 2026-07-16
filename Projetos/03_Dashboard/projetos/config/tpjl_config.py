@@ -43,23 +43,32 @@ STATUS_FINAIS = {"Empenhado", "Cancelado", "Item Deserto", "Item Fracassado"}
 # 3 fontes extras incorporadas em 2026-07-14 (pedido do Wallace: "puxaar mais
 # 3 informcacoes que sao as 3 planilhas que estao na pasta planilhas TPLJ, que
 # sao informacoes consumo, estoque e solciitacoes") — pasta Drive "Planilhas
-# TPLJ", cada uma num arquivo .xlsx real (não Google Sheets nativo), sem
-# exportar_como no download. Todas já vêm filtradas em Projeto = "U8" na
-# própria fonte (confirmado 100% U8 nas 3, na análise inicial). Ver
-# 00_Instrucoes/tpjl.md, seção "Consumo / Estoque / Solicitações".
+# TPLJ", 3 subpastas (uma por fonte), cada uma com um arquivo .xlsx real (não
+# Google Sheets nativo), sem exportar_como no download. Todas já vêm
+# filtradas em Projeto = "U8" na própria fonte (confirmado 100% U8 nas 3, na
+# análise inicial). Ver 00_Instrucoes/tpjl.md, seção "Consumo / Estoque /
+# Solicitações".
+#
+# 2026-07-16: Wallace baixa manualmente do sistema de origem e sobe um
+# arquivo NOVO em cada subpasta a cada atualização (nome com timestamp, ex.
+# "relatorio_consumo_20260713_235207.xlsx") — não sobrescreve o mesmo
+# arquivo/ID. Por isso usamos `drive_folder_id` (não mais `drive_file_id`
+# fixo) — `atualizar_do_drive()` lista a subpasta e sempre pega o arquivo
+# mais recente (`modifiedTime`), mesmo padrão já usado pela Disponibilidade
+# Diária.
 FONTES_EXTRAS = {
     "consumo": {
-        "drive_file_id": "1guih043Q3hNZOMx3YQX6LD4h2wSqUd20",
+        "drive_folder_id": "1ERwy2djU0nvp4yzH-PG6PLFagfPt-B6N",
         "planilha": "relatorio_consumo",
         "aba": "Relatório",
     },
     "estoque": {
-        "drive_file_id": "1mmVUl8QO5PHecu56Goqw0WUbvwdMAhqU",
+        "drive_folder_id": "1bW2czO8BixxvW5DTpH_gtvSpf-0R5qGy",
         "planilha": "relatorio_estoque",
         "aba": "Relatório",
     },
     "solicitacoes": {
-        "drive_file_id": "1J0Yi7JdWYHgqaCxS-Vnv9o2ViHG8jm0T",
+        "drive_folder_id": "1Tn9OxLm2NBG8UD3If44I4QqgtBpAw0ht",
         "planilha": "relatorio_solicitacoes",
         "aba": "Relatório",
     },

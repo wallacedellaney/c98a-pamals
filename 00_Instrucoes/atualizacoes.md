@@ -249,12 +249,12 @@ sob demanda).
 | MTA (Projetos) | `1ZdV1PX4ujqPgQNGk7f_WPkvA42aArVkGS59TVW78zhs` — compartilhada e automatizada em 2026-07-09 |
 | TPJL 2025 (Projetos) | `1zkBB77PXvzRTg-8n-tgNAYX8lJB8KozPvuyGiNtARsA` — compartilhada e automatizada em 2026-07-09 |
 | TPJL 2026 (Projetos) | `1Mf_R70IDJ9auysySW1oATGt3TSrPZE081-O3nB930lc` — compartilhada e automatizada em 2026-07-09 |
-| TPJL Consumo (Projetos) | `1guih043Q3hNZOMx3YQX6LD4h2wSqUd20` — **não compartilhada** com a conta de serviço (404) |
-| TPJL Estoque (Projetos) | `1mmVUl8QO5PHecu56Goqw0WUbvwdMAhqU` — **não compartilhada** com a conta de serviço (404) |
-| TPJL Solicitações (Projetos) | `1J0Yi7JdWYHgqaCxS-Vnv9o2ViHG8jm0T` — **não compartilhada** com a conta de serviço (404) |
+| TPJL Consumo (Projetos) | pasta `1ERwy2djU0nvp4yzH-PG6PLFagfPt-B6N` (subpasta de "Planilhas TPLJ") — pega sempre o arquivo mais recente |
+| TPJL Estoque (Projetos) | pasta `1bW2czO8BixxvW5DTpH_gtvSpf-0R5qGy` (subpasta de "Planilhas TPLJ") — pega sempre o arquivo mais recente |
+| TPJL Solicitações (Projetos) | pasta `1Tn9OxLm2NBG8UD3If44I4QqgtBpAw0ht` (subpasta de "Planilhas TPLJ") — pega sempre o arquivo mais recente |
 | Motores (Coordenadoria) | planilha pessoal do Wallace, compartilhada e automatizada em 2026-07-15 |
 
-## Achado em 2026-07-16 — TPJL Extras fora do agendamento (e ainda bloqueado)
+## Achado e corrigido em 2026-07-16 — TPJL Extras fora do agendamento
 
 Numa checagem geral do site (pedido do Wallace: "checa todo nosso site,
 documentacao, atualizacao"), achado que `extrair_tpjl_extras.py`
@@ -266,19 +266,18 @@ mostrava `tpjl_extras` desatualizado há 2 dias enquanto as outras fontes do
 mesmo arquivo mostravam poucos minutos). Adicionado ao dict `SCRIPTS` e à
 opção do `workflow_dispatch`.
 
-**Mas ao testar de verdade (rodando `--atualizar-do-drive` manualmente),
-as 3 planilhas retornaram erro 404** — não estão compartilhadas com a conta
-de serviço `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`
-(diferente das outras fontes do TPJL, que já foram compartilhadas em
-2026-07-09). Provavelmente essas 3 nunca chegaram a ser testadas com a
-credencial real da automação — só com o meu (Claude) acesso próprio ao
-Drive durante a conversa em que foram criadas. **Falta o Wallace
-compartilhar como Leitor** as 3 planilhas da pasta "Planilhas TPLJ"
-(Consumo, Estoque, Solicitações) com esse e-mail — depois disso, a próxima
-rodada do ciclo automático já busca. Até lá, `tpjl_extras` fica com
-`status: "erro"` no estado e os dados continuam parados em 2026-07-14
-(reprocessamento local dos arquivos já baixados continua funcionando,
-só a busca no Drive que falha).
+Primeiro teste real (`--atualizar-do-drive` manual) deu erro 404 nos 3
+`drive_file_id` fixos — mas o Wallace explicou o motivo: **essa fonte não
+funciona por sobrescrita de arquivo, ele baixa manualmente do sistema de
+origem e sobe um arquivo NOVO em cada subpasta a cada atualização** (nome
+com timestamp, ex. `relatorio_consumo_20260713_235207.xlsx`, ID novo toda
+vez). Corrigido: `FONTES_EXTRAS` (`projetos/config/tpjl_config.py`) trocou
+`drive_file_id` fixo por `drive_folder_id` (as 3 subpastas de "Planilhas
+TPLJ" — Consumo/Estoque/Solicitações), e `atualizar_do_drive()` agora lista
+a subpasta (`drive_sync.listar_pasta`) e sempre baixa o arquivo com
+`modifiedTime` mais recente — mesmo padrão já usado pela Disponibilidade
+Diária. Testado de verdade (`--atualizar-do-drive`): funcionou, `status:
+"atualizado"` no estado.
 
 ## Limitação conhecida — Vencimentos por Operador e Diagonal de Manutenção
 

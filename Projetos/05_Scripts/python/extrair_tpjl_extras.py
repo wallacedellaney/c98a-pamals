@@ -156,17 +156,30 @@ def _registrar_historico_solicitacoes(df_solicitacoes):
     historico.to_csv(HISTORICO_SOLICITACOES, index=False)
 
 
+def _arquivo_mais_recente_da_pasta(folder_id):
+    """Lista a subpasta e retorna o metadado do arquivo com modifiedTime mais
+    recente — Wallace sobe um arquivo novo (nome com timestamp) a cada
+    atualização, nunca sobrescreve o mesmo ID (2026-07-16)."""
+    arquivos = drive_sync.listar_pasta(folder_id)
+    arquivos = [a for a in arquivos if a.get("mimeType") != "application/vnd.google-apps.folder"]
+    if not arquivos:
+        raise RuntimeError(f"Nenhum arquivo encontrado na pasta {folder_id}.")
+    return max(arquivos, key=lambda a: a["modifiedTime"])
+
+
 def atualizar_do_drive():
-    """Busca a versão mais recente das 3 planilhas no Google Drive,
-    sobrescreve as cópias locais e reprocessa. Se uma falhar, as outras
-    continuam sendo tentadas — qualquer falha marca status "erro" no estado.
-    Ver 00_Instrucoes/atualizacoes.md (raiz)."""
+    """Busca a versão mais recente das 3 planilhas no Google Drive (o
+    arquivo mais novo de cada subpasta — ver FONTES_EXTRAS), sobrescreve as
+    cópias locais e reprocessa. Se uma falhar, as outras continuam sendo
+    tentadas — qualquer falha marca status "erro" no estado. Ver
+    00_Instrucoes/atualizacoes.md (raiz)."""
     erros = []
     metadados_por_fonte = {}
     for chave, config in cfg.FONTES_EXTRAS.items():
         try:
-            metadados_por_fonte[chave] = drive_sync.obter_metadados(config["drive_file_id"])
-            conteudo = drive_sync.baixar_arquivo(config["drive_file_id"])
+            mais_recente = _arquivo_mais_recente_da_pasta(config["drive_folder_id"])
+            metadados_por_fonte[chave] = mais_recente
+            conteudo = drive_sync.baixar_arquivo(mais_recente["id"])
             ARQUIVOS_FONTE[chave].parent.mkdir(parents=True, exist_ok=True)
             ARQUIVOS_FONTE[chave].write_bytes(conteudo)
         except Exception as e:

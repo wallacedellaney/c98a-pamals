@@ -16,11 +16,11 @@
     "last_error": null
   },
   "tpjl_extras": {
-    "status": "erro",
-    "last_error": "consumo: Falha ao consultar metadados do arquivo 1guih043Q3hNZOMx3YQX6LD4h2wSqUd20: <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1guih043Q3hNZOMx3YQX6LD4h2wSqUd20?fields=id%2Cname%2CmodifiedTime%2CmimeType&alt=json returned \"File not found: 1guih043Q3hNZOMx3YQX6LD4h2wSqUd20.\". Details: \"[{'message': 'File not found: 1guih043Q3hNZOMx3YQX6LD4h2wSqUd20.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]\">; estoque: Falha ao consultar metadados do arquivo 1mmVUl8QO5PHecu56Goqw0WUbvwdMAhqU: <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1mmVUl8QO5PHecu56Goqw0WUbvwdMAhqU?fields=id%2Cname%2CmodifiedTime%2CmimeType&alt=json returned \"File not found: 1mmVUl8QO5PHecu56Goqw0WUbvwdMAhqU.\". Details: \"[{'message': 'File not found: 1mmVUl8QO5PHecu56Goqw0WUbvwdMAhqU.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]\">; solicitacoes: Falha ao consultar metadados do arquivo 1J0Yi7JdWYHgqaCxS-Vnv9o2ViHG8jm0T: <HttpError 404 when requesting https://www.googleapis.com/drive/v3/files/1J0Yi7JdWYHgqaCxS-Vnv9o2ViHG8jm0T?fields=id%2Cname%2CmodifiedTime%2CmimeType&alt=json returned \"File not found: 1J0Yi7JdWYHgqaCxS-Vnv9o2ViHG8jm0T.\". Details: \"[{'message': 'File not found: 1J0Yi7JdWYHgqaCxS-Vnv9o2ViHG8jm0T.', 'domain': 'global', 'reason': 'notFound', 'location': 'fileId', 'locationType': 'parameter'}]\">",
-    "local_updated_at": "2026-07-16T13:41:55.647808",
+    "status": "atualizado",
+    "last_error": null,
+    "local_updated_at": "2026-07-16T13:56:05.026418",
     "record_count": 21668,
-    "remote_modified_time": "2026-07-14T16:38:21Z",
+    "remote_modified_time": "2026-07-14T16:38:21.000Z",
     "record_count_consumo": 11298,
     "record_count_estoque": 9774,
     "record_count_solicitacoes": 596

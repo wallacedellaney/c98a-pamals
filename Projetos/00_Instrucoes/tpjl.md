@@ -122,18 +122,18 @@ das outras fontes — sem "atualizar tudo").
 
 ### Fontes (pasta Drive "Planilhas TPLJ", 3 subpastas)
 
-- **Consumo** — `relatorio_consumo_*.xlsx` (`1guih043Q3hNZOMx3YQX6LD4h2wSqUd20`).
+- **Consumo** — `relatorio_consumo_*.xlsx`, subpasta `1ERwy2djU0nvp4yzH-PG6PLFagfPt-B6N`.
   Histórico mensal de consumo: Part Number, CFF, Projeto, Descrição,
   Categoria (C/R/T), Mês Competência, Ano Competência, Qtd Consumo.
-- **Estoque** — `relatorio_estoque_*.xlsx` (`1mmVUl8QO5PHecu56Goqw0WUbvwdMAhqU`).
+- **Estoque** — `relatorio_estoque_*.xlsx`, subpasta `1bW2czO8BixxvW5DTpH_gtvSpf-0R5qGy`.
   Situação atual: Part Number, CFF, Projeto, Descrição, Categoria (C/R/T),
   Qtd em Estoque, Setor (TSAU/TSAU2/SUTI/TSAM/ESUP/TSAS/SALI/TSUI), Unidade
   (base/operador — nomenclatura em parte igual à de Vencimentos, ex. BAMN/
   BABE/BACG/CLA/BABR/BANT/BACO/DACTA II, mais códigos que só aparecem aqui:
   PAMALS, BASM, PAMASP, EEAR, PAMAGL, BABV, EPCAR, PAMB, BAAN, BAPV, CCA SJ,
   BAGL, GEIV).
-- **Solicitações** — `relatorio_solicitacoes_*.xlsx`
-  (`1J0Yi7JdWYHgqaCxS-Vnv9o2ViHG8jm0T`). Log de pedidos: Nº Solicitação,
+- **Solicitações** — `relatorio_solicitacoes_*.xlsx`, subpasta `1Tn9OxLm2NBG8UD3If44I4QqgtBpAw0ht`.
+  Log de pedidos: Nº Solicitação,
   Projeto, Part Number, CFF, Nomenclatura, Categoria (C/T/R/P), Quantidade,
   Tipo (Emergência/Caderno de Compras/Pedido Normal/Outros/Reposição de
   Estoque), Status (Finalizada/Pendente/Aprovada/Negada/Atender/Deletado),
@@ -143,6 +143,11 @@ das outras fontes — sem "atualizar tudo").
 
 Arquivos reais `.xlsx` enviados ao Drive (não Planilhas Google nativas) —
 baixados sem `exportar_como`, mesmo padrão de Vencimentos por Operador.
+**2026-07-16**: o Wallace não sobrescreve o mesmo arquivo — baixa
+manualmente do sistema de origem e sobe um arquivo novo em cada subpasta a
+cada atualização (nome com timestamp, ID novo toda vez). Por isso
+`atualizar_do_drive()` lista a subpasta e sempre pega o arquivo com
+`modifiedTime` mais recente, em vez de guardar um `drive_file_id` fixo.
 
 **"Categoria" (C/R/T/P), "Setor" e "Unidade" ficam exatamente como a
 planilha escreve** — o significado exato de cada sigla não foi confirmado

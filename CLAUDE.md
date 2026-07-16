@@ -47,13 +47,13 @@ com a conta de serviço nessa data — antes disso não dava, ver
 `Coordenadoria/00_Instrucoes/motores.md`). **Consumo/Estoque/Solicitações
 do TPJL (`tpjl_extras`) tinham o código de atualização automática pronto
 desde 2026-07-14, mas nunca tinham sido cadastrados no agendamento —
-achado numa checagem geral do site em 2026-07-16 e cadastrado, mas ainda
-**não funciona de verdade**: as 3 planilhas (Consumo/Estoque/Solicitações)
-não estão compartilhadas com a conta de serviço
-(`pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`) — erro
-404 ao tentar buscar. Falta o Wallace compartilhar como Leitor, igual fez
-com Motores, pra essa fonte passar a atualizar de verdade.** As demais
-fontes (Vencimentos por Operador, Diagonal de Manutenção) continuam manuais — Wallace pede na
+achado e cadastrado numa checagem geral do site em 2026-07-16.** O Wallace
+não sobrescreve o mesmo arquivo nessa fonte — baixa manualmente do sistema
+de origem e sobe um arquivo novo em cada uma das 3 subpastas da pasta Drive
+"Planilhas TPLJ" a cada atualização — por isso `atualizar_do_drive()` lista
+a subpasta e sempre pega o arquivo mais recente (`modifiedTime`), mesmo
+padrão da Disponibilidade Diária, em vez de um `drive_file_id` fixo. As
+demais fontes (Vencimentos por Operador, Diagonal de Manutenção) continuam manuais — Wallace pede na
 conversa. Ver `00_Instrucoes/atualizacoes.md` para a arquitetura completa e
 como adicionar uma fonte nova ao agendamento.
 
