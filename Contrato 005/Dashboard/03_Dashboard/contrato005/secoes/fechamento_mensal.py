@@ -300,6 +300,8 @@ def _apresentacao_rma(mes_escolhido):
     if st.button("📊 Gerar Apresentação (RMA)", key="apresentacao_gerar", width="stretch"):
         with st.spinner("Montando a apresentação..."):
             try:
+                from shared import drive_sync
+                drive_sync.garantir_credencial_arquivo()
                 import gerar_apresentacao_rma
                 nome_arquivo = f"RMA_{MESES_PT[mes - 1]}_{ano}.pptx"
                 caminho_saida = gerar_apresentacao_rma.DADOS_TRATADOS / "atas" / nome_arquivo
@@ -340,6 +342,8 @@ def _ata_reuniao(mes_escolhido):
     if st.button("📝 Gerar Ata de Reunião", key="ata_gerar", width="stretch"):
         with st.spinner("Buscando áudio e planilha no Drive, transcrevendo (pode levar ~10 min na primeira vez deste mês) e montando o documento..."):
             try:
+                from shared import drive_sync
+                drive_sync.garantir_credencial_arquivo()
                 import gerar_ata_reuniao
                 nome_arquivo = f"Ata_RMA_{MESES_PT[mes - 1]}_{ano}_rascunho.docx"
                 caminho_saida = gerar_ata_reuniao.DADOS_TRATADOS / "atas" / nome_arquivo

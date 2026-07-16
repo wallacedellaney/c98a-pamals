@@ -120,6 +120,18 @@ em andamento" (case-insensitive). Já compartilhado com a conta de serviço
 (`pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`) —
 confirmado em 2026-07-13, sem precisar de nova permissão.
 
+## Bugs já corrigidos (documentados pra não reintroduzir)
+
+- **Credencial do Google não materializada antes de gerar** (2026-07-16,
+  achado pelo Wallace: "Falha ao gerar a Ata: Credencial do Google não
+  encontrada em /mount/src/c98a-pamals/.secrets/service_account.json") —
+  mesmo bug do botão "Gerar Apresentação (RMA)", ver
+  `apresentacao_rma.md`. `_ata_reuniao()` em `fechamento_mensal.py` agora
+  chama `drive_sync.garantir_credencial_arquivo()` antes de importar/rodar
+  `gerar_ata_reuniao.py`, senão num deploy novo do Streamlit Cloud (onde
+  ninguém ainda clicou em nenhum "Atualizar dados") o arquivo de
+  credencial simplesmente não existe.
+
 ## Teste manual (fora do site)
 
 ```

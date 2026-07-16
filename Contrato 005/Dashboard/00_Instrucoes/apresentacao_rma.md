@@ -93,6 +93,22 @@ slide/fundo.
 
 ## Bugs já corrigidos (documentados pra não reintroduzir)
 
+- **Credencial do Google não materializada antes de gerar** (2026-07-16,
+  achado pelo Wallace: "Credencial do Google não encontrada em
+  /mount/src/c98a-pamals/.secrets/service_account.json"): o botão "Gerar
+  Apresentação (RMA)" chama `gerar_apresentacao_rma.py` que acessa o Drive
+  (`_baixar_rma_em_andamento`) via `shared/drive_sync.py` — mas
+  `drive_sync._obter_servico()` só enxerga a credencial como **arquivo em
+  disco** (`.secrets/service_account.json`), nunca como `st.secrets`
+  diretamente. Esse arquivo só existe se algo já chamou
+  `drive_sync.garantir_credencial_arquivo()` antes (o que os botões
+  "Atualizar dados" de MTA/TPJL/Contrato 005 já faziam, mas
+  "Gerar Apresentação (RMA)" nunca chamava). Num deploy novo do Streamlit
+  Cloud, se ninguém clicou em nenhum "Atualizar dados" antes de "Gerar
+  Apresentação", o arquivo simplesmente não existe ainda → erro. Corrigido
+  chamando `drive_sync.garantir_credencial_arquivo()` logo no início do
+  handler do botão, em `fechamento_mensal.py::_apresentacao_rma()` (mesma
+  correção em `_ata_reuniao()`, ver `ata_reuniao.md`).
 - **`python-pptx` faltando no `requirements.txt` do site publicado**
   (2026-07-14, achado pelo Wallace: "apreserntacao mensal deu Falha ao
   gerar a apresentação: No module named 'pptx'"): `gerar_apresentacao_rma.py`
