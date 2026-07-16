@@ -26,5 +26,12 @@
     "status": "atualizado",
     "record_count": 446,
     "last_error": null
+  },
+  "reajuste": {
+    "remote_modified_time": "2026-07-16T18:03:08.281Z",
+    "local_updated_at": "2026-07-16T15:28:21.669520",
+    "status": "atualizado",
+    "record_count": 54,
+    "last_error": null
   }
 }

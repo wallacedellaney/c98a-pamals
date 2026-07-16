@@ -103,15 +103,14 @@ Nova aba "Reajuste" (depois de "Pagamentos"), em `contrato_app.py`. Seções:
 completa), atendendo o pedido "colcoa essa informação no contrato pra
 saber o valor" sem duplicar toda a tela ali.
 
-## Atualização — ainda manual
+## Atualização automática (a partir de 2026-07-16)
 
-**A planilha não está compartilhada com a conta de serviço da automação**
-(`pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`) — por
-isso não foi cadastrada em `shared/executar_atualizacao.py` (ficaria com
-`status: "erro"` toda rodada). `atualizar_do_drive()` já existe em
-`extrair_reajuste.py`, pronta pra quando o Wallace compartilhar (mesmo
-padrão de Motores/TPJL Extras) — só cadastrar em `SCRIPTS` depois. Até lá,
-buscar uma versão nova continua sendo pedir na conversa.
+Compartilhada pelo Wallace com a conta de serviço
+(`pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`) no mesmo
+dia — testado com `--atualizar-do-drive` na hora, funcionou de primeira.
+Cadastrada em `shared/executar_atualizacao.py` (`SCRIPTS["reajuste"]`) e na
+opção do `workflow_dispatch` — entra no ciclo de 2 em 2h (seg-sex, 8h-20h)
+junto com as outras fontes.
 
 ## Teste manual (fora do site)
 

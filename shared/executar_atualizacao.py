@@ -5,7 +5,7 @@ sozinho, pra o Streamlit Cloud atualizar.
 
 Uso: python3 executar_atualizacao.py <fonte|todos>
 
-"todos" roda as 11 fontes em sequência, uma de cada vez, sincronizando com o
+"todos" roda as 12 fontes em sequência, uma de cada vez, sincronizando com o
 GitHub antes de cada uma — usado pelo agendamento de 2 em 2 horas (seg-sex,
 a pedido do Wallace em 2026-07-09, pra contornar o atraso do agendamento
 gratuito do GitHub: rodando com mais frequência, mesmo que uma vez atrase,
@@ -44,6 +44,11 @@ SCRIPTS = {
     # a conta de serviço ("ja compartilhei a planilha") — ver
     # Coordenadoria/00_Instrucoes/motores.md.
     "motores": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_motores.py",
+    # A partir de 2026-07-16: planilha pessoal do Wallace ("Planilha
+    # Demonstrativa -2_Reajuste-"), compartilhada com a conta de serviço
+    # nessa data — testado com --atualizar-do-drive, funcionou. Ver
+    # Contrato 005/Dashboard/00_Instrucoes/reajuste.md.
+    "reajuste": RAIZ / "Contrato 005" / "Dashboard" / "05_Scripts" / "python" / "extrair_reajuste.py",
 }
 
 

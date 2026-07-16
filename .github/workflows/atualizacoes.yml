@@ -35,6 +35,7 @@ on:
           - reparaveis
           - devolucoes
           - motores
+          - reajuste
 
 permissions:
   contents: write

@@ -4,7 +4,7 @@
 
 O site tem sua **própria credencial do Google** (conta de serviço
 `pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`, chave
-guardada como Secret do GitHub, nunca no código) e busca 11 fontes **sozinho,
+guardada como Secret do GitHub, nunca no código) e busca 12 fontes **sozinho,
 rodando na nuvem do GitHub (GitHub Actions) e no Mac do Wallace, ao mesmo
 tempo** — não depende do Mac estar ligado (o GitHub cobre sozinho), mas se
 estiver ligado no horário, busca também.
@@ -31,6 +31,7 @@ gera commit/redeploy à toa.
 | Reparáveis | `Contrato 005/Dashboard/05_Scripts/python/extrair_reparaveis.py` |
 | Devoluções/Empréstimos | `Contrato 005/Dashboard/05_Scripts/python/extrair_devolucoes.py` |
 | Motores | `Coordenadoria/05_Scripts/python/extrair_motores.py` |
+| Reajuste | `Contrato 005/Dashboard/05_Scripts/python/extrair_reajuste.py` |
 | Vencimentos por Operador, Diagonal de Manutenção | Manual — Wallace pede na conversa |
 
 **Motores entrou em 2026-07-15** (planilha pessoal do Wallace "MOTORES
@@ -50,7 +51,7 @@ MTA e TPJL também gravam um snapshot diário (`historico_mta.csv`/
 alimenta a "barra temporal" (comparação com dias anteriores) no dashboard,
 pedida pelo Wallace em 2026-07-09. Ver `Projetos/CLAUDE.md`.
 
-`shared/executar_atualizacao.py todos` roda as 11 em sequência (uma de cada
+`shared/executar_atualizacao.py todos` roda as 12 em sequência (uma de cada
 vez, sincronizando com o GitHub antes de cada uma — ver `_sincronizar_com_remoto`).
 Pra cada fonte:
 1. Roda `python3 <script> --atualizar-do-drive` (busca no Drive, sobrescreve
@@ -253,6 +254,7 @@ sob demanda).
 | TPJL Estoque (Projetos) | pasta `1bW2czO8BixxvW5DTpH_gtvSpf-0R5qGy` (subpasta de "Planilhas TPLJ") — pega sempre o arquivo mais recente |
 | TPJL Solicitações (Projetos) | pasta `1Tn9OxLm2NBG8UD3If44I4QqgtBpAw0ht` (subpasta de "Planilhas TPLJ") — pega sempre o arquivo mais recente |
 | Motores (Coordenadoria) | planilha pessoal do Wallace, compartilhada e automatizada em 2026-07-15 |
+| Reajuste (Contrato 005) | `1R32r4rscXTYGe98R1AFUUG8hqZD-GaWY` — planilha pessoal do Wallace, compartilhada e automatizada em 2026-07-16 |
 
 ## Achado e corrigido em 2026-07-16 — TPJL Extras fora do agendamento
 

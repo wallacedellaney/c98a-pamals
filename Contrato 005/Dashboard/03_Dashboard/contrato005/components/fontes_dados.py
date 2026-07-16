@@ -92,8 +92,8 @@ FONTES = [
     {
         "Informação": "Reajuste",
         "De onde vem": 'Planilha "Demonstrativa -2_Reajuste- Contrato 005_CELOG-PAMALS_2025" (Drive, pessoal do Wallace)',
-        "Como é atualizado": "Manual (arquivo ainda não compartilhado com a conta de serviço)",
-        "Frequência": "Sob pedido",
+        "Como é atualizado": "Busca automática no Drive + reprocessa",
+        "Frequência": "A cada 2h, seg-sex 8h-20h",
         "_chave": "reajuste_atualizado_em",
     },
 ]

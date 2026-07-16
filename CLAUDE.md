@@ -22,7 +22,7 @@ C-98A PAMALS/
 └── Projetos/                  <- MTA e TPJL, completos (ver CLAUDE.md próprio)
 ```
 
-## Atualização de dados — automática (11 fontes) + manual (as demais)
+## Atualização de dados — automática (12 fontes) + manual (as demais)
 
 Disponibilidade Diária, Emergências, RAC, Vencimentos TMOT, Pagamentos, MTA,
 TPJL (Controle CABW + Consumo/Estoque/Solicitações), Reparáveis,
@@ -52,7 +52,10 @@ não sobrescreve o mesmo arquivo nessa fonte — baixa manualmente do sistema
 de origem e sobe um arquivo novo em cada uma das 3 subpastas da pasta Drive
 "Planilhas TPLJ" a cada atualização — por isso `atualizar_do_drive()` lista
 a subpasta e sempre pega o arquivo mais recente (`modifiedTime`), mesmo
-padrão da Disponibilidade Diária, em vez de um `drive_file_id` fixo. As
+padrão da Disponibilidade Diária, em vez de um `drive_file_id` fixo.
+**Reajuste (Contrato 005) entrou em 2026-07-16** (planilha pessoal do
+Wallace, compartilhada com a conta de serviço nessa data — ver
+`Contrato 005/Dashboard/00_Instrucoes/reajuste.md`). As
 demais fontes (Vencimentos por Operador, Diagonal de Manutenção) continuam manuais — Wallace pede na
 conversa. Ver `00_Instrucoes/atualizacoes.md` para a arquitetura completa e
 como adicionar uma fonte nova ao agendamento.
