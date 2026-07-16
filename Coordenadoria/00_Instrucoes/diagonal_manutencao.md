@@ -250,10 +250,13 @@ tiver previsao de inspcao programado (diagonal) pode inserir tb".
 antigo "Aeronaves indisponíveis por mês, soma de eventos na janela") — o
 Gantt em si, o painel de detalhe e a tabela não mudaram.
 
-`_previsao_situacao_7dias()`: gráfico de barras empilhadas (DI/DO/II/IN/
-ITR/IS/IP, mesma paleta/nomes de `paleta.COR_SITUACAO`/`NOME_SITUACAO` já
-usada na Disponibilidade Diária) mostrando a contagem de aeronaves-alvo em
-cada situação, um dia por vez, de hoje até hoje+6.
+`_previsao_situacao_7dias()`: tabela quantitativa (não gráfico de barras —
+trocado em 2026-07-16 a pedido do Wallace: "ficou ruim o visual de ver,
+acho melhor por quantitativo"), colunas = dias (hoje até hoje+6), linhas =
+situação (DI/DO/II/IN/ITR/IS/IP, nomes completos de `paleta.NOME_SITUACAO`),
+célula = quantidade de aeronaves-alvo naquela situação naquele dia. Última
+linha soma **D (DI+DO)** — mesma convenção "D = DI+DO" já usada na
+Disponibilidade Diária.
 
 - **Hoje (dia 0) é sempre o código real** do relatório mais recente da
   Disponibilidade Diária — a "base" pedida pelo Wallace, sem nenhuma

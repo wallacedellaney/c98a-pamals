@@ -497,21 +497,23 @@ def render(dados):
         st.caption("Sem dado de Disponibilidade Diária pra montar a previsão.")
     else:
         resumo7 = previsao.groupby(["dia", "situacao"]).size().reset_index(name="qtd_aeronaves")
-        fig2 = px.bar(
-            resumo7, x="dia", y="qtd_aeronaves", color="situacao",
-            color_discrete_map=COR_SITUACAO, category_orders={"situacao": list(COR_SITUACAO)},
-            labels={"situacao": "Situação"},
+        colunas_dia = [d.strftime("%d/%m") for d in sorted(previsao["dia"].unique())]
+        pivot = resumo7.pivot_table(
+            index="situacao", columns=resumo7["dia"].dt.strftime("%d/%m"), values="qtd_aeronaves",
+            fill_value=0, aggfunc="sum",
         )
-        fig2.update_layout(xaxis_title="", yaxis_title="Aeronaves", barmode="stack")
-        fig2.update_xaxes(tickformat="%d/%m", dtick=86400000)
-        layout_grafico(fig2, altura=240)
-        st.plotly_chart(fig2, width="stretch")
+        pivot = pivot.reindex(index=[c for c in COR_SITUACAO if c in pivot.index], columns=colunas_dia, fill_value=0)
+        pivot.loc["D (DI+DO)"] = pivot.reindex(["DI", "DO"]).fillna(0).sum()
+        pivot = pivot.astype(int)
+        pivot.index = [NOME_SITUACAO.get(i, i) for i in pivot.index]
+        pivot.index.name = "Situação"
+        st.dataframe(pivot, width="stretch")
         st.caption(
-            "Hoje vem direto do relatório mais recente. Dias seguintes são estimativa: aeronave "
-            "indisponível hoje mantém a mesma situação até a Data Prevista de Entrega (ou +14 dias, "
-            "sem previsão), depois assume \"Disponível\"; aeronave disponível com inspeção programada "
-            "prevista pra esse dia (Diagonal) entra como \"Manutenção programada\". "
-            + " · ".join(f"{cod} = {NOME_SITUACAO[cod]}" for cod in COR_SITUACAO)
+            "Colunas = dias (hoje até hoje+6). Hoje vem direto do relatório mais recente. Dias "
+            "seguintes são estimativa: aeronave indisponível hoje mantém a mesma situação até a Data "
+            "Prevista de Entrega (ou +14 dias, sem previsão), depois assume \"Disponível\"; aeronave "
+            "disponível com inspeção programada prevista pra esse dia (Diagonal) entra como "
+            "\"Manutenção programada\". Última linha soma Disponível (DI) + Disponível c/ restrição (DO)."
         )
 
     st.divider()
