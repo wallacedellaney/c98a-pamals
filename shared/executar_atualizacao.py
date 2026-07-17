@@ -24,9 +24,18 @@ LOG = RAIZ / "shared" / "automacao.log"
 
 SCRIPTS = {
     "disponibilidade_diaria": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_disponibilidade_diaria.py",
+    # "rac" roda ANTES de "emergencias" de propósito (corrigido em
+    # 2026-07-17): calcular_mes() (Cômputo Mensal) é disparado
+    # automaticamente dentro de extrair_emergencias.atualizar_do_drive() e
+    # lê a classificação "dentro/fora do contrato" direto do RAC — se RAC
+    # rodasse depois, uma mudança de classificação (ex.: aeronave saindo do
+    # contrato) só apareceria no Cômputo Mensal no ciclo seguinte (até 2h de
+    # atraso). Achado pelo Wallace: uma correção no RAC (2726/2730/2732/2734
+    # voltando pra "fora do contrato") não refletiu no Fechamento Mensal
+    # porque "emergencias" rodou antes do "rac" ser buscado de novo.
+    "rac": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_rac.py",
     "emergencias": RAIZ / "Contrato 005" / "Dashboard" / "05_Scripts" / "python" / "extrair_emergencias.py",
     "pagamentos": RAIZ / "Contrato 005" / "Dashboard" / "05_Scripts" / "python" / "extrair_pagamentos.py",
-    "rac": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_rac.py",
     "vencimentos_tmot": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_vencimentos.py",
     "mta": RAIZ / "Projetos" / "05_Scripts" / "python" / "extrair_mta.py",
     "tpjl": RAIZ / "Projetos" / "05_Scripts" / "python" / "extrair_tpjl.py",

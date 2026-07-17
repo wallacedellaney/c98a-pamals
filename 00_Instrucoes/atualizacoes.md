@@ -256,6 +256,22 @@ sob demanda).
 | Motores (Coordenadoria) | planilha pessoal do Wallace, compartilhada e automatizada em 2026-07-15 |
 | Reajuste (Contrato 005) | `1R32r4rscXTYGe98R1AFUUG8hqZD-GaWY` — planilha pessoal do Wallace, compartilhada e automatizada em 2026-07-16 |
 
+## Achado e corrigido em 2026-07-17 — ordem RAC x Emergências no ciclo
+
+Wallace corrigiu na planilha do RAC uma classificação errada (4 aeronaves
+que tinham sido marcadas "Dentro do contrato" por engano voltaram pra
+"Fora do contrato"). Rodei a busca manual do RAC na hora e o Cômputo
+Mensal (Fechamento Mensal, Contrato 005) recalculou certo (23 aeronaves
+pontuadas). **Mas o ciclo automático seguinte trouxe de volta o número
+errado (27)** — causa: dentro de `SCRIPTS`, "emergencias" rodava ANTES de
+"rac", e `calcular_mes()` (Cômputo Mensal) é disparado automaticamente
+*dentro* de `extrair_emergencias.atualizar_do_drive()` — ou seja, o
+recálculo lia a classificação do RAC de ANTES da correção chegar (o "rac"
+daquele mesmo ciclo só rodava depois). Corrigido: `SCRIPTS` agora tem
+"rac" antes de "emergencias", pra qualquer mudança de classificação
+(dentro/fora do contrato) já valer no mesmo ciclo em que é buscada, não só
+no próximo (até 2h de atraso a mais).
+
 ## Achado e corrigido em 2026-07-16 — TPJL Extras fora do agendamento
 
 Numa checagem geral do site (pedido do Wallace: "checa todo nosso site,
