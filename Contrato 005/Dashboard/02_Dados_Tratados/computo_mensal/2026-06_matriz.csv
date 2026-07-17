@@ -488,11 +488,11 @@ matricula,dia,fim_de_semana,montada
 2737,7,True,1
 2737,8,False,1
 2737,9,False,1
-2737,10,False,0
-2737,11,False,0
-2737,12,False,0
-2737,13,True,0
-2737,14,True,0
+2737,10,False,1
+2737,11,False,1
+2737,12,False,1
+2737,13,True,1
+2737,14,True,1
 2737,15,False,1
 2737,16,False,1
 2737,17,False,1

@@ -43,15 +43,21 @@ CAMINHO_EMERGENCIAS_HISTORICO = DADOS_TRATADOS / "historico_completo_emergencias
 TIPOS_CONSIDERADOS = ("AIFP", "IPLR")
 
 # Termos que, aparecendo na observação da Coordenadoria (fiscal), indicam que
-# a emergência já foi resolvida/não é mais necessária mesmo que o campo
-# "Atd/cancelada" da fonte ainda esteja em branco (regra do Wallace,
-# 2026-07-17: "cancelado pelo operador, cancelado pelo suprimentista, demanda
-# nao necessaria mais e outras variaveis nao computar, contar como
-# montada"). "cancelad" pega Cancelado/Cancelada/Cancelamento (qualquer
-# motivo — operador, suprimentista, duplicidade etc.), os outros pegam "não
-# é/será/ser mais necessário" e variações de "não necessária".
+# a emergência não deve negativar NENHUM dia (regra do Wallace, 2026-07-17:
+# "cancelado pelo operador, cancelado pelo suprimentista, demanda nao
+# necessaria mais e outras variaveis nao computar, contar como montada" —
+# depois confirmado com o exemplo real da emergência 329260019180: mesmo os
+# dias que já tinham negativado ANTES da data oficial de cancelamento
+# chegar também viram "montada", não só dali pra frente). "cancelad" pega
+# Cancelado/Cancelada/Cancelamento (qualquer motivo — operador,
+# suprimentista, duplicidade etc.), os outros pegam "não é/será/ser mais
+# necessário" e variações de "não necessária". Silencioso — não vira nota
+# em "inconsistências" nem aparece em nenhum lugar do Fechamento Mensal.
+# "cancel" (não "cancelad") de propósito — pega também "CANCELAMENTO"
+# (bug achado com o exemplo real 329260019180: "OBS DO CANCELAMENTO
+# SOLICITADO PELO SUPRIMENTISTA", que "cancelad" não pegava).
 TERMOS_CANCELAMENTO_OBSERVACAO = [
-    "cancelad", "não é mais necess", "não será mais necess",
+    "cancel", "não é mais necess", "não será mais necess",
     "não ser mais necess", "não necessári",
 ]
 
@@ -121,6 +127,17 @@ def calcular_mes(ano, mes, hoje=None):
         if matricula not in pontuadas:
             continue  # só aeronaves dentro do contrato entram no cômputo
 
+        # Comentário da Coordenadoria indica cancelamento pelo
+        # operador/suprimentista/"não é mais necessário" — desconsidera a
+        # negativação INTEIRA dessa emergência, mesmo os dias que já tinham
+        # negativado antes da data oficial de cancelamento chegar (regra
+        # confirmada pelo Wallace em 2026-07-17 com o exemplo real da
+        # emergência 329260019180: 8 dias negativados antes do cancelamento
+        # oficial também devem virar "montada"). Silencioso — não vira nota
+        # em "inconsistências" (pedido do Wallace).
+        if _tem_comentario_cancelamento(row.get("obs_coordenadoria_fiscal")):
+            continue
+
         data_abertura = row["data_abertura"]
         data_info = row["data_info"]
         estoque = _normalizar_estoque(row["estoque"])
@@ -139,19 +156,6 @@ def calcular_mes(ano, mes, hoje=None):
             continue
 
         data_fim_emergencia = atendido_dt.date() if pd.notna(atendido_dt) else None
-
-        # Comentário da Coordenadoria já indica cancelamento/"não é mais
-        # necessário", mas o campo oficial "Atd/cancelada" ainda está em
-        # branco (ainda não passou pela baixa formal) — sem isso, a
-        # aeronave continuaria negativando até hoje por um item que o
-        # próprio fiscal já anotou como resolvido. Só se aplica quando NÃO
-        # há data oficial de cancelamento — se já tem, a data oficial já
-        # resolve isso corretamente sozinha (não sobrescreve um período de
-        # negativação que já era válido antes do cancelamento formal).
-        # Pedido do Wallace (2026-07-17): não mostrar isso em nenhum lugar
-        # do Fechamento Mensal — silencioso, não entra em "inconsistências".
-        if data_fim_emergencia is None and _tem_comentario_cancelamento(row.get("obs_coordenadoria_fiscal")):
-            continue
 
         if data_abertura is None or data_abertura > fim_mes:
             continue

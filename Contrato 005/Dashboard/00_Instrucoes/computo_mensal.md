@@ -17,20 +17,27 @@ Calcular automaticamente, a partir dos registros de emergências já existentes 
 7. **Classificação de aeronave** (dentro do contrato / fora do contrato listada / sem condições) vem do RAC (`Coordenadoria/02_Dados_Tratados/base_rac_tratada.xlsx`) — não duplicada aqui. Só as "dentro do contrato" são pontuadas; as "fora do contrato" (2726, 2730, 2732, 2734) aparecem listadas sem pontuação, igual na planilha oficial; as "sem condições" (2701, 2706, 2724) nem aparecem.
 8. **Comentário da Coordenadoria indicando cancelamento (2026-07-17)**: se a
    observação da Coordenadoria (`obs_coordenadoria_fiscal`) contém termos como
-   "cancelado"/"cancelada"/"cancelamento" (pelo operador, pelo suprimentista,
-   duplicidade etc.) ou "não é/será/ser mais necessário"/"não necessária", **e**
-   o campo oficial `Atd/cancelada` ainda está em branco (a emergência ainda
-   aparece "em aberto" na fonte), a emergência **não negativa** — tratada como
-   se a aeronave estivesse montada. Pedido do Wallace: "sempre que tiver algum
-   comentario escrito nas observacoes da coordenadoria: cancelado pelo
+   "cancel" (Cancelado/Cancelada/Cancelamento, pelo operador, pelo
+   suprimentista, duplicidade etc. — qualquer motivo) ou "não é/será/ser mais
+   necessário"/"não necessária", a emergência **inteira não negativa nenhum
+   dia** — tratada como se a aeronave estivesse montada o período todo,
+   **mesmo os dias que já tinham negativado antes de uma eventual data
+   oficial de cancelamento chegar**. Pedido do Wallace: "sempre que tiver
+   algum comentario escrito nas observacoes da coordenadoria: cancelado pelo
    operador, cancelado pelo suprimentista, demanda nao necessaria mais e
-   outras variaveis nao computar, contar como montada". **Só se aplica quando
-   NÃO há data oficial de cancelamento** — se já tem, a data oficial já
-   resolve isso sozinha (não queremos apagar um período de negativação que já
-   era válido antes do cancelamento formal chegar). **Silencioso** — a pedido
-   do Wallace ("nao quero nem que aparece la no fechamento mensal"), não
-   vira nota em "inconsistências" nem aparece em nenhum outro lugar da tela
-   — só deixa de negativar, sem deixar rastro visível na interface.
+   outras variaveis nao computar, contar como montada" — inicialmente só
+   aplicado quando faltava a data oficial, depois confirmado com o exemplo
+   real da emergência **329260019180** (FAB 2709, "OBS DO CANCELAMENTO
+   SOLICITADO PELO SUPRIMENTISTA DO GLOG BR") que deve desconsiderar o
+   período **inteiro**, mesmo já tendo data oficial de cancelamento (16/07) —
+   os 8 dias negativados antes dela (08 a 15/07) também viram "montada".
+   Achado nesse mesmo exemplo: o termo original era `"cancelad"`, que não
+   pega "CANCELAMENTO" (tem "m" onde "cancelad" espera "d") — trocado pra
+   `"cancel"` (sem sufixo), que cobre Cancelado/Cancelada/Cancelamento.
+   **Silencioso** — a pedido do Wallace ("nao quero nem que aparece la no
+   fechamento mensal"), não vira nota em "inconsistências" nem aparece em
+   nenhum outro lugar da tela — só deixa de negativar, sem deixar rastro
+   visível na interface.
 
 ## Implementação
 
