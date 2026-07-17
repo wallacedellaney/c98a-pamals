@@ -31,6 +31,16 @@ conta AIFP/IPLR).
 - Tabela detalhada abaixo, com filtro por Situação/Tipo/busca e clique na
   linha pra ver o detalhe completo (mesmo padrão de outras telas do site).
 
+## Comentário da Coordenadoria indicando cancelamento (2026-07-17)
+
+Mesma regra do Cômputo Mensal (ver `computo_mensal.md`): se a observação da
+Coordenadoria (`obs_coordenadoria_fiscal`) indica cancelamento/"não é mais
+necessário" mas o campo oficial `Atd/cancelada` ainda está em branco, a
+emergência **não aparece** em "Situação atual (em aberto agora)" — pedido
+do Wallace: "nem quero ver elas la, nao aparecer visualmente". Não afeta
+"Entregas no mês de referência" (que só mostra itens já com data oficial
+de conclusão/cancelamento, então essa regra nunca se aplicaria ali mesmo).
+
 ## Tratamento de dados inconsistentes
 
 `atendido_cancelado` às vezes vem como texto em vez de data (ex.:

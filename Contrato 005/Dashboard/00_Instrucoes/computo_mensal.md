@@ -73,6 +73,23 @@ entregas do mês). Meses já calculados precisaram ser recalculados uma vez
 pra essas 2 colunas aparecerem retroativamente (`calcular_mes` de novo
 pra cada mês em cache).
 
+## Matriz — % por dia e aeronaves fora do contrato (2026-07-17)
+
+Pedido do Wallace: "coloca a porcetnagem em baixo de cada dia" + "as
+aeronaves fora do contrato vc coloca la [na matriz], ajeitar ... coloca em
+baixo, sem preencher nada". A matriz aeronave x dia ganhou 2 tipos de linha
+extra, sempre no final:
+
+- **"% Montadas"** — a mesma % usada no gráfico de evolução acima, uma por
+  dia, em negrito com uma borda separando do resto.
+- **Uma linha por aeronave fora do contrato** (`aeronaves_fora_listadas`) —
+  todas as células em branco (sem 0/1, sem cor de fundo), só a matrícula
+  aparece na linha — não pontuam, só ficam visíveis pra referência (antes
+  só apareciam citadas numa legenda de texto embaixo da matriz).
+
+Nenhuma das duas linhas responde ao clique (não tem "motivo de
+negativação" — clicar nelas não faz nada).
+
 ## Limitações conhecidas
 
 - **A planilha "Pré RMA" não é buscada automaticamente** — só o `historico_completo_emergencias.xlsx` que alimenta o cálculo.

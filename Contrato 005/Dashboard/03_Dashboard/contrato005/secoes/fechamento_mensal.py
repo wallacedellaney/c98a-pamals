@@ -21,6 +21,7 @@ if str(SCRIPTS_PYTHON) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_PYTHON))
 
 from contrato005.data.carregar_dados import carregar_computo_mensal
+from calcular_computo_mensal import _tem_comentario_cancelamento
 
 MESES_PT = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -172,6 +173,11 @@ def _atrasos(dados, mes_escolhido):
     # --- 1) Situação atual: o que está em aberto agora, não importa o mês ---
     st.markdown("##### Situação atual (em aberto agora)")
     abertas = trabalho[trabalho["em_aberto"]].copy()
+    # Observação da Coordenadoria já indica cancelamento/"não é mais
+    # necessário", só falta a baixa formal (Atd/cancelada) — pedido do
+    # Wallace (2026-07-17): nem aparecer visualmente aqui, mesma regra do
+    # Cômputo Mensal (ver computo_mensal.md).
+    abertas = abertas[~abertas["obs_coordenadoria_fiscal"].apply(_tem_comentario_cancelamento)]
     total_abertas = len(abertas)
     atrasadas_agora = int((abertas["dias_atraso"] > 0).sum())
     no_prazo_agora = total_abertas - atrasadas_agora
@@ -412,7 +418,10 @@ def _computo_mensal(mes_escolhido):
     st.plotly_chart(fig, width="stretch")
 
     st.markdown("##### Matriz aeronave x dia (1 = montada, 0 = desmontada) — mês inteiro, sáb/dom marcados em cinza")
-    st.caption("Clique numa célula pra ver o motivo da negativação (ou confirmar que ficou montada).")
+    st.caption(
+        "Clique numa célula pra ver o motivo da negativação (ou confirmar que ficou montada). "
+        "Aeronaves fora do contrato aparecem em baixo, sem pontuação (linhas em branco)."
+    )
     pivot = df_matriz.pivot(index="matricula", columns="dia", values="montada")
 
     mapa_rotulo = {}
@@ -423,19 +432,39 @@ def _computo_mensal(mes_escolhido):
         mapa_rotulo[dia] = rotulo
         if wd >= 5:
             fins_de_semana.add(rotulo)
+
+    # % de montadas por dia (a mesma média usada no gráfico de evolução
+    # acima) — pedido do Wallace: "coloca a porcetnagem em baixo de cada
+    # dia", uma linha resumo no final da própria matriz.
+    percentual_dia = df_matriz.dropna(subset=["montada"]).groupby("dia")["montada"].mean().mul(100)
+    pivot.loc["% Montadas"] = percentual_dia
+
+    # Aeronaves fora do contrato aparecem como linha em branco (sem
+    # pontuação, sem preencher nada) — pedido do Wallace: "ajeitar as
+    # aeronaves fora do contrato, coloca em baixo, sem preencher nada".
+    aeronaves_fora = resumo["aeronaves_fora_listadas"]
+    for m in aeronaves_fora:
+        pivot.loc[m] = pd.Series(float("nan"), index=pivot.columns, dtype="float64")
+
     pivot = pivot.rename(columns=mapa_rotulo)
 
-    def _cor_fabrica(coluna):
-        def _colorir(v):
-            if pd.isna(v):
-                return f"background-color: {LINE}" if coluna in fins_de_semana else ""
-            cor = STATUS["good"] if v == 1 else STATUS["critical"]
-            return f"background-color: {cor}55"
-        return _colorir
+    def _cor_linha(row):
+        matricula = row.name
+        estilos = []
+        for coluna, v in row.items():
+            if matricula == "% Montadas":
+                estilos.append("font-weight: 700; border-top: 2px solid " + LINE + ";")
+            elif matricula in aeronaves_fora:
+                estilos.append("color: " + STATUS["critical"] + "44;")
+            elif pd.isna(v):
+                estilos.append(f"background-color: {LINE}" if coluna in fins_de_semana else "")
+            else:
+                cor = STATUS["good"] if v == 1 else STATUS["critical"]
+                estilos.append(f"background-color: {cor}55")
+        return estilos
 
-    styler = pivot.style.format(precision=0, na_rep="")
-    for coluna in pivot.columns:
-        styler = styler.map(_cor_fabrica(coluna), subset=[coluna])
+    styler = pivot.style.format(precision=0, na_rep="").apply(_cor_linha, axis=1)
+    styler = styler.format(lambda v: "" if pd.isna(v) else f"{v:.0f}%", subset=pd.IndexSlice[["% Montadas"], :])
 
     altura_tabela = min(35 * (len(pivot) + 1) + 3, 700)
     colunas_config = {
@@ -451,15 +480,12 @@ def _computo_mensal(mes_escolhido):
     if celulas:
         linha_idx, coluna_rotulo = celulas[0]
         matricula_sel = pivot.index[linha_idx]
-        dia_sel = int(coluna_rotulo.split()[0])
-        valor_sel = pivot.iloc[linha_idx][coluna_rotulo]
-        _mostrar_motivo_celula(matricula_sel, dia_sel, valor_sel, df_motivos)
-
-    if resumo["aeronaves_fora_listadas"]:
-        st.caption(
-            "Fora do contrato (listadas, sem pontuação): "
-            + ", ".join(f"FAB {m}" for m in resumo["aeronaves_fora_listadas"])
-        )
+        # Linha de % ou aeronave fora do contrato não têm motivo de
+        # negativação — não faz sentido nenhum pra essas linhas.
+        if matricula_sel != "% Montadas" and matricula_sel not in aeronaves_fora:
+            dia_sel = int(coluna_rotulo.split()[0])
+            valor_sel = pivot.iloc[linha_idx][coluna_rotulo]
+            _mostrar_motivo_celula(matricula_sel, dia_sel, valor_sel, df_motivos)
 
     st.markdown("##### Justificativa das negativações")
     if df_motivos.empty:
