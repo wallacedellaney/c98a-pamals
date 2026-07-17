@@ -35,13 +35,21 @@ def selecionar_data_comparacao(historico, key):
 
     mais_recente = datas[-1]
     opcoes = datas[:-1]
-    escolhida = st.select_slider(
-        f"Arraste pra comparar um dia anterior com hoje ({pd.Timestamp(mais_recente).strftime('%d/%m/%Y')})",
-        options=opcoes,
-        value=opcoes[0],
-        format_func=lambda d: pd.Timestamp(d).strftime("%d/%m/%Y"),
-        key=key,
-    )
+    if len(opcoes) == 1:
+        # st.select_slider com 1 única opção quebra no navegador ("RangeError:
+        # min (0) is equal/bigger than max (0)" — o slider JS não aceita
+        # min==max) — achado pelo Wallace em 2026-07-16. Só 2 dias de
+        # histórico ainda não dá pra arrastar nada mesmo, usa o único direto.
+        escolhida = opcoes[0]
+        st.caption(f"Só 1 dia anterior disponível ainda ({pd.Timestamp(escolhida).strftime('%d/%m/%Y')}) — a barra de arrastar aparece a partir do 3° dia de histórico.")
+    else:
+        escolhida = st.select_slider(
+            f"Arraste pra comparar um dia anterior com hoje ({pd.Timestamp(mais_recente).strftime('%d/%m/%Y')})",
+            options=opcoes,
+            value=opcoes[0],
+            format_func=lambda d: pd.Timestamp(d).strftime("%d/%m/%Y"),
+            key=key,
+        )
     return escolhida, mais_recente
 
 

@@ -115,6 +115,17 @@ princípio do histórico diário de RAC/Emergências). Implementado:
   começou) — não há como reconstruir o passado. Com 1 dia só de histórico,
   a seção mostra uma mensagem explicando que ainda não dá pra comparar (a
   barra "aparece" de verdade a partir do 2º dia de execução automática).
+- **Bug corrigido em 2026-07-16** — achado pelo Wallace na aba Solicitações
+  do TPJL (histórico começou em 2026-07-14, só 2 dias gravados: 14 e 16,
+  sem o 15): com exatamente **2** dias de histórico, `opcoes` (dias
+  disponíveis pra comparar, excluindo o mais recente) tem só 1 item —
+  `st.select_slider` com uma única opção quebra no navegador
+  (`RangeError: min (0) is equal/bigger than max (0)`, o slider JS não
+  aceita min==max). Corrigido em `evolucao.py` (Projetos **e**
+  Coordenadoria, mesmo componente duplicado nas 2 áreas): com exatamente 1
+  opção, usa ela direto (sem criar o slider) e mostra uma legenda
+  explicando que a barra de arrastar só aparece a partir do 3° dia de
+  histórico.
 
 ## Padrão de módulos Python
 
