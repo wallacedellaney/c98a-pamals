@@ -15,6 +15,21 @@ Calcular automaticamente, a partir dos registros de emergências já existentes 
 5. **Fim da negativação**: no **dia do cancelamento/conclusão em si, a aeronave já volta a ser 1** — o último dia negativado é o dia anterior à data de cancelamento. Se ainda não tiver cancelamento, mantém 0 até o último dia já decorrido do mês.
 6. **Estoque em branco**: não decide sozinho — vira inconsistência ("revisar manualmente"), não entra na negativação automática. Confirmado que isso não afetou julho/2026 na prática (nenhuma AIFP/IPLR ainda aberta tinha estoque em branco).
 7. **Classificação de aeronave** (dentro do contrato / fora do contrato listada / sem condições) vem do RAC (`Coordenadoria/02_Dados_Tratados/base_rac_tratada.xlsx`) — não duplicada aqui. Só as "dentro do contrato" são pontuadas; as "fora do contrato" (2726, 2730, 2732, 2734) aparecem listadas sem pontuação, igual na planilha oficial; as "sem condições" (2701, 2706, 2724) nem aparecem.
+8. **Comentário da Coordenadoria indicando cancelamento (2026-07-17)**: se a
+   observação da Coordenadoria (`obs_coordenadoria_fiscal`) contém termos como
+   "cancelado"/"cancelada"/"cancelamento" (pelo operador, pelo suprimentista,
+   duplicidade etc.) ou "não é/será/ser mais necessário"/"não necessária", **e**
+   o campo oficial `Atd/cancelada` ainda está em branco (a emergência ainda
+   aparece "em aberto" na fonte), a emergência **não negativa** — tratada como
+   se a aeronave estivesse montada. Pedido do Wallace: "sempre que tiver algum
+   comentario escrito nas observacoes da coordenadoria: cancelado pelo
+   operador, cancelado pelo suprimentista, demanda nao necessaria mais e
+   outras variaveis nao computar, contar como montada". **Só se aplica quando
+   NÃO há data oficial de cancelamento** — se já tem, a data oficial já
+   resolve isso sozinha (não queremos apagar um período de negativação que já
+   era válido antes do cancelamento formal chegar). Quando aplicado, vira uma
+   nota em "inconsistências" (não é erro, é uma decisão automática — mostrada
+   pra rastreabilidade, com a observação completa citada).
 
 ## Implementação
 

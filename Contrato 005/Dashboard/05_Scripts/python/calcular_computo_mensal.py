@@ -42,6 +42,19 @@ CAMINHO_EMERGENCIAS_HISTORICO = DADOS_TRATADOS / "historico_completo_emergencias
 
 TIPOS_CONSIDERADOS = ("AIFP", "IPLR")
 
+# Termos que, aparecendo na observação da Coordenadoria (fiscal), indicam que
+# a emergência já foi resolvida/não é mais necessária mesmo que o campo
+# "Atd/cancelada" da fonte ainda esteja em branco (regra do Wallace,
+# 2026-07-17: "cancelado pelo operador, cancelado pelo suprimentista, demanda
+# nao necessaria mais e outras variaveis nao computar, contar como
+# montada"). "cancelad" pega Cancelado/Cancelada/Cancelamento (qualquer
+# motivo — operador, suprimentista, duplicidade etc.), os outros pegam "não
+# é/será/ser mais necessário" e variações de "não necessária".
+TERMOS_CANCELAMENTO_OBSERVACAO = [
+    "cancelad", "não é mais necess", "não será mais necess",
+    "não ser mais necess", "não necessári",
+]
+
 
 def _proximo_dia_util(data):
     """Pula sábado e domingo — sem feriados por enquanto (decisão do
@@ -61,6 +74,13 @@ def _normalizar_estoque(valor):
     if v in ("não", "nao"):
         return "Não"
     return "indefinido"
+
+
+def _tem_comentario_cancelamento(observacao):
+    if pd.isna(observacao):
+        return False
+    texto = str(observacao).strip().lower()
+    return any(termo in texto for termo in TERMOS_CANCELAMENTO_OBSERVACAO)
 
 
 def _classificar_aeronaves():
@@ -119,6 +139,22 @@ def calcular_mes(ano, mes, hoje=None):
             continue
 
         data_fim_emergencia = atendido_dt.date() if pd.notna(atendido_dt) else None
+
+        # Comentário da Coordenadoria já indica cancelamento/"não é mais
+        # necessário", mas o campo oficial "Atd/cancelada" ainda está em
+        # branco (ainda não passou pela baixa formal) — sem isso, a
+        # aeronave continuaria negativando até hoje por um item que o
+        # próprio fiscal já anotou como resolvido. Só se aplica quando NÃO
+        # há data oficial de cancelamento — se já tem, a data oficial já
+        # resolve isso corretamente sozinha (não sobrescreve um período de
+        # negativação que já era válido antes do cancelamento formal).
+        if data_fim_emergencia is None and _tem_comentario_cancelamento(row.get("obs_coordenadoria_fiscal")):
+            inconsistencias.append(
+                f"Emergência {row['numero_emergencia']} (FAB {matricula}): observação da Coordenadoria "
+                f"indica cancelamento/não necessário, mas 'Atd/cancelada' ainda está em branco — não "
+                f"negativada (tratada como montada). Observação: \"{str(row['obs_coordenadoria_fiscal']).strip()}\""
+            )
+            continue
 
         if data_abertura is None or data_abertura > fim_mes:
             continue
