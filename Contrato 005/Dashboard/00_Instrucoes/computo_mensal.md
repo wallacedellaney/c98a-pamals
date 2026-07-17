@@ -27,9 +27,10 @@ Calcular automaticamente, a partir dos registros de emergências já existentes 
    outras variaveis nao computar, contar como montada". **Só se aplica quando
    NÃO há data oficial de cancelamento** — se já tem, a data oficial já
    resolve isso sozinha (não queremos apagar um período de negativação que já
-   era válido antes do cancelamento formal chegar). Quando aplicado, vira uma
-   nota em "inconsistências" (não é erro, é uma decisão automática — mostrada
-   pra rastreabilidade, com a observação completa citada).
+   era válido antes do cancelamento formal chegar). **Silencioso** — a pedido
+   do Wallace ("nao quero nem que aparece la no fechamento mensal"), não
+   vira nota em "inconsistências" nem aparece em nenhum outro lugar da tela
+   — só deixa de negativar, sem deixar rastro visível na interface.
 
 ## Implementação
 

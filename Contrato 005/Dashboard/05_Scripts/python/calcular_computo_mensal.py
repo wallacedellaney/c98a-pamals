@@ -148,12 +148,9 @@ def calcular_mes(ano, mes, hoje=None):
         # há data oficial de cancelamento — se já tem, a data oficial já
         # resolve isso corretamente sozinha (não sobrescreve um período de
         # negativação que já era válido antes do cancelamento formal).
+        # Pedido do Wallace (2026-07-17): não mostrar isso em nenhum lugar
+        # do Fechamento Mensal — silencioso, não entra em "inconsistências".
         if data_fim_emergencia is None and _tem_comentario_cancelamento(row.get("obs_coordenadoria_fiscal")):
-            inconsistencias.append(
-                f"Emergência {row['numero_emergencia']} (FAB {matricula}): observação da Coordenadoria "
-                f"indica cancelamento/não necessário, mas 'Atd/cancelada' ainda está em branco — não "
-                f"negativada (tratada como montada). Observação: \"{str(row['obs_coordenadoria_fiscal']).strip()}\""
-            )
             continue
 
         if data_abertura is None or data_abertura > fim_mes:
