@@ -22,7 +22,19 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 CAMINHO_CREDENCIAIS = Path(__file__).resolve().parent.parent / ".secrets" / "service_account.json"
-ESCOPOS = ["https://www.googleapis.com/auth/drive.readonly"]
+# "drive.readonly" é suficiente pra tudo que já existia (ler planilhas/pastas
+# compartilhadas como Leitor). "spreadsheets" foi adicionado em 2026-07-18
+# só pro log de acessos do site 005CELOG2025 (Wallace: "consigo criar um
+# historico de acesso so para mim? quero saber quem logou") — precisa de
+# permissão de ESCRITA numa planilha específica, compartilhada como Editor
+# com a conta de serviço (diferente de todas as outras planilhas do
+# projeto, que são só Leitor). Ter esse escopo a mais não dá acesso de
+# escrita a nenhuma outra planilha — isso depende de como cada arquivo foi
+# compartilhado no Drive, não do escopo do token.
+ESCOPOS = [
+    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/spreadsheets",
+]
 
 
 def garantir_credencial_arquivo():
@@ -50,6 +62,7 @@ XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 TEXTO_MIME = "text/plain"
 
 _servico = None
+_servico_sheets = None
 
 
 class DriveSyncError(Exception):
@@ -74,6 +87,55 @@ def _obter_servico():
     except Exception as e:
         raise DriveSyncError(f"Falha ao autenticar com o Google Drive: {e}") from e
     return _servico
+
+
+def _obter_servico_sheets():
+    global _servico_sheets
+    if _servico_sheets is not None:
+        return _servico_sheets
+    if not CAMINHO_CREDENCIAIS.exists():
+        raise DriveSyncError(
+            f"Credencial do Google não encontrada em {CAMINHO_CREDENCIAIS}. "
+            "Ver 00_Instrucoes/atualizacoes.md para o passo a passo de configuração."
+        )
+    try:
+        credenciais = service_account.Credentials.from_service_account_file(
+            str(CAMINHO_CREDENCIAIS), scopes=ESCOPOS
+        )
+        _servico_sheets = build("sheets", "v4", credentials=credenciais, cache_discovery=False)
+    except Exception as e:
+        raise DriveSyncError(f"Falha ao autenticar com o Google Sheets: {e}") from e
+    return _servico_sheets
+
+
+def adicionar_linha(spreadsheet_id, aba, valores):
+    """Acrescenta uma linha ao final de `aba` (ex.: [timestamp, email]).
+    A planilha precisa estar compartilhada como EDITOR com a conta de
+    serviço (diferente das outras planilhas do projeto, que são só
+    Leitor) — usado hoje só pelo log de acessos do 005CELOG2025."""
+    try:
+        servico = _obter_servico_sheets()
+        servico.spreadsheets().values().append(
+            spreadsheetId=spreadsheet_id,
+            range=f"{aba}!A:Z",
+            valueInputOption="USER_ENTERED",
+            insertDataOption="INSERT_ROWS",
+            body={"values": [valores]},
+        ).execute()
+    except HttpError as e:
+        raise DriveSyncError(f"Falha ao gravar em {spreadsheet_id}/{aba}: {e}") from e
+
+
+def ler_linhas(spreadsheet_id, aba):
+    """Lê todas as linhas de `aba` (lista de listas, primeira linha = cabeçalho)."""
+    try:
+        servico = _obter_servico_sheets()
+        resposta = servico.spreadsheets().values().get(
+            spreadsheetId=spreadsheet_id, range=f"{aba}!A:Z",
+        ).execute()
+        return resposta.get("values", [])
+    except HttpError as e:
+        raise DriveSyncError(f"Falha ao ler {spreadsheet_id}/{aba}: {e}") from e
 
 
 def obter_metadados(file_id):

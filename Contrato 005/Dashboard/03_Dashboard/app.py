@@ -36,6 +36,13 @@ Secrets deste app, separado do site principal):
 - `GOOGLE_SERVICE_ACCOUNT_JSON` — mesma credencial do Google usada no site
   principal, precisa ser configurada de novo aqui — necessária pro botão
   "Atualizar dados".
+- `planilha_log_acessos_id` — ID da Planilha Google de histórico de acessos
+  (2026-07-18, pedido do Wallace: "consigo criar um historico de acesso so
+  para mim? quero saber quem logou"). Opcional: sem esse secret, login
+  funciona normal, só não grava/mostra histórico. A planilha precisa estar
+  compartilhada como EDITOR com a conta de serviço (diferente das outras,
+  que são só Leitor), com uma aba chamada "Acessos". Histórico só aparece
+  pra wallacedellaney@gmail.com, num expander no fim do dashboard.
 """
 
 import sys
@@ -53,8 +60,40 @@ if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 from home_hero import render_hero
+from shared import drive_sync
 
 PAGINAS_OCULTAS = set()
+
+# Histórico de acessos (2026-07-18) — pedido do Wallace: "consigo criar um
+# historico de acesso so para mim? quero saber quem logou". Gravado numa
+# Planilha Google própria (não dá pra guardar só "dentro" do site: esse
+# deploy reinicia sozinho a cada atualização automática de dados, de 2 em
+# 2h, e um arquivo local seria apagado nesse reinício) — a planilha
+# precisa estar compartilhada como EDITOR com a conta de serviço (as
+# outras planilhas do projeto são só Leitor). ID configurado no secret
+# `planilha_log_acessos_id` (não é sensível, mas fica junto dos outros
+# secrets deste app pra não precisar mexer em código se a planilha mudar).
+PLANILHA_LOG_ACESSOS_ID = st.secrets.get("planilha_log_acessos_id")
+ABA_LOG_ACESSOS = "Acessos"
+# Só este e-mail vê o histórico dentro do site — "so para mim".
+EMAIL_ADMIN = "wallacedellaney@gmail.com"
+
+
+def _registrar_acesso(email):
+    """Grava [data/hora, e-mail] na planilha de log, sem nunca bloquear o
+    login por causa disso — falha aqui vira só um aviso discreto, nunca um
+    st.error que travaria a tela."""
+    if not PLANILHA_LOG_ACESSOS_ID:
+        return
+    from datetime import datetime
+    try:
+        drive_sync.garantir_credencial_arquivo()
+        drive_sync.adicionar_linha(
+            PLANILHA_LOG_ACESSOS_ID, ABA_LOG_ACESSOS,
+            [datetime.now().strftime("%d/%m/%Y %H:%M:%S"), email],
+        )
+    except drive_sync.DriveSyncError:
+        pass
 
 # E-mails autorizados a entrar — pedido do Wallace em 2026-07-18. Todos
 # usam a MESMA senha (secret "site_password"), o e-mail só funciona como
@@ -162,6 +201,7 @@ def _tela_login():
                     st.query_params.pop("email", None)
                 st.session_state["autenticado"] = True
                 st.session_state["email_logado"] = email_normalizado
+                _registrar_acesso(email_normalizado)
                 st.rerun()
 
 
@@ -193,6 +233,33 @@ def _tela_aviso():
             st.rerun()
 
 
+def _painel_historico_acessos():
+    """Só aparece pro Wallace (EMAIL_ADMIN) — lista quem logou e quando,
+    lida da mesma planilha em que `_registrar_acesso` grava."""
+    if st.session_state.get("email_logado") != EMAIL_ADMIN:
+        return
+    with st.expander("📋 Histórico de acessos (visível só para você)"):
+        if not PLANILHA_LOG_ACESSOS_ID:
+            st.caption(
+                "Histórico ainda não configurado — falta o secret "
+                "`planilha_log_acessos_id` neste app."
+            )
+            return
+        try:
+            drive_sync.garantir_credencial_arquivo()
+            linhas = drive_sync.ler_linhas(PLANILHA_LOG_ACESSOS_ID, ABA_LOG_ACESSOS)
+        except drive_sync.DriveSyncError as e:
+            st.caption(f"Não foi possível ler o histórico agora: {e}")
+            return
+        if len(linhas) <= 1:
+            st.caption("Nenhum acesso registrado ainda.")
+            return
+        import pandas as pd
+        historico = pd.DataFrame(linhas[1:], columns=["Data/Hora", "E-mail"])
+        historico = historico.iloc[::-1].reset_index(drop=True)
+        st.dataframe(historico, hide_index=True, width="stretch")
+
+
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
 if "entrou" not in st.session_state:
@@ -213,3 +280,4 @@ if not st.session_state["concordou"]:
     st.stop()
 
 render(paginas_ocultas=PAGINAS_OCULTAS, modo_externo=True)
+_painel_historico_acessos()
