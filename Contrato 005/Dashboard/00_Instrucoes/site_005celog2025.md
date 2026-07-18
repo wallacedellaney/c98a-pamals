@@ -172,6 +172,29 @@ o Streamlit reserva a barra lateral e mostra uma setinha de expandir no
 canto, bem ao lado do hero. Corrigido (+ CSS `[data-testid="collapsedControl"]
 {display: none;}` de reforço).
 
+## Histórico de acessos (2026-07-18)
+
+Pedido do Wallace: "consigo criar um historico de acesso so para mim? quero
+saber quem logou". Cada login bem-sucedido grava uma linha
+(`data/hora`, `e-mail`) numa Planilha Google própria — não dá pra guardar
+só "dentro" do site porque esse deploy reinicia sozinho a cada atualização
+automática de dados (2 em 2h), o que apagaria qualquer arquivo local.
+
+- Planilha precisa de uma aba chamada **"Acessos"**, compartilhada como
+  **Editor** (não só Leitor, diferente de todas as outras planilhas do
+  projeto) com a conta de serviço
+  (`pamals-drive-reader@pamals-drive-sync.iam.gserviceaccount.com`).
+- ID da planilha vai no secret `planilha_log_acessos_id` deste app
+  (Settings → Secrets) — sem esse secret, o site funciona normal, só não
+  grava/mostra nada.
+- Só **wallacedellaney@gmail.com** vê o histórico — expander "📋 Histórico
+  de acessos" no fim do dashboard, some pros outros e-mails.
+- `shared/drive_sync.py` ganhou `adicionar_linha()`/`ler_linhas()` (API do
+  Google Sheets v4) e o escopo `ESCOPOS` passou a incluir
+  `.../auth/spreadsheets` (além do `drive.readonly` já existente) — só dá
+  escrita de verdade em arquivos compartilhados como Editor, o resto do
+  Drive continua só leitura.
+
 ## Testado (2026-07-18)
 
 Via `AppTest`: dashboard completo carrega direto (sem tela de login), sem
