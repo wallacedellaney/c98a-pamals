@@ -96,3 +96,15 @@ Isso não busca dados novos do Google Sheets sozinho — ver a seção equivalen
 ## Como a página principal chama o Contrato 005
 
 `app.py` (nesta pasta) importa `contrato_app.render()` de dentro de `Contrato 005/Dashboard/03_Dashboard/`, inserindo essa pasta em `sys.path`. Os módulos internos do Contrato 005 (`data`, `secoes`, `components`) ficam dentro do pacote `contrato005` (em `03_Dashboard/contrato005/`) justamente para não colidir com módulos de mesmo nome que a Coordenadoria vier a ter — quando for criar a Coordenadoria, seguir o mesmo padrão (pacote próprio, não módulos soltos `data`/`secoes`/`components`).
+
+## Segundo site "005CELOG2025" — acesso da empresa (2026-07-18)
+
+A empresa (VEE ONE) tem acesso a um **deploy separado no Streamlit Cloud**,
+mesmo repositório do GitHub, mas com main file path
+`Contrato 005/Dashboard/03_Dashboard/app.py` em vez do `app.py` da raiz —
+ela só vê o Contrato 005, nunca Coordenadoria/Projetos (processo Streamlit
+totalmente separado, não é só senha escondendo tela). Senha e credencial
+do Google são secrets próprios desse segundo app (não compartilhados com o
+site principal). Atualiza sozinho, sem configuração extra — mesmo
+repositório, mesmo ciclo automático de 2 em 2h. Ver
+`Contrato 005/Dashboard/00_Instrucoes/site_005celog2025.md`.
