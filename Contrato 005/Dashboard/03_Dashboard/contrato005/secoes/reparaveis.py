@@ -33,13 +33,17 @@ def _secao_estatisticas_tat(df):
 
     st.markdown("##### Estatísticas de TAT")
     st.caption(
-        "\"Com eles\" = ainda não entregue pelo fornecedor. Quando \"Onde se encontra\" é "
-        "BABE/BAMN/BABV/BAPV/BABR/BANT/PAMA-LS/BACO/BASM/BACG/EEAR, já foi entregue — só falta "
-        "encerrar a burocracia da OS (\"V1 PAMA-LS\" não conta como entregue, é outra etapa, "
-        "ainda com o fornecedor)."
+        "\"Com a empresa e terceirizados\" = ainda não entregue pelo fornecedor. Quando \"Onde se "
+        "encontra\" é BABE/BAMN/BABV/BAPV/BABR/BANT/PAMA-LS/BACO/BASM/BACG/EEAR, já foi entregue — "
+        "só falta encerrar a burocracia da OS (\"V1 PAMA-LS\" não conta como entregue, é outra "
+        "etapa, ainda com a empresa)."
     )
 
-    com_eles = abertos[~abertos["onde_se_encontra"].isin(LOCAIS_ENTREGUES)]
+    abertos = abertos.copy()
+    abertos["grupo"] = abertos["onde_se_encontra"].isin(LOCAIS_ENTREGUES).map(
+        {True: "Entregue (falta burocracia)", False: "Com a empresa e terceirizados"}
+    )
+    empresa = abertos[abertos["grupo"] == "Com a empresa e terceirizados"]
 
     def _media_tat(sub):
         return f"{sub['tat_siloms'].mean():.0f} dias" if sub["tat_siloms"].notna().any() else "—"
@@ -49,11 +53,12 @@ def _secao_estatisticas_tat(df):
     c2.metric("Média de TAT geral (mesmo faltando a burocracia)", _media_tat(abertos))
 
     c3, c4 = st.columns(2)
-    c3.metric("Com eles (ainda não entregues)", len(com_eles))
-    c4.metric("Média de TAT — com eles", _media_tat(com_eles))
+    c3.metric("Com a empresa e terceirizados", len(empresa))
+    c4.metric("Média de TAT — empresa e terceirizados", _media_tat(empresa))
 
     hoje = pd.Timestamp.now().normalize()
     fora_prazo = abertos[abertos["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS]
+    dentro_prazo = abertos[abertos["tat_siloms"] <= PRAZO_CONTRATUAL_TAT_DIAS]
 
     com_data = abertos.dropna(subset=["data_inicio"]).copy()
     com_data["data_limite"] = pd.to_datetime(com_data["data_inicio"]) + pd.Timedelta(days=PRAZO_CONTRATUAL_TAT_DIAS)
@@ -67,27 +72,57 @@ def _secao_estatisticas_tat(df):
     c5.metric(f"Fora do prazo contratual (> {PRAZO_CONTRATUAL_TAT_DIAS} dias)", len(fora_prazo), delta_color="inverse")
     c6.metric("Vencem o prazo contratual este mês", len(vence_mes), delta_color="inverse")
 
-    with st.expander("Mais estatísticas — TAT médio por local e evolução"):
-        media_local = (
-            abertos.dropna(subset=["tat_siloms"])
-            .groupby("onde_se_encontra")["tat_siloms"]
-            .agg(["mean", "count"])
-            .reset_index()
-            .rename(columns={"onde_se_encontra": "Onde se encontra", "mean": "TAT médio (dias)", "count": "Quantidade"})
-            .sort_values("TAT médio (dias)", ascending=False)
+    g1, g2 = st.columns(2)
+    with g1:
+        st.caption("Com a empresa e terceirizados x Entregue (falta burocracia)")
+        contagem_grupo = abertos["grupo"].value_counts().reset_index()
+        contagem_grupo.columns = ["grupo", "quantidade"]
+        fig_grupo = px.pie(
+            contagem_grupo, names="grupo", values="quantidade", hole=0.55,
+            color="grupo",
+            color_discrete_map={"Com a empresa e terceirizados": AMBER, "Entregue (falta burocracia)": STATUS["good"]},
         )
-        media_local["TAT médio (dias)"] = media_local["TAT médio (dias)"].round(0).astype(int)
-        st.dataframe(media_local, hide_index=True, width="stretch")
+        fig_grupo.update_traces(textinfo="value+percent", textfont_size=12)
+        layout_grafico(fig_grupo, altura=230)
+        st.plotly_chart(fig_grupo, width="stretch")
 
-        fig = px.bar(
-            media_local, x="TAT médio (dias)", y="Onde se encontra", orientation="h",
-            color_discrete_sequence=[AMBER],
+    with g2:
+        st.caption(f"Dentro x fora do prazo contratual ({PRAZO_CONTRATUAL_TAT_DIAS} dias)")
+        contagem_prazo = pd.DataFrame({
+            "situacao": ["Dentro do prazo", "Fora do prazo"],
+            "quantidade": [len(dentro_prazo), len(fora_prazo)],
+        })
+        fig_prazo = px.pie(
+            contagem_prazo, names="situacao", values="quantidade", hole=0.55,
+            color="situacao",
+            color_discrete_map={"Dentro do prazo": STATUS["good"], "Fora do prazo": STATUS["critical"]},
         )
-        fig.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=STATUS["critical"],
-                      annotation_text=f"{PRAZO_CONTRATUAL_TAT_DIAS}d contratual")
-        fig.update_layout(yaxis_title="", xaxis_title="TAT médio (dias)")
-        layout_grafico(fig, altura=max(200, 28 * len(media_local)))
-        st.plotly_chart(fig, width="stretch")
+        fig_prazo.update_traces(textinfo="value+percent", textfont_size=12)
+        layout_grafico(fig_prazo, altura=230)
+        st.plotly_chart(fig_prazo, width="stretch")
+
+    st.caption("TAT médio por local ('Onde se encontra')")
+    media_local = (
+        abertos.dropna(subset=["tat_siloms"])
+        .groupby("onde_se_encontra")["tat_siloms"]
+        .agg(["mean", "count"])
+        .reset_index()
+        .rename(columns={"onde_se_encontra": "Onde se encontra", "mean": "TAT médio (dias)", "count": "Quantidade"})
+        .sort_values("TAT médio (dias)", ascending=False)
+    )
+    media_local["TAT médio (dias)"] = media_local["TAT médio (dias)"].round(0).astype(int)
+    fig_local = px.bar(
+        media_local, x="TAT médio (dias)", y="Onde se encontra", orientation="h",
+        color_discrete_sequence=[AMBER],
+    )
+    fig_local.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=STATUS["critical"],
+                         annotation_text=f"{PRAZO_CONTRATUAL_TAT_DIAS}d contratual")
+    fig_local.update_layout(yaxis_title="", xaxis_title="TAT médio (dias)")
+    layout_grafico(fig_local, altura=max(200, 28 * len(media_local)))
+    st.plotly_chart(fig_local, width="stretch")
+
+    with st.expander("Ver tabela — TAT médio por local"):
+        st.dataframe(media_local, hide_index=True, width="stretch")
 
     st.divider()
 

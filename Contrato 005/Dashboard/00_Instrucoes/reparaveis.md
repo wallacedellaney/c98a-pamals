@@ -73,10 +73,10 @@ foi entregue** pelo fornecedor (VEE ONE) pra unidade/base, só falta
 encerrar a burocracia da OS (ainda conta como "em aberto" no SILOMS, mas
 não é mais atraso de reparo de verdade). Qualquer outro valor (`VEE ONE`,
 `WILLIAM`, `LEAP`, `PROCURANDO`, `AV AERONAUTICA`, `AMA - VEE ONE`, vazio,
-etc.) conta como **"com eles"** — ainda não entregue.
+etc.) conta como **"com a empresa e terceirizados"** — ainda não entregue.
 
 **Atenção, `"V1 PAMA-LS"` ≠ `"PAMA-LS"`**: são valores diferentes na fonte
-— `"V1 PAMA-LS"` **não** entra em `LOCAIS_ENTREGUES` (fica em "com eles"),
+— `"V1 PAMA-LS"` **não** entra em `LOCAIS_ENTREGUES` (fica em "com a empresa e terceirizados"),
 confirmado pelo Wallace: "obs: v1 pamals esta com eles ainda". Por isso o
 match é por **igualdade exata**, nunca por "contém" — um match por
 substring pegaria "V1 PAMA-LS" por engano.
@@ -89,10 +89,20 @@ este mês").
 
 Cards mostrados: Abertos (geral) + Média de TAT geral (todos os abertos,
 incluindo os que só faltam burocracia — pedido explícito do Wallace, pra
-não esconder esse tempo do TAT médio); Com eles (quantidade) + Média de
-TAT só desse grupo; Fora do prazo contratual; Vencem o prazo este mês.
-Dentro de um expander ("Mais estatísticas"): TAT médio por
-`onde_se_encontra` (tabela + gráfico de barras horizontal, com uma linha
-vertical marcando os 110 dias) — sugestão própria pra responder "pense em
-outras estatísticas que podemos fazer", mostra onde o item costuma ficar
-parado por mais tempo.
+não esconder esse tempo do TAT médio); Com a empresa e terceirizados
+(quantidade) + Média de TAT só desse grupo; Fora do prazo contratual;
+Vencem o prazo este mês.
+
+**Renomeado em 2026-07-18** — "Com eles" virou "Com a empresa e
+terceirizados" (Wallace: "po, nao escreve com eles kkk, deixa mais
+padrao, escreve com a empresa e tercerizados") — nome mais formal pra
+apresentar, mesmo grupo/regra de antes.
+
+**Gráficos adicionados em 2026-07-18** (Wallace: "coloca uns graficos
+tb"), sempre visíveis (não escondidos em expander): 2 donuts lado a lado
+("Com a empresa e terceirizados" x "Entregue, falta burocracia"; "Dentro"
+x "Fora do prazo contratual") + gráfico de barras horizontal de TAT médio
+por `onde_se_encontra` (com uma linha vertical marcando os 110 dias) —
+sugestão própria pra responder "pense em outras estatísticas que podemos
+fazer", mostra onde o item costuma ficar parado por mais tempo. A tabela
+com os números fica num expander opcional embaixo do gráfico.
