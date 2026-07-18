@@ -68,7 +68,7 @@ def _estilo_tela_inicial():
             header {display: none;}
             [data-testid="stToolbar"] {display: none;}
             .stApp { background: #0B1118; color: #F3F6F9; }
-            .block-container { max-width: 1100px; padding-top: 3rem; }
+            .block-container { max-width: 100% !important; padding: 2.2rem 2.5rem 2.5rem; }
             .cel-titulo {
                 text-align: center; font-size: 28px; font-weight: 900;
                 letter-spacing: 2px; color: #F3F6F9; margin-bottom: 6px;
@@ -106,7 +106,7 @@ def _tela_inicial():
         unsafe_allow_html=True,
     )
     render_hero()
-    _, col, _ = st.columns([1, 1, 1])
+    _, col, _ = st.columns([3, 1, 3])
     with col:
         if st.button("Entrar →", key="cel_entrar"):
             st.session_state["entrou"] = True
@@ -117,7 +117,7 @@ def _tela_aviso():
     _estilo_tela_inicial()
     st.markdown('<div class="cel-titulo">Antes de continuar</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="cel-aviso">{AVISO_TRANSPARENCIA}</div>', unsafe_allow_html=True)
-    _, col, _ = st.columns([1, 1, 1])
+    _, col, _ = st.columns([3, 1, 3])
     with col:
         if st.button("Concordar e continuar →", key="cel_concordar"):
             st.session_state["concordou"] = True
