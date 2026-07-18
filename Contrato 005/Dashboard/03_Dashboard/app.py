@@ -161,28 +161,40 @@ def _estilo_tela_inicial():
     )
 
 
+CAMINHO_IMAGEM_LOGIN = RAIZ / "imagens" / "login_hero_c98.png"
+
+
 def _tela_login():
     _estilo_tela_inicial()
-    st.markdown(
-        """
-        <div class="cel-titulo">005CELOG2025</div>
-        <div class="cel-sub">Acesso restrito — e-mail autorizado + senha.</div>
-        """,
-        unsafe_allow_html=True,
-    )
-    # "Lembrar meu e-mail" (pedido do Wallace em 2026-07-18: "coloca opcao
-    # para a pessoa salva o email dela") — guardado em st.query_params (fica
-    # na própria URL, que o navegador lembra sozinho se a pessoa deixar
-    # favoritada/salva) e usado como valor inicial do campo na próxima
-    # visita. Só o e-mail — a senha NÃO é guardada em lugar nenhum por nós
-    # (não é seguro deixar senha em URL); quem quiser que o navegador
-    # preencha a senha sozinho, o campo já é um `type="password"` padrão,
-    # que os gerenciadores de senha do Chrome/Safari/etc. já oferecem
-    # salvar sozinhos ao fazer login com sucesso.
-    email_lembrado = st.query_params.get("email", "")
+    # Imagem do C-98 Caravan colocada pelo Wallace em 2026-07-18
+    # ("imagens/c98 login") — recortada da metade esquerda de um mockup
+    # completo que ele gerou (a metade direita já era um formulário de
+    # login "fake", virou só referência de layout) e salva à parte em
+    # `imagens/login_hero_c98.png` pra usar do lado do formulário de
+    # verdade, sem duplicar campos de login desenhados como imagem.
+    col_img, col_form = st.columns([1.05, 1], gap="large")
+    with col_img:
+        if CAMINHO_IMAGEM_LOGIN.exists():
+            st.image(str(CAMINHO_IMAGEM_LOGIN), width="stretch")
+    with col_form:
+        st.markdown(
+            """
+            <div class="cel-titulo">005CELOG2025</div>
+            <div class="cel-sub">Acesso restrito — e-mail autorizado + senha.</div>
+            """,
+            unsafe_allow_html=True,
+        )
+        # "Lembrar meu e-mail" (pedido do Wallace em 2026-07-18: "coloca opcao
+        # para a pessoa salva o email dela") — guardado em st.query_params (fica
+        # na própria URL, que o navegador lembra sozinho se a pessoa deixar
+        # favoritada/salva) e usado como valor inicial do campo na próxima
+        # visita. Só o e-mail — a senha NÃO é guardada em lugar nenhum por nós
+        # (não é seguro deixar senha em URL); quem quiser que o navegador
+        # preencha a senha sozinho, o campo já é um `type="password"` padrão,
+        # que os gerenciadores de senha do Chrome/Safari/etc. já oferecem
+        # salvar sozinhos ao fazer login com sucesso.
+        email_lembrado = st.query_params.get("email", "")
 
-    _, col, _ = st.columns([1, 1, 1])
-    with col:
         email = st.text_input("E-mail", value=email_lembrado, key="cel_login_email", placeholder="seu e-mail")
         senha = st.text_input(
             "Senha", type="password", key="cel_login_senha", placeholder="Senha de acesso",

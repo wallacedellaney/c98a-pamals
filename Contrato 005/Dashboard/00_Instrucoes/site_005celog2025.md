@@ -173,6 +173,22 @@ o Streamlit reserva a barra lateral e mostra uma setinha de expandir no
 canto, bem ao lado do hero. Corrigido (+ CSS `[data-testid="collapsedControl"]
 {display: none;}` de reforço).
 
+## Imagem na tela de login (2026-07-18)
+
+Wallace colocou um arquivo em `C-98A PAMALS/imagens/foto_login.png` (um
+mockup completo gerado por IA, com a foto do C-98 Caravan à esquerda e um
+formulário de login "fake" desenhado como imagem à direita) e pediu pra
+usar na tela de login do site do contrato. Como o formulário à direita da
+imagem era só decorativo (não functional), recortei só a metade esquerda
+(foto do avião + logo FAB) e salvei em `imagens/login_hero_c98.png` — essa
+é a imagem usada de verdade pelo código; `foto_login.png` fica só como
+arquivo de origem.
+
+`_tela_login()` (`03_Dashboard/app.py`) virou 2 colunas lado a lado:
+imagem à esquerda, formulário de login de verdade (e-mail, senha, lembrar,
+botão "Entrar") à direita — mesmo layout do mockup, mas com os campos
+funcionais do Streamlit em vez de desenhados.
+
 ## Histórico de acessos (2026-07-18)
 
 Pedido do Wallace: "consigo criar um historico de acesso so para mim? quero
