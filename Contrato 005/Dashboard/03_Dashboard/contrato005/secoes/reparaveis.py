@@ -25,6 +25,15 @@ LOCAIS_ENTREGUES = {
 # Prazo contratual de TAT (Turn Around Time) — confirmado pelo Wallace em 2026-07-18.
 PRAZO_CONTRATUAL_TAT_DIAS = 110
 
+# "Onde se encontra" vazio não é "sem dado" — pedido do Wallace em
+# 2026-07-18: "quando tiver vazio, a empresa ainda nao passou, esta em
+# processo interno da empresa ou nao foi informado por ela". Preenchido
+# logo na entrada de render() (não só na exibição) pra entrar certo em
+# TODO lugar que usa essa coluna — filtro, tabela e "Estatísticas de TAT"
+# (sem isso, o `groupby` do gráfico "TAT médio por local" descartava essas
+# linhas por padrão, já que pandas ignora grupos NaN).
+LOCAL_NAO_INFORMADO = "Em processo interno / não informado pela empresa"
+
 
 def _secao_estatisticas_tat(df):
     abertos = df[df["em_aberto"]].copy()
@@ -36,7 +45,7 @@ def _secao_estatisticas_tat(df):
         "\"Com a empresa e terceirizados\" = ainda não entregue pelo fornecedor. Quando \"Onde se "
         "encontra\" é BABE/BAMN/BABV/BAPV/BABR/BANT/PAMA-LS/BACO/BASM/BACG/EEAR, já foi entregue — "
         "só falta encerrar a burocracia da OS (\"V1 PAMA-LS\" não conta como entregue, é outra "
-        "etapa, ainda com a empresa)."
+        f"etapa, ainda com a empresa). Vazio = \"{LOCAL_NAO_INFORMADO}\"."
     )
 
     abertos = abertos.copy()
@@ -138,7 +147,8 @@ def render(dados):
 
     st.title("Reparáveis")
 
-    df = dados["reparaveis"]
+    df = dados["reparaveis"].copy()
+    df["onde_se_encontra"] = df["onde_se_encontra"].fillna(LOCAL_NAO_INFORMADO)
 
     _secao_estatisticas_tat(df)
 
