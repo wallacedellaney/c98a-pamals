@@ -112,6 +112,26 @@ Abertas/Totais, Análise de Período, Fechamento Mensal, Empréstimos,
 Pagamentos, Reajuste) — sem botão "← Voltar ao menu" (não existe menu
 principal nesse deploy, `render()` é chamado sem `ao_voltar`).
 
+## Bug corrigido em 2026-07-18 — "Error installing requirements" no deploy
+
+Primeiro deploy real falhou: `error: Failed to parse: '005/Dashboard/03_Dashboard/requirements.txt'`
+(log completo em "Manage app" → terminal). Causa: existia um
+`Contrato 005/Dashboard/03_Dashboard/requirements.txt` (cópia quase igual
+ao da raiz, só faltando `odfpy`) — o Streamlit Cloud acha esse arquivo
+primeiro (mesma pasta do main file) e monta o comando de instalação com o
+caminho completo, mas **o espaço em "Contrato 005" quebra o parsing**
+(vira 2 argumentos: "Contrato" e "005/Dashboard/..."). O site principal
+nunca bateu nisso porque o `app.py` dele fica na raiz do repositório —
+sem espaço no caminho até o `requirements.txt`.
+
+**Corrigido**: apagado o `requirements.txt` local (não fazia falta, era
+cópia incompleta do da raiz) — sem ele, o Streamlit Cloud sobe um nível
+até achar o `requirements.txt` da raiz do repositório (sem espaço no
+caminho, já testado e funcionando no site principal). Se um dia precisar
+de um pacote só deste deploy, adicionar direto no `requirements.txt` da
+raiz (compartilhado pelos 2 sites) em vez de recriar um local — evita
+esse mesmo bug de novo.
+
 ## Bug corrigido em 2026-07-18 — seta de expandir sidebar aparecendo no hero
 
 Wallace: "no dasborad do lado do aviao tem um uma seta de um lado e do
