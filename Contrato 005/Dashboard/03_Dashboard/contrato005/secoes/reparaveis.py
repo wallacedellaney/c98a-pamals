@@ -56,11 +56,16 @@ def _secao_estatisticas_tat(df):
     c3.metric("Com a empresa e terceirizados", len(empresa))
     c4.metric("Média de TAT — empresa e terceirizados", _media_tat(empresa))
 
+    # Prazo contratual (dentro/fora, vence este mês) só faz sentido pra quem
+    # ainda está com a empresa/terceirizados — item já entregue (só falta
+    # burocracia) não conta mais contra o prazo. Pedido do Wallace em
+    # 2026-07-18: "o prazo dentro e fora do prazo so os que estao com a
+    # empresa".
     hoje = pd.Timestamp.now().normalize()
-    fora_prazo = abertos[abertos["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS]
-    dentro_prazo = abertos[abertos["tat_siloms"] <= PRAZO_CONTRATUAL_TAT_DIAS]
+    fora_prazo = empresa[empresa["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS]
+    dentro_prazo = empresa[empresa["tat_siloms"] <= PRAZO_CONTRATUAL_TAT_DIAS]
 
-    com_data = abertos.dropna(subset=["data_inicio"]).copy()
+    com_data = empresa.dropna(subset=["data_inicio"]).copy()
     com_data["data_limite"] = pd.to_datetime(com_data["data_inicio"]) + pd.Timedelta(days=PRAZO_CONTRATUAL_TAT_DIAS)
     vence_mes = com_data[
         (com_data["data_limite"].dt.year == hoje.year)
@@ -69,8 +74,8 @@ def _secao_estatisticas_tat(df):
     ]
 
     c5, c6 = st.columns(2)
-    c5.metric(f"Fora do prazo contratual (> {PRAZO_CONTRATUAL_TAT_DIAS} dias)", len(fora_prazo), delta_color="inverse")
-    c6.metric("Vencem o prazo contratual este mês", len(vence_mes), delta_color="inverse")
+    c5.metric(f"Fora do prazo contratual (> {PRAZO_CONTRATUAL_TAT_DIAS} dias) — empresa/terceirizados", len(fora_prazo), delta_color="inverse")
+    c6.metric("Vencem o prazo contratual este mês — empresa/terceirizados", len(vence_mes), delta_color="inverse")
 
     g1, g2 = st.columns(2)
     with g1:
@@ -87,7 +92,7 @@ def _secao_estatisticas_tat(df):
         st.plotly_chart(fig_grupo, width="stretch")
 
     with g2:
-        st.caption(f"Dentro x fora do prazo contratual ({PRAZO_CONTRATUAL_TAT_DIAS} dias)")
+        st.caption(f"Dentro x fora do prazo contratual ({PRAZO_CONTRATUAL_TAT_DIAS} dias) — só empresa/terceirizados")
         contagem_prazo = pd.DataFrame({
             "situacao": ["Dentro do prazo", "Fora do prazo"],
             "quantidade": [len(dentro_prazo), len(fora_prazo)],

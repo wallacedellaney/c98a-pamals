@@ -85,7 +85,10 @@ substring pegaria "V1 PAMA-LS" por engano.
 confirmado pelo Wallace. "Fora do prazo" = `tat_siloms > 110`. "Vence este
 mês" = `data_inicio + 110 dias` cai no mês/ano atual **e** ainda não
 passou de 110 dias (senão já estaria em "fora do prazo", não "vence
-este mês").
+este mês"). **Só sobre "Com a empresa e terceirizados"** (2026-07-18,
+Wallace: "o prazo dentro e fora do prazo so os que estao com a
+empresa") — item já entregue (só falta burocracia) não conta mais contra
+o prazo contratual, mesmo que o TAT dele já passe de 110 dias.
 
 Cards mostrados: Abertos (geral) + Média de TAT geral (todos os abertos,
 incluindo os que só faltam burocracia — pedido explícito do Wallace, pra
