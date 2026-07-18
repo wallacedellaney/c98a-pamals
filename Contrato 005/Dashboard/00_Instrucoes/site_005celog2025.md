@@ -51,6 +51,17 @@ autorizado" / "Senha incorreta"). Pra adicionar/remover alguém, é só
 editar o `set` `EMAILS_AUTORIZADOS` no código (não precisa de senha
 individual por pessoa).
 
+**"Lembrar meu e-mail" (2026-07-18)** — pedido do Wallace: "coloca opcao
+para a pessoa salva o email dela e salvar a senha depois que digita".
+Checkbox marcado por padrão depois do 1º login: guarda o e-mail em
+`st.query_params` (fica na URL — se a pessoa favoritar/salvar o link com
+o e-mail, ele já vem preenchido da próxima vez). **A senha não é salva
+por nós de propósito** — não é seguro guardar senha em URL/query param;
+o campo de senha continua sendo um `type="password"` padrão, que o
+próprio navegador (gerenciador de senhas do Chrome/Safari/etc.) já
+costuma oferecer pra salvar sozinho depois do primeiro login com
+sucesso, sem precisar de nada extra no nosso código.
+
 **Fluxo de 3 telas** (2026-07-18):
 1. **Hero + "Entrar →"** (pedido do Wallace: "pode deixar aquele dasborad
    la inicial, clicando para entrar no contrato, com a foto do caravan e

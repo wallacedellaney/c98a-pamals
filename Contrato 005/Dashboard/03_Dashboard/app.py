@@ -126,10 +126,25 @@ def _tela_login():
         """,
         unsafe_allow_html=True,
     )
+    # "Lembrar meu e-mail" (pedido do Wallace em 2026-07-18: "coloca opcao
+    # para a pessoa salva o email dela") — guardado em st.query_params (fica
+    # na própria URL, que o navegador lembra sozinho se a pessoa deixar
+    # favoritada/salva) e usado como valor inicial do campo na próxima
+    # visita. Só o e-mail — a senha NÃO é guardada em lugar nenhum por nós
+    # (não é seguro deixar senha em URL); quem quiser que o navegador
+    # preencha a senha sozinho, o campo já é um `type="password"` padrão,
+    # que os gerenciadores de senha do Chrome/Safari/etc. já oferecem
+    # salvar sozinhos ao fazer login com sucesso.
+    email_lembrado = st.query_params.get("email", "")
+
     _, col, _ = st.columns([1, 1, 1])
     with col:
-        email = st.text_input("E-mail", key="cel_login_email", placeholder="seu e-mail")
-        senha = st.text_input("Senha", type="password", key="cel_login_senha", placeholder="Senha de acesso")
+        email = st.text_input("E-mail", value=email_lembrado, key="cel_login_email", placeholder="seu e-mail")
+        senha = st.text_input(
+            "Senha", type="password", key="cel_login_senha", placeholder="Senha de acesso",
+            help="O navegador pode oferecer pra salvar essa senha sozinho depois do primeiro login.",
+        )
+        lembrar = st.checkbox("Lembrar meu e-mail neste navegador", value=bool(email_lembrado), key="cel_lembrar_email")
         if st.button("Entrar →", key="cel_login_botao"):
             email_normalizado = email.strip().lower()
             if email_normalizado not in EMAILS_AUTORIZADOS:
@@ -137,6 +152,10 @@ def _tela_login():
             elif senha != st.secrets.get("site_password"):
                 st.error("Senha incorreta.")
             else:
+                if lembrar:
+                    st.query_params["email"] = email_normalizado
+                else:
+                    st.query_params.pop("email", None)
                 st.session_state["autenticado"] = True
                 st.session_state["email_logado"] = email_normalizado
                 st.rerun()
