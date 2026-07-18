@@ -63,20 +63,25 @@ próprio navegador (gerenciador de senhas do Chrome/Safari/etc.) já
 costuma oferecer pra salvar sozinho depois do primeiro login com
 sucesso, sem precisar de nada extra no nosso código.
 
-**Fluxo de 3 telas** (2026-07-18):
-1. **Hero + "Entrar →"** (pedido do Wallace: "pode deixar aquele dasborad
-   la inicial, clicando para entrar no contrato, com a foto do caravan e
-   talz") — reaproveita `home_hero.py` do site principal (mesma foto do
-   hangar/Caravan).
-2. **Aviso de transparência + "Concordar e continuar →"** (pedido do
+**Fluxo de 2 telas depois do login** (atualizado em 2026-07-18):
+1. **Aviso de transparência + "Concordar e continuar →"** (pedido do
    Wallace: "quero colocar um aviso tambem quando clicar e a pessoa
    concordar" — texto fixo em `AVISO_TRANSPARENCIA`, avisando que os dados
    não substituem a informação oficial do fiscal, podem ter ajuste
    manual/pontos em tratativa, e indicando contato com o fiscal em caso de
    dúvida).
-3. **Dashboard do Contrato 005** — só depois de "entrou" e "concordou"
+2. **Dashboard do Contrato 005** — só depois de "concordou"
    (`st.session_state`), sem senha por trás (é só uma tela de transição,
    não proteção de acesso).
+
+**Tela "hero" removida em 2026-07-18** — existia uma 3ª tela entre login e
+aviso (foto do Caravan/hangar reaproveitando `home_hero.py` do site
+principal + botão "Entrar →"), removida a pedido do Wallace: "depois que
+eu coloco o login, pode cair logo no aviso ntes de continuar ... sem
+passar pelo outro dasbord" — ficou redundante depois que a foto do Caravan
+passou a aparecer na própria tela de login (ver seção "Imagem na tela de
+login" abaixo). `home_hero.py` continua em uso no site principal, só não é
+mais importado neste arquivo.
 
 **Páginas escondidas nesse deploy**: nenhuma, desde 2026-07-18. Antes disso,
 "Fechamento Mensal" inteiro ficava escondido (Cômputo Mensal, Atrasos,

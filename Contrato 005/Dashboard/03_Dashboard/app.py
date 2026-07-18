@@ -17,9 +17,12 @@ Wallace — "vamos outorizar meu email ... a pessoa coloca o email dela e a
 senha é c98pamals para todo mundo"): só os e-mails em `EMAILS_AUTORIZADOS`
 conseguem entrar, todos com a mesma senha (secret `site_password`, mesma
 convenção do site principal). Fluxo completo: 1) login (e-mail + senha),
-2) hero (foto do Caravan/hangar, reaproveitando `home_hero.py` do site
-principal) + botão "Entrar", 3) aviso de transparência + botão
-"Concordar", 4) dashboard. "Fechamento Mensal" ficou escondido por um
+2) aviso de transparência + botão "Concordar", 3) dashboard — a tela
+inicial "hero" (foto do Caravan/hangar + botão "Entrar") existiu entre o
+login e o aviso até 2026-07-18, removida a pedido do Wallace: "depois que
+eu coloco o login, pode cair logo no aviso ntes de continuar ... sem
+passar pelo outro dasbord" (a foto do Caravan já aparece na própria tela
+de login agora, então virou passo redundante). "Fechamento Mensal" ficou escondido por um
 tempo (pedido do Wallace: "tira no fechamento mensal, apresntacao da rma" /
 "e tb tira a producao da ata"), mas voltou a aparecer em 2026-07-18
 ("volta ele, so nao quero apresentacao rma e ata de reuniao(no site do
@@ -60,7 +63,6 @@ RAIZ = Path(__file__).resolve().parents[3]
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
-from home_hero import render_hero
 from shared import drive_sync
 
 PAGINAS_OCULTAS = set()
@@ -297,23 +299,6 @@ def _tela_login():
             )
 
 
-def _tela_inicial():
-    _estilo_tela_inicial()
-    st.markdown(
-        """
-        <div class="cel-titulo">005CELOG2025</div>
-        <div class="cel-sub">Contrato 005/CELOG-PAMALS/2025 — acompanhamento do contrato</div>
-        """,
-        unsafe_allow_html=True,
-    )
-    render_hero()
-    _, col, _ = st.columns([3, 1, 3])
-    with col:
-        if st.button("Entrar →", key="cel_entrar"):
-            st.session_state["entrou"] = True
-            st.rerun()
-
-
 def _tela_aviso():
     _estilo_tela_inicial()
     st.markdown('<div class="cel-titulo">Antes de continuar</div>', unsafe_allow_html=True)
@@ -354,17 +339,11 @@ def _painel_historico_acessos():
 
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
-if "entrou" not in st.session_state:
-    st.session_state["entrou"] = False
 if "concordou" not in st.session_state:
     st.session_state["concordou"] = False
 
 if not st.session_state["autenticado"]:
     _tela_login()
-    st.stop()
-
-if not st.session_state["entrou"]:
-    _tela_inicial()
     st.stop()
 
 if not st.session_state["concordou"]:
