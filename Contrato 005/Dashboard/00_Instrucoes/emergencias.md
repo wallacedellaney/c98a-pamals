@@ -103,6 +103,15 @@ atraso, além de um seletor "Em aberto / Concluídas / Todas". Ainda não tem
 uso analítico definido além disso — é preparação a pedido do Wallace pra uma
 análise que ele vai explicar depois.
 
+**No site da empresa (005CELOG2025), só estatística** (2026-07-18) — pedido
+do Wallace: "emergencias totais vamos deixar so estatistica no site da
+emprsea, sem acesso a planilha geral, nem exportar". Cards (total/em
+aberto/concluídas/atraso médio) e os 2 gráficos (distribuição por situação,
+por mês) continuam aparecendo, junto com os filtros (que também afetam os
+gráficos) — só a tabela linha a linha e o botão "⬇️ Exportar (CSV)" ficam
+escondidos nesse site (`if not dados.get("modo_externo")`). No site
+principal continua tudo, sem mudança.
+
 ## Histórico e "novidades desde ontem" (a partir de 2026-07-06)
 
 Igual ao RAC (ver `Coordenadoria/00_Instrucoes/rac.md`), a base de Emergências

@@ -120,14 +120,20 @@ def render(dados):
     media_atraso = filtrado.loc[filtrado["dias_atraso"] > 0, "dias_atraso"].mean()
     c4.metric("Atraso médio p/ atrasadas (dias)", f"{media_atraso:.1f}" if pd.notna(media_atraso) else "—")
 
-    tabela = filtrado[COLUNAS_TABELA + ["em_aberto"]].copy()
-    tabela["awb"] = tabela["awb"].apply(lambda v: str(v) if pd.notna(v) else v)
-    tabela["em_aberto"] = tabela["em_aberto"].map({True: "Em aberto", False: "Concluída"})
-    tabela = tabela.rename(columns={**NOMES_COLUNAS, "em_aberto": "Status"})
-    st.dataframe(tabela, hide_index=True, width="stretch", height=460)
+    # No site da empresa (005CELOG2025), fica só estatística (cards +
+    # gráficos abaixo) — sem acesso à planilha geral (linha a linha) nem
+    # exportação. Pedido do Wallace em 2026-07-18: "emergencias totais
+    # vamos deixar so estatistica no site da emprsea, sem acesso a
+    # planilha geral, nem exportar". No site principal continua tudo.
+    if not dados.get("modo_externo"):
+        tabela = filtrado[COLUNAS_TABELA + ["em_aberto"]].copy()
+        tabela["awb"] = tabela["awb"].apply(lambda v: str(v) if pd.notna(v) else v)
+        tabela["em_aberto"] = tabela["em_aberto"].map({True: "Em aberto", False: "Concluída"})
+        tabela = tabela.rename(columns={**NOMES_COLUNAS, "em_aberto": "Status"})
+        st.dataframe(tabela, hide_index=True, width="stretch", height=460)
 
-    csv = tabela.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Exportar (CSV)", csv, file_name="emergencias_totais.csv", mime="text/csv")
+        csv = tabela.to_csv(index=False).encode("utf-8")
+        st.download_button("⬇️ Exportar (CSV)", csv, file_name="emergencias_totais.csv", mime="text/csv")
 
     with st.expander("Distribuição por situação"):
         por_situacao = filtrado["situacao"].value_counts().reset_index()
