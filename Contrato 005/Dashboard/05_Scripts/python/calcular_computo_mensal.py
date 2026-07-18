@@ -1,5 +1,5 @@
 """
-Cômputo Mensal (aba 1.2 da Pré-RNA) — calcula a matriz de aeronave x dia
+Cômputo Mensal (aba 1.2 da Pré-RMA) — calcula a matriz de aeronave x dia
 (1=montada, 0=desmontada) a partir dos registros de emergências AIFP/IPLR
 sem estoque, com rastreamento do motivo de cada negativação.
 

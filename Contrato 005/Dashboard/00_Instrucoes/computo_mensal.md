@@ -1,8 +1,8 @@
-# Instruções — Cômputo Mensal (aba 1.2 da Pré-RNA)
+# Instruções — Cômputo Mensal (aba 1.2 da Pré-RMA)
 
 ## Objetivo
 
-Calcular automaticamente, a partir dos registros de emergências já existentes no site, uma **prévia** da matriz aeronave x dia (1 = montada, 0 = desmontada) usada na aba **"1.2 - Média Mensal de Aeronaves Montadas (MMAM) e Índice Final de Desempenho (IFD)"** da planilha pessoal do Wallace **"Pré RMA C-98 \<Mês\>-\<AA\>.xlsx"** (Google Drive, pasta "Fechamentos Mensais" → "Pré-RNA").
+Calcular automaticamente, a partir dos registros de emergências já existentes no site, uma **prévia** da matriz aeronave x dia (1 = montada, 0 = desmontada) usada na aba **"1.2 - Média Mensal de Aeronaves Montadas (MMAM) e Índice Final de Desempenho (IFD)"** da planilha pessoal do Wallace **"Pré RMA C-98 \<Mês\>-\<AA\>.xlsx"** (Google Drive, pasta "Fechamentos Mensais" → "Pré-RMA").
 
 **Essa planilha é pessoal do Wallace, não está compartilhada com a conta de serviço da automação** — por isso não tem busca automática do Drive aqui (diferente das outras fontes). Por enquanto, o resultado só aparece no site (Contrato 005 → Fechamento Mensal → Cômputo Mensal) — não escreve na planilha do Google Sheets (decisão do Wallace em 2026-07-08; pode mudar depois).
 
@@ -91,7 +91,7 @@ card "MMAM prévia" em 2 lugares: Fechamento Mensal → Cômputo Mensal, e
 Análise de Período → seção "Desempenho da empresa". Explica a regra de
 cálculo (dia útil após data da informação até cancelamento/conclusão,
 sem estoque) e avisa que não considera ajustes manuais feitos direto na
-planilha oficial (Pré-RNA) nem feriados.
+planilha oficial (Pré-RMA) nem feriados.
 
 ## Matriz — % por dia e aeronaves fora do contrato (2026-07-17)
 
@@ -115,5 +115,5 @@ negativação" — clicar nelas não faz nada).
 - **A planilha "Pré RMA" não é buscada automaticamente** — só o `historico_completo_emergencias.xlsx` que alimenta o cálculo.
 - **O cálculo em si (`calcular_mes`) já roda sozinho** (a partir de 2026-07-09) — toda vez que a atualização automática de Emergências roda (seg-sex ~12h, GitHub e Mac), `extrair_emergencias.atualizar_do_drive()` também chama `calcular_mes(ano, mes)` pro mês atual, logo depois de regenerar o histórico completo. O botão "Recalcular" no site continua existindo pra rodar na hora, se quiser.
 - **Sem feriados no cálculo de dia útil** — só pula sábado/domingo. Se isso importar, avisar o Wallace pra decidir se vale manter uma lista de feriados.
-- **Não escreve na Pré-RNA real** — é só uma conferência no site. Pra automatizar a escrita de verdade, precisaria: (1) compartilhar o arquivo com a conta de serviço como Editor, e (2) construir a escrita via API do Google Sheets (mais arriscado — pode mexer em célula errada, tem que preservar fórmulas).
+- **Não escreve na Pré-RMA real** — é só uma conferência no site. Pra automatizar a escrita de verdade, precisaria: (1) compartilhar o arquivo com a conta de serviço como Editor, e (2) construir a escrita via API do Google Sheets (mais arriscado — pode mexer em célula errada, tem que preservar fórmulas).
 - **Ajustes manuais na planilha oficial não são capturados** — como visto no caso do 2739, alguém pode marcar uma aeronave como desmontada na planilha real sem que exista uma emergência formal registrada no site. A prévia sempre vai refletir só o que está nos registros de emergência.

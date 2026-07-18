@@ -58,7 +58,7 @@ def carregar_emergencias_totais():
 
 
 def carregar_computo_mensal(ano, mes):
-    """Cômputo Mensal (aba 1.2 da Pré-RNA) — matriz aeronave x dia calculada
+    """Cômputo Mensal (aba 1.2 da Pré-RMA) — matriz aeronave x dia calculada
     por calcular_computo_mensal.py. Ver 00_Instrucoes/computo_mensal.md."""
     pasta = DADOS_TRATADOS / "computo_mensal"
     mes_ref = f"{ano}-{mes:02d}"

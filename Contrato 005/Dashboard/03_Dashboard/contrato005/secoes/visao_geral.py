@@ -148,7 +148,7 @@ def render(dados):
                 st.metric("Dias calculados", f"{resumo_computo['ultimo_dia_calculado']} de {resumo_computo['ultimo_dia_mes']}")
         else:
             st.metric("MMAM prévia (mês atual)", "—")
-        st.caption("Cômputo Mensal — prévia automática da matriz de aeronaves montadas (Pré-RNA).")
+        st.caption("Cômputo Mensal — prévia automática da matriz de aeronaves montadas (Pré-RMA).")
         if st.button("Ver Fechamento →", width="stretch", key="vg_ir_fechamento"):
             _ir_para("Fechamento Mensal")
 

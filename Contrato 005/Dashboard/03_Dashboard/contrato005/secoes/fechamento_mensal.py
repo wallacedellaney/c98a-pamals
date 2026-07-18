@@ -381,7 +381,7 @@ def _computo_mensal(mes_escolhido):
     st.subheader(f"Cômputo Mensal — {_formatar_mes(mes_escolhido)}")
     st.caption(
         "Prévia calculada automaticamente a partir dos registros de emergências AIFP/IPLR sem estoque "
-        "(ver 00_Instrucoes/computo_mensal.md) — não substitui a Pré-RNA oficial, é uma conferência."
+        "(ver 00_Instrucoes/computo_mensal.md) — não substitui a Pré-RMA oficial, é uma conferência."
     )
 
     col_calc, _ = st.columns([1, 3])

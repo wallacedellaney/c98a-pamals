@@ -155,7 +155,7 @@ emergências em aberto (`Contrato 005/Dashboard/02_Dados_Tratados/historico_emer
 Ver `Contrato 005/Dashboard/00_Instrucoes/emergencias.md`. Cada rodada de
 Emergências também: (1) regenera o histórico completo (abertas+concluídas,
 usado por "Emergências Totais") e (2) recalcula o Cômputo Mensal do mês
-atual (matriz da Pré-RNA aba 1.2, dentro de "Fechamento Mensal") — nenhuma
+atual (matriz da Pré-RMA aba 1.2, dentro de "Fechamento Mensal") — nenhuma
 das duas tem agendamento próprio, andam de carona com Emergências. Ver
 `Contrato 005/Dashboard/00_Instrucoes/computo_mensal.md`.
 
