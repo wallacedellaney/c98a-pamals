@@ -88,19 +88,53 @@ def render(dados):
     col3.metric("Valor total do contrato", formatar_moeda(contrato['valor_total_contrato']))
     col4.metric("Saldo a faturar", formatar_moeda(contrato['saldo_a_faturar']))
 
+    st.divider()
+
+    # --- Situação dos pagamentos (Pago / Faturado, aguardando pagamento /
+    # Pendente / Sem lançamento — regra em extrair_pagamentos.situacao_pagamento,
+    # ver 00_Instrucoes/pagamentos.md) — pedido do Wallace em 2026-07-18:
+    # "tem coisa que so ta faturado, tem coisa que foi pago, tem a ordem de
+    # pagamento e observacoes la, vamos apresentar".
+    st.markdown("##### Situação dos pagamentos")
+    resumo_situacao = (
+        filtrado.groupby("situacao")
+        .agg(quantidade=("situacao", "size"), valor=("valor_nfs", "sum"))
+        .reset_index()
+        .sort_values("valor", ascending=False)
+    )
+    sc1, sc2 = st.columns([1, 2])
+    with sc1:
+        tabela_situacao = resumo_situacao.copy()
+        tabela_situacao["valor"] = tabela_situacao["valor"].apply(formatar_moeda)
+        st.dataframe(
+            tabela_situacao.rename(columns={"situacao": "Situação", "quantidade": "Qtd.", "valor": "Valor"}),
+            hide_index=True, width="stretch",
+        )
+    with sc2:
+        fig_situacao = px.bar(
+            resumo_situacao, x="valor", y="situacao", orientation="h",
+            color_discrete_sequence=[CATEGORICA[0]], text="quantidade",
+        )
+        fig_situacao.update_traces(texttemplate="%{text} lançamento(s)", textposition="outside")
+        fig_situacao.update_layout(xaxis_title="Valor (R$)", yaxis_title="", separators=",.")
+        layout_grafico(fig_situacao, altura=200)
+        st.plotly_chart(fig_situacao, width="stretch")
+
     # Empenho é detalhe interno de execução orçamentária — escondido no
     # deploy externo "005CELOG2025" (pedido do Wallace: "tira empenho do
     # pagamento tb, ela nao precis saber").
     modo_externo = dados.get("modo_externo", False)
     colunas_tabela = [
         "modulo", "referencia", "numero_nota_fiscal", "data", "valor_nfs",
-        "faturado", "pendente", "situacao",
+        "faturado", "pendente", "situacao", "ordem_pagamento", "observacao",
     ]
     if not modo_externo:
         colunas_tabela.append("empenho_responsavel")
 
     st.dataframe(
-        filtrado[colunas_tabela],
+        filtrado[colunas_tabela].rename(columns={
+            "ordem_pagamento": "Ordem de Pagamento", "observacao": "Observação",
+        }),
         width="stretch",
         hide_index=True,
         height=420,

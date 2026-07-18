@@ -56,7 +56,10 @@ AVISO_TRANSPARENCIA = (
     "contato com o fiscal do contrato."
 )
 
-st.set_page_config(page_title="005CELOG2025", page_icon="🛡️", layout="wide")
+st.set_page_config(
+    page_title="005CELOG2025", page_icon="🛡️", layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
 
 def _estilo_tela_inicial():
@@ -67,6 +70,7 @@ def _estilo_tela_inicial():
             footer {display: none;}
             header {display: none;}
             [data-testid="stToolbar"] {display: none;}
+            [data-testid="collapsedControl"] {display: none;}
             .stApp { background: #0B1118; color: #F3F6F9; }
             .block-container { max-width: 100% !important; padding: 2.2rem 2.5rem 2.5rem; }
             .cel-titulo {

@@ -112,6 +112,15 @@ Abertas/Totais, Análise de Período, Fechamento Mensal, Empréstimos,
 Pagamentos, Reajuste) — sem botão "← Voltar ao menu" (não existe menu
 principal nesse deploy, `render()` é chamado sem `ao_voltar`).
 
+## Bug corrigido em 2026-07-18 — seta de expandir sidebar aparecendo no hero
+
+Wallace: "no dasborad do lado do aviao tem um uma seta de um lado e do
+outro, tira isso kkk" — faltava `initial_sidebar_state="collapsed"` no
+`st.set_page_config()` deste app (o site principal já tinha) — sem isso,
+o Streamlit reserva a barra lateral e mostra uma setinha de expandir no
+canto, bem ao lado do hero. Corrigido (+ CSS `[data-testid="collapsedControl"]
+{display: none;}` de reforço).
+
 ## Testado (2026-07-18)
 
 Via `AppTest`: dashboard completo carrega direto (sem tela de login), sem

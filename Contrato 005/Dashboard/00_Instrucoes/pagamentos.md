@@ -72,6 +72,17 @@ Salvar a lista de empenhos também como aba própria (`Empenhos`) no arquivo tra
 * **Resumo rápido por módulo**: 3 botões (Módulo 1/2/3); ao clicar, mostra o total de Valor das NFs/Faturado/Pendente só daquele módulo, sem precisar filtrar a tabela.
 * **Empenhos**: seção própria dentro da tela de Pagamentos, com busca por número de empenho (NE) e totais de valor empenhado/saldo — escondida no deploy externo "005CELOG2025" (ver `site_005celog2025.md`).
 
+## Situação dos pagamentos + Ordem de Pagamento/Observação (2026-07-18)
+
+Pedido do Wallace: "tem coisa que so ta faturado, tem coisa que foi pago,
+tem a ordem de pagamento e observacoes la, vamos apresentar". A regra de
+`situacao_pagamento()` (Pago / Faturado, aguardando pagamento / Pendente /
+Sem lançamento) já existia na extração, mas não tinha um resumo visual —
+agora tem uma seção "Situação dos pagamentos" (tabela quantidade/valor por
+situação + gráfico de barras horizontal) logo antes da tabela principal.
+A tabela principal ganhou 2 colunas que já existiam na fonte mas não
+apareciam: **Ordem de Pagamento** e **Observação**.
+
 ## Bug corrigido em 2026-07-18 — formatação de moeda (separador confuso)
 
 Wallace: "o pedenten nos dois dasbord ta assim 40,817... parece que é 40
