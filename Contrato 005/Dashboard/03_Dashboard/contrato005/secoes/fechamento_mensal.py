@@ -64,21 +64,28 @@ def render(dados):
     )
 
     st.divider()
-    aba_computo, aba_atrasos, aba_apresentacao, aba_ata = st.tabs(
-        ["Cômputo Mensal", "Atrasos", "Apresentação (RMA)", "Ata de Reunião"]
-    )
+
+    # "Apresentação (RMA)" e "Ata de Reunião" ficam de fora no deploy da
+    # empresa (005CELOG2025) — pedido do Wallace em 2026-07-18: "volta ele
+    # [Fechamento Mensal], so nao quero apresentacao rma e ata de
+    # reuniao(no site do contrato), no outro c98 geral tudo". Cômputo
+    # Mensal e Atrasos continuam visíveis nos 2 sites.
+    if dados.get("modo_externo"):
+        aba_computo, aba_atrasos = st.tabs(["Cômputo Mensal", "Atrasos"])
+    else:
+        aba_computo, aba_atrasos, aba_apresentacao, aba_ata = st.tabs(
+            ["Cômputo Mensal", "Atrasos", "Apresentação (RMA)", "Ata de Reunião"]
+        )
+        with aba_apresentacao:
+            _apresentacao_rma(mes_escolhido)
+        with aba_ata:
+            _ata_reuniao(mes_escolhido)
 
     with aba_computo:
         _computo_mensal(mes_escolhido)
 
     with aba_atrasos:
         _atrasos(dados, mes_escolhido)
-
-    with aba_apresentacao:
-        _apresentacao_rma(mes_escolhido)
-
-    with aba_ata:
-        _ata_reuniao(mes_escolhido)
 
 
 def _mostrar_motivo_celula(matricula, dia, valor, df_motivos):

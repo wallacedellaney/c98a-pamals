@@ -19,10 +19,14 @@ conseguem entrar, todos com a mesma senha (secret `site_password`, mesma
 convenção do site principal). Fluxo completo: 1) login (e-mail + senha),
 2) hero (foto do Caravan/hangar, reaproveitando `home_hero.py` do site
 principal) + botão "Entrar", 3) aviso de transparência + botão
-"Concordar", 4) dashboard. "Fechamento Mensal" (Cômputo Mensal/Atrasos/
-Apresentação RMA/Ata de Reunião) fica **escondido** nesse deploy —
-conteúdo interno, não pra empresa ver (pedido do Wallace: "tira no
-fechamento mensal, apresntacao da rma" / "e tb tira a producao da ata").
+"Concordar", 4) dashboard. "Fechamento Mensal" ficou escondido por um
+tempo (pedido do Wallace: "tira no fechamento mensal, apresntacao da rma" /
+"e tb tira a producao da ata"), mas voltou a aparecer em 2026-07-18
+("volta ele, so nao quero apresentacao rma e ata de reuniao(no site do
+contrato), no outro c98 geral tudo") — agora só as abas "Apresentação
+(RMA)" e "Ata de Reunião" ficam escondidas dentro dele (ver
+`dados["modo_externo"]` em `secoes/fechamento_mensal.py`); "Cômputo
+Mensal" e "Atrasos" ficam visíveis nos 2 sites.
 
 Precisa de secrets PRÓPRIOS neste deploy (Streamlit Cloud → Settings →
 Secrets deste app, separado do site principal):
@@ -50,7 +54,7 @@ if str(RAIZ) not in sys.path:
 
 from home_hero import render_hero
 
-PAGINAS_OCULTAS = {"Fechamento Mensal"}
+PAGINAS_OCULTAS = set()
 
 # E-mails autorizados a entrar — pedido do Wallace em 2026-07-18. Todos
 # usam a MESMA senha (secret "site_password"), o e-mail só funciona como

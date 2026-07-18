@@ -77,12 +77,19 @@ sucesso, sem precisar de nada extra no nosso código.
    (`st.session_state`), sem senha por trás (é só uma tela de transição,
    não proteção de acesso).
 
-**Páginas escondidas nesse deploy**: "Fechamento Mensal" (Cômputo Mensal,
-Atrasos, Apresentação RMA, Ata de Reunião) — pedido do Wallace: "tira no
-fechamento mensal, apresntacao da rma" / "e tb tira a producao da ata".
-`contrato_app.render()` ganhou o parâmetro `paginas_ocultas` (só usado por
-este deploy — o site principal continua chamando `render()` sem esse
-parâmetro, mostrando tudo).
+**Páginas escondidas nesse deploy**: nenhuma, desde 2026-07-18. Antes disso,
+"Fechamento Mensal" inteiro ficava escondido (Cômputo Mensal, Atrasos,
+Apresentação RMA, Ata de Reunião) — pedido do Wallace: "tira no fechamento
+mensal, apresntacao da rma" / "e tb tira a producao da ata". Ele voltou
+atrás: "volta ele, so nao quero apresentacao rma e ata de reuniao(no site
+do contrato), no outro c98 geral tudo" — agora "Fechamento Mensal" aparece
+normalmente nos 2 sites, só que **dentro** dele as abas "Apresentação
+(RMA)" e "Ata de Reunião" ficam escondidas neste deploy (só "Cômputo
+Mensal" e "Atrasos" aparecem aqui); no site principal continuam as 4 abas.
+`contrato_app.render()` mantém o parâmetro `paginas_ocultas` (hoje sem uso,
+nenhuma página inteira é escondida — deixado no código caso precise
+esconder outra página inteira no futuro); o corte fino das 2 abas é feito
+dentro de `secoes/fechamento_mensal.py`, checando `dados["modo_externo"]`.
 
 **Detalhe interno escondido dentro das páginas que continuam visíveis**
 (`contrato_app.render(..., modo_externo=True)`, gravado em
