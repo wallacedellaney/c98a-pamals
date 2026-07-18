@@ -14,17 +14,20 @@ repositório/dados — não precisa de nenhuma automação nova).
 
 **Sem tela de login por enquanto** (decisão do Wallace em 2026-07-18: "por
 enquanto sem senha, o dela vou pensar uma forma mais segura com email e
-talz") — só uma tela inicial com o hero (foto do Caravan/hangar, pedido do
-Wallace: "pode deixar aquele dasborad la inicial, clicando para entrar no
-contrato, com a foto do caravan e talz", reaproveitando `home_hero.py` do
-site principal) e um botão "Entrar".
+talz") — o fluxo é: 1) hero (foto do Caravan/hangar, reaproveitando
+`home_hero.py` do site principal) + botão "Entrar", 2) aviso de
+transparência + botão "Concordar", 3) dashboard. "Fechamento Mensal"
+(Cômputo Mensal/Atrasos/Apresentação RMA/Ata de Reunião) fica **escondido**
+nesse deploy — conteúdo interno, não pra empresa ver (pedido do Wallace:
+"tira no fechamento mensal, apresntacao da rma" / "e tb tira a producao da
+ata").
 
 Precisa de secret PRÓPRIO neste deploy (Streamlit Cloud → Settings →
 Secrets deste app, separado do site principal):
 - `GOOGLE_SERVICE_ACCOUNT_JSON` — mesma credencial do Google usada no site
   principal, precisa ser configurada de novo aqui (Secrets não são
-  compartilhados entre apps do Streamlit Cloud) — necessária pros botões
-  "Apresentação (RMA)"/"Ata de Reunião"/"Atualizar dados".
+  compartilhados entre apps do Streamlit Cloud) — necessária pro botão
+  "Atualizar dados".
 """
 
 import sys
@@ -36,18 +39,27 @@ from contrato_app import render
 
 RAIZ = Path(__file__).resolve().parents[3]
 # Permite `from shared import drive_sync, estado` (usado por
-# atualizar_drive.py e pelos botões de Apresentação/Ata) e `import
-# home_hero` (hero da tela inicial), mesmo rodando este app isolado, sem o
-# C-98A PAMALS/app.py principal.
+# atualizar_drive.py) e `import home_hero` (hero da tela inicial), mesmo
+# rodando este app isolado, sem o C-98A PAMALS/app.py principal.
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 from home_hero import render_hero
 
+PAGINAS_OCULTAS = {"Fechamento Mensal"}
+
+AVISO_TRANSPARENCIA = (
+    "As informações aqui buscam melhorar a transparência junto à empresa — "
+    "não substituem as informações oficiais passadas pelo fiscal do "
+    "contrato. Podem existir ajustes manuais ou pontos ainda em tratativa. "
+    "Os dados são atualizados automaticamente. Em caso de dúvidas, entre em "
+    "contato com o fiscal do contrato."
+)
+
 st.set_page_config(page_title="005CELOG2025", page_icon="🛡️", layout="wide")
 
 
-def _tela_inicial():
+def _estilo_tela_inicial():
     st.markdown(
         """
         <style>
@@ -64,6 +76,11 @@ def _tela_inicial():
             .cel-sub {
                 text-align: center; color: #A6B2C1; font-size: 14.5px; margin-bottom: 26px;
             }
+            .cel-aviso {
+                background: rgba(244,166,42,0.06); border: 1px solid rgba(244,166,42,0.3);
+                border-radius: 14px; padding: 1.3rem 1.6rem; color: #D7DEE5;
+                font-size: 14.5px; line-height: 1.7; max-width: 640px; margin: 0 auto;
+            }
             div.stButton > button {
                 width: 100%; height: 50px; border-radius: 12px;
                 border: 1px solid rgba(244,166,42,0.6);
@@ -74,6 +91,15 @@ def _tela_inicial():
                 background: #F4A62A; color: #0B1118; border-color: #F4A62A;
             }
         </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _tela_inicial():
+    _estilo_tela_inicial()
+    st.markdown(
+        """
         <div class="cel-titulo">005CELOG2025</div>
         <div class="cel-sub">Contrato 005/CELOG-PAMALS/2025 — acompanhamento do contrato</div>
         """,
@@ -87,11 +113,28 @@ def _tela_inicial():
             st.rerun()
 
 
+def _tela_aviso():
+    _estilo_tela_inicial()
+    st.markdown('<div class="cel-titulo">Antes de continuar</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="cel-aviso">{AVISO_TRANSPARENCIA}</div>', unsafe_allow_html=True)
+    _, col, _ = st.columns([1, 1, 1])
+    with col:
+        if st.button("Concordar e continuar →", key="cel_concordar"):
+            st.session_state["concordou"] = True
+            st.rerun()
+
+
 if "entrou" not in st.session_state:
     st.session_state["entrou"] = False
+if "concordou" not in st.session_state:
+    st.session_state["concordou"] = False
 
 if not st.session_state["entrou"]:
     _tela_inicial()
     st.stop()
 
-render()
+if not st.session_state["concordou"]:
+    _tela_aviso()
+    st.stop()
+
+render(paginas_ocultas=PAGINAS_OCULTAS)

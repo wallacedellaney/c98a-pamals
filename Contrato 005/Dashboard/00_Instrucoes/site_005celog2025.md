@@ -38,12 +38,27 @@ quiser adicionar autenticação de verdade (por e-mail/domínio da empresa,
 por exemplo), é só pedir — o padrão de tela de login já existe no site
 principal (`C-98A PAMALS/app.py`) pra copiar.
 
-**Tela inicial com hero + botão "Entrar"** (pedido do Wallace: "pode deixar
-aquele dasborad la inicial, clicando para entrar no contrato, com a foto
-do caravan e talz") — reaproveita `home_hero.py` do site principal (mesma
-foto do hangar/Caravan), com um botão "Entrar →" abaixo que leva pro
-dashboard do Contrato 005 (controlado por `st.session_state["entrou"]`,
-sem senha nenhuma por trás — é só uma tela de transição, não proteção).
+**Fluxo de 3 telas** (2026-07-18):
+1. **Hero + "Entrar →"** (pedido do Wallace: "pode deixar aquele dasborad
+   la inicial, clicando para entrar no contrato, com a foto do caravan e
+   talz") — reaproveita `home_hero.py` do site principal (mesma foto do
+   hangar/Caravan).
+2. **Aviso de transparência + "Concordar e continuar →"** (pedido do
+   Wallace: "quero colocar um aviso tambem quando clicar e a pessoa
+   concordar" — texto fixo em `AVISO_TRANSPARENCIA`, avisando que os dados
+   não substituem a informação oficial do fiscal, podem ter ajuste
+   manual/pontos em tratativa, e indicando contato com o fiscal em caso de
+   dúvida).
+3. **Dashboard do Contrato 005** — só depois de "entrou" e "concordou"
+   (`st.session_state`), sem senha por trás (é só uma tela de transição,
+   não proteção de acesso).
+
+**Páginas escondidas nesse deploy**: "Fechamento Mensal" (Cômputo Mensal,
+Atrasos, Apresentação RMA, Ata de Reunião) — pedido do Wallace: "tira no
+fechamento mensal, apresntacao da rma" / "e tb tira a producao da ata".
+`contrato_app.render()` ganhou o parâmetro `paginas_ocultas` (só usado por
+este deploy — o site principal continua chamando `render()` sem esse
+parâmetro, mostrando tudo).
 
 ## Configuração no Streamlit Cloud (ação do Wallace)
 

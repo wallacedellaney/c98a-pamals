@@ -58,9 +58,18 @@ def _atualizar_dados():
         st.error(f"Erro ao atualizar dados:\n\n{resultado.stderr or resultado.stdout}")
 
 
-def render(ao_voltar=None):
-    if "pagina" not in st.session_state:
-        st.session_state["pagina"] = "Visão Geral"
+def render(ao_voltar=None, paginas_ocultas=()):
+    """`paginas_ocultas`: nomes de PAGINAS pra não mostrar (nem no menu nem
+    na navegação) — usado pelo deploy separado "005CELOG2025" (acesso da
+    empresa) pra esconder "Fechamento Mensal" (Cômputo Mensal/Atrasos/
+    Apresentação RMA/Ata de Reunião são conteúdo interno, não pra empresa
+    ver — pedido do Wallace em 2026-07-18: "tira no fechamento mensal,
+    apresntacao da rma"). O site principal continua chamando render() sem
+    esse parâmetro, mostrando tudo."""
+    paginas = {k: v for k, v in PAGINAS.items() if k not in paginas_ocultas}
+
+    if "pagina" not in st.session_state or st.session_state["pagina"] not in paginas:
+        st.session_state["pagina"] = next(iter(paginas))
 
     dados = carregar_tudo()
 
@@ -144,11 +153,11 @@ def render(ao_voltar=None):
     data_global.render_seletor_global(dados)
     st.divider()
 
-    PAGINAS[st.session_state["pagina"]].render(dados)
+    paginas[st.session_state["pagina"]].render(dados)
 
     st.markdown('<div class="c98-nav"></div>', unsafe_allow_html=True)
-    nav_cols = st.columns(len(PAGINAS))
-    for col, nome in zip(nav_cols, PAGINAS):
+    nav_cols = st.columns(len(paginas))
+    for col, nome in zip(nav_cols, paginas):
         with col:
             ativo = nome == st.session_state["pagina"]
             if st.button(nome, key=f"nav_{nome}", width="stretch",
