@@ -219,6 +219,7 @@ data_snapshot,tipo_registro,modulo,referencia,numero_recibo,numero_nota_fiscal,v
 2026-07-18,mensal,1.0,ABR/26,,33.0,1108954.4358333333,1108954.4358333333,,Pago
 2026-07-18,mensal,1.0,REAJUSTE,,29.0,218206.1,218206.1,,Pago
 2026-07-18,mensal,1.0,MAIO/26,,40.0,1549250.84,1549250.84,,Pago
+2026-07-18,mensal,1.0,JUNHO/26,,,,1340865.98,,Pago
 2026-07-18,orcamento,2.0,Módulo II – Parcial Orçamento 10 (FAB 2728),,402.0,188246.17,188246.17,,Pago
 2026-07-18,orcamento,2.0,Módulo II – Orçamento 06 (Hélice),46.0,447.0,112720.77,112720.77,,Pago
 2026-07-18,orcamento,2.0,Módulo II – Restante do Orçamento 10.2 (FAB 2721),002-004-005,529.0,378307.61,378307.61,,Pago
@@ -230,4 +231,4 @@ data_snapshot,tipo_registro,modulo,referencia,numero_recibo,numero_nota_fiscal,v
 2026-07-18,orcamento,2.0,Módulo II – Orçamento 18 ,252.0,360.0,11372.9,11372.9,,Pago
 2026-07-18,orcamento,2.0,Módulo II – Orçamento 01/26,,,,,15854.78,Pendente
 2026-07-18,orcamento,2.0,Módulo II – Orçamento 03/26,,,,,24962.38,Pendente
-2026-07-18,orcamento,3.0,Módulo III – Orçamento 17 Manuais,,1465.0,27801.11,27801.11,,"Faturado, aguardando pagamento"
+2026-07-18,orcamento,3.0,Módulo III – Orçamento 17 Manuais,,1465.0,27801.11,27801.11,,Pago
