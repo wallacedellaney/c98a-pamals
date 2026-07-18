@@ -27,29 +27,46 @@ arquivo principal diferente:
 - Site da empresa ("005CELOG2025"): `Contrato 005/Dashboard/03_Dashboard/app.py`.
 
 Esse segundo arquivo (`03_Dashboard/app.py`) já existia como "runner
-standalone" (fallback pra rodar só o Contrato 005 localmente) — só ganhou
-uma tela de senha própria (2026-07-18), igual ao site principal, mas com
-secret separado.
+standalone" (fallback pra rodar só o Contrato 005 localmente).
+
+**Sem senha por enquanto** (decisão do Wallace em 2026-07-18: "por
+enquanto sem senha, o dela vou pensar uma forma mais segura com email e
+talz") — chegou a ter uma tela de login própria (secret
+`site_password_005celog2025`) por um instante durante a configuração,
+removida antes do primeiro deploy real a pedido do Wallace. Se um dia
+quiser adicionar autenticação de verdade (por e-mail/domínio da empresa,
+por exemplo), é só pedir — o padrão de tela de login já existe no site
+principal (`C-98A PAMALS/app.py`) pra copiar.
+
+**Tela inicial com hero + botão "Entrar"** (pedido do Wallace: "pode deixar
+aquele dasborad la inicial, clicando para entrar no contrato, com a foto
+do caravan e talz") — reaproveita `home_hero.py` do site principal (mesma
+foto do hangar/Caravan), com um botão "Entrar →" abaixo que leva pro
+dashboard do Contrato 005 (controlado por `st.session_state["entrou"]`,
+sem senha nenhuma por trás — é só uma tela de transição, não proteção).
 
 ## Configuração no Streamlit Cloud (ação do Wallace)
+
+Nome do app escolhido: **`contrato005`** (o Streamlit Cloud não aceita
+nome/URL começando com número, por isso não deu pra usar "005celog2025"
+como nome do app — o título "005CELOG2025" continua aparecendo dentro do
+site, isso não muda).
 
 1. Criar um **novo app** no Streamlit Cloud (share.streamlit.io → "New app").
 2. Repositório: o mesmo do site principal (`wallacedellaney/c98a-pamals`).
 3. Branch: `main`.
 4. **Main file path**: `Contrato 005/Dashboard/03_Dashboard/app.py` (não
    `app.py` da raiz — esse é o site principal).
-5. Nome do app / URL: algo com "005celog2025" (o Streamlit Cloud gera a URL
-   a partir do nome escolhido).
-6. **Secrets deste app** (Settings → Secrets — **não são compartilhados**
-   com o site principal, precisam ser colados de novo aqui):
+5. Nome do app / URL: `contrato005`.
+6. **Secret deste app** (Settings → Secrets — **não é compartilhado** com
+   o site principal, precisa ser colado de novo aqui):
    ```
-   site_password_005celog2025 = "escolher uma senha aqui"
    GOOGLE_SERVICE_ACCOUNT_JSON = '''
    { ... mesmo conteúdo já usado no site principal ... }
    '''
    ```
-   O `GOOGLE_SERVICE_ACCOUNT_JSON` é necessário pros botões "🔄 Atualizar
-   dados", "Apresentação (RMA)" e "Ata de Reunião" (ver
+   Necessário pros botões "🔄 Atualizar dados", "Apresentação (RMA)" e
+   "Ata de Reunião" (ver
    `atualizacoes.md`/`apresentacao_rma.md`/`ata_reuniao.md`) — sem ele,
    esses botões dão o mesmo erro de credencial já visto e corrigido no
    site principal.
@@ -73,5 +90,5 @@ principal nesse deploy, `render()` é chamado sem `ao_voltar`).
 
 ## Testado (2026-07-18)
 
-Via `AppTest`: tela de login carrega sem erro, e o dashboard completo
-(pós-senha) carrega sem exceção.
+Via `AppTest`: dashboard completo carrega direto (sem tela de login), sem
+exceção.

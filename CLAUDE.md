@@ -103,8 +103,9 @@ A empresa (VEE ONE) tem acesso a um **deploy separado no Streamlit Cloud**,
 mesmo repositório do GitHub, mas com main file path
 `Contrato 005/Dashboard/03_Dashboard/app.py` em vez do `app.py` da raiz —
 ela só vê o Contrato 005, nunca Coordenadoria/Projetos (processo Streamlit
-totalmente separado, não é só senha escondendo tela). Senha e credencial
-do Google são secrets próprios desse segundo app (não compartilhados com o
-site principal). Atualiza sozinho, sem configuração extra — mesmo
-repositório, mesmo ciclo automático de 2 em 2h. Ver
+totalmente separado, não é só senha escondendo tela). Sem senha por
+enquanto (decisão do Wallace — vai pensar um esquema melhor, tipo por
+e-mail, depois); a credencial do Google é secret próprio desse segundo app
+(não compartilhado com o site principal). Atualiza sozinho, sem
+configuração extra — mesmo repositório, mesmo ciclo automático de 2 em 2h. Ver
 `Contrato 005/Dashboard/00_Instrucoes/site_005celog2025.md`.

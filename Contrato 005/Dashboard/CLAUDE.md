@@ -5,10 +5,10 @@
 > 005/CELOG/2025"). Ver `C-98A PAMALS/CLAUDE.md` para o comando "executar"
 > correto — ele sobe `C-98A PAMALS/app.py`, não o `app.py` desta pasta.
 > **Desde 2026-07-18, `03_Dashboard/app.py` também é o ponto de entrada de
-> um segundo deploy real no Streamlit Cloud** ("005CELOG2025", acesso da
-> empresa VEE ONE só a esta área — senha própria, separada do site
-> principal) — não é mais só um fallback de teste local. Ver
-> `00_Instrucoes/site_005celog2025.md`.
+> um segundo deploy real no Streamlit Cloud** ("005CELOG2025", nome do app
+> `contrato005`, acesso da empresa VEE ONE só a esta área — sem senha por
+> enquanto, decisão do Wallace) — não é mais só um fallback de teste local.
+> Ver `00_Instrucoes/site_005celog2025.md`.
 
 ## Comando "executar" / "roda"
 

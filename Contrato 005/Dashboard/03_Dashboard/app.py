@@ -12,9 +12,15 @@ tela. Ver 00_Instrucoes/site_005celog2025.md.
 Atualiza sozinho, no mesmo ciclo automático de 2 em 2h já existente (mesmo
 repositório/dados — não precisa de nenhuma automação nova).
 
-Precisa de secrets PRÓPRIOS neste deploy (Streamlit Cloud → Settings →
+**Sem tela de login por enquanto** (decisão do Wallace em 2026-07-18: "por
+enquanto sem senha, o dela vou pensar uma forma mais segura com email e
+talz") — só uma tela inicial com o hero (foto do Caravan/hangar, pedido do
+Wallace: "pode deixar aquele dasborad la inicial, clicando para entrar no
+contrato, com a foto do caravan e talz", reaproveitando `home_hero.py` do
+site principal) e um botão "Entrar".
+
+Precisa de secret PRÓPRIO neste deploy (Streamlit Cloud → Settings →
 Secrets deste app, separado do site principal):
-- `site_password_005celog2025` — senha de acesso desta área.
 - `GOOGLE_SERVICE_ACCOUNT_JSON` — mesma credencial do Google usada no site
   principal, precisa ser configurada de novo aqui (Secrets não são
   compartilhados entre apps do Streamlit Cloud) — necessária pros botões
@@ -30,15 +36,18 @@ from contrato_app import render
 
 RAIZ = Path(__file__).resolve().parents[3]
 # Permite `from shared import drive_sync, estado` (usado por
-# atualizar_drive.py e pelos botões de Apresentação/Ata) mesmo rodando este
-# app isolado, sem o C-98A PAMALS/app.py principal.
+# atualizar_drive.py e pelos botões de Apresentação/Ata) e `import
+# home_hero` (hero da tela inicial), mesmo rodando este app isolado, sem o
+# C-98A PAMALS/app.py principal.
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
+
+from home_hero import render_hero
 
 st.set_page_config(page_title="005CELOG2025", page_icon="🛡️", layout="wide")
 
 
-def _tela_login():
+def _tela_inicial():
     st.markdown(
         """
         <style>
@@ -46,52 +55,43 @@ def _tela_login():
             footer {display: none;}
             header {display: none;}
             [data-testid="stToolbar"] {display: none;}
-            .stApp {
-                background:
-                    radial-gradient(circle at 8% 20%, rgba(245, 158, 11, 0.16), transparent 28%),
-                    radial-gradient(circle at 93% 88%, rgba(245, 158, 11, 0.18), transparent 26%),
-                    radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.9), transparent 34%),
-                    linear-gradient(135deg, #05070b 0%, #0b1117 42%, #111827 100%);
-                color: #f9fafb;
+            .stApp { background: #0B1118; color: #F3F6F9; }
+            .block-container { max-width: 1100px; padding-top: 3rem; }
+            .cel-titulo {
+                text-align: center; font-size: 28px; font-weight: 900;
+                letter-spacing: 2px; color: #F3F6F9; margin-bottom: 6px;
             }
-            .login-titulo { text-align: center; font-size: 26px; font-weight: 900; letter-spacing: 2px; margin-top: 14vh; }
-            .login-sub { text-align: center; color: #9ca3af; font-size: 14px; margin-bottom: 24px; }
+            .cel-sub {
+                text-align: center; color: #A6B2C1; font-size: 14.5px; margin-bottom: 26px;
+            }
             div.stButton > button {
-                width: 100%;
-                border-radius: 14px;
-                border: 1px solid rgba(245, 158, 11, 0.75);
-                background: rgba(15, 23, 42, 0.7);
-                color: #f59e0b;
-                font-weight: 800;
+                width: 100%; height: 50px; border-radius: 12px;
+                border: 1px solid rgba(244,166,42,0.6);
+                background: rgba(244,166,42,0.08); color: #F4A62A;
+                font-weight: 800; font-size: 15px; margin-top: 22px;
             }
             div.stButton > button:hover {
-                background: #f59e0b;
-                color: #111827;
-                border: 1px solid #f59e0b;
+                background: #F4A62A; color: #0B1118; border-color: #F4A62A;
             }
         </style>
-        <div class="login-titulo">005CELOG2025</div>
-        <div class="login-sub">Acesso restrito — digite a senha pra continuar.</div>
+        <div class="cel-titulo">005CELOG2025</div>
+        <div class="cel-sub">Contrato 005/CELOG-PAMALS/2025 — acompanhamento do contrato</div>
         """,
         unsafe_allow_html=True,
     )
+    render_hero()
     _, col, _ = st.columns([1, 1, 1])
     with col:
-        senha = st.text_input("Senha", type="password", key="login_senha", label_visibility="collapsed",
-                               placeholder="Senha de acesso")
-        if st.button("Entrar", key="login_botao"):
-            if senha == st.secrets.get("site_password_005celog2025"):
-                st.session_state["autenticado"] = True
-                st.rerun()
-            else:
-                st.error("Senha incorreta.")
+        if st.button("Entrar →", key="cel_entrar"):
+            st.session_state["entrou"] = True
+            st.rerun()
 
 
-if "autenticado" not in st.session_state:
-    st.session_state["autenticado"] = False
+if "entrou" not in st.session_state:
+    st.session_state["entrou"] = False
 
-if not st.session_state["autenticado"]:
-    _tela_login()
+if not st.session_state["entrou"]:
+    _tela_inicial()
     st.stop()
 
 render()
