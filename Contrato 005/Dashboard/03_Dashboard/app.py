@@ -45,6 +45,7 @@ Secrets deste app, separado do site principal):
   pra wallacedellaney@gmail.com, num expander no fim do dashboard.
 """
 
+import base64
 import sys
 from pathlib import Path
 
@@ -161,61 +162,139 @@ def _estilo_tela_inicial():
     )
 
 
-CAMINHO_IMAGEM_LOGIN = RAIZ / "imagens" / "login_hero_c98.png"
+# Fundo da tela de login (2026-07-18) — 2ª versão, pedido do Wallace: "ta
+# no ar? ... ficou ruim, coloquei outra imagem la agora, a mais recente,
+# faz naquele padrao, que que tenta alinhas as posicoes do login para
+# ficar igual da imgae, que 100 identico". A imagem original
+# (`login_fonte_2026-07-18.png`) é um mockup completo com o texto/título já
+# "queimado" na foto E um cartão de login desenhado à direita (não
+# funcional) — recortei só a parte esquerda (foto + título + selo
+# "005/CELOG/2025", tudo já parte da imagem) em `login_bg_c98a.jpg` e
+# recriei o cartão da direita com componentes de verdade do Streamlit,
+# estilizados pra ficar o mais parecido possível com o desenho original
+# (borda dourada com cantos em L, cabeçalho "ACESSO RESTRITO" com cadeado,
+# rótulos maiúsculos, botão "ACESSAR PORTAL →", rodapé com escudo).
+CAMINHO_IMAGEM_LOGIN_BG = RAIZ / "imagens" / "login_bg_c98a.jpg"
+
+
+@st.cache_data
+def _fundo_login_base64():
+    if not CAMINHO_IMAGEM_LOGIN_BG.exists():
+        return None
+    return base64.b64encode(CAMINHO_IMAGEM_LOGIN_BG.read_bytes()).decode()
 
 
 def _tela_login():
     _estilo_tela_inicial()
-    # Imagem do C-98 Caravan colocada pelo Wallace em 2026-07-18
-    # ("imagens/c98 login") — recortada da metade esquerda de um mockup
-    # completo que ele gerou (a metade direita já era um formulário de
-    # login "fake", virou só referência de layout) e salva à parte em
-    # `imagens/login_hero_c98.png` pra usar do lado do formulário de
-    # verdade, sem duplicar campos de login desenhados como imagem.
-    col_img, col_form = st.columns([1.05, 1], gap="large")
-    with col_img:
-        if CAMINHO_IMAGEM_LOGIN.exists():
-            st.image(str(CAMINHO_IMAGEM_LOGIN), width="stretch")
-    with col_form:
-        st.markdown(
-            """
-            <div class="cel-titulo">005CELOG2025</div>
-            <div class="cel-sub">Acesso restrito — e-mail autorizado + senha.</div>
-            """,
-            unsafe_allow_html=True,
-        )
-        # "Lembrar meu e-mail" (pedido do Wallace em 2026-07-18: "coloca opcao
-        # para a pessoa salva o email dela") — guardado em st.query_params (fica
-        # na própria URL, que o navegador lembra sozinho se a pessoa deixar
-        # favoritada/salva) e usado como valor inicial do campo na próxima
-        # visita. Só o e-mail — a senha NÃO é guardada em lugar nenhum por nós
-        # (não é seguro deixar senha em URL); quem quiser que o navegador
-        # preencha a senha sozinho, o campo já é um `type="password"` padrão,
-        # que os gerenciadores de senha do Chrome/Safari/etc. já oferecem
-        # salvar sozinhos ao fazer login com sucesso.
-        email_lembrado = st.query_params.get("email", "")
+    st.markdown(
+        """
+        <style>
+            .login-corner-tl, .login-corner-br {
+                position: fixed; width: 34px; height: 34px; z-index: 999; pointer-events: none;
+                border-color: rgba(244,166,42,0.55);
+            }
+            .login-corner-tl { top: 18px; left: 18px; border-top: 2px solid; border-left: 2px solid; }
+            .login-corner-br { bottom: 18px; right: 18px; border-bottom: 2px solid; border-right: 2px solid; }
+            .login-coords {
+                position: fixed; bottom: 22px; right: 60px; z-index: 999; pointer-events: none;
+                color: rgba(166,178,193,0.55); font-size: 11.5px; letter-spacing: 0.06em; font-family: monospace;
+            }
+            .login-bg {
+                width: 100%; aspect-ratio: 1090 / 941; border-radius: 18px;
+                background-size: cover; background-position: center; background-repeat: no-repeat;
+            }
+            div[class*="st-key-login_card"] {
+                background: rgba(13,18,26,0.88); border: 1px solid rgba(244,166,42,0.55);
+                border-radius: 18px; padding: 1.8rem 2rem 1.6rem; position: relative;
+            }
+            div[class*="st-key-login_card"]::before, div[class*="st-key-login_card"]::after {
+                content: ""; position: absolute; width: 22px; height: 22px; border-color: #F4A62A;
+            }
+            div[class*="st-key-login_card"]::before { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; border-top-left-radius: 18px; }
+            div[class*="st-key-login_card"]::after { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; border-bottom-right-radius: 18px; }
+            .login-card-header { display: flex; align-items: flex-start; gap: 0.7rem; margin-bottom: 0.3rem; }
+            .login-card-header .icone { font-size: 20px; margin-top: 2px; }
+            .login-card-header .titulo { color: #F4A62A; font-weight: 800; font-size: 15px; letter-spacing: 0.06em; }
+            .login-card-header .sub { color: #A6B2C1; font-size: 13px; margin-top: 2px; }
+            .login-card-divisor { text-align: center; color: rgba(244,166,42,0.5); margin: 0.9rem 0 1.1rem; }
+            .login-rotulo {
+                color: #A6B2C1; font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+                margin: 0.2rem 0 0.3rem;
+            }
+            .login-rodape { text-align: center; color: #7C8896; font-size: 11.5px; margin-top: 1.4rem; line-height: 1.6; }
+        </style>
+        <div class="login-corner-tl"></div>
+        <div class="login-corner-br"></div>
+        <div class="login-coords">15°47'18"S 47°52'40"W</div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-        email = st.text_input("E-mail", value=email_lembrado, key="cel_login_email", placeholder="seu e-mail")
-        senha = st.text_input(
-            "Senha", type="password", key="cel_login_senha", placeholder="Senha de acesso",
-            help="O navegador pode oferecer pra salvar essa senha sozinho depois do primeiro login.",
-        )
-        lembrar = st.checkbox("Lembrar meu e-mail neste navegador", value=bool(email_lembrado), key="cel_lembrar_email")
-        if st.button("Entrar →", key="cel_login_botao"):
-            email_normalizado = email.strip().lower()
-            if email_normalizado not in EMAILS_AUTORIZADOS:
-                st.error("E-mail não autorizado. Fale com o fiscal do contrato pra liberar o acesso.")
-            elif senha != st.secrets.get("site_password"):
-                st.error("Senha incorreta.")
-            else:
-                if lembrar:
-                    st.query_params["email"] = email_normalizado
+    col_img, col_form = st.columns([1.15, 1], gap="large")
+    with col_img:
+        fundo = _fundo_login_base64()
+        if fundo:
+            st.markdown(
+                f'<div class="login-bg" style="background-image:url(data:image/jpeg;base64,{fundo});"></div>',
+                unsafe_allow_html=True,
+            )
+    with col_form:
+        with st.container(key="login_card"):
+            st.markdown(
+                """
+                <div class="login-card-header">
+                    <div class="icone">🔒</div>
+                    <div>
+                        <div class="titulo">ACESSO RESTRITO</div>
+                        <div class="sub">Acesso autorizado com e-mail e senha</div>
+                    </div>
+                </div>
+                <div class="login-card-divisor">✦</div>
+                """,
+                unsafe_allow_html=True,
+            )
+            # "Lembrar meu e-mail" (pedido do Wallace em 2026-07-18: "coloca opcao
+            # para a pessoa salva o email dela") — guardado em st.query_params (fica
+            # na própria URL, que o navegador lembra sozinho se a pessoa deixar
+            # favoritada/salva) e usado como valor inicial do campo na próxima
+            # visita. Só o e-mail — a senha NÃO é guardada em lugar nenhum por nós
+            # (não é seguro deixar senha em URL); quem quiser que o navegador
+            # preencha a senha sozinho, o campo já é um `type="password"` padrão,
+            # que os gerenciadores de senha do Chrome/Safari/etc. já oferecem
+            # salvar sozinhos ao fazer login com sucesso.
+            email_lembrado = st.query_params.get("email", "")
+
+            st.markdown('<div class="login-rotulo">E-MAIL</div>', unsafe_allow_html=True)
+            email = st.text_input(
+                "E-mail", value=email_lembrado, key="cel_login_email",
+                placeholder="📧 seu e-mail", label_visibility="collapsed",
+            )
+            st.markdown('<div class="login-rotulo">SENHA</div>', unsafe_allow_html=True)
+            senha = st.text_input(
+                "Senha", type="password", key="cel_login_senha", placeholder="🔒 Senha de acesso",
+                label_visibility="collapsed",
+                help="O navegador pode oferecer pra salvar essa senha sozinho depois do primeiro login.",
+            )
+            lembrar = st.checkbox("Lembrar meu e-mail neste navegador", value=bool(email_lembrado), key="cel_lembrar_email")
+            if st.button("ACESSAR PORTAL →", key="cel_login_botao", width="stretch"):
+                email_normalizado = email.strip().lower()
+                if email_normalizado not in EMAILS_AUTORIZADOS:
+                    st.error("E-mail não autorizado. Fale com o fiscal do contrato pra liberar o acesso.")
+                elif senha != st.secrets.get("site_password"):
+                    st.error("Senha incorreta.")
                 else:
-                    st.query_params.pop("email", None)
-                st.session_state["autenticado"] = True
-                st.session_state["email_logado"] = email_normalizado
-                _registrar_acesso(email_normalizado)
-                st.rerun()
+                    if lembrar:
+                        st.query_params["email"] = email_normalizado
+                    else:
+                        st.query_params.pop("email", None)
+                    st.session_state["autenticado"] = True
+                    st.session_state["email_logado"] = email_normalizado
+                    _registrar_acesso(email_normalizado)
+                    st.rerun()
+            st.markdown(
+                '<div class="login-rodape">🛡️ ACESSO RESTRITO<br>USO EXCLUSIVO AUTORIZADO</div>',
+                unsafe_allow_html=True,
+            )
 
 
 def _tela_inicial():

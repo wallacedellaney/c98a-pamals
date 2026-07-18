@@ -173,21 +173,43 @@ o Streamlit reserva a barra lateral e mostra uma setinha de expandir no
 canto, bem ao lado do hero. Corrigido (+ CSS `[data-testid="collapsedControl"]
 {display: none;}` de reforço).
 
-## Imagem na tela de login (2026-07-18)
+## Imagem na tela de login (2026-07-18, 2 versões)
 
-Wallace colocou um arquivo em `C-98A PAMALS/imagens/foto_login.png` (um
-mockup completo gerado por IA, com a foto do C-98 Caravan à esquerda e um
-formulário de login "fake" desenhado como imagem à direita) e pediu pra
-usar na tela de login do site do contrato. Como o formulário à direita da
-imagem era só decorativo (não functional), recortei só a metade esquerda
-(foto do avião + logo FAB) e salvei em `imagens/login_hero_c98.png` — essa
-é a imagem usada de verdade pelo código; `foto_login.png` fica só como
-arquivo de origem.
+**1ª versão**: Wallace colocou `imagens/foto_login.png` (mockup com a foto
+do C-98 Caravan à esquerda e um formulário de login "fake" desenhado à
+direita) — recortei só a metade esquerda (`login_hero_c98.png`) pra usar do
+lado do formulário de verdade.
 
-`_tela_login()` (`03_Dashboard/app.py`) virou 2 colunas lado a lado:
-imagem à esquerda, formulário de login de verdade (e-mail, senha, lembrar,
-botão "Entrar") à direita — mesmo layout do mockup, mas com os campos
-funcionais do Streamlit em vez de desenhados.
+**2ª versão (substituiu a 1ª)**: "ta no ar?" → "ficou ruim,coloquei outra
+imagem la agora, a mais recente, faz naquele padrao, que que tenta alinhas
+as posicoes do login para ficar igual da imgae, que 100 identico". Nova
+imagem-fonte: `imagens/login_fonte_2026-07-18.png` (mockup "C-98A PAMA-LS —
+Portal Gerencial Integrado", hangar com o Caravan, badge "005/CELOG/2025",
+cartão de login "fake" à direita). Arquivos antigos (`foto_login.png`,
+`login_hero_c98.png`) removidos, substituídos por:
+
+- `imagens/login_bg_c98a.jpg` — recorte só da metade esquerda (foto +
+  título + badge, tudo já "queimado" na imagem) — usado como
+  `background-image` (embutido em base64 direto no CSS, já que o Streamlit
+  não serve caminho de arquivo local dentro de HTML customizado) atrás de
+  um `<div>` com `aspect-ratio` travado na proporção do recorte, pra
+  manter o alinhamento visual mesmo em telas de tamanhos diferentes.
+- Cartão de login à direita **recriado do zero com componentes reais do
+  Streamlit** (não é mais uma imagem) — `st.container(key="login_card")`
+  estilizado via CSS pra imitar o desenho original: fundo escuro
+  translúcido, borda dourada com cantos em L (`::before`/`::after`),
+  cabeçalho "🔒 ACESSO RESTRITO" + subtítulo, divisor "✦", rótulos
+  maiúsculos "E-MAIL"/"SENHA" acima de cada campo (rótulo padrão do
+  Streamlit escondido via `label_visibility="collapsed"`), botão "ACESSAR
+  PORTAL →" (texto igual ao mockup, era "Entrar →" antes), rodapé "🛡️
+  ACESSO RESTRITO / USO EXCLUSIVO AUTORIZADO". Também adicionei os cantos
+  em L no canto superior-esquerdo/inferior-direito da tela inteira e o
+  texto de coordenadas "15°47'18"S 47°52'40"W" no rodapé, replicando os
+  detalhes decorativos do mockup.
+- Não consegui tirar print da tela renderizada de verdade pra conferir
+  visualmente (sem navegador disponível neste ambiente) — testado só via
+  `AppTest` (sem exceção, login funciona). Conferir visualmente no site
+  publicado e pedir ajustes finos de alinhamento se precisar.
 
 ## Histórico de acessos (2026-07-18)
 
