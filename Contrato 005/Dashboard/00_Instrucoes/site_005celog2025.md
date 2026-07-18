@@ -41,6 +41,7 @@ principal). `EMAILS_AUTORIZADOS` (lista fixa no código, `app.py`):
 - claudio.almeida@veeone.com.br
 - desiree.barreto@veeone.com.br
 - jorgeleite@veeone.com.br
+- flavio.mayrinck@veeone.com.br (adicionado em 2026-07-18)
 
 Todos usam a MESMA senha — secret `site_password` (valor `c98pamals`,
 igual ao site principal, mas precisa ser colado de novo nos Secrets

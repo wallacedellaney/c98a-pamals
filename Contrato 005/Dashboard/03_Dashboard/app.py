@@ -106,6 +106,7 @@ EMAILS_AUTORIZADOS = {
     "claudio.almeida@veeone.com.br",
     "desiree.barreto@veeone.com.br",
     "jorgeleite@veeone.com.br",
+    "flavio.mayrinck@veeone.com.br",
 }
 
 AVISO_TRANSPARENCIA = (
