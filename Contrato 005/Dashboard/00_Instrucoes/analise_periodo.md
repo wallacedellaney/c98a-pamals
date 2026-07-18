@@ -65,25 +65,32 @@ passou a ser gravada.
   mostram 0 mudanças de estoque mesmo que possa ter havido mudança de
   verdade (dado não existia ainda).
 
-## Desempenho da empresa — MMAM por mês (2026-07-18)
+## Desempenho da empresa — 3 gráficos por mês (2026-07-18)
 
 Pedido do Wallace: "coloca tb um historico da MMAM do ano de 2026 e
-graficos de desempenho da empresa". Nova seção no topo da página (antes do
-slider de período), `_secao_desempenho()`: gráfico de barras com o MMAM
-prévio de cada mês de 2026 já calculado pelo Cômputo Mensal (ver
-`computo_mensal.md`), linha pontilhada com a média do ano, cards "MMAM
-médio no ano" e "Meses calculados".
+graficos de desempenho da empresa" — depois "ficou ruim, deixa uma linha
+que vai mudando, melhore essa analise da empresa, coloca mais grafico"
+(trocado de barra pra linha + 2 gráficos novos). Nova seção no topo da
+página (antes do slider de período), `_secao_desempenho()`, 3 indicadores,
+todos como gráfico de **linha** com marcadores + linha pontilhada da média
+do ano:
 
-**Fonte**: `carregar_historico_mmam()` (`data/carregar_dados.py`) só lê os
-`computo_mensal/<ano>-<mes>_resumo.json` já salvos — não recalcula nada
-aqui, não duplica a lógica de `calcular_computo_mensal.py`. Se um mês ainda
-não foi calculado (Cômputo Mensal nunca aberto pra ele), não aparece no
-gráfico.
+1. **MMAM** — lido do Cômputo Mensal já calculado
+   (`carregar_historico_mmam()`, só lê `computo_mensal/<ano>-<mes>_resumo.json`,
+   não recalcula nada, não duplica `calcular_computo_mensal.py`). Só
+   aparece pros meses que já foram calculados.
+2. **% de entregas no prazo por mês** — recalculado ao vivo a partir de
+   `emergencias_totais`, agrupado pelo mês de `atendido_cancelado`, mesma
+   regra da aba Atrasos (`dias_atraso <= 0` = no prazo). Diferente do
+   MMAM, dá pra montar pra qualquer mês já concluído sem depender de um
+   cálculo salvo, porque a data de conclusão já está na própria fonte.
+3. **Novas emergências abertas por mês** — contagem por mês de
+   `data_abertura`, mesma fonte.
 
-Se um dia quiser outros indicadores de desempenho além do MMAM (ex.: % de
-entregas no prazo por mês, atrasos por mês), avisar — hoje isso não fica
-salvo em lugar nenhum por mês passado (só o mês de referência atual, na
-aba Atrasos), precisaria de um novo histórico gravado mês a mês.
+Cada gráfico só aparece se tiver dado de 2026 suficiente (senão a seção
+mostra um aviso ou fica menor, nunca quebra).
+
+Se um dia quiser mais indicadores, avisar.
 
 ## Controle de data global (pedido do Wallace em 2026-07-10, follow-up)
 

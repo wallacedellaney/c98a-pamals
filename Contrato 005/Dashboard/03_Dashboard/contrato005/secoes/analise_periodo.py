@@ -93,43 +93,101 @@ def _tabela_com_filtro(df, chave_prefixo, titulo, cor_borda):
 MESES_ABREV = ["", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
 
 
-def _secao_desempenho(dados):
-    """Histórico de MMAM (Média Mensal de Aeronaves Montadas) do ano —
-    pedido do Wallace em 2026-07-18: "coloca tb um historico da MMAM do
-    ano de 2026 e graficos de desempenho da empresa". Lê os resumos já
-    calculados pelo Cômputo Mensal (ver computo_mensal.md), não recalcula
-    nada aqui."""
-    hist_mmam = dados.get("historico_mmam")
-    if hist_mmam is None or hist_mmam.empty:
-        return
-
-    st.markdown("##### Desempenho da empresa — MMAM por mês (2026)")
-    st.caption(
-        "Média Mensal de Aeronaves Montadas — prévia automática calculada pelo Cômputo Mensal "
-        "(aba Fechamento Mensal, ver 00_Instrucoes/computo_mensal.md)."
+def _grafico_linha_mensal(df, coluna_y, titulo_y, cor, sufixo="%", altura=220, faixa_y=None):
+    fig = px.line(df, x="mes_label", y=coluna_y, markers=True, color_discrete_sequence=[cor])
+    fig.update_traces(
+        text=df[coluna_y].map(lambda v: f"{v:.1f}{sufixo}"), textposition="top center", mode="lines+markers+text",
     )
-    hist_ano = hist_mmam[hist_mmam["ano"] == 2026].copy()
-    if hist_ano.empty or hist_ano["mmam_previa"].isna().all():
-        st.caption("Sem meses de 2026 calculados ainda.")
-        st.divider()
-        return
-
-    hist_ano["mes_label"] = hist_ano["mes"].apply(lambda m: MESES_ABREV[m])
-    media_ano = hist_ano["mmam_previa"].mean()
-
-    c1, c2 = st.columns(2)
-    c1.metric("MMAM médio no ano (2026)", f"{media_ano:.2f}%")
-    c2.metric("Meses calculados", len(hist_ano))
-
-    fig = px.bar(
-        hist_ano, x="mes_label", y="mmam_previa", text="mmam_previa",
-        color_discrete_sequence=[AMBER],
-    )
-    fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
-    fig.add_hline(y=media_ano, line_dash="dash", line_color=SECONDARY, annotation_text="média do ano")
-    fig.update_layout(xaxis_title="", yaxis_title="MMAM (%)", yaxis_range=[0, 108])
-    layout_grafico(fig, altura=240)
+    media = df[coluna_y].mean()
+    fig.add_hline(y=media, line_dash="dash", line_color=SECONDARY, annotation_text="média do ano")
+    fig.update_layout(xaxis_title="", yaxis_title=titulo_y, yaxis_range=faixa_y)
+    layout_grafico(fig, altura=altura)
     st.plotly_chart(fig, width="stretch")
+
+
+def _secao_desempenho(dados):
+    """Indicadores de desempenho da empresa ao longo do ano — pedido do
+    Wallace em 2026-07-18: "coloca tb um historico da MMAM do ano de 2026
+    e graficos de desempenho da empresa", depois "ficou ruim, deixa uma
+    linha que vai mudando, melhore essa analise da empresa, coloca mais
+    grafico" (trocado de barra pra linha, e adicionados 2 gráficos novos).
+    3 indicadores, todos por mês de 2026:
+    1. MMAM — lido do Cômputo Mensal já calculado (não recalcula nada).
+    2. % de entregas no prazo — recalculado ao vivo a partir de
+       emergencias_totais (mesma regra da aba Atrasos: dias_atraso <= 0 =
+       no prazo), agrupado pelo mês de conclusão/cancelamento
+       (`atendido_cancelado`) — dá pra fazer pra qualquer mês passado
+       porque emergencias_totais já tem a data de cada emergência,
+       diferente do MMAM que depende de um cálculo salvo por mês.
+    3. Novas emergências abertas — contagem por mês de `data_abertura`,
+       mesma fonte."""
+    hist_mmam = dados.get("historico_mmam")
+    df_totais = dados.get("emergencias_totais")
+    if (hist_mmam is None or hist_mmam.empty) and (df_totais is None or df_totais.empty):
+        return
+
+    st.markdown("##### Desempenho da empresa — 2026")
+
+    tem_algum_dado = False
+
+    # 1) MMAM ------------------------------------------------------------
+    if hist_mmam is not None and not hist_mmam.empty:
+        hist_ano = hist_mmam[(hist_mmam["ano"] == 2026) & hist_mmam["mmam_previa"].notna()].copy()
+        if not hist_ano.empty:
+            tem_algum_dado = True
+            hist_ano["mes_label"] = hist_ano["mes"].apply(lambda m: MESES_ABREV[m])
+            st.caption(
+                "**MMAM (Média Mensal de Aeronaves Montadas)** — prévia automática calculada pelo "
+                "Cômputo Mensal (aba Fechamento Mensal, ver 00_Instrucoes/computo_mensal.md)."
+            )
+            c1, c2 = st.columns(2)
+            c1.metric("MMAM médio no ano", f"{hist_ano['mmam_previa'].mean():.2f}%")
+            c2.metric("Meses calculados", len(hist_ano))
+            _grafico_linha_mensal(hist_ano, "mmam_previa", "MMAM (%)", AMBER, faixa_y=[0, 108])
+
+    # 2) % de entregas no prazo e 3) novas emergências --------------------
+    if df_totais is not None and not df_totais.empty:
+        trabalho = df_totais.copy()
+        trabalho["atendido_dt"] = pd.to_datetime(trabalho["atendido_cancelado"], errors="coerce")
+        trabalho["abertura_dt"] = pd.to_datetime(trabalho["data_abertura"], errors="coerce")
+
+        concluidas = trabalho[trabalho["atendido_dt"].notna() & (trabalho["atendido_dt"].dt.year == 2026)].copy()
+        if not concluidas.empty:
+            tem_algum_dado = True
+            concluidas["mes"] = concluidas["atendido_dt"].dt.month
+            resumo_prazo = concluidas.groupby("mes").apply(
+                lambda g: pd.Series({
+                    "total": len(g), "no_prazo": int((g["dias_atraso"] <= 0).sum()),
+                }),
+                include_groups=False,
+            ).reset_index()
+            resumo_prazo["pct_no_prazo"] = resumo_prazo["no_prazo"] / resumo_prazo["total"] * 100
+            resumo_prazo["mes_label"] = resumo_prazo["mes"].apply(lambda m: MESES_ABREV[m])
+
+            st.caption(
+                "**% de entregas no prazo** — emergências concluídas/canceladas em cada mês com "
+                "dias_atraso ≤ 0 no momento do atendimento (mesma regra da aba Atrasos)."
+            )
+            c1, c2 = st.columns(2)
+            c1.metric("% no prazo médio no ano", f"{resumo_prazo['pct_no_prazo'].mean():.1f}%")
+            c2.metric("Total de entregas no ano", int(resumo_prazo["total"].sum()))
+            _grafico_linha_mensal(resumo_prazo, "pct_no_prazo", "% no prazo", STATUS["good"], faixa_y=[0, 108])
+
+        abertas_2026 = trabalho[trabalho["abertura_dt"].notna() & (trabalho["abertura_dt"].dt.year == 2026)].copy()
+        if not abertas_2026.empty:
+            tem_algum_dado = True
+            abertas_2026["mes"] = abertas_2026["abertura_dt"].dt.month
+            resumo_novas = abertas_2026.groupby("mes").size().reset_index(name="qtd")
+            resumo_novas["mes_label"] = resumo_novas["mes"].apply(lambda m: MESES_ABREV[m])
+
+            st.caption("**Novas emergências abertas por mês** — todas as emergências VEE ONE, por data de abertura.")
+            c1, c2 = st.columns(2)
+            c1.metric("Média de novas por mês", f"{resumo_novas['qtd'].mean():.1f}")
+            c2.metric("Total no ano", int(resumo_novas["qtd"].sum()))
+            _grafico_linha_mensal(resumo_novas, "qtd", "Novas emergências", CYAN, sufixo="", faixa_y=None)
+
+    if not tem_algum_dado:
+        st.caption("Ainda sem dado de 2026 suficiente pra montar os gráficos de desempenho.")
     st.divider()
 
 
