@@ -85,14 +85,55 @@ def padronizar_valores_monetarios(df, inconsistencias):
     return df
 
 
+REGEX_ORDEM_PAGAMENTO = re.compile(r"^\d{4}NP\d+$")
+
+
 def situacao_pagamento(row):
-    if pd.notna(row["ordem_pagamento"]):
+    # Nem todo valor não vazio em "Ordem de Pagamento" é uma ordem de
+    # verdade — às vezes vem só o texto "Faturado" (ainda sem número de
+    # ordem), o que não é "Pago" de fato. Bug real visto em 2026-07-18: o
+    # lançamento "Módulo III – Orçamento 19 GPS" (NF 1882) tinha
+    # ordem_pagamento="Faturado" e caía como "Pago" por engano — só um
+    # valor no formato real de ordem (ex.: "2026NP401058") conta como Pago.
+    ordem = row["ordem_pagamento"]
+    if pd.notna(ordem) and REGEX_ORDEM_PAGAMENTO.match(str(ordem).strip()):
         return "Pago"
     if pd.notna(row["valor_nfs"]) or pd.notna(row["faturado"]):
         return "Faturado, aguardando pagamento"
     if pd.notna(row["pendente"]):
         return "Pendente"
     return "Sem lançamento"
+
+
+def localizar_headers(ws):
+    """Acha as linhas de cabeçalho ('Módulo | Referência | ...') dos 2 blocos de
+    lançamentos (mensal, depois por módulo/orçamento) procurando o texto
+    'Referência' na coluna D, em vez de assumir números de linha fixos.
+
+    Corrige um bug real visto em 2026-07-18: o lançamento "Módulo III –
+    Orçamento 19 GPS" (NF 1882, empenho 2025NE001065) ficou de fora dos
+    Pagamentos porque o bloco "por módulo/orçamento" tinha fim fixo em
+    ultima_linha=39 no código — quando esa linha nova foi acrescentada na
+    planilha (linha 40), a extração simplesmente não a via. Como o Wallace
+    vai continuar acrescentando linhas com o tempo, descobrir os limites de
+    cada bloco dinamicamente evita ter que atualizar um número fixo no
+    código toda vez."""
+    return [linha for linha in range(1, ws.max_row + 1) if ws.cell(row=linha, column=4).value == "Referência"]
+
+
+def fim_do_bloco(ws, primeira_linha):
+    """A partir de `primeira_linha`, acha a última linha com algum dado nas
+    colunas C..N (o bloco "por módulo/orçamento" é o último da planilha —
+    termina numa sequência de linhas totalmente em branco)."""
+    ultima_com_dado = primeira_linha - 1
+    linha = primeira_linha
+    while linha <= ws.max_row:
+        valores = [ws.cell(row=linha, column=c).value for c in range(3, 15)]
+        if all(v is None for v in valores):
+            break
+        ultima_com_dado = linha
+        linha += 1
+    return ultima_com_dado
 
 
 def extrair_bloco(ws, primeira_linha, ultima_linha):
@@ -159,10 +200,18 @@ def main():
 
     contrato = extrair_contrato(ws)
 
-    bloco_mensal = extrair_bloco(ws, 9, 26)
+    headers = localizar_headers(ws)
+    if len(headers) != 2:
+        raise ValueError(
+            f"Esperava 2 blocos de lançamentos (cabeçalho 'Referência' na coluna D), "
+            f"encontrei {len(headers)} nas linhas {headers}. Conferir a planilha original."
+        )
+    header_mensal, header_modulo = headers
+
+    bloco_mensal = extrair_bloco(ws, header_mensal + 1, header_modulo - 1)
     bloco_mensal["tipo_registro"] = "mensal"
 
-    bloco_modulo = extrair_bloco(ws, 28, 39)
+    bloco_modulo = extrair_bloco(ws, header_modulo + 1, fim_do_bloco(ws, header_modulo + 1))
     bloco_modulo["tipo_registro"] = "orcamento"
 
     with warnings.catch_warnings():

@@ -50,9 +50,35 @@ Colunas:
 
 ## Regra de situação do pagamento
 
-* Se existir **Ordem de Pagamento** preenchida → **Pago**.
-* Se só tiver **Faturado** preenchido, sem Ordem de Pagamento → **Faturado, aguardando pagamento**.
+* Se existir **Ordem de Pagamento** preenchida **com um número de ordem de verdade** (padrão `AAAANPnnnnnn`, ex.: `2026NP401058`) → **Pago**.
+* Se só tiver **Faturado** preenchido, sem uma ordem de pagamento de verdade → **Faturado, aguardando pagamento**.
 * Se estiver como **Pendente** → falta algo para fechar (pode ser recebimento de itens em aberto, ou é apenas uma previsão ainda não fechada — o texto da coluna `Empenho`/observação ajuda a identificar qual dos dois casos é).
+
+**Atenção**: às vezes a coluna "Ordem de Pagamento" vem preenchida só com o
+texto **"Faturado"** (sem número de ordem nenhum) — isso NÃO é uma ordem de
+pagamento de verdade, é só um placeholder indicando que a nota foi faturada
+mas ainda não paga. Por isso a regra confere o **formato** do valor (padrão
+`AAAANPnnnnnn`), não só se a célula está preenchida — bug real visto em
+2026-07-18 (Wallace: "Módulo III – Orçamento 19 GPS ... nao vi nos
+pgamemtos"), onde esse lançamento (e também "JUNHO/26", no bloco mensal)
+apareciam classificados como "Pago" por engano.
+
+## Bug corrigido em 2026-07-18 — lançamento novo não aparecia nos Pagamentos
+
+O lançamento "Módulo III – Orçamento 19 GPS" (NF 1882, empenho
+2025NE001065, 26/06/2026) tinha sido acrescentado como uma linha nova
+(linha 40) na planilha original, mas a extração (`extrair_pagamentos.py`)
+tinha os limites do bloco "por módulo/orçamento" fixos em número de linha
+(`9 a 26` pro bloco mensal, `28 a 39` pro bloco por módulo) — a linha nova
+ficou fora do intervalo e nunca era lida.
+
+**Corrigido**: os limites de cada bloco agora são descobertos
+dinamicamente (`localizar_headers()` acha as 2 linhas de cabeçalho
+"Referência" na planilha; `fim_do_bloco()` acha onde o último bloco
+termina, procurando a primeira sequência de linhas totalmente em branco),
+em vez de números fixos — assim, novas linhas que o Wallace acrescentar
+no futuro (em qualquer um dos 2 blocos) entram automaticamente na próxima
+extração, sem precisar mexer no código de novo.
 
 ## Aba EMPENHOS (complementar)
 
