@@ -12,21 +12,25 @@ tela. Ver 00_Instrucoes/site_005celog2025.md.
 Atualiza sozinho, no mesmo ciclo automático de 2 em 2h já existente (mesmo
 repositório/dados — não precisa de nenhuma automação nova).
 
-**Sem tela de login por enquanto** (decisão do Wallace em 2026-07-18: "por
-enquanto sem senha, o dela vou pensar uma forma mais segura com email e
-talz") — o fluxo é: 1) hero (foto do Caravan/hangar, reaproveitando
-`home_hero.py` do site principal) + botão "Entrar", 2) aviso de
-transparência + botão "Concordar", 3) dashboard. "Fechamento Mensal"
-(Cômputo Mensal/Atrasos/Apresentação RMA/Ata de Reunião) fica **escondido**
-nesse deploy — conteúdo interno, não pra empresa ver (pedido do Wallace:
-"tira no fechamento mensal, apresntacao da rma" / "e tb tira a producao da
-ata").
+**Login por e-mail autorizado + senha única** (2026-07-18, decisão do
+Wallace — "vamos outorizar meu email ... a pessoa coloca o email dela e a
+senha é c98pamals para todo mundo"): só os e-mails em `EMAILS_AUTORIZADOS`
+conseguem entrar, todos com a mesma senha (secret `site_password`, mesma
+convenção do site principal). Fluxo completo: 1) login (e-mail + senha),
+2) hero (foto do Caravan/hangar, reaproveitando `home_hero.py` do site
+principal) + botão "Entrar", 3) aviso de transparência + botão
+"Concordar", 4) dashboard. "Fechamento Mensal" (Cômputo Mensal/Atrasos/
+Apresentação RMA/Ata de Reunião) fica **escondido** nesse deploy —
+conteúdo interno, não pra empresa ver (pedido do Wallace: "tira no
+fechamento mensal, apresntacao da rma" / "e tb tira a producao da ata").
 
-Precisa de secret PRÓPRIO neste deploy (Streamlit Cloud → Settings →
+Precisa de secrets PRÓPRIOS neste deploy (Streamlit Cloud → Settings →
 Secrets deste app, separado do site principal):
+- `site_password` — a senha única de todo mundo (`c98pamals`, mesma do
+  site principal — mas precisa colar de novo aqui, secrets não são
+  compartilhados entre apps do Streamlit Cloud).
 - `GOOGLE_SERVICE_ACCOUNT_JSON` — mesma credencial do Google usada no site
-  principal, precisa ser configurada de novo aqui (Secrets não são
-  compartilhados entre apps do Streamlit Cloud) — necessária pro botão
+  principal, precisa ser configurada de novo aqui — necessária pro botão
   "Atualizar dados".
 """
 
@@ -47,6 +51,19 @@ if str(RAIZ) not in sys.path:
 from home_hero import render_hero
 
 PAGINAS_OCULTAS = {"Fechamento Mensal"}
+
+# E-mails autorizados a entrar — pedido do Wallace em 2026-07-18. Todos
+# usam a MESMA senha (secret "site_password"), o e-mail só funciona como
+# lista de permissão (não tem senha individual por pessoa).
+EMAILS_AUTORIZADOS = {
+    "wallacedellaney@gmail.com",
+    "paulo.souza@veeone.com.br",
+    "rcarlos@veeone.com.br",
+    "rezende@veeone.com.br",
+    "claudio.almeida@veeone.com.br",
+    "desiree.barreto@veeone.com.br",
+    "jorgeleite@veeone.com.br",
+}
 
 AVISO_TRANSPARENCIA = (
     "As informações aqui buscam melhorar a transparência junto à empresa — "
@@ -100,6 +117,31 @@ def _estilo_tela_inicial():
     )
 
 
+def _tela_login():
+    _estilo_tela_inicial()
+    st.markdown(
+        """
+        <div class="cel-titulo">005CELOG2025</div>
+        <div class="cel-sub">Acesso restrito — e-mail autorizado + senha.</div>
+        """,
+        unsafe_allow_html=True,
+    )
+    _, col, _ = st.columns([1, 1, 1])
+    with col:
+        email = st.text_input("E-mail", key="cel_login_email", placeholder="seu e-mail")
+        senha = st.text_input("Senha", type="password", key="cel_login_senha", placeholder="Senha de acesso")
+        if st.button("Entrar →", key="cel_login_botao"):
+            email_normalizado = email.strip().lower()
+            if email_normalizado not in EMAILS_AUTORIZADOS:
+                st.error("E-mail não autorizado. Fale com o fiscal do contrato pra liberar o acesso.")
+            elif senha != st.secrets.get("site_password"):
+                st.error("Senha incorreta.")
+            else:
+                st.session_state["autenticado"] = True
+                st.session_state["email_logado"] = email_normalizado
+                st.rerun()
+
+
 def _tela_inicial():
     _estilo_tela_inicial()
     st.markdown(
@@ -128,10 +170,16 @@ def _tela_aviso():
             st.rerun()
 
 
+if "autenticado" not in st.session_state:
+    st.session_state["autenticado"] = False
 if "entrou" not in st.session_state:
     st.session_state["entrou"] = False
 if "concordou" not in st.session_state:
     st.session_state["concordou"] = False
+
+if not st.session_state["autenticado"]:
+    _tela_login()
+    st.stop()
 
 if not st.session_state["entrou"]:
     _tela_inicial()

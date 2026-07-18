@@ -29,14 +29,27 @@ arquivo principal diferente:
 Esse segundo arquivo (`03_Dashboard/app.py`) já existia como "runner
 standalone" (fallback pra rodar só o Contrato 005 localmente).
 
-**Sem senha por enquanto** (decisão do Wallace em 2026-07-18: "por
-enquanto sem senha, o dela vou pensar uma forma mais segura com email e
-talz") — chegou a ter uma tela de login própria (secret
-`site_password_005celog2025`) por um instante durante a configuração,
-removida antes do primeiro deploy real a pedido do Wallace. Se um dia
-quiser adicionar autenticação de verdade (por e-mail/domínio da empresa,
-por exemplo), é só pedir — o padrão de tela de login já existe no site
-principal (`C-98A PAMALS/app.py`) pra copiar.
+**Login por e-mail autorizado + senha única** (2026-07-18, decisão final
+do Wallace — inicialmente ficou sem senha, depois: "vamos outorizar meu
+email ... a pessoa coloca o email dela e a senha é c98pamals para todo
+mundo", confirmado: "so no site do contrato", não mexe no site
+principal). `EMAILS_AUTORIZADOS` (lista fixa no código, `app.py`):
+- wallacedellaney@gmail.com
+- paulo.souza@veeone.com.br
+- rcarlos@veeone.com.br
+- rezende@veeone.com.br
+- claudio.almeida@veeone.com.br
+- desiree.barreto@veeone.com.br
+- jorgeleite@veeone.com.br
+
+Todos usam a MESMA senha — secret `site_password` (valor `c98pamals`,
+igual ao site principal, mas precisa ser colado de novo nos Secrets
+**deste** app, não é compartilhado). Login checa e-mail (normalizado —
+`.strip().lower()`) contra a lista **e** senha contra o secret; qualquer
+um dos dois errado mostra mensagem de erro específica ("E-mail não
+autorizado" / "Senha incorreta"). Pra adicionar/remover alguém, é só
+editar o `set` `EMAILS_AUTORIZADOS` no código (não precisa de senha
+individual por pessoa).
 
 **Fluxo de 3 telas** (2026-07-18):
 1. **Hero + "Entrar →"** (pedido do Wallace: "pode deixar aquele dasborad
