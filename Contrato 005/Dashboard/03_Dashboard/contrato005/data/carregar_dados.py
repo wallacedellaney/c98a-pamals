@@ -85,6 +85,33 @@ def carregar_computo_mensal(ano, mes):
     return df_matriz, df_motivos, resumo
 
 
+def carregar_historico_mmam():
+    """MMAM prévia de cada mês já calculado pelo Cômputo Mensal (um resumo.json
+    por mês, ver carregar_computo_mensal) — pedido do Wallace em 2026-07-18:
+    "coloca tb um historico da MMAM do ano de 2026" (Análise de Período).
+    Não recalcula nada, só lê os resumos já salvos em 02_Dados_Tratados/computo_mensal/."""
+    import json
+    import re
+
+    pasta = DADOS_TRATADOS / "computo_mensal"
+    if not pasta.exists():
+        return pd.DataFrame(columns=["ano", "mes", "mmam_previa", "aeronaves_pontuadas"])
+
+    linhas = []
+    for caminho in sorted(pasta.glob("*_resumo.json")):
+        m = re.match(r"(\d{4})-(\d{2})_resumo\.json", caminho.name)
+        if not m:
+            continue
+        with open(caminho, encoding="utf-8") as f:
+            resumo = json.load(f)
+        linhas.append({
+            "ano": int(m.group(1)), "mes": int(m.group(2)),
+            "mmam_previa": resumo.get("mmam_previa"),
+            "aeronaves_pontuadas": len(resumo.get("aeronaves_pontuadas", [])),
+        })
+    return pd.DataFrame(linhas).sort_values(["ano", "mes"]).reset_index(drop=True)
+
+
 def carregar_devolucoes():
     """Empréstimos/devoluções de material — planilha "Devoluções". Ver
     00_Instrucoes/emprestimos.md. Status "Desconsiderado" (pedido do
@@ -171,6 +198,7 @@ def carregar_tudo():
     df_reparaveis, mtime_rep = carregar_reparaveis()
     df_pagamentos, contrato, empenhos, mtime_pag = carregar_pagamentos()
     reajuste_indicadores, reajuste_nf, reajuste_cronograma, reajuste_resumo, mtime_reajuste = carregar_reajuste()
+    historico_mmam = carregar_historico_mmam()
     return {
         "emergencias": df_emergencias,
         "emergencias_atualizado_em": mtime_emerg,
@@ -193,5 +221,6 @@ def carregar_tudo():
         "reajuste_cronograma_mensal": reajuste_cronograma,
         "reajuste_cronograma_resumo": reajuste_resumo,
         "reajuste_atualizado_em": mtime_reajuste,
+        "historico_mmam": historico_mmam,
         "atualizado_em": max(mtime_emerg, mtime_rep, mtime_pag),
     }

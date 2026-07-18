@@ -88,33 +88,42 @@ def render(dados):
     col3.metric("Valor total do contrato", f"R$ {contrato['valor_total_contrato']:,.2f}")
     col4.metric("Saldo a faturar", f"R$ {contrato['saldo_a_faturar']:,.2f}")
 
+    # Empenho é detalhe interno de execução orçamentária — escondido no
+    # deploy externo "005CELOG2025" (pedido do Wallace: "tira empenho do
+    # pagamento tb, ela nao precis saber").
+    modo_externo = dados.get("modo_externo", False)
+    colunas_tabela = [
+        "modulo", "referencia", "numero_nota_fiscal", "data", "valor_nfs",
+        "faturado", "pendente", "situacao",
+    ]
+    if not modo_externo:
+        colunas_tabela.append("empenho_responsavel")
+
     st.dataframe(
-        filtrado[[
-            "modulo", "referencia", "numero_nota_fiscal", "data", "valor_nfs",
-            "faturado", "pendente", "situacao", "empenho_responsavel",
-        ]],
+        filtrado[colunas_tabela],
         width="stretch",
         hide_index=True,
         height=420,
     )
 
-    with st.expander("Empenhos"):
-        ef1, ef2 = st.columns(2)
-        with ef1:
-            nes = st.multiselect("Nº Empenho (NE)", ordenar_unicos(empenhos["numero_empenho"]))
-        with ef2:
-            responsaveis = st.multiselect("Responsável", ordenar_unicos(empenhos["responsavel"]))
+    if not modo_externo:
+        with st.expander("Empenhos"):
+            ef1, ef2 = st.columns(2)
+            with ef1:
+                nes = st.multiselect("Nº Empenho (NE)", ordenar_unicos(empenhos["numero_empenho"]))
+            with ef2:
+                responsaveis = st.multiselect("Responsável", ordenar_unicos(empenhos["responsavel"]))
 
-        empenhos_filtrados = empenhos.copy()
-        if nes:
-            empenhos_filtrados = empenhos_filtrados[empenhos_filtrados["numero_empenho"].isin(nes)]
-        if responsaveis:
-            empenhos_filtrados = empenhos_filtrados[empenhos_filtrados["responsavel"].isin(responsaveis)]
+            empenhos_filtrados = empenhos.copy()
+            if nes:
+                empenhos_filtrados = empenhos_filtrados[empenhos_filtrados["numero_empenho"].isin(nes)]
+            if responsaveis:
+                empenhos_filtrados = empenhos_filtrados[empenhos_filtrados["responsavel"].isin(responsaveis)]
 
-        e1, e2 = st.columns(2)
-        e1.metric("Valor empenhado (total)", f"R$ {empenhos_filtrados['valor_empenhado'].sum():,.2f}")
-        e2.metric("Saldo (total)", f"R$ {empenhos_filtrados['saldo'].sum():,.2f}")
-        st.dataframe(empenhos_filtrados, width="stretch", hide_index=True, height=360)
+            e1, e2 = st.columns(2)
+            e1.metric("Valor empenhado (total)", f"R$ {empenhos_filtrados['valor_empenhado'].sum():,.2f}")
+            e2.metric("Saldo (total)", f"R$ {empenhos_filtrados['saldo'].sum():,.2f}")
+            st.dataframe(empenhos_filtrados, width="stretch", hide_index=True, height=360)
 
     with st.expander("Evolução mensal do faturamento", expanded=True):
         evolucao = filtrado[filtrado["tipo_registro"] == "mensal"][["referencia", "data", "valor_nfs"]].copy()

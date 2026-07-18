@@ -65,6 +65,26 @@ passou a ser gravada.
   mostram 0 mudanças de estoque mesmo que possa ter havido mudança de
   verdade (dado não existia ainda).
 
+## Desempenho da empresa — MMAM por mês (2026-07-18)
+
+Pedido do Wallace: "coloca tb um historico da MMAM do ano de 2026 e
+graficos de desempenho da empresa". Nova seção no topo da página (antes do
+slider de período), `_secao_desempenho()`: gráfico de barras com o MMAM
+prévio de cada mês de 2026 já calculado pelo Cômputo Mensal (ver
+`computo_mensal.md`), linha pontilhada com a média do ano, cards "MMAM
+médio no ano" e "Meses calculados".
+
+**Fonte**: `carregar_historico_mmam()` (`data/carregar_dados.py`) só lê os
+`computo_mensal/<ano>-<mes>_resumo.json` já salvos — não recalcula nada
+aqui, não duplica a lógica de `calcular_computo_mensal.py`. Se um mês ainda
+não foi calculado (Cômputo Mensal nunca aberto pra ele), não aparece no
+gráfico.
+
+Se um dia quiser outros indicadores de desempenho além do MMAM (ex.: % de
+entregas no prazo por mês, atrasos por mês), avisar — hoje isso não fica
+salvo em lugar nenhum por mês passado (só o mês de referência atual, na
+aba Atrasos), precisaria de um novo histórico gravado mês a mês.
+
 ## Controle de data global (pedido do Wallace em 2026-07-10, follow-up)
 
 Depois de construir a Análise de Período, o Wallace pediu um controle de

@@ -137,4 +137,4 @@ if not st.session_state["concordou"]:
     _tela_aviso()
     st.stop()
 
-render(paginas_ocultas=PAGINAS_OCULTAS)
+render(paginas_ocultas=PAGINAS_OCULTAS, modo_externo=True)

@@ -90,12 +90,57 @@ def _tabela_com_filtro(df, chave_prefixo, titulo, cor_borda):
     st.dataframe(tabela, hide_index=True, width="stretch", height=min(35 * (len(tabela) + 1) + 3, 260))
 
 
+MESES_ABREV = ["", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+
+
+def _secao_desempenho(dados):
+    """Histórico de MMAM (Média Mensal de Aeronaves Montadas) do ano —
+    pedido do Wallace em 2026-07-18: "coloca tb um historico da MMAM do
+    ano de 2026 e graficos de desempenho da empresa". Lê os resumos já
+    calculados pelo Cômputo Mensal (ver computo_mensal.md), não recalcula
+    nada aqui."""
+    hist_mmam = dados.get("historico_mmam")
+    if hist_mmam is None or hist_mmam.empty:
+        return
+
+    st.markdown("##### Desempenho da empresa — MMAM por mês (2026)")
+    st.caption(
+        "Média Mensal de Aeronaves Montadas — prévia automática calculada pelo Cômputo Mensal "
+        "(aba Fechamento Mensal, ver 00_Instrucoes/computo_mensal.md)."
+    )
+    hist_ano = hist_mmam[hist_mmam["ano"] == 2026].copy()
+    if hist_ano.empty or hist_ano["mmam_previa"].isna().all():
+        st.caption("Sem meses de 2026 calculados ainda.")
+        st.divider()
+        return
+
+    hist_ano["mes_label"] = hist_ano["mes"].apply(lambda m: MESES_ABREV[m])
+    media_ano = hist_ano["mmam_previa"].mean()
+
+    c1, c2 = st.columns(2)
+    c1.metric("MMAM médio no ano (2026)", f"{media_ano:.2f}%")
+    c2.metric("Meses calculados", len(hist_ano))
+
+    fig = px.bar(
+        hist_ano, x="mes_label", y="mmam_previa", text="mmam_previa",
+        color_discrete_sequence=[AMBER],
+    )
+    fig.update_traces(texttemplate="%{text:.1f}%", textposition="outside")
+    fig.add_hline(y=media_ano, line_dash="dash", line_color=SECONDARY, annotation_text="média do ano")
+    fig.update_layout(xaxis_title="", yaxis_title="MMAM (%)", yaxis_range=[0, 108])
+    layout_grafico(fig, altura=240)
+    st.plotly_chart(fig, width="stretch")
+    st.divider()
+
+
 def render(dados):
     st.title("Análise de Período")
     st.caption(
         "Central de análise sobre o histórico diário de emergências (VEE ONE) — "
         "escolha o intervalo e veja o que mudou, comparado com o período equivalente anterior."
     )
+
+    _secao_desempenho(dados)
 
     historico = dados.get("historico_emergencias")
     datas = datas_disponiveis(historico)

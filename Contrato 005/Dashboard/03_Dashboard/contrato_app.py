@@ -58,20 +58,28 @@ def _atualizar_dados():
         st.error(f"Erro ao atualizar dados:\n\n{resultado.stderr or resultado.stdout}")
 
 
-def render(ao_voltar=None, paginas_ocultas=()):
+def render(ao_voltar=None, paginas_ocultas=(), modo_externo=False):
     """`paginas_ocultas`: nomes de PAGINAS pra não mostrar (nem no menu nem
     na navegação) — usado pelo deploy separado "005CELOG2025" (acesso da
     empresa) pra esconder "Fechamento Mensal" (Cômputo Mensal/Atrasos/
     Apresentação RMA/Ata de Reunião são conteúdo interno, não pra empresa
     ver — pedido do Wallace em 2026-07-18: "tira no fechamento mensal,
     apresntacao da rma"). O site principal continua chamando render() sem
-    esse parâmetro, mostrando tudo."""
+    esse parâmetro, mostrando tudo.
+
+    `modo_externo`: sinaliza pras próprias seções (via `dados["modo_externo"]`)
+    esconder detalhe interno que não muda de página pra página só de olhar
+    PAGINAS_OCULTAS — hoje usado por `pagamentos.py` (Empenhos) e pelo
+    painel "Fonte dos dados" no fim desta função. Pedido do Wallace:
+    "tira a fonte de dados, desse" / "tira empenho do pagamento tb, ela
+    nao precis saber"."""
     paginas = {k: v for k, v in PAGINAS.items() if k not in paginas_ocultas}
 
     if "pagina" not in st.session_state or st.session_state["pagina"] not in paginas:
         st.session_state["pagina"] = next(iter(paginas))
 
     dados = carregar_tudo()
+    dados["modo_externo"] = modo_externo
 
     st.markdown(
         f"""
@@ -167,4 +175,5 @@ def render(ao_voltar=None, paginas_ocultas=()):
 
     st.caption(f"Dados atualizados em {datetime.fromtimestamp(dados['atualizado_em']).strftime('%d/%m/%Y %H:%M')}")
 
-    secao_fontes_dados(dados)
+    if not modo_externo:
+        secao_fontes_dados(dados)

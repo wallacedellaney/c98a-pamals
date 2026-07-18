@@ -60,6 +60,15 @@ fechamento mensal, apresntacao da rma" / "e tb tira a producao da ata".
 este deploy — o site principal continua chamando `render()` sem esse
 parâmetro, mostrando tudo).
 
+**Detalhe interno escondido dentro das páginas que continuam visíveis**
+(`contrato_app.render(..., modo_externo=True)`, gravado em
+`dados["modo_externo"]` pra cada seção conferir sozinha):
+- **Painel "Fonte dos dados"** (rodapé) — pedido do Wallace: "tira a fonte
+  de dados, desse".
+- **Empenhos** (dentro de Pagamentos — expander inteiro + coluna
+  "empenho_responsavel" da tabela principal) — pedido do Wallace: "tira
+  empenho do pagamento tb, ela nao precis saber".
+
 ## Configuração no Streamlit Cloud (ação do Wallace)
 
 Nome do app escolhido: **`contrato005`** (o Streamlit Cloud não aceita
