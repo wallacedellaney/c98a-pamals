@@ -1,11 +1,95 @@
 """Tela de detalhe — Reparáveis."""
 
+import pandas as pd
 import plotly.express as px
 import streamlit as st
 
 from contrato005.components import data_global
-from contrato005.components.paleta import CATEGORICA, layout_grafico
+from contrato005.components.paleta import AMBER, CATEGORICA, STATUS, layout_grafico
 from contrato005.components.utils import ordenar_unicos
+
+# "Onde se encontra" que significa que o item JÁ foi entregue pelo
+# fornecedor (VEE ONE) pra unidade/base — só falta encerrar a burocracia da
+# OS, não é mais um atraso de reparo de verdade. Pedido do Wallace em
+# 2026-07-18: "quando tiver com os eles ou com terceirizados, quando tiver
+# escrito: BABE, BAMN,BABV,BAPV,BABR,BANT,PAMALS,BACO,BASM,BACG EEAR
+# SIGNIFICA QUE ELE ja entregou SO ATE ABERTO A BUROCRACIA". "PAMA-LS" é o
+# nome real na fonte (o que o Wallace escreveu como "PAMALS"). **"V1
+# PAMA-LS" NÃO entra aqui** — é um valor diferente (ainda com o
+# fornecedor), confirmado pelo Wallace: "obs: v1 pamals esta com eles
+# ainda" — por isso o match é por igualdade exata, não por "contém".
+LOCAIS_ENTREGUES = {
+    "BABE", "BAMN", "BABV", "BAPV", "BABR", "BANT", "PAMA-LS", "BACO", "BASM", "BACG", "EEAR",
+}
+
+# Prazo contratual de TAT (Turn Around Time) — confirmado pelo Wallace em 2026-07-18.
+PRAZO_CONTRATUAL_TAT_DIAS = 110
+
+
+def _secao_estatisticas_tat(df):
+    abertos = df[df["em_aberto"]].copy()
+    if abertos.empty:
+        return
+
+    st.markdown("##### Estatísticas de TAT")
+    st.caption(
+        "\"Com eles\" = ainda não entregue pelo fornecedor. Quando \"Onde se encontra\" é "
+        "BABE/BAMN/BABV/BAPV/BABR/BANT/PAMA-LS/BACO/BASM/BACG/EEAR, já foi entregue — só falta "
+        "encerrar a burocracia da OS (\"V1 PAMA-LS\" não conta como entregue, é outra etapa, "
+        "ainda com o fornecedor)."
+    )
+
+    com_eles = abertos[~abertos["onde_se_encontra"].isin(LOCAIS_ENTREGUES)]
+
+    def _media_tat(sub):
+        return f"{sub['tat_siloms'].mean():.0f} dias" if sub["tat_siloms"].notna().any() else "—"
+
+    c1, c2 = st.columns(2)
+    c1.metric("Abertos (geral)", len(abertos))
+    c2.metric("Média de TAT geral (mesmo faltando a burocracia)", _media_tat(abertos))
+
+    c3, c4 = st.columns(2)
+    c3.metric("Com eles (ainda não entregues)", len(com_eles))
+    c4.metric("Média de TAT — com eles", _media_tat(com_eles))
+
+    hoje = pd.Timestamp.now().normalize()
+    fora_prazo = abertos[abertos["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS]
+
+    com_data = abertos.dropna(subset=["data_inicio"]).copy()
+    com_data["data_limite"] = pd.to_datetime(com_data["data_inicio"]) + pd.Timedelta(days=PRAZO_CONTRATUAL_TAT_DIAS)
+    vence_mes = com_data[
+        (com_data["data_limite"].dt.year == hoje.year)
+        & (com_data["data_limite"].dt.month == hoje.month)
+        & (com_data["tat_siloms"] <= PRAZO_CONTRATUAL_TAT_DIAS)
+    ]
+
+    c5, c6 = st.columns(2)
+    c5.metric(f"Fora do prazo contratual (> {PRAZO_CONTRATUAL_TAT_DIAS} dias)", len(fora_prazo), delta_color="inverse")
+    c6.metric("Vencem o prazo contratual este mês", len(vence_mes), delta_color="inverse")
+
+    with st.expander("Mais estatísticas — TAT médio por local e evolução"):
+        media_local = (
+            abertos.dropna(subset=["tat_siloms"])
+            .groupby("onde_se_encontra")["tat_siloms"]
+            .agg(["mean", "count"])
+            .reset_index()
+            .rename(columns={"onde_se_encontra": "Onde se encontra", "mean": "TAT médio (dias)", "count": "Quantidade"})
+            .sort_values("TAT médio (dias)", ascending=False)
+        )
+        media_local["TAT médio (dias)"] = media_local["TAT médio (dias)"].round(0).astype(int)
+        st.dataframe(media_local, hide_index=True, width="stretch")
+
+        fig = px.bar(
+            media_local, x="TAT médio (dias)", y="Onde se encontra", orientation="h",
+            color_discrete_sequence=[AMBER],
+        )
+        fig.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=STATUS["critical"],
+                      annotation_text=f"{PRAZO_CONTRATUAL_TAT_DIAS}d contratual")
+        fig.update_layout(yaxis_title="", xaxis_title="TAT médio (dias)")
+        layout_grafico(fig, altura=max(200, 28 * len(media_local)))
+        st.plotly_chart(fig, width="stretch")
+
+    st.divider()
 
 
 def render(dados):
@@ -15,6 +99,8 @@ def render(dados):
     st.title("Reparáveis")
 
     df = dados["reparaveis"]
+
+    _secao_estatisticas_tat(df)
 
     col_f0, col_f1, col_f2, col_f3, col_f4 = st.columns(5)
     with col_f0:

@@ -59,3 +59,40 @@ Manter apenas OS cuja situação (`ST_OS`) seja diferente de "OS concluída" (`R
 ## Filtros no dashboard
 
 PN, situação, condição, onde se encontra e unidade solicitante — todos filtráveis na tela "Reparáveis".
+
+## Estatísticas de TAT (2026-07-18)
+
+Pedido do Wallace, nos dois sites (principal e 005CELOG2025): seção fixa
+no topo da tela (não depende dos filtros abaixo), sempre sobre todas as OS
+em aberto (`em_aberto == True`).
+
+**Regra "entregue x com eles"**: quando `onde_se_encontra` é um destes
+valores exatos — `BABE, BAMN, BABV, BAPV, BABR, BANT, PAMA-LS, BACO, BASM,
+BACG, EEAR` (constante `LOCAIS_ENTREGUES` em `reparaveis.py`) — o item **já
+foi entregue** pelo fornecedor (VEE ONE) pra unidade/base, só falta
+encerrar a burocracia da OS (ainda conta como "em aberto" no SILOMS, mas
+não é mais atraso de reparo de verdade). Qualquer outro valor (`VEE ONE`,
+`WILLIAM`, `LEAP`, `PROCURANDO`, `AV AERONAUTICA`, `AMA - VEE ONE`, vazio,
+etc.) conta como **"com eles"** — ainda não entregue.
+
+**Atenção, `"V1 PAMA-LS"` ≠ `"PAMA-LS"`**: são valores diferentes na fonte
+— `"V1 PAMA-LS"` **não** entra em `LOCAIS_ENTREGUES` (fica em "com eles"),
+confirmado pelo Wallace: "obs: v1 pamals esta com eles ainda". Por isso o
+match é por **igualdade exata**, nunca por "contém" — um match por
+substring pegaria "V1 PAMA-LS" por engano.
+
+**Prazo contratual de TAT**: `PRAZO_CONTRATUAL_TAT_DIAS = 110` (dias),
+confirmado pelo Wallace. "Fora do prazo" = `tat_siloms > 110`. "Vence este
+mês" = `data_inicio + 110 dias` cai no mês/ano atual **e** ainda não
+passou de 110 dias (senão já estaria em "fora do prazo", não "vence
+este mês").
+
+Cards mostrados: Abertos (geral) + Média de TAT geral (todos os abertos,
+incluindo os que só faltam burocracia — pedido explícito do Wallace, pra
+não esconder esse tempo do TAT médio); Com eles (quantidade) + Média de
+TAT só desse grupo; Fora do prazo contratual; Vencem o prazo este mês.
+Dentro de um expander ("Mais estatísticas"): TAT médio por
+`onde_se_encontra` (tabela + gráfico de barras horizontal, com uma linha
+vertical marcando os 110 dias) — sugestão própria pra responder "pense em
+outras estatísticas que podemos fazer", mostra onde o item costuma ficar
+parado por mais tempo.
