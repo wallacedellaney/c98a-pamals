@@ -27,6 +27,20 @@ def formatar_numero(valor, casas=2):
     return texto.replace(",", "X").replace(".", ",").replace("X", ".")
 
 
+AVISO_MMAM_PREVIA = (
+    "⚠️ **Esta MMAM é uma prévia**, calculada automaticamente a partir dos "
+    "registros de emergências AIFP/IPLR sem estoque disponível na "
+    "plataforma — não é o valor oficial da Pré-RNA. Como é calculada: cada "
+    "aeronave dentro do contrato começa negativada (0) no próximo dia útil "
+    "após a data da informação de uma emergência AIFP/IPLR sem estoque, e "
+    "volta a montada (1) no dia do cancelamento/conclusão; sem estoque "
+    "disponível, não nega. **Pode divergir do valor real** porque não "
+    "considera ajustes manuais feitos direto na planilha oficial (Pré-RNA) "
+    "nem eventuais feriados (só pula sábado/domingo). Ver "
+    "00_Instrucoes/computo_mensal.md."
+)
+
+
 def ordenar_unicos(serie):
     """`sorted(serie.dropna().unique())`, mas seguro contra colunas com
     tipos misturados (ex.: PN com valores numéricos e texto na mesma

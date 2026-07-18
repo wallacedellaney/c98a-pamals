@@ -80,6 +80,19 @@ entregas do mês). Meses já calculados precisaram ser recalculados uma vez
 pra essas 2 colunas aparecerem retroativamente (`calcular_mes` de novo
 pra cada mês em cache).
 
+## Aviso de prévia (2026-07-18)
+
+Pedido do Wallace: "escreve que pode ter diferenca do real por se tratar
+do computo automatico e desconsiderando ajuste manuais, e explica la como
+é calculado, tanto no fechamento mensal tanto na analise do periodo".
+Texto único (`AVISO_MMAM_PREVIA` em `contrato005/components/utils.py`,
+compartilhado pra não duplicar), mostrado em `st.info()` logo abaixo do
+card "MMAM prévia" em 2 lugares: Fechamento Mensal → Cômputo Mensal, e
+Análise de Período → seção "Desempenho da empresa". Explica a regra de
+cálculo (dia útil após data da informação até cancelamento/conclusão,
+sem estoque) e avisa que não considera ajustes manuais feitos direto na
+planilha oficial (Pré-RNA) nem feriados.
+
 ## Matriz — % por dia e aeronaves fora do contrato (2026-07-17)
 
 Pedido do Wallace: "coloca a porcetnagem em baixo de cada dia" + "as

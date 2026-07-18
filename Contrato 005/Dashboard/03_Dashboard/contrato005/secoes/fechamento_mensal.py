@@ -12,7 +12,7 @@ import plotly.express as px
 import streamlit as st
 
 from contrato005.components.paleta import AMBER, LINE, PANEL, STATUS, layout_grafico
-from contrato005.components.utils import ordenar_unicos
+from contrato005.components.utils import AVISO_MMAM_PREVIA, ordenar_unicos
 
 ABREV_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
@@ -401,6 +401,7 @@ def _computo_mensal(mes_escolhido):
     c1.metric("MMAM prévia", f"{resumo['mmam_previa']}%" if resumo["mmam_previa"] is not None else "—")
     c2.metric("Aeronaves pontuadas", len(resumo["aeronaves_pontuadas"]))
     c3.metric("Dias já decorridos", f"{resumo['ultimo_dia_calculado']} de {resumo.get('ultimo_dia_mes', resumo['ultimo_dia_calculado'])}")
+    st.info(AVISO_MMAM_PREVIA)
 
     if resumo["inconsistencias"]:
         with st.expander(f"⚠️ {len(resumo['inconsistencias'])} inconsistência(s) — revisar manualmente", expanded=True):

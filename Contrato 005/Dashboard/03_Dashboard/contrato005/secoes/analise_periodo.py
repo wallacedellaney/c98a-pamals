@@ -17,7 +17,7 @@ from contrato005.components.comparacao_periodo import (
     datas_disponiveis, diff_periodo, linha_do_tempo, periodo_anterior_equivalente,
 )
 from contrato005.components.paleta import AMBER, CATEGORICA, CYAN, LINE, PANEL, SECONDARY, STATUS, layout_grafico
-from contrato005.components.utils import ordenar_unicos
+from contrato005.components.utils import AVISO_MMAM_PREVIA, ordenar_unicos
 
 NOMES_COLUNAS = {
     "numero_emergencia": "Emergência", "om": "Unidade", "matricula_aeronave": "Aeronave",
@@ -144,6 +144,7 @@ def _secao_desempenho(dados):
             c1.metric("MMAM médio no ano", f"{hist_ano['mmam_previa'].mean():.2f}%")
             c2.metric("Meses calculados", len(hist_ano))
             _grafico_linha_mensal(hist_ano, "mmam_previa", "MMAM (%)", AMBER, faixa_y=[0, 108])
+            st.info(AVISO_MMAM_PREVIA)
 
     # 2) % de entregas no prazo e 3) novas emergências --------------------
     if df_totais is not None and not df_totais.empty:
