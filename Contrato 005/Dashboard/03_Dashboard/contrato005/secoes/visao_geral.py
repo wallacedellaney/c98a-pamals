@@ -13,6 +13,7 @@ import streamlit as st
 
 from contrato005.components import data_global
 from contrato005.components.paleta import CATEGORICA, STATUS, layout_grafico
+from contrato005.components.utils import formatar_moeda
 from contrato005.data.carregar_dados import carregar_computo_mensal
 
 
@@ -123,10 +124,10 @@ def render(dados):
         st.subheader("Pagamentos")
         pc1, pc2 = st.columns(2)
         with pc1:
-            st.metric("Total faturado", f"R$ {df_pag['faturado'].sum():,.0f}")
+            st.metric("Total faturado", formatar_moeda(df_pag['faturado'].sum()))
         with pc2:
-            st.metric("Pendente", f"R$ {df_pag['pendente'].sum():,.0f}")
-        st.caption(f"Saldo do contrato a faturar: R$ {contrato['saldo_a_faturar']:,.2f}")
+            st.metric("Pendente", formatar_moeda(df_pag['pendente'].sum()))
+        st.caption(f"Saldo do contrato a faturar: {formatar_moeda(contrato['saldo_a_faturar'])}")
         if st.button("Ver Pagamentos →", width="stretch", key="vg_ir_pagamentos"):
             _ir_para("Pagamentos")
 
@@ -157,8 +158,8 @@ def render(dados):
         if ind_reajuste is not None and not ind_reajuste.empty:
             v_1 = ind_reajuste.loc[ind_reajuste["indicador"] == "Valor do Contrato após 1° Reajuste", "valor"]
             v_2 = ind_reajuste.loc[ind_reajuste["indicador"] == "Valor do Contrato após 2° Reajuste", "valor"]
-            st.metric("Valor do contrato (após 1° Reajuste)", f"R$ {v_1.iloc[0]:,.2f}" if len(v_1) else "—")
-            st.caption(f"Após 2° Reajuste (projeção): R$ {v_2.iloc[0]:,.2f}" if len(v_2) else "—")
+            st.metric("Valor do contrato (após 1° Reajuste)", formatar_moeda(v_1.iloc[0]) if len(v_1) else "—")
+            st.caption(f"Após 2° Reajuste (projeção): {formatar_moeda(v_2.iloc[0])}" if len(v_2) else "—")
         else:
             st.metric("Valor do contrato (após reajuste)", "—")
         if st.button("Ver Reajuste →", width="stretch", key="vg_ir_reajuste"):

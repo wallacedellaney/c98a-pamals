@@ -70,4 +70,18 @@ Salvar a lista de empenhos também como aba própria (`Empenhos`) no arquivo tra
 ## No dashboard
 
 * **Resumo rápido por módulo**: 3 botões (Módulo 1/2/3); ao clicar, mostra o total de Valor das NFs/Faturado/Pendente só daquele módulo, sem precisar filtrar a tabela.
-* **Empenhos**: seção própria dentro da tela de Pagamentos, com busca por número de empenho (NE) e totais de valor empenhado/saldo.
+* **Empenhos**: seção própria dentro da tela de Pagamentos, com busca por número de empenho (NE) e totais de valor empenhado/saldo — escondida no deploy externo "005CELOG2025" (ver `site_005celog2025.md`).
+
+## Bug corrigido em 2026-07-18 — formatação de moeda (separador confuso)
+
+Wallace: "o pedenten nos dois dasbord ta assim 40,817... parece que é 40
+reais". Causa: todo valor em R$ era formatado com `f"R$ {valor:,.2f}"`
+(estilo americano — vírgula pro milhar, ponto pro decimal), dando "R$
+40,817.16". Lendo à brasileira (vírgula = decimal), isso parece "R$
+40,82" em vez dos R$ 40.817,16 reais. Corrigido em todo o Contrato 005:
+novo `formatar_moeda()`/`formatar_numero()` em
+`contrato005/components/utils.py` (troca separador de milhar/decimal pro
+padrão brasileiro: "R$ 40.817,16"), usado em Visão Geral, Pagamentos e
+Reajuste (inclusive os índices IPCA, que tinham o mesmo problema). Gráficos
+Plotly com eixo/hover em R$ (Pagamentos, Reajuste) ganharam
+`fig.update_layout(separators=",.")` pelo mesmo motivo.

@@ -13,12 +13,8 @@ import plotly.express as px
 import streamlit as st
 
 from contrato005.components.paleta import AMBER, CATEGORICA, CYAN, INK, LINE, PANEL, SECONDARY, STATUS, layout_grafico
-
-
-def _fmt_moeda(valor):
-    if valor is None or pd.isna(valor):
-        return "—"
-    return f"R$ {valor:,.2f}"
+from contrato005.components.utils import formatar_moeda as _fmt_moeda
+from contrato005.components.utils import formatar_numero
 
 
 def _indicador(df, rotulo, ocorrencia=1):
@@ -161,7 +157,7 @@ def render(dados):
             x=pd.Timestamp(2025, 10, 1), line_dash="dash", line_color=SECONDARY,
             annotation_text="1° Reajuste", annotation_position="top",
         )
-        fig.update_layout(barmode="stack")
+        fig.update_layout(barmode="stack", separators=",.")
         layout_grafico(fig, altura=280)
         st.plotly_chart(fig, width="stretch")
         st.caption(
@@ -214,8 +210,8 @@ def _detalhe_reajuste(ind, ocorrencia):
     valor_hv_pos = _indicador(ind, f"Valor da hora de voo após {ordinal} Reajuste", 1)
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("Índice IPCA (ano anterior)", f"{ipca_anterior:,.2f}" if ipca_anterior else "—")
-    c2.metric("Índice IPCA (ano atual)", f"{ipca_atual:,.2f}" if ipca_atual else "—")
+    c1.metric("Índice IPCA (ano anterior)", formatar_numero(ipca_anterior) if ipca_anterior else "—")
+    c2.metric("Índice IPCA (ano atual)", formatar_numero(ipca_atual) if ipca_atual else "—")
     c3.metric(f"Índice do {ordinal} Reajuste", f"{indice * 100:.2f}%" if indice is not None else "—")
 
     c4, c5, c6, c7 = st.columns(4)

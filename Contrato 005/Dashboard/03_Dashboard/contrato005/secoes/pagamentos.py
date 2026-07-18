@@ -6,7 +6,7 @@ import streamlit as st
 
 from contrato005.components import data_global
 from contrato005.components.paleta import CATEGORICA, layout_grafico
-from contrato005.components.utils import ordenar_unicos
+from contrato005.components.utils import formatar_moeda, ordenar_unicos
 
 MODULOS = [1, 2, 3]
 
@@ -55,9 +55,9 @@ def render(dados):
 
     modulo_atual = df[df["modulo"] == st.session_state["modulo_resumo"]]
     r1, r2, r3 = st.columns(3)
-    r1.metric(f"Valor das NFs — Módulo {st.session_state['modulo_resumo']}", f"R$ {modulo_atual['valor_nfs'].sum():,.2f}")
-    r2.metric("Faturado", f"R$ {modulo_atual['faturado'].sum():,.2f}")
-    r3.metric("Pendente", f"R$ {modulo_atual['pendente'].sum():,.2f}")
+    r1.metric(f"Valor das NFs — Módulo {st.session_state['modulo_resumo']}", formatar_moeda(modulo_atual['valor_nfs'].sum()))
+    r2.metric("Faturado", formatar_moeda(modulo_atual['faturado'].sum()))
+    r3.metric("Pendente", formatar_moeda(modulo_atual['pendente'].sum()))
 
     st.divider()
 
@@ -83,10 +83,10 @@ def render(dados):
         filtrado = filtrado[filtrado["numero_nota_fiscal"].isin(notas)]
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Faturado (filtro)", f"R$ {filtrado['faturado'].sum():,.2f}")
-    col2.metric("Pendente (filtro)", f"R$ {filtrado['pendente'].sum():,.2f}")
-    col3.metric("Valor total do contrato", f"R$ {contrato['valor_total_contrato']:,.2f}")
-    col4.metric("Saldo a faturar", f"R$ {contrato['saldo_a_faturar']:,.2f}")
+    col1.metric("Faturado (filtro)", formatar_moeda(filtrado['faturado'].sum()))
+    col2.metric("Pendente (filtro)", formatar_moeda(filtrado['pendente'].sum()))
+    col3.metric("Valor total do contrato", formatar_moeda(contrato['valor_total_contrato']))
+    col4.metric("Saldo a faturar", formatar_moeda(contrato['saldo_a_faturar']))
 
     # Empenho é detalhe interno de execução orçamentária — escondido no
     # deploy externo "005CELOG2025" (pedido do Wallace: "tira empenho do
@@ -121,8 +121,8 @@ def render(dados):
                 empenhos_filtrados = empenhos_filtrados[empenhos_filtrados["responsavel"].isin(responsaveis)]
 
             e1, e2 = st.columns(2)
-            e1.metric("Valor empenhado (total)", f"R$ {empenhos_filtrados['valor_empenhado'].sum():,.2f}")
-            e2.metric("Saldo (total)", f"R$ {empenhos_filtrados['saldo'].sum():,.2f}")
+            e1.metric("Valor empenhado (total)", formatar_moeda(empenhos_filtrados['valor_empenhado'].sum()))
+            e2.metric("Saldo (total)", formatar_moeda(empenhos_filtrados['saldo'].sum()))
             st.dataframe(empenhos_filtrados, width="stretch", hide_index=True, height=360)
 
     with st.expander("Evolução mensal do faturamento", expanded=True):
@@ -134,7 +134,11 @@ def render(dados):
                       color_discrete_sequence=[CATEGORICA[0]],
                       category_orders={"referencia": evolucao["referencia"].tolist()})
         fig.update_traces(hovertemplate="%{x}<br>R$ %{y:,.2f}<extra></extra>")
-        fig.update_layout(xaxis_title="", yaxis_title="Valor faturado (R$)")
+        # separators=",." troca o padrão americano (1,234.56) pro brasileiro
+        # (1.234,56) em todo o gráfico (eixo e hover) — achado pelo Wallace em
+        # 2026-07-18: "40,817... parece que e 40 reais" (lido à brasileira, a
+        # vírgula do formato americano parece separador decimal).
+        fig.update_layout(xaxis_title="", yaxis_title="Valor faturado (R$)", separators=",.")
         fig.update_xaxes(tickangle=-45)
         fig.update_yaxes(tickprefix="R$ ", tickformat=",.0f")
         layout_grafico(fig, altura=300)
