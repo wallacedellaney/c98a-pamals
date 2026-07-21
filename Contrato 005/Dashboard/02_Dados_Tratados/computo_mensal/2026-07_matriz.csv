@@ -638,8 +638,8 @@ matricula,dia,fim_de_semana,montada
 2741,17,False,1.0
 2741,18,True,1.0
 2741,19,True,1.0
-2741,20,False,1.0
-2741,21,False,1.0
+2741,20,False,0.0
+2741,21,False,0.0
 2741,22,False,
 2741,23,False,
 2741,24,False,
@@ -697,11 +697,11 @@ matricula,dia,fim_de_semana,montada
 2743,14,False,1.0
 2743,15,False,0.0
 2743,16,False,0.0
-2743,17,False,0.0
-2743,18,True,0.0
-2743,19,True,0.0
-2743,20,False,0.0
-2743,21,False,0.0
+2743,17,False,1.0
+2743,18,True,1.0
+2743,19,True,1.0
+2743,20,False,1.0
+2743,21,False,1.0
 2743,22,False,
 2743,23,False,
 2743,24,False,
