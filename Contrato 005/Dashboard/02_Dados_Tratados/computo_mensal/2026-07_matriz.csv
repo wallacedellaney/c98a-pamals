@@ -264,11 +264,11 @@ matricula,dia,fim_de_semana,montada
 2722,15,False,1.0
 2722,16,False,0.0
 2722,17,False,0.0
-2722,18,True,0.0
-2722,19,True,0.0
-2722,20,False,0.0
-2722,21,False,0.0
-2722,22,False,0.0
+2722,18,True,1.0
+2722,19,True,1.0
+2722,20,False,1.0
+2722,21,False,1.0
+2722,22,False,1.0
 2722,23,False,
 2722,24,False,
 2722,25,True,
