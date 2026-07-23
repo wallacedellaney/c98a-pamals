@@ -12,14 +12,54 @@ relatório realmente existente**, seja ele de ontem ou de sexta-feira (se hoje
 for segunda) — nunca pular ou tentar inventar um relatório de fim de semana
 que não existe.
 
-Não há credencial do Google configurada no app Streamlit (diferente das outras áreas, que leem cópias `.xlsx` locais de Sheets). Por isso, o fluxo aqui é:
-
-1. Quando o Wallace pedir ("atualiza", "busca o mais recente"), o Claude busca no Drive o `.docx` mais recente ainda não salvo localmente e grava o texto em `01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_DD_MM_AAAA.txt`.
-2. O botão "Atualizar dados" do site só reprocessa os `.txt` já salvos localmente (roda `extrair_disponibilidade_diaria.py` + limpa cache) — não busca nada novo sozinho.
+**Desatualizado — a partir de 2026-07-09 esta fonte tem credencial própria e
+busca automática** (parágrafo antigo mantido por contexto histórico: já
+existiu um tempo em que só o Claude buscava manualmente na conversa). Ver
+`C-98A PAMALS/00_Instrucoes/atualizacoes.md` pra arquitetura completa (roda
+de 2 em 2h, seg-sex, via GitHub Actions + Mac). O botão "🔄 Atualizar dados"
+do site continua só reprocessando os `.txt` já salvos localmente (não busca
+nada novo sozinho) — ver seção "Sempre busca o dia de hoje" abaixo pra como
+o site passou a se garantir sem depender só desse ciclo de 2h.
 
 Isso é o mesmo padrão já usado no RAC e no Contrato 005 (ver `CLAUDE.md` da Coordenadoria).
 
 Cada relatório processado fica salvo como um arquivo próprio — nunca sobrescrever relatórios antigos, para manter o histórico.
+
+## "Sempre busca o dia de hoje" + aviso de desatualizado (2026-07-23)
+
+Pedido do Wallace: "a disp diarai, sempre busca o dia de hj e atualiza, se
+tiver desatualizdo se encomode, e sempre ta seleiconado o no dia de
+referencia o dia correto, se tiver errado avisar , deixar escrito la
+quando buscou a ultima atualizacao". Motivo: a automação de 2 em 2h (ver
+`atualizacoes.md`) já se mostrou não 100% confiável (GitHub Actions
+atrasando/pulando horários, `launchd` do Mac travado por dias — ver seção
+"Achado e corrigido em 2026-07-23" nesse arquivo) — em vez de só esperar
+o próximo ciclo, a própria página de Disponibilidade Diária agora se
+garante sozinha:
+
+- Ao abrir a página, `_garantir_relatorio_hoje()`
+  (`coordenadoria/secoes/disponibilidade_diaria.py`) checa o Drive **na
+  hora** (não só reprocessa local) — se hoje for dia útil (seg-sex) e
+  ainda não tiver relatório de hoje salvo, busca de verdade. Cacheado por
+  30 minutos (`st.cache_data(ttl=1800)`, compartilhado entre todo mundo
+  que abrir a página) — não bate no Drive a cada acesso, só no máximo uma
+  vez a cada meia hora.
+- Se achar um relatório novo, a página recarrega sozinha (`st.rerun()`) e
+  volta o seletor pro mais recente (`disp_idx = 0`) — sempre a data
+  correta selecionada por padrão.
+- Mostra sempre uma linha de status logo no topo: "✅ Relatório em dia.
+  Última verificação no Drive: HH:MM" — ou, se o relatório mais recente
+  não for o de hoje (mesmo depois de tentar buscar), um aviso visível
+  (`st.warning`) dizendo há quantos dias está desatualizado. Qualquer erro
+  ao falar com o Drive (credencial, rede) também vira aviso visível, nunca
+  quebra a página.
+- Import em processo (`import extrair_disponibilidade_diaria`, não
+  subprocesso) — precisa de `Coordenadoria/05_Scripts/python` no
+  `sys.path` (mesmo padrão de `fechamento_mensal.py` no Contrato 005) e de
+  `drive_sync.garantir_credencial_arquivo()` antes de chamar
+  `atualizar_do_drive()`, pra funcionar tanto local quanto no Streamlit
+  Cloud (credencial vem do secret `GOOGLE_SERVICE_ACCOUNT_JSON` se o
+  arquivo `.secrets/service_account.json` ainda não existir).
 
 ## Bug corrigido em 2026-07-07 — BOM quebrava o parser na busca automática
 

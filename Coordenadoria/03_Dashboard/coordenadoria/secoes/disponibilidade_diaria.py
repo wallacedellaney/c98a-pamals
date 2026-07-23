@@ -7,7 +7,9 @@ comparação com o relatório anterior, alertas classificados, painel por
 unidade, busca e filtros.
 """
 
+import sys
 from datetime import date, datetime
+from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
@@ -22,6 +24,63 @@ from coordenadoria.utils import atualizar_dados_disponibilidade, DISPONIBILIDADE
 ORDEM_SITUACAO = ["DI", "DO", "II", "IN", "ITR", "IS", "IP"]
 
 FILTRO_KEYS = ["disp_f_unidade", "disp_f_situacao", "disp_f_busca"]
+
+# Sys.path pro Scripts da Coordenadoria (mesmo padrão de fechamento_mensal.py
+# no Contrato 005) — permite `import extrair_disponibilidade_diaria` direto,
+# sem subprocesso, pra "sempre busca o dia de hj" (ver _garantir_relatorio_hoje).
+SCRIPTS_PYTHON = Path(__file__).resolve().parents[3] / "05_Scripts" / "python"
+if str(SCRIPTS_PYTHON) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_PYTHON))
+
+
+@st.cache_data(ttl=1800, show_spinner="Verificando relatório mais recente no Drive...")
+def _garantir_relatorio_hoje():
+    """"Sempre busca o dia de hj e atualiza" (pedido do Wallace em
+    2026-07-23) — em vez de esperar o ciclo automático de 2 em 2h (que já se
+    mostrou não 100% confiável, ver 00_Instrucoes/atualizacoes.md), a própria
+    página busca no Drive na hora, se hoje for dia útil e ainda não tiver
+    sido verificado nos últimos 30min (`ttl` do cache — compartilhado entre
+    todo mundo que abrir a página, pra não bater no Drive a cada acesso).
+    Nunca deixa a página quebrar por causa disso — qualquer erro vira só um
+    aviso discreto (ver _secao_status_atualizacao)."""
+    agora = datetime.now()
+    if agora.weekday() >= 5:
+        return {"tentou": False, "motivo": "fim de semana — não sai relatório", "verificado_em": agora}
+    try:
+        from shared import drive_sync
+        import extrair_disponibilidade_diaria as edd
+        drive_sync.garantir_credencial_arquivo()
+        resultado = edd.atualizar_do_drive()
+        return {"tentou": True, "resultado": resultado, "verificado_em": agora}
+    except Exception as e:
+        return {"tentou": True, "erro": str(e), "verificado_em": agora}
+
+
+def _secao_status_atualizacao(datas):
+    """Mostra quando a própria página checou o Drive por último e se o
+    relatório mais recente já é o de hoje — "se tiver desatualizado, se
+    encomode": avisa visivelmente em vez de ficar quieto."""
+    status = _garantir_relatorio_hoje()
+    arquivo_novo = status.get("resultado", {}).get("arquivo") if status.get("resultado", {}).get("status") == "atualizado" else None
+    if arquivo_novo and st.session_state.get("disp_ultimo_arquivo_visto") != arquivo_novo:
+        st.session_state["disp_ultimo_arquivo_visto"] = arquivo_novo
+        st.session_state["disp_idx"] = 0
+        st.rerun()
+
+    hoje = date.today()
+    mais_recente = datas[0] if datas else None
+    verificado_em = status["verificado_em"].strftime("%H:%M")
+
+    if status.get("erro"):
+        st.warning(f"⚠️ Não consegui verificar o Drive agora ({verificado_em}): {status['erro']}")
+    elif mais_recente is not None and hoje.weekday() < 5 and mais_recente < hoje:
+        dias_atras = (hoje - mais_recente).days
+        st.warning(
+            f"⚠️ Relatório desatualizado — o mais recente é de **{mais_recente.strftime('%d/%m/%Y')}** "
+            f"({dias_atras} dia(s) atrás), ainda não saiu o de hoje. Última verificação no Drive: {verificado_em}."
+        )
+    else:
+        st.caption(f"✅ Relatório em dia. Última verificação no Drive: **{verificado_em}**.")
 
 
 def render(dados):
@@ -45,6 +104,8 @@ def render(dados):
     _estilo()
 
     datas = sorted(relatorios["data_referencia"].dt.date.unique(), reverse=True)
+    _secao_status_atualizacao(datas)
+
     if "disp_idx" not in st.session_state:
         st.session_state["disp_idx"] = 0
     st.session_state["disp_idx"] = min(st.session_state["disp_idx"], len(datas) - 1)
