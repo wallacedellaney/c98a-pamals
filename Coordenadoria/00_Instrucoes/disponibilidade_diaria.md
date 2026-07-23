@@ -61,6 +61,26 @@ garante sozinha:
   Cloud (credencial vem do secret `GOOGLE_SERVICE_ACCOUNT_JSON` se o
   arquivo `.secrets/service_account.json` ainda não existir).
 
+## Aba "Evolução e histórico" (2026-07-23)
+
+Pedido do Wallace: "historico de disponibidade, vamos criar tb, sei que
+posso selecionar o dia, mas historicos semanais, e comparacoes diarias,
+mensais, tudo ali dentro da disponiblidade diaria mesmo" — tudo dentro da
+mesma página (não uma tela separada). A comparação diária (com o
+relatório imediatamente anterior) e a seleção de data já existiam; o que
+faltava era a visão de **semana** e **mês**, agora numa 2ª aba
+("Situação do dia" continua com tudo que já existia — cards, previsão,
+comparação diária, alertas, painel por unidade):
+
+- **Histórico da semana** (segunda a sexta, mesmo critério já usado em
+  Empréstimos): seletor de semana, tabela com D/M/% disponibilidade/
+  Indisponíveis por dia útil. Dia sem relatório salvo (ex.: não saiu
+  relatório naquele dia, ou é uma sexta que ainda não chegou) aparece
+  como "—".
+- **Comparação mensal**: gráfico de linha com a **média de D e de M por
+  mês** (decisão confirmada com o Wallace — média simples dos relatórios
+  daquele mês, não pondera por dias úteis restantes).
+
 ## Bug corrigido em 2026-07-07 — BOM quebrava o parser na busca automática
 
 Na primeira vez que a busca automática (`atualizar_do_drive()`, GitHub

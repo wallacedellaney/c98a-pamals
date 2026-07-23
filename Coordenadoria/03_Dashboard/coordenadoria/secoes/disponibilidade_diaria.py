@@ -112,35 +112,41 @@ def render(dados):
 
     _cabecalho(dados, datas)
 
-    data_atual = datas[st.session_state["disp_idx"]]
-    rel_atual = relatorios[relatorios["data_referencia"].dt.date == data_atual].iloc[0]
-    aer_atual = aeronaves[aeronaves["data_referencia"].dt.date == data_atual].copy()
+    aba_hoje, aba_evolucao = st.tabs(["Situação do dia", "Evolução e histórico"])
 
-    idx = st.session_state["disp_idx"]
-    data_anterior = datas[idx + 1] if idx + 1 < len(datas) else None
-    rel_anterior = relatorios[relatorios["data_referencia"].dt.date == data_anterior].iloc[0] if data_anterior is not None else None
-    aer_anterior = aeronaves[aeronaves["data_referencia"].dt.date == data_anterior].copy() if data_anterior is not None else None
+    with aba_hoje:
+        data_atual = datas[st.session_state["disp_idx"]]
+        rel_atual = relatorios[relatorios["data_referencia"].dt.date == data_atual].iloc[0]
+        aer_atual = aeronaves[aeronaves["data_referencia"].dt.date == data_atual].copy()
 
-    _cards_indicadores(rel_atual)
-    st.divider()
-    col_dist, col_prev = st.columns([1.2, 1])
-    with col_dist:
-        _distribuicao_situacao(aer_atual)
-    with col_prev:
-        _previsoes(rel_atual)
+        idx = st.session_state["disp_idx"]
+        data_anterior = datas[idx + 1] if idx + 1 < len(datas) else None
+        rel_anterior = relatorios[relatorios["data_referencia"].dt.date == data_anterior].iloc[0] if data_anterior is not None else None
+        aer_anterior = aeronaves[aeronaves["data_referencia"].dt.date == data_anterior].copy() if data_anterior is not None else None
 
-    if rel_anterior is not None:
+        _cards_indicadores(rel_atual)
         st.divider()
-        _comparacao(rel_atual, aer_atual, rel_anterior, aer_anterior, data_anterior)
+        col_dist, col_prev = st.columns([1.2, 1])
+        with col_dist:
+            _distribuicao_situacao(aer_atual)
+        with col_prev:
+            _previsoes(rel_atual)
 
-    st.divider()
-    aer_atual["_alerta"] = aer_atual.apply(classificar_alerta, axis=1)
-    _alertas(aer_atual)
+        if rel_anterior is not None:
+            st.divider()
+            _comparacao(rel_atual, aer_atual, rel_anterior, aer_anterior, data_anterior)
 
-    st.divider()
-    filtros = _busca_e_filtros(aer_atual)
-    aer_f = _aplicar_filtros(aer_atual, filtros)
-    _painel_por_unidade(aer_f)
+        st.divider()
+        aer_atual["_alerta"] = aer_atual.apply(classificar_alerta, axis=1)
+        _alertas(aer_atual)
+
+        st.divider()
+        filtros = _busca_e_filtros(aer_atual)
+        aer_f = _aplicar_filtros(aer_atual, filtros)
+        _painel_por_unidade(aer_f)
+
+    with aba_evolucao:
+        _secao_evolucao(relatorios)
 
 
 def _estilo():
@@ -489,6 +495,78 @@ def _painel_por_unidade(aer):
                 for i, (_, row) in enumerate(grupo.iterrows()):
                     with cols[i % 3]:
                         _card_aeronave_disp(row)
+
+
+def _semanas_disponiveis(datas):
+    """Segundas-feiras de cada semana com pelo menos 1 relatório — "semana"
+    é sempre segunda a sexta (mesmo critério já usado em Empréstimos,
+    2026-07-23: "semana entenda de segunda a sexta")."""
+    return sorted({d - pd.Timedelta(days=d.weekday()) for d in datas})
+
+
+def _tabela_semana(relatorios, datas):
+    st.markdown("##### Histórico da semana (segunda a sexta)")
+    semanas = _semanas_disponiveis(datas)
+    semana_escolhida = st.selectbox(
+        "Semana", semanas, index=len(semanas) - 1,
+        format_func=lambda seg: f"Semana de {seg.strftime('%d/%m/%Y')} a {(seg + pd.Timedelta(days=4)).strftime('%d/%m/%Y')}",
+        key="disp_semana",
+    )
+    dias_uteis = [semana_escolhida + pd.Timedelta(days=i) for i in range(5)]
+    nomes_dia = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"]
+
+    linhas = []
+    for nome, dia in zip(nomes_dia, dias_uteis):
+        if dia not in datas:
+            linhas.append({"Dia": nome, "Data": dia.strftime("%d/%m"), "D": "—", "M": "—",
+                            "% disponibilidade": "—", "Indisponíveis": "—"})
+            continue
+        rel = relatorios[relatorios["data_referencia"].dt.date == dia].iloc[0]
+        d, m = int(rel["disponiveis_hoje"]), int(rel["montadas_hoje"])
+        pct = round(100 * d / m) if m else 0
+        indisponiveis = int(rel["ii"]) + int(rel["in_"]) + int(rel["itr"]) + int(rel["is_"]) + int(rel["ip"])
+        linhas.append({"Dia": nome, "Data": dia.strftime("%d/%m"), "D": str(d), "M": str(m),
+                        "% disponibilidade": f"{pct}%", "Indisponíveis": str(indisponiveis)})
+
+    st.dataframe(pd.DataFrame(linhas), hide_index=True, width="stretch")
+    st.caption("\"—\" = sem relatório salvo naquele dia (raro num dia útil).")
+
+
+def _grafico_mensal(relatorios):
+    st.markdown("##### Comparação mensal (média de D/M por mês)")
+    rel = relatorios.copy()
+    rel["mes"] = rel["data_referencia"].dt.to_period("M").astype(str)
+    resumo = rel.groupby("mes").agg(
+        media_disponiveis=("disponiveis_hoje", "mean"),
+        media_montadas=("montadas_hoje", "mean"),
+    ).reset_index().sort_values("mes")
+
+    fig = px.line(resumo, x="mes", y=["media_disponiveis", "media_montadas"], markers=True,
+                  color_discrete_sequence=[STATUS["good"], CYAN])
+    fig.for_each_trace(lambda t: t.update(name={"media_disponiveis": "Disponíveis (D)", "media_montadas": "Montadas (M)"}[t.name]))
+    fig.update_layout(xaxis_title="", yaxis_title="Média por dia", legend_title="")
+    layout_grafico(fig, altura=260)
+    st.plotly_chart(fig, width="stretch")
+    st.caption("Média simples dos relatórios daquele mês (não pondera por dias úteis restantes).")
+
+
+def _secao_evolucao(relatorios):
+    """Evolução diária/semanal/mensal da frota inteira, tudo dentro da
+    própria Disponibilidade Diária (2026-07-23, pedido do Wallace:
+    "historico de disponibidade, vamos criar tb ... historicos semanais, e
+    comparacoes diarias, mensais, tudo ali dentro da disponiblidade diaria
+    mesmo"). A comparação diária (com o relatório imediatamente anterior)
+    já existia na aba "Situação do dia" — aqui entram semana e mês, que
+    faltavam."""
+    if relatorios.empty or len(relatorios) < 2:
+        st.info("Ainda não há histórico suficiente pra mostrar evolução.")
+        return
+
+    datas = sorted(relatorios["data_referencia"].dt.date.unique())
+
+    _tabela_semana(relatorios, datas)
+    st.divider()
+    _grafico_mensal(relatorios)
 
 
 def _pendencias_rac_por_dia(dados, matricula):
