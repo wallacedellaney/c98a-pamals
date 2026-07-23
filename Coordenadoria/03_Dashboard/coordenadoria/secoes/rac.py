@@ -49,13 +49,17 @@ def render(dados):
     filtros = _busca_e_filtros(aeronaves, pendencias)
     aeronaves_f, pendencias_f = _aplicar_filtros(aeronaves, pendencias, filtros)
 
-    aba_aeronaves, aba_materiais, aba_matriz = st.tabs(["Aeronaves", "Materiais críticos", "Matriz RAC"])
+    aba_aeronaves, aba_materiais, aba_matriz, aba_evolucao = st.tabs(
+        ["Aeronaves", "Materiais críticos", "Matriz RAC", "Evolução"]
+    )
     with aba_aeronaves:
         _aba_aeronaves(aeronaves_f, pendencias_f)
     with aba_materiais:
         _materiais_criticos(pendencias_f)
     with aba_matriz:
         _matriz(aeronaves_f, pendencias_f)
+    with aba_evolucao:
+        _secao_evolucao(dados)
 
 
 def _estilo_rac():
@@ -434,6 +438,119 @@ def _matriz(aeronaves, pendencias):
     pivot = pivot[ordem_colunas]
     st.caption("Cabeçalho fica visível ao rolar (padrão do componente de tabela).")
     st.dataframe(pivot, width="stretch", height=520)
+
+
+def _resumo_diario_rac(historico):
+    """Totais da frota inteira por dia — não é por aeronave (isso já existe
+    em _historico_aeronave_rac, dentro do detalhe de cada aeronave)."""
+    return (
+        historico.groupby("data")
+        .agg(
+            pns_distintos=("pn", "nunique"),
+            aeronaves_afetadas=("matricula", "nunique"),
+            unidades_faltantes=("quantidade_faltante", "sum"),
+        )
+        .reset_index()
+        .sort_values("data")
+    )
+
+
+def _filtrar_por_chaves(df_dia, chaves):
+    """`chaves` = conjunto de tuplas (matricula, pn). Filtra as linhas de
+    `df_dia` cuja combinação matricula+pn está em `chaves`."""
+    if not chaves:
+        return df_dia.iloc[0:0]
+    indice = pd.MultiIndex.from_tuples(sorted(chaves), names=["matricula", "pn"])
+    mi = pd.MultiIndex.from_arrays([df_dia["matricula"], df_dia["pn"]])
+    return df_dia[mi.isin(indice)]
+
+
+def _diff_dias_rac(historico, data_anterior, data_atual):
+    """Compara 2 snapshots (chave = matrícula + PN) achando pendências novas
+    (apareceram) e resolvidas (sumiram — item chegou ou aeronave saiu de
+    pendência) entre um dia e o outro."""
+    ant = historico[historico["data"] == data_anterior]
+    atu = historico[historico["data"] == data_atual]
+    chave_ant = set(zip(ant["matricula"], ant["pn"]))
+    chave_atu = set(zip(atu["matricula"], atu["pn"]))
+    return chave_atu - chave_ant, chave_ant - chave_atu
+
+
+def _secao_evolucao(dados):
+    """Evolução diária + histórico da frota inteira (2026-07-23, pedido do
+    Wallace: "coloca uma evolucao diaria e historico na RAC tb") — mesmo
+    princípio já usado em Disponibilidade Diária/Empréstimos, mas aqui pra
+    todas as aeronaves juntas, não uma por vez (o histórico por aeronave já
+    existia, dentro de "Aeronaves" → clicar num card → aba "Histórico")."""
+    historico = dados.get("rac_historico")
+    if historico is None or historico.empty:
+        st.info(
+            "Ainda não há histórico suficiente pra mostrar evolução — o registro começou em "
+            "2026-07-06 e acumula um snapshot por dia útil, a partir da atualização automática do RAC."
+        )
+        return
+
+    hist = historico.copy()
+    hist["data"] = hist["data"].dt.date
+    resumo = _resumo_diario_rac(hist)
+
+    st.markdown("##### Evolução diária (frota inteira)")
+    fig = px.line(resumo, x="data", y="pns_distintos", markers=True, color_discrete_sequence=[AMBER])
+    fig.update_layout(yaxis_title="PNs distintos faltantes", xaxis_title="")
+    layout_grafico(fig, altura=240)
+    st.plotly_chart(fig, width="stretch")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.caption("Aeronaves afetadas por dia")
+        fig2 = px.line(resumo, x="data", y="aeronaves_afetadas", markers=True, color_discrete_sequence=[CYAN])
+        fig2.update_layout(yaxis_title="", xaxis_title="")
+        layout_grafico(fig2, altura=200)
+        st.plotly_chart(fig2, width="stretch")
+    with col2:
+        st.caption("Unidades faltantes por dia")
+        fig3 = px.line(resumo, x="data", y="unidades_faltantes", markers=True, color_discrete_sequence=[STATUS["critical"]])
+        fig3.update_layout(yaxis_title="", xaxis_title="")
+        layout_grafico(fig3, altura=200)
+        st.plotly_chart(fig3, width="stretch")
+
+    st.divider()
+    st.markdown("##### O que mudou de um dia para o outro")
+    datas = sorted(hist["data"].unique())
+    if len(datas) < 2:
+        st.caption("Ainda não há 2 dias pra comparar.")
+    else:
+        data_atual, data_anterior = datas[-1], datas[-2]
+        st.caption(f"Comparando {data_anterior.strftime('%d/%m/%Y')} → {data_atual.strftime('%d/%m/%Y')}")
+        novas, resolvidas = _diff_dias_rac(hist, data_anterior, data_atual)
+
+        c1, c2 = st.columns(2)
+        c1.metric("Pendências novas (matrícula + PN)", len(novas), delta_color="off")
+        c2.metric("Pendências resolvidas (matrícula + PN)", len(resolvidas), delta_color="off")
+
+        if novas or resolvidas:
+            with st.expander("Ver detalhes"):
+                colunas = ["matricula", "unidade", "pn", "nomenclatura", "quantidade_faltante"]
+                if novas:
+                    st.caption("Novas")
+                    df_dia_atual = hist[hist["data"] == data_atual]
+                    st.dataframe(_filtrar_por_chaves(df_dia_atual, novas)[colunas], hide_index=True, width="stretch")
+                if resolvidas:
+                    st.caption("Resolvidas (item chegou, ou a pendência foi encerrada)")
+                    df_dia_anterior = hist[hist["data"] == data_anterior]
+                    st.dataframe(_filtrar_por_chaves(df_dia_anterior, resolvidas)[colunas], hide_index=True, width="stretch")
+
+    st.divider()
+    st.markdown("##### Histórico diário (resumo)")
+    tabela = resumo.rename(columns={
+        "data": "Data", "pns_distintos": "PNs distintos faltantes",
+        "aeronaves_afetadas": "Aeronaves afetadas", "unidades_faltantes": "Unidades faltantes",
+    }).sort_values("Data", ascending=False)
+    tabela["Data"] = tabela["Data"].apply(lambda d: d.strftime("%d/%m/%Y"))
+    st.dataframe(tabela, hide_index=True, width="stretch")
+
+    csv = tabela.to_csv(index=False).encode("utf-8")
+    st.download_button("⬇️ Exportar histórico diário", csv, file_name="rac_evolucao_diaria.csv", mime="text/csv")
 
 
 def _detalhe_aeronave(dados, matricula):

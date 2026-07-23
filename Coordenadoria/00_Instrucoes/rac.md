@@ -119,6 +119,28 @@ pendência** no RAC nunca aparecem em `historico_rac.csv` (só registramos
 PN com falta > 0), então não têm com o que cruzar — isso é esperado, não é
 falha de coleta.
 
+## Evolução diária + histórico da frota inteira (2026-07-23)
+
+Pedido do Wallace: "coloca uma evolucao diaria e historico na RAC tb"
+(mesmo princípio já usado em Disponibilidade Diária/Empréstimos, mas aqui
+pra frota inteira, não uma aeronave de cada vez — o histórico por
+aeronave já existia, ver seção acima). Nova aba **"Evolução"** na tela RAC
+(`coordenadoria/secoes/rac.py::_secao_evolucao`), ao lado de "Aeronaves",
+"Materiais críticos" e "Matriz RAC":
+
+- **Evolução diária**: 3 gráficos de linha a partir do mesmo
+  `historico_rac.csv` (agrupado por dia, sem filtrar por aeronave) — PNs
+  distintos faltantes, aeronaves afetadas e unidades faltantes totais, por
+  dia.
+- **"O que mudou de um dia para o outro"**: compara os 2 últimos dias com
+  snapshot salvo, por chave **matrícula + PN** — mostra quantas pendências
+  são novas (apareceram) e quantas foram resolvidas (item chegou ou a
+  aeronave saiu de pendência), com expander pra ver os itens de cada
+  grupo.
+- **Histórico diário (resumo)**: tabela com uma linha por dia (Data, PNs
+  distintos, Aeronaves afetadas, Unidades faltantes), mais recente
+  primeiro, exportável em CSV.
+
 ## Decisões já tomadas (não usar % de completude)
 
 Em vez de "% de completude" (sem base de cálculo confiável — a planilha só traz o que falta, não um total de itens exigidos por aeronave), usar **faixas por quantidade de unidades faltantes**:
