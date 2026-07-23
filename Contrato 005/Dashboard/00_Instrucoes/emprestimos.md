@@ -123,6 +123,39 @@ itens (linhas)" e "Total de quantidade" lado a lado, e o gráfico de pizza
 "Empréstimos: status" também pesa por quantidade (`quantidade_efetiva`),
 igual à tela de Empréstimos.
 
+## "O que mudou de um dia para o outro" + "Histórico da semana" (2026-07-23)
+
+Pedido do Wallace: "nos emprestimos vamos colocar o que mudou de um dia
+para o outro e o historico da semana, semana entenda de segunda a sexta".
+Usa o snapshot diário já existente (`historico_devolucoes.csv`, 1 linha
+por item por dia, desde 2026-07-10 — mesmo arquivo do controle de data
+global, ver `analise_periodo.md`), comparando por `numero_ordem`:
+
+- **"O que mudou de um dia para o outro"**: compara os 2 últimos dias com
+  snapshot salvo (pula fim de semana sozinho, já que não sai relatório
+  nesses dias) — mostra **Novos pedidos** (apareceram no snapshot mais
+  recente) e **Devolvidos** (status virou "OK" e antes não era), em linhas
+  e em quantidade. Mudanças de status que não sejam "virou OK" (ex.: virou
+  "Desconsiderado") entram num aviso à parte, pra nunca sumir
+  silenciosamente. Expander opcional lista os itens de cada grupo.
+- **"Histórico da semana"**: seletor de semana (sempre **segunda a
+  sexta**, nunca sábado/domingo — confirmado pelo Wallace), tabela com uma
+  linha por dia útil (Pendentes/Devolvidos/Total do dia + Novos/Devolvidos
+  **naquele dia específico**, comparado com o dia útil anterior — inclusive
+  a segunda-feira compara com a sexta da semana passada, não fica em
+  branco). Dia útil sem snapshot ainda (ex.: sexta-feira antes de o
+  relatório do dia ter rodado) aparece como "—" em vez de zero, pra não
+  parecer que não mudou nada quando na verdade é só falta de dado.
+
+**Detalhe técnico**: `quantidade` foi acrescentada ao snapshot diário
+(`COLUNAS_HISTORICO` em `extrair_devolucoes.py`) nessa mesma mudança, pra
+essas 2 seções poderem mostrar quantidade além de contagem de linha —
+snapshots de antes de 2026-07-23 não têm essa coluna (contam como 1,
+mesma regra do resto da tela). Tabela da semana usa colunas só de texto
+(não número) de propósito — misturar número e "—" na mesma coluna do
+`st.dataframe` quebra a conversão pra Arrow (bug real visto ao testar:
+`ArrowInvalid: Could not convert '—'... to int64`).
+
 ## Atualização
 
 `extrair_devolucoes.py` segue o mesmo padrão das outras fontes com credencial própria (`atualizar_do_drive()`, xlsx binário, sem risco de bug de encoding). **Ainda não está no agendamento automático** — roda manual por enquanto (`python3 extrair_devolucoes.py --atualizar-do-drive`, ou pedir na conversa). Perguntar ao Wallace se quer adicionar a uma cadência quando fizer sentido.

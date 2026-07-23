@@ -40,10 +40,13 @@ COLUNAS = [
 # Snapshot diário dos itens (numero_ordem é único por linha, confirmado em
 # 2026-07-10) — mesmo padrão de Emergências/RAC/MTA/TPJL. Só existe
 # histórico a partir de quando essa gravação começou. Ver
-# 00_Instrucoes/analise_periodo.md.
+# 00_Instrucoes/analise_periodo.md. "quantidade" acrescentada em 2026-07-23
+# pra alimentar "O que mudou de um dia pro outro"/"Histórico da semana" em
+# emprestimos.py com quantidade, não só contagem de linhas — snapshots de
+# antes dessa data não têm essa coluna (fica NaN, contam como 1 na tela).
 HISTORICO_DEVOLUCOES = DADOS_TRATADOS / "historico_devolucoes.csv"
 COLUNAS_HISTORICO = [
-    "numero_ordem", "part_number", "categoria", "destino", "anv", "status",
+    "numero_ordem", "part_number", "categoria", "destino", "anv", "status", "quantidade",
 ]
 
 

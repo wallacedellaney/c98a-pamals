@@ -14,6 +14,148 @@ from contrato005.components.paleta import AMBER, CATEGORICA, STATUS, layout_graf
 from contrato005.components.utils import ordenar_unicos
 
 
+def _datas_disponiveis(historico):
+    if historico is None or historico.empty:
+        return []
+    return sorted(pd.to_datetime(historico["data_snapshot"]).dt.date.unique())
+
+
+def _quantidade_efetiva_historico(df_dia):
+    """Mesma regra da tela inteira: linha sem quantidade registrada conta
+    como 1. Snapshots de antes de 2026-07-23 nem têm a coluna "quantidade"
+    (acrescentada nessa data) — nesse caso todas contam como 1."""
+    if "quantidade" not in df_dia.columns:
+        return pd.Series(1.0, index=df_dia.index)
+    return df_dia["quantidade"].fillna(1)
+
+
+def _diff_dias(historico, data_anterior, data_atual):
+    """Compara o snapshot de `data_anterior` com o de `data_atual` (ambos
+    datetime.date), por numero_ordem: pedidos novos (apareceram) e
+    devolvidos (status virou "OK" e antes não era). Outras mudanças de
+    status (ex.: virou "Desconsiderado") entram num 3º grupo, só pra não
+    sumir silenciosamente."""
+    hist = historico.copy()
+    hist["data_snapshot"] = pd.to_datetime(hist["data_snapshot"]).dt.date
+
+    ant = hist[hist["data_snapshot"] == data_anterior].set_index("numero_ordem")
+    atu = hist[hist["data_snapshot"] == data_atual].set_index("numero_ordem")
+    chaves_ant, chaves_atu = set(ant.index), set(atu.index)
+
+    novos_chaves = chaves_atu - chaves_ant
+    devolvidos_chaves, outras_chaves = [], []
+    for chave in chaves_ant & chaves_atu:
+        s_ant, s_atu = ant.loc[chave, "status"], atu.loc[chave, "status"]
+        if s_ant != s_atu:
+            (devolvidos_chaves if s_atu == "OK" else outras_chaves).append(chave)
+
+    def _subset(chaves):
+        return atu.loc[sorted(chaves)].reset_index() if chaves else atu.iloc[0:0].reset_index()
+
+    return {"novos": _subset(novos_chaves), "devolvidos": _subset(devolvidos_chaves), "outras": _subset(outras_chaves)}
+
+
+def _secao_o_que_mudou(historico):
+    st.markdown("##### O que mudou de um dia para o outro")
+    datas = _datas_disponiveis(historico)
+    if len(datas) < 2:
+        st.caption("Ainda não há histórico suficiente pra comparar 2 dias.")
+        return
+    data_atual, data_anterior = datas[-1], datas[-2]
+    st.caption(f"Comparando {data_anterior.strftime('%d/%m/%Y')} → {data_atual.strftime('%d/%m/%Y')}")
+
+    diff = _diff_dias(historico, data_anterior, data_atual)
+    novos, devolvidos = diff["novos"], diff["devolvidos"]
+    qtd_novos = _quantidade_efetiva_historico(novos).sum()
+    qtd_devolvidos = _quantidade_efetiva_historico(devolvidos).sum()
+
+    c1, c2 = st.columns(2)
+    c1.metric("Novos pedidos", len(novos), f"{qtd_novos:,.0f} unid.".replace(",", "."), delta_color="off")
+    c2.metric("Devolvidos", len(devolvidos), f"{qtd_devolvidos:,.0f} unid.".replace(",", "."), delta_color="off")
+
+    if not diff["outras"].empty:
+        with st.expander(f"⚠️ {len(diff['outras'])} item(ns) com outra mudança de status (ex.: virou Desconsiderado)"):
+            st.dataframe(diff["outras"][["numero_ordem", "part_number", "destino", "status"]],
+                         hide_index=True, width="stretch")
+
+    if not novos.empty or not devolvidos.empty:
+        with st.expander("Ver os itens que mudaram"):
+            if not novos.empty:
+                st.caption("Novos pedidos")
+                st.dataframe(novos[["numero_ordem", "part_number", "categoria", "destino", "anv"]],
+                             hide_index=True, width="stretch")
+            if not devolvidos.empty:
+                st.caption("Devolvidos")
+                st.dataframe(devolvidos[["numero_ordem", "part_number", "categoria", "destino", "anv"]],
+                             hide_index=True, width="stretch")
+
+
+def _semanas_disponiveis(datas):
+    """Segundas-feiras de cada semana que tem pelo menos 1 snapshot —
+    "semana" pro Wallace é sempre segunda a sexta (2026-07-23: "semana
+    entenda de segunda a sexta")."""
+    segundas = sorted({d - pd.Timedelta(days=d.weekday()) for d in datas})
+    return segundas
+
+
+def _secao_semana(historico):
+    st.markdown("##### Histórico da semana (segunda a sexta)")
+    datas = _datas_disponiveis(historico)
+    if not datas:
+        st.caption("Ainda não há histórico suficiente.")
+        return
+    semanas = _semanas_disponiveis(datas)
+
+    semana_escolhida = st.selectbox(
+        "Semana", semanas, index=len(semanas) - 1,
+        format_func=lambda seg: f"Semana de {seg.strftime('%d/%m/%Y')} a {(seg + pd.Timedelta(days=4)).strftime('%d/%m/%Y')}",
+        key="emp_semana",
+    )
+
+    hist = historico.copy()
+    hist["data_snapshot"] = pd.to_datetime(hist["data_snapshot"]).dt.date
+    dias_uteis = [semana_escolhida + pd.Timedelta(days=i) for i in range(5)]
+    nomes_dia = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"]
+
+    linhas = []
+    dia_anterior_com_dado = None
+    # Acha o último snapshot antes do início da semana, pra calcular o
+    # "novos/devolvidos" do próprio segunda-feira também (comparado com a
+    # sexta da semana anterior, não só a partir de terça).
+    anteriores = [d for d in datas if d < semana_escolhida]
+    if anteriores:
+        dia_anterior_com_dado = anteriores[-1]
+
+    for nome, dia in zip(nomes_dia, dias_uteis):
+        if dia not in datas:
+            linhas.append({"Dia": nome, "Data": dia.strftime("%d/%m"), "Pendentes": "—", "Devolvidos (OK)": "—",
+                            "Total": "—", "Novos": "—", "Devolvidos no dia": "—"})
+            continue
+        df_dia = hist[hist["data_snapshot"] == dia]
+        pendentes = int((df_dia["status"] == "Pendente").sum())
+        ok = int((df_dia["status"] == "OK").sum())
+        total = len(df_dia)
+        if dia_anterior_com_dado is not None:
+            diff = _diff_dias(historico, dia_anterior_com_dado, dia)
+            novos, devolvidos_dia = str(len(diff["novos"])), str(len(diff["devolvidos"]))
+        else:
+            novos, devolvidos_dia = "—", "—"
+        # Colunas viram texto de propósito (mesmo as numéricas) — misturar
+        # número e "—" na mesma coluna quebra a conversão pra Arrow do
+        # st.dataframe (bug real visto ao testar: ArrowInvalid "Could not
+        # convert '—'... to int64").
+        linhas.append({"Dia": nome, "Data": dia.strftime("%d/%m"), "Pendentes": str(pendentes),
+                        "Devolvidos (OK)": str(ok), "Total": str(total), "Novos": novos,
+                        "Devolvidos no dia": devolvidos_dia})
+        dia_anterior_com_dado = dia
+
+    st.dataframe(pd.DataFrame(linhas), hide_index=True, width="stretch")
+    st.caption(
+        "\"Novos\"/\"Devolvidos no dia\" comparam com o snapshot anterior disponível (o dia útil de "
+        "antes, mesmo que seja da semana passada). \"—\" = sem relatório salvo naquele dia (raro num dia útil)."
+    )
+
+
 def _linha_mensal(df, coluna_data, cor):
     serie = df.dropna(subset=[coluna_data]).copy()
     if serie.empty:
@@ -77,6 +219,15 @@ def render(dados):
         "já foram devolvidos, de verdade (não só quantas linhas de pedido)."
     )
 
+    st.divider()
+    historico = dados.get("historico_devolucoes")
+    col_mudou, col_semana = st.columns(2)
+    with col_mudou:
+        _secao_o_que_mudou(historico)
+    with col_semana:
+        _secao_semana(historico)
+
+    st.divider()
     st.write("")
     col_linha, col_qtd = st.columns(2)
     with col_linha:
