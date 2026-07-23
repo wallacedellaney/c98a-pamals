@@ -4217,3 +4217,7 @@ data_snapshot,numero_ordem,part_number,categoria,destino,anv,status,quantidade
 2026-07-23,339,S1104-3,C,BANT,2719,Pendente,1.0
 2026-07-23,340,011-00870-00,R,BAMN,2730,Pendente,1.0
 2026-07-23,341,MS3116F8-3S,C,BANT,2729,Pendente,1.0
+2026-07-23,342,2611024-1,C,BANT,2703,Pendente,2.0
+2026-07-23,343,S2527-1,C,BACO,2743,Pendente,2.0
+2026-07-23,344,24RB/EWC,C,BACO,2743,Pendente,3.0
+2026-07-23,345,1308,C,BACO,2743,Pendente,1.0
