@@ -2,7 +2,7 @@
 
 ## Fonte
 
-Planilha Google Sheets **"Análise crítica de emergências C-98 2026"** (conta `aux.coord.c98@gmail.com`), sem conexão ao vivo — buscar de novo só quando pedido. Cópia baixada em:
+Planilha Google Sheets **"Análise crítica de emergências C-98 2026"** (conta `aux.coord.c98@gmail.com`). **Desatualizado** — isso já foi "sem conexão ao vivo, buscar só quando pedido", mas desde 2026-07-06 o RAC tem busca automática própria (de 2 em 2h, seg-sex — ver `C-98A PAMALS/00_Instrucoes/atualizacoes.md`). Cópia baixada em:
 
 `01_Bases_Originais/RAC/Analise critica de emergencias C-98 2026 (Google Sheets).xlsx`
 

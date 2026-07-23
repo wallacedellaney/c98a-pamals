@@ -2,7 +2,7 @@
 
 ## Fonte
 
-Planilha Google Sheets **"005/CELOG-PAMALS/2025 online"** (conta `wallacedellaney@gmail.com`), mesma lógica das emergências: sem conexão ao vivo, buscar de novo só quando pedido. Cópia baixada em:
+Planilha Google Sheets **"005/CELOG-PAMALS/2025 online"** (conta `wallacedellaney@gmail.com`). **Desatualizado** — isso já foi "sem conexão ao vivo, buscar só quando pedido", mas Pagamentos tem busca automática própria desde 2026-07-09 (de 2 em 2h, seg-sex — ver `C-98A PAMALS/00_Instrucoes/atualizacoes.md`). Cópia baixada em:
 
 `01_Bases_Originais/005_CELOG_2025/005_CELOG-PAMALS_2025 online.xlsx`
 

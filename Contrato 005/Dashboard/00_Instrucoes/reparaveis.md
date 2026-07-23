@@ -2,7 +2,7 @@
 
 ## Fonte
 
-Planilha Google Sheets **"Controle reparáveis C-98"** (conta `ngodoy143@gmail.com`), mesma lógica de emergências/pagamentos: sem conexão ao vivo, buscar de novo só quando pedido. Cópia baixada em:
+Planilha Google Sheets **"Controle reparáveis C-98"** (conta `ngodoy143@gmail.com`). **Desatualizado** — isso já foi "sem conexão ao vivo, buscar só quando pedido", mas Reparáveis tem busca automática própria desde 2026-07-10 (de 2 em 2h, seg-sex — ver `C-98A PAMALS/00_Instrucoes/atualizacoes.md`). Cópia baixada em:
 
 `01_Bases_Originais/Controles_Reparaveis/Controle reparaveis C-98 (Google Sheets).xlsx`
 
