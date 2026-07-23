@@ -305,6 +305,39 @@ isso é trabalho de julgamento feito por mim na conversa, não dá pra
 automatizar num agendamento fixo. Ver `Coordenadoria/00_Instrucoes/vencimentos.md`
 e `diagonal_manutencao.md`.
 
+## Achado e corrigido em 2026-07-23 — launchd do Mac travado desde 13/07
+
+Wallace perguntou várias vezes seguidas ("pq nao rodou sozinho?", "e hj?
+atualizou?") em 2026-07-21/22/23 porque nem GitHub Actions nem o Mac
+tinham rodado nenhum horário do dia até de tarde. Investigando:
+
+- **GitHub Actions**: continua sujeito à mesma limitação já conhecida
+  (ver "Limitação conhecida — atraso do agendamento gratuito do GitHub"
+  acima) — em vários dias desses, só 1-3 dos 7 horários programados
+  chegaram a disparar de verdade, alguns com várias horas de atraso (ex.:
+  o horário das 23h07 UTC de um dia rodando só às 06h38 UTC do dia
+  seguinte). Isso é uma limitação do plano gratuito, fora do nosso
+  controle direto.
+- **Mac (`launchd`) — bug real, corrigido**: `launchctl print
+  gui/501/com.pamals.atualizar_tudo` mostrava `last exit code = 78:
+  EX_CONFIG` e os logs (`shared/launchd_atualizar_tudo.log`/`.err.log`)
+  não recebiam nenhuma linha nova desde **2026-07-13** — ou seja, o
+  `launchd` tentava disparar o job nos horários certos, mas ele falhava
+  **antes mesmo de o Python rodar** (por isso nenhum log, nem de erro).
+  Isso é um estado interno do `launchd` que pode ficar "grudado"/corrompido
+  até o job ser descarregado e recarregado — não achei uma causa de
+  configuração real no `.plist` (caminho do Python, argumentos, etc. — tudo
+  certo). **Corrigido**: `launchctl bootout gui/501/com.pamals.atualizar_tudo`
+  seguido de `launchctl bootstrap gui/501
+  ~/Library/LaunchAgents/com.pamals.atualizar_tudo.plist` — resetou o
+  estado (`runs = 0`, `last exit code = (never exited)`). **Se isso
+  acontecer de novo** (log parado por vários dias sem nenhuma linha nova),
+  o mesmo bootout+bootstrap é o primeiro passo antes de investigar mais
+  fundo.
+- Enquanto isso, rodei `python3 shared/executar_atualizacao.py todos`
+  manualmente várias vezes (2026-07-21, 22 e 23) pra manter os dados em
+  dia mesmo com as 2 automações falhando ao mesmo tempo.
+
 ## Histórico — tentativas anteriores (mantido por contexto)
 
 * **UI com botão + credencial própria (Fase 1, 2026-07-04/05):** o site
