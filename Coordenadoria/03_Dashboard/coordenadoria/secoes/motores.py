@@ -122,14 +122,21 @@ def _preparar_tabela(df, colunas_data=(), colunas_hora=(), colunas_fabricante=()
             df[c] = df[c].apply(_encurtar_fabricante)
 
     # Colunas de texto "livre" às vezes têm um valor numérico solto (ex.:
-    # "motivo" com 315.0 em vez de texto) — sem normalizar, a coluna fica com
-    # tipo misto (número + "—") depois do fillna e quebra o Arrow.
+    # "motivo" com 315.0 ou 315 em vez de texto) — sem normalizar, a coluna
+    # fica com tipo misto (número + "—") depois do fillna e quebra o Arrow.
+    # Bug real visto em 2026-07-23: o `isinstance(v, float)` original não
+    # pegava valor já como `int` puro (não só float), então "Motivo" ainda
+    # quebrava (`ArrowTypeError: Expected bytes, got a 'int' object`) —
+    # agora cobre os dois tipos.
     ja_tratadas = set(colunas_data) | set(colunas_hora) | set(colunas_pct) | set(colunas_fabricante)
     for c in df.columns:
         if c in ja_tratadas:
             continue
-        if df[c].dtype == object or pd.api.types.is_float_dtype(df[c]):
-            df[c] = df[c].apply(lambda v: str(int(v)) if isinstance(v, float) and pd.notna(v) and float(v).is_integer() else v)
+        if df[c].dtype == object or pd.api.types.is_float_dtype(df[c]) or pd.api.types.is_integer_dtype(df[c]):
+            df[c] = df[c].apply(
+                lambda v: str(int(v)) if isinstance(v, (int, float)) and not isinstance(v, bool) and pd.notna(v)
+                and float(v).is_integer() else v
+            )
 
     return df.fillna("—")
 

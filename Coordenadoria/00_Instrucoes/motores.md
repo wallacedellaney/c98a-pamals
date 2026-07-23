@@ -209,6 +209,18 @@ Motivo: a projeção pode mudar de um dia pro outro (mês empurrado, virou
 HSI em vez de TBO, comentário novo) — pedido do Wallace: "mostrar na
 diagonal dos motores tb, um historico de evolucao".
 
+## Bug corrigido em 2026-07-23 — coluna "Motivo" quebrava o Arrow (int puro)
+
+Achado numa checagem geral do site (pedido do Wallace: "sobe e documenta
+tudo, faz um check em todos site e documentacao"): a tela de Motores dava
+um aviso de conversão Arrow (`ArrowTypeError: Expected bytes, got a 'int'
+object`, coluna "Motivo") ao carregar a tabela "Situação". Já existia uma
+correção pra esse mesmo tipo de problema (valor numérico solto numa coluna
+de texto livre, ex.: "315.0" em vez de texto — ver comentário em
+`motores.py`), mas ela só tratava valores já como `float` — um valor que
+chegasse como `int` puro (não float) continuava quebrando. Corrigido:
+o mesmo tratamento agora cobre `int` e `float` juntos.
+
 ## Pendências / a confirmar com o Wallace
 
 - Significado exato de `data_1`/`data_2` (SILOMS/hélice) — hoje só rótulos
