@@ -502,6 +502,12 @@ def render(dados):
         )
     fig.add_vline(x=hoje, line_dash="dash", line_color=SECONDARY, annotation_text="hoje", annotation_position="top")
     fig.update_layout(xaxis_title="", yaxis_title="", legend_title="Operador")
+    # Mesmo bug real visto na Diagonal dos Motores em 2026-07-23 (Wallace:
+    # "o eixo y, alguns estao cortando as aeronaves") — sem isso, o Plotly
+    # às vezes "afina" o eixo Y sozinho e pula rótulo no meio quando acha
+    # que não tem altura suficiente. Forçar tickmode="array" com todos os
+    # rótulos garante que nenhuma aeronave some.
+    fig.update_yaxes(type="category", tickmode="array", tickvals=ordem_y, ticktext=ordem_y, automargin=True)
     layout_grafico(fig, altura=max(280, 28 * filtrado["aeronave_label"].nunique()))
     st.plotly_chart(fig, width="stretch")
     st.caption(

@@ -379,6 +379,12 @@ def _aba_diagonal(df, situacao, historico=None):
         )
         fig.add_vline(x=hoje, line_dash="dash", line_color=SECONDARY, annotation_text="hoje", annotation_position="top")
         fig.update_layout(xaxis_title="", yaxis_title="", legend_title="")
+        # Sem isso, o Plotly às vezes "afina" o eixo Y sozinho (mostra só
+        # alguns rótulos, pulando aeronave no meio) quando acha que não tem
+        # altura suficiente pra todas — bug real visto em 2026-07-23
+        # (Wallace: "o eixo y, alguns estao cortando as aeronaves"). Forçar
+        # tickmode="array" com todos os rótulos garante que nenhum some.
+        fig.update_yaxes(type="category", tickmode="array", tickvals=ordem_y, ticktext=ordem_y, automargin=True)
         layout_grafico(fig, altura=max(280, 28 * linha_tempo["rotulo"].nunique()))
         st.plotly_chart(fig, width="stretch", key="motores_diag_timeline")
         st.caption("Listrado (╱) = célula com comentário anexado na planilha original — passe o mouse pra ler.")

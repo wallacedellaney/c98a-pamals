@@ -221,6 +221,20 @@ de texto livre, ex.: "315.0" em vez de texto — ver comentário em
 chegasse como `int` puro (não float) continuava quebrando. Corrigido:
 o mesmo tratamento agora cobre `int` e `float` juntos.
 
+## Bug corrigido em 2026-07-23 — eixo Y cortando aeronaves na linha do tempo
+
+Wallace: "na linha do tempo da diagonal dos motores, o eixo y, alguns
+estao cortando as aeronaves". O Plotly, num eixo Y categórico com muitas
+categorias (1 por SN+matrícula), às vezes decide sozinho mostrar só
+alguns rótulos (pula no meio) quando acha que não tem altura suficiente
+pra todos — mesmo a altura do gráfico já sendo calculada dinamicamente
+(`max(280, 28 * quantidade_de_rotulos)`). Corrigido forçando
+`tickmode="array"` com a lista completa de rótulos (`tickvals`/`ticktext`)
++ `automargin=True` — garante que **todas** as aeronaves aparecem, sem
+depender da heurística automática do Plotly. Mesma correção aplicada na
+Diagonal de Manutenção (`diagonal_manutencao.py`), que usa o mesmo padrão
+de gráfico e tinha o mesmo risco, mesmo sem o Wallace ter reportado lá.
+
 ## Pendências / a confirmar com o Wallace
 
 - Significado exato de `data_1`/`data_2` (SILOMS/hélice) — hoje só rótulos
