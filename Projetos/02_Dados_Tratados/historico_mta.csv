@@ -993,6 +993,8 @@ data_snapshot,linha,situacao_consolidada,aprovado,tramite,valor,executora,pacote
 2026-07-23,13220,"Aprovado, aguardando atendimento",SIM,,400000.0,FMS,A,REQUISIÇÃO,SIM
 2026-07-23,13240,"Aprovado, aguardando atendimento",SIM,,120000.0,CABW,A,REQUISIÇÃO,SIM
 2026-07-23,13260,"Aprovado, aguardando atendimento",SIM,,80000.0,CABW,A,REQUISIÇÃO,SIM
+2026-07-23,16560,Em trâmite,SIM,EM TRÂMITE,173846.38,CELOG,A,HORA DE VOO,Não
+2026-07-23,63960,Não aprovado,NÃO,,1000000.0,CELOG,B,SOB DEMANDA,SIM
 2026-07-23,13760,Atendido,SIM,ATENDIDO,1704503.0,CELOG,A,HORA DE VOO,Não
 2026-07-23,14160,Atendido,SIM,ATENDIDO,3799000.0,CELOG,A,SOB DEMANDA,SIM
 2026-07-23,14161,Atendido,SIM,ATENDIDO,1000.0,CELOG,A,SOB DEMANDA,SIM
@@ -1013,15 +1015,14 @@ data_snapshot,linha,situacao_consolidada,aprovado,tramite,valor,executora,pacote
 2026-07-23,15980,Não aprovado,NÃO,CANCELADO,,CELOG,C,SOB DEMANDA,SIM
 2026-07-23,16000,Atendido,SIM,ATENDIDO,400000.0,CELOG,A,SOB DEMANDA,SIM
 2026-07-23,16001,Atendido,SIM,ATENDIDO,400000.0,CELOG,A,SOB DEMANDA,SIM
-2026-07-23,16560,Em trâmite,SIM,EM TRÂMITE,173846.38,CELOG,A,HORA DE VOO,Não
+2026-07-23,17760,"Aprovado, aguardando atendimento",SIM,,1704503.0,CELOG,A,HORA DE VOO,Não
 2026-07-23,16561,Atendido,SIM,ATENDIDO,1530656.62,CELOG,A,HORA DE VOO,Não
 2026-07-23,16700,"Aprovado, aguardando atendimento",SIM,,1000000.0,CELOG,A,SOB DEMANDA,SIM
 2026-07-23,17200,"Aprovado, aguardando atendimento",SIM,,958040.0,CABW,A,REQUISIÇÃO,Não
 2026-07-23,17201,Atendido,SIM,ATENDIDO,41730.64,CABW,A,REQUISIÇÃO,Não
-2026-07-23,17760,"Aprovado, aguardando atendimento",SIM,,1704503.0,CELOG,A,HORA DE VOO,Não
-2026-07-23,17761,"Aprovado, aguardando atendimento",SIM,,1704503.0,CELOG,A,HORA DE VOO,Não
 2026-07-23,17762,"Aprovado, aguardando atendimento",SIM,,1704503.0,CELOG,A,HORA DE VOO,Não
 2026-07-23,18140,"Aprovado, aguardando atendimento",SIM,,1295422.28,CELOG,A,HORA DE VOO,Não
+2026-07-23,17761,"Aprovado, aguardando atendimento",SIM,,1704503.0,CELOG,A,HORA DE VOO,Não
 2026-07-23,19240,"Aprovado, aguardando atendimento",SIM,,500000.0,CELOG,D,PARCELA FIXA,Não
 2026-07-23,19241,Não aprovado,NÃO,BLOQUEIO,5000000.0,CELOG,D,PARCELA FIXA,Não
 2026-07-23,19260,"Aprovado, aguardando atendimento",SIM,,4000000.0,CELOG,D,PARCELA FIXA,Não
@@ -1050,5 +1051,4 @@ data_snapshot,linha,situacao_consolidada,aprovado,tramite,valor,executora,pacote
 2026-07-23,63120,Não aprovado,NÃO,,3800000.0,CELOG,C,SOB DEMANDA,SIM
 2026-07-23,63140,"Aprovado, aguardando atendimento",SIM,,4394700.0,CABW,C,SOB DEMANDA,SIM
 2026-07-23,63940,"Aprovado, aguardando atendimento",SIM,,528395.93,CELOG,A,HORA DE VOO,Não
-2026-07-23,63960,Não aprovado,NÃO,,1000000.0,CELOG,B,SOB DEMANDA,SIM
 2026-07-23,64340,"Aprovado, aguardando atendimento",SIM,,4394700.0,CABW,C,SOB DEMANDA,SIM
