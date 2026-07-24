@@ -4,12 +4,11 @@ clicáveis: Operadores (fonte ainda não definida — placeholder) e TMOT
 00_Instrucoes/vencimentos.md).
 """
 
-from datetime import datetime
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from coordenadoria.components.filtros import filtro_colunas
 from coordenadoria.components.paleta import AMBER, CYAN, INK, LINE, PANEL, SECONDARY, STATUS, layout_grafico
 from coordenadoria.utils import atualizar_dados_vencimentos, atualizar_dados_vencimentos_operadores, VENCIMENTOS_PLANILHA_URL
@@ -153,7 +152,7 @@ def _operadores(dados):
         return
 
     if dados["venc_operadores_atualizado_em"]:
-        atualizado = datetime.fromtimestamp(dados["venc_operadores_atualizado_em"]).strftime("%d/%m/%Y %H:%M")
+        atualizado = horario.fromtimestamp_br(dados["venc_operadores_atualizado_em"]).strftime("%d/%m/%Y %H:%M")
         st.caption(f"Última atualização dos dados: **{atualizado}**")
 
     presentes = sorted(df["operador"].unique())
@@ -224,7 +223,7 @@ def _tmot(dados):
         return
 
     if dados["venc_atualizado_em"]:
-        atualizado = datetime.fromtimestamp(dados["venc_atualizado_em"]).strftime("%d/%m/%Y %H:%M")
+        atualizado = horario.fromtimestamp_br(dados["venc_atualizado_em"]).strftime("%d/%m/%Y %H:%M")
         st.caption(f"Última atualização dos dados: **{atualizado}**")
 
     df = df.copy()

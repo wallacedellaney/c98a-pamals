@@ -23,13 +23,13 @@ compartilhada com a conta de serviço em 2026-07-15 — entrou na automação
 de 2 em 2h (`atualizar_do_drive()`, ver shared/executar_atualizacao.py).
 """
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import openpyxl
 import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado
+from shared import drive_sync, estado, horario
 
 ARQUIVO_FONTE = BASES_ORIGINAIS / "Motores" / "MOTORES_C98.xlsx"
 
@@ -276,7 +276,7 @@ def _registrar_historico_situacao(df_situacao):
     toda vez que a extração roda (botão do site ou pedido na conversa),
     mesmo padrão de RAC/MTA/TPJL. Só existe história a partir do dia em que
     essa função passou a rodar."""
-    hoje = datetime.now().date().isoformat()
+    hoje = horario.hoje_br().isoformat()
     novo = df_situacao[COLUNAS_HISTORICO_SITUACAO].copy()
     novo.insert(0, "data_snapshot", hoje)
 
@@ -295,7 +295,7 @@ def _registrar_historico_diagonal(df_diagonal):
     em 2026-07-15: "mostrar na diagonal dos motores tb, um historico de
     evolucao" — a projeção pode mudar de um dia pro outro (mês empurrado,
     virou HSI em vez de TBO, comentário novo), então vale acompanhar."""
-    hoje = datetime.now().date().isoformat()
+    hoje = horario.hoje_br().isoformat()
     eventos = df_diagonal[df_diagonal["evento"].isin({"TBO", "TBO*", "HSI"})]
     novo = eventos[COLUNAS_HISTORICO_DIAGONAL].copy()
     novo.insert(0, "data_snapshot", hoje)
@@ -351,7 +351,7 @@ def atualizar_do_drive():
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "motores",
             remote_modified_time=metadados["modifiedTime"],
-            local_updated_at=datetime.now().isoformat(),
+            local_updated_at=horario.agora_br().isoformat(),
             status="atualizado",
             record_count=len(dados["situacao"]),
             last_error=None,

@@ -25,7 +25,7 @@ import openpyxl
 import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado
+from shared import drive_sync, estado, horario
 
 ARQUIVO_FONTE = (
     BASES_ORIGINAIS / "Reajuste"
@@ -244,7 +244,7 @@ def atualizar_do_drive():
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "reajuste",
             remote_modified_time=metadados["modifiedTime"],
-            local_updated_at=datetime.now().isoformat(),
+            local_updated_at=horario.agora_br().isoformat(),
             status="atualizado",
             record_count=len(dados["indicadores"]),
             last_error=None,

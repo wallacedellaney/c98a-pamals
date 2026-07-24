@@ -19,13 +19,12 @@ Estrutura da aba (ver 00_Instrucoes/rac.md):
   daquele PN para aquela aeronave (vazio/zero = não falta).
 """
 
-from datetime import datetime
 
 import openpyxl
 import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado
+from shared import drive_sync, estado, horario
 
 FONTE = BASES_ORIGINAIS / "RAC" / "Analise critica de emergencias C-98 2026 (Google Sheets).xlsx"
 ABA = "Rac"
@@ -158,7 +157,7 @@ def main():
 def _registrar_historico(df_pendencias):
     """Acrescenta o snapshot de hoje ao histórico item a item — se já rodou
     hoje antes, substitui só as linhas de hoje (não duplica)."""
-    hoje = datetime.now().date().isoformat()
+    hoje = horario.hoje_br().isoformat()
     novo = df_pendencias[["matricula", "unidade", "pn", "nomenclatura", "quantidade_faltante"]].copy()
     novo.insert(0, "data", hoje)
 
@@ -184,7 +183,7 @@ def atualizar_do_drive():
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "rac",
             remote_modified_time=metadados["modifiedTime"],
-            local_updated_at=datetime.now().isoformat(),
+            local_updated_at=horario.agora_br().isoformat(),
             status="atualizado",
             record_count=len(df_aeronaves),
             last_error=None,

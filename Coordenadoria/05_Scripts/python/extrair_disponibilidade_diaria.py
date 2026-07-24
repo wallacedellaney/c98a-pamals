@@ -22,12 +22,12 @@ instruções.
 """
 
 import re
-from datetime import date, datetime
+from datetime import date
 
 import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado
+from shared import drive_sync, estado, horario
 
 PASTA_ORIGEM = BASES_ORIGINAIS / "Disponibilidade_Diaria"
 
@@ -275,7 +275,7 @@ def atualizar_do_drive():
     antigo; se não achar nada novo (ex.: fim de semana, ou relatório do dia
     ainda não publicado), não é erro — só não faz nada."""
     try:
-        agora = datetime.now()
+        agora = horario.agora_br()
         pasta_ano = _achar_subpasta(PASTA_RAIZ_DRIVE_ID, str(agora.year))
         if pasta_ano is None:
             raise drive_sync.DriveSyncError(f"Pasta do ano {agora.year} não encontrada.")
@@ -296,7 +296,7 @@ def atualizar_do_drive():
             df_relatorios = main()
             estado.atualizar_estado(ESTADO_ATUALIZACOES, "disponibilidade_diaria",
                                      status="sem_novidade", last_error=None,
-                                     local_updated_at=datetime.now().isoformat(),
+                                     local_updated_at=horario.agora_br().isoformat(),
                                      record_count=len(df_relatorios))
             return {"status": "sem_novidade", "motivo": "nenhum relatório na pasta do mês atual",
                     "record_count": len(df_relatorios)}
@@ -325,14 +325,14 @@ def atualizar_do_drive():
             estado.atualizar_estado(
                 ESTADO_ATUALIZACOES, "disponibilidade_diaria",
                 remote_modified_time=doc["modifiedTime"],
-                local_updated_at=datetime.now().isoformat(),
+                local_updated_at=horario.agora_br().isoformat(),
                 status="atualizado", record_count=len(df_relatorios), last_error=None,
             )
             return {"status": "atualizado", "arquivo": nome_local, "record_count": len(df_relatorios)}
 
         estado.atualizar_estado(ESTADO_ATUALIZACOES, "disponibilidade_diaria",
                                  status="sem_novidade", last_error=None,
-                                 local_updated_at=datetime.now().isoformat(),
+                                 local_updated_at=horario.agora_br().isoformat(),
                                  record_count=len(df_relatorios))
         return {"status": "sem_novidade", "arquivo": nome_local, "record_count": len(df_relatorios)}
     except Exception as e:

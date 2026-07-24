@@ -3,12 +3,11 @@ falta devolver, a partir da planilha "Devoluções". Ver
 00_Instrucoes/emprestimos.md.
 """
 
-from datetime import datetime
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from contrato005.components import data_global
 from contrato005.components.paleta import AMBER, CATEGORICA, STATUS, layout_grafico
 from contrato005.components.utils import ordenar_unicos
@@ -186,7 +185,7 @@ def render(dados):
 
     atualizado_em = dados.get("devolucoes_atualizado_em")
     if atualizado_em:
-        st.caption(f"Última atualização: **{datetime.fromtimestamp(atualizado_em).strftime('%d/%m/%Y %H:%M')}**")
+        st.caption(f"Última atualização: **{horario.fromtimestamp_br(atualizado_em).strftime('%d/%m/%Y %H:%M')}**")
 
     # Uma linha de pedido pode ser de mais de 1 unidade (ex.: "10 EA" numa
     # linha só) — pra estatística de quantidade, pesamos pela coluna

@@ -2,7 +2,6 @@
 
 import sys
 from pathlib import Path
-from datetime import datetime
 
 DASHBOARD_ROOT = Path(__file__).resolve().parents[2]
 
@@ -19,6 +18,8 @@ DASHBOARD_PACOTE = DASHBOARD_ROOT / "03_Dashboard"
 if str(DASHBOARD_PACOTE) not in sys.path:
     sys.path.insert(0, str(DASHBOARD_PACOTE))
 
+from shared import horario  # noqa: E402 — precisa vir depois do sys.path.insert acima
+
 BASES_ORIGINAIS = DASHBOARD_ROOT / "01_Bases_Originais"
 DADOS_TRATADOS = DASHBOARD_ROOT / "02_Dados_Tratados"
 LOGS = DASHBOARD_ROOT / "06_Logs"
@@ -28,13 +29,13 @@ ESTADO_ATUALIZACOES = DADOS_TRATADOS / "estado_atualizacoes.json"
 def registrar_log(nome_execucao, arquivos_lidos, arquivos_gerados, inconsistencias, erros=None, proximas_acoes=None):
     """Grava um log de execução em 06_Logs/, no mesmo formato das outras áreas."""
     LOGS.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    ts = horario.agora_br().strftime("%Y-%m-%d_%H-%M-%S")
     caminho = LOGS / f"{ts}_{nome_execucao}.md"
 
     linhas = [
         f"# Execução: {nome_execucao}",
         "",
-        f"Data: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        f"Data: {horario.agora_br().strftime('%Y-%m-%d %H:%M:%S')}",
         "",
         "## Arquivos lidos",
         *[f"- {a}" for a in arquivos_lidos],

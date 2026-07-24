@@ -7,13 +7,12 @@ Regras de tratamento vêm de 00_Instrucoes/pagamentos.md.
 
 import re
 import warnings
-from datetime import datetime
 
 import openpyxl
 import pandas as pd
 
 from common import XLSX_PAGAMENTOS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado
+from shared import drive_sync, estado, horario
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
@@ -252,7 +251,7 @@ def main():
 def _registrar_historico(df):
     """Acrescenta o snapshot de hoje (1 linha por lançamento) — se já
     rodou hoje antes, substitui só as linhas de hoje (não duplica)."""
-    hoje = datetime.now().date().isoformat()
+    hoje = horario.hoje_br().isoformat()
     novo = df[COLUNAS_HISTORICO].copy()
     novo.insert(0, "data_snapshot", hoje)
 
@@ -278,7 +277,7 @@ def atualizar_do_drive():
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "pagamentos",
             remote_modified_time=metadados["modifiedTime"],
-            local_updated_at=datetime.now().isoformat(),
+            local_updated_at=horario.agora_br().isoformat(),
             status="atualizado",
             record_count=len(df),
             last_error=None,

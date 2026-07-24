@@ -8,6 +8,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from coordenadoria.components.paleta import (
     AMBER, CYAN, INK, LINE, PANEL, SECONDARY, STATUS, COR_SITUACAO, layout_grafico,
 )
@@ -159,7 +160,7 @@ def _card_vencimentos(venc_tmot, venc_operadores):
 def _card_diagonal(diagonal):
     st.markdown("###### Diagonal de Manutenção")
     if diagonal is not None and not diagonal.empty:
-        hoje = pd.Timestamp.now().normalize()
+        hoje = pd.Timestamp(horario.hoje_br())
         indisponiveis_agora = diagonal[(diagonal["periodo_inicio"] <= hoje) & (diagonal["periodo_fim"] >= hoje)]
         aeronaves_diagonal = indisponiveis_agora["aeronave"].nunique()
         c1, c2 = st.columns(2)
@@ -256,7 +257,7 @@ def _pontos_atencao(aeronaves, pendencias, aer_hoje, rel_hoje, venc_tmot=None, v
             itens.append(f"📆 Vencimentos (Operadores): {vencidos_op} item(ns) já vencido(s).")
 
     if diagonal is not None and not diagonal.empty:
-        hoje_ts = pd.Timestamp.now().normalize()
+        hoje_ts = pd.Timestamp(horario.hoje_br())
         indisponiveis_agora = diagonal[(diagonal["periodo_inicio"] <= hoje_ts) & (diagonal["periodo_fim"] >= hoje_ts)]
         indisponiveis_agora = indisponiveis_agora[indisponiveis_agora["aeronave"].astype(str).isin(matriculas_contrato)]
         n_diagonal = indisponiveis_agora["aeronave"].nunique()

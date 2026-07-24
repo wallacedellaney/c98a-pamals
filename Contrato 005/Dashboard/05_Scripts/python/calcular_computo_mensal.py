@@ -35,6 +35,7 @@ from datetime import date, timedelta
 import pandas as pd
 
 from common import RAIZ_PROJETO, DADOS_TRATADOS
+from shared import horario
 
 PASTA_COMPUTO = DADOS_TRATADOS / "computo_mensal"
 CAMINHO_RAC = RAIZ_PROJETO / "Coordenadoria" / "02_Dados_Tratados" / "base_rac_tratada.xlsx"
@@ -103,7 +104,7 @@ def _classificar_aeronaves():
 
 
 def calcular_mes(ano, mes, hoje=None):
-    hoje = hoje or date.today()
+    hoje = hoje or horario.hoje_br()
     primeiro_dia = date(ano, mes, 1)
     ultimo_dia_mes = calendar.monthrange(ano, mes)[1]
     ultimo_dia_calculado = hoje.day if (ano == hoje.year and mes == hoje.month) else ultimo_dia_mes
@@ -274,8 +275,8 @@ def carregar_mes(ano, mes):
 
 if __name__ == "__main__":
     import sys
-    ano = int(sys.argv[1]) if len(sys.argv) > 1 else date.today().year
-    mes = int(sys.argv[2]) if len(sys.argv) > 2 else date.today().month
+    ano = int(sys.argv[1]) if len(sys.argv) > 1 else horario.hoje_br().year
+    mes = int(sys.argv[2]) if len(sys.argv) > 2 else horario.hoje_br().month
     df_matriz, df_motivos, resumo = calcular_mes(ano, mes)
     print(f"{len(df_matriz)} linhas na matriz, {len(df_motivos)} período(s) de negativação, "
           f"MMAM prévia: {resumo['mmam_previa']}%")

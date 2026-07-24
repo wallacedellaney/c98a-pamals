@@ -2,10 +2,11 @@
 
 import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
+
+from shared import horario
 
 DASHBOARD_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_GERAR_RAC = DASHBOARD_ROOT / "05_Scripts" / "python" / "extrair_rac.py"
@@ -50,7 +51,7 @@ def garantir_disponibilidade_atualizada():
 
     Nunca deixa a página quebrar por causa disso — qualquer erro só fica
     guardado no dict devolvido, pra quem chamar decidir se mostra aviso."""
-    agora = datetime.now()
+    agora = horario.agora_br()
     if agora.weekday() >= 5:
         return {"tentou": False, "motivo": "fim de semana — não sai relatório", "verificado_em": agora}
     try:

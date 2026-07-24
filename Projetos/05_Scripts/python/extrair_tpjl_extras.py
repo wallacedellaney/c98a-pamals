@@ -15,7 +15,7 @@ from datetime import datetime
 import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado
+from shared import drive_sync, estado, horario
 
 from projetos.config import tpjl_config as cfg
 
@@ -141,7 +141,7 @@ def _registrar_historico_solicitacoes(df_solicitacoes):
     buscando um historico e mostrando a evolucao"), mesmo componente já
     usado em MTA/TPJL (`projetos/components/evolucao.py`). Só existe
     história a partir do dia em que essa função passou a rodar."""
-    hoje = datetime.now().date().isoformat()
+    hoje = horario.hoje_br().isoformat()
     novo = df_solicitacoes[COLUNAS_HISTORICO_SOLICITACOES].copy()
     novo["data_criacao"] = novo["data_criacao"].astype(str)
     novo["ultima_atualizacao"] = novo["ultima_atualizacao"].astype(str)
@@ -197,7 +197,7 @@ def atualizar_do_drive():
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "tpjl_extras", status="erro",
             last_error="; ".join(erros),
-            local_updated_at=datetime.now().isoformat(),
+            local_updated_at=horario.agora_br().isoformat(),
             record_count=total,
         )
         raise RuntimeError("; ".join(erros))
@@ -206,7 +206,7 @@ def atualizar_do_drive():
     estado.atualizar_estado(
         ESTADO_ATUALIZACOES, "tpjl_extras",
         remote_modified_time=modificado_mais_recente,
-        local_updated_at=datetime.now().isoformat(),
+        local_updated_at=horario.agora_br().isoformat(),
         status="atualizado",
         record_count=total,
         record_count_consumo=len(dados["consumo"]),

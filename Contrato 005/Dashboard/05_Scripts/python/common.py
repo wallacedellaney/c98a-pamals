@@ -2,7 +2,6 @@
 
 import sys
 from pathlib import Path
-from datetime import datetime
 
 DASHBOARD_ROOT = Path(__file__).resolve().parents[2]
 
@@ -12,6 +11,8 @@ DASHBOARD_ROOT = Path(__file__).resolve().parents[2]
 RAIZ_PROJETO = DASHBOARD_ROOT.parent.parent
 if str(RAIZ_PROJETO) not in sys.path:
     sys.path.insert(0, str(RAIZ_PROJETO))
+
+from shared import horario  # noqa: E402 — precisa vir depois do sys.path.insert acima
 
 BASES_ORIGINAIS = DASHBOARD_ROOT / "01_Bases_Originais"
 DADOS_TRATADOS = DASHBOARD_ROOT / "02_Dados_Tratados"
@@ -25,13 +26,13 @@ XLSX_PAGAMENTOS = BASES_ORIGINAIS / "005_CELOG_2025" / "005_CELOG-PAMALS_2025 on
 def registrar_log(nome_execucao, arquivos_lidos, arquivos_gerados, inconsistencias, erros=None, proximas_acoes=None):
     """Grava um log de execução em 06_Logs/, no formato pedido pelo CLAUDE.md (passo 10)."""
     LOGS.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    ts = horario.agora_br().strftime("%Y-%m-%d_%H-%M-%S")
     caminho = LOGS / f"{ts}_{nome_execucao}.md"
 
     linhas = [
         f"# Execução: {nome_execucao}",
         "",
-        f"Data: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        f"Data: {horario.agora_br().strftime('%Y-%m-%d %H:%M:%S')}",
         "",
         "## Arquivos lidos",
         *[f"- {a}" for a in arquivos_lidos],

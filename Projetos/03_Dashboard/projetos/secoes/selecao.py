@@ -4,10 +4,9 @@ dentro do próprio card, sem indicadores soltos abaixo — redesenho pedido
 pelo Wallace em 2026-07-09.
 """
 
-from datetime import datetime
-
 import streamlit as st
 
+from shared import horario
 from projetos.components.paleta import STATUS, moeda_compacta, selo
 from projetos.regras.tpjl_regras import eh_pendencia
 
@@ -43,7 +42,7 @@ def _indicadores_tpjl(dados_por_ano):
 def _card(titulo, subtitulo, filtro, indicadores, atualizado_em, key):
     simulado = indicadores.get("simulado")
     atualizado_texto = (
-        f"Atualizado em {datetime.fromtimestamp(atualizado_em).strftime('%d/%m/%Y às %H:%M')}"
+        f"Atualizado em {horario.fromtimestamp_br(atualizado_em).strftime('%d/%m/%Y às %H:%M')}"
         if atualizado_em else "Ainda não atualizado"
     )
     selo_html = selo("Dados simulados", "warning") if simulado else selo("Dados reais", "good")
@@ -78,7 +77,7 @@ def _card(titulo, subtitulo, filtro, indicadores, atualizado_em, key):
 
 def render(dados):
     ultima = max([t for t in (dados.get("mta_atualizado_em"), dados.get("tpjl_atualizado_em")) if t], default=None)
-    ultima_texto = datetime.fromtimestamp(ultima).strftime("%d/%m/%Y às %H:%M") if ultima else "ainda não atualizado"
+    ultima_texto = horario.fromtimestamp_br(ultima).strftime("%d/%m/%Y às %H:%M") if ultima else "ainda não atualizado"
 
     st.markdown(
         f"""<div style="margin-bottom:20px;">

@@ -7,12 +7,11 @@ comparação com o relatório anterior, alertas classificados, painel por
 unidade, busca e filtros.
 """
 
-from datetime import date, datetime
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from coordenadoria.components.paleta import (
     AMBER, CYAN, INK, LINE, PANEL, SECONDARY, STATUS, COR_SITUACAO, NOME_SITUACAO,
     ICONE_SITUACAO, COR_MD_SITUACAO, layout_grafico,
@@ -32,7 +31,7 @@ def _secao_status_atualizacao(status, datas):
     encomode": avisa visivelmente em vez de ficar quieto."""
     if not status:
         return
-    hoje = date.today()
+    hoje = horario.hoje_br()
     mais_recente = datas[0] if datas else None
     verificado_em = status["verificado_em"].strftime("%H:%M")
 
@@ -194,7 +193,7 @@ def _cabecalho(dados, datas):
         st.link_button("🔗 Pasta no Drive", DISPONIBILIDADE_PASTA_URL, width="stretch")
 
     if dados["disp_atualizado_em"]:
-        atualizado = datetime.fromtimestamp(dados["disp_atualizado_em"]).strftime("%d/%m/%Y %H:%M")
+        atualizado = horario.fromtimestamp_br(dados["disp_atualizado_em"]).strftime("%d/%m/%Y %H:%M")
         st.caption(f"Última atualização dos dados: **{atualizado}**")
 
 
@@ -295,7 +294,7 @@ def classificar_alerta(row):
     if situacao == "IP" or "acidentada" in ocorrencia or "sem motor" in ocorrencia:
         return "critico"
     if pd.notna(dpe_data):
-        dias = (dpe_data.date() if hasattr(dpe_data, "date") else dpe_data) - date.today()
+        dias = (dpe_data.date() if hasattr(dpe_data, "date") else dpe_data) - horario.hoje_br()
         dias = dias.days
         if dias < 0:
             return "critico"

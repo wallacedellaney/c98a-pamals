@@ -6,6 +6,7 @@ import unicodedata
 from datetime import datetime
 
 from projetos.config.tpjl_config import STATUS_FINAIS
+from shared import horario
 
 
 def normalizar(valor):
@@ -45,7 +46,7 @@ def situacao_previsao(previsao_empenho, status_atual_valor, hoje=None):
     """Classifica: No prazo, Vencido, Sem data definida, Concluído, Cancelado.
     `previsao_empenho` pode ser datetime, texto (ex. "IMEDIATO") ou None —
     texto/None nunca derruba a classificação, só vira "Sem data definida"."""
-    hoje = hoje or datetime.now()
+    hoje = hoje or horario.agora_br()
     status_n = normalizar(status_atual_valor)
 
     if status_n == "CANCELADO":

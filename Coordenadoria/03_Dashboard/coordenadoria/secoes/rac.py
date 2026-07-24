@@ -10,12 +10,11 @@ Regras (ver 00_Instrucoes/rac.md):
 * Sem "% de completude" — usamos faixas/contagens (sem base de cálculo confiável).
 """
 
-from datetime import datetime
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from coordenadoria.components.paleta import (
     STATUS, AMBER, CYAN, SECONDARY, PANEL, LINE, INK, ICONE_SITUACAO, NOME_SITUACAO, layout_grafico,
 )
@@ -116,7 +115,7 @@ def _cabecalho(dados):
     st.title("RAC — Análise Crítica de Emergências C-98")
     st.caption("Acompanhamento da situação das aeronaves e dos itens faltantes para composição da configuração prevista.")
 
-    atualizado = datetime.fromtimestamp(dados["atualizado_em"]).strftime("%d/%m/%Y %H:%M")
+    atualizado = horario.fromtimestamp_br(dados["atualizado_em"]).strftime("%d/%m/%Y %H:%M")
     col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
     with col1:
         st.caption(f"Última atualização: **{atualizado}** · Arquivo: `base_rac_tratada.xlsx`")

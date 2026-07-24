@@ -13,12 +13,12 @@ extraídas.
 """
 
 import re
-from datetime import datetime
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from coordenadoria.components.evolucao import secao_evolucao
 from coordenadoria.components.filtros import filtro_colunas
 from coordenadoria.components.paleta import AMBER, CYAN, INK, LINE, PANEL, SECONDARY, STATUS, layout_grafico
@@ -165,7 +165,7 @@ def render(dados):
     with col1:
         atualizado = dados.get("motores_atualizado_em")
         if atualizado:
-            st.caption(f"Última atualização: **{datetime.fromtimestamp(atualizado).strftime('%d/%m/%Y %H:%M')}**")
+            st.caption(f"Última atualização: **{horario.fromtimestamp_br(atualizado).strftime('%d/%m/%Y %H:%M')}**")
     with col2:
         if st.button("🔄 Atualizar dados", key="motores_atualizar", width="stretch"):
             with st.spinner("Atualizando..."):
@@ -312,7 +312,7 @@ def _aba_diagonal(df, situacao, historico=None):
     mapa_unidade = situacao.drop_duplicates("sn").set_index("sn")["om"]
     eventos["unidade"] = eventos["serial"].map(mapa_unidade)
 
-    hoje = pd.Timestamp.now().normalize()
+    hoje = pd.Timestamp(horario.hoje_br())
     eventos["periodo"] = pd.to_datetime(dict(year=eventos["ano"], month=eventos["mes"], day=1))
     eventos["dias_ate"] = (eventos["periodo"] - hoje).dt.days
 
@@ -358,7 +358,7 @@ def _aba_diagonal(df, situacao, historico=None):
     # conforme o tempo passa — pedido do Wallace em 2026-07-15: "vamos
     # deixar sempre 2 anos na linha do tempo de tbo e hsi" (antes era um
     # intervalo fixo 2026-2030).
-    ano_inicio_janela = datetime.now().year
+    ano_inicio_janela = horario.hoje_br().year
     ano_fim_janela = ano_inicio_janela + 1
     st.markdown(f"##### Linha do tempo — TBO/HSI ({ano_inicio_janela} a {ano_fim_janela})")
     st.caption("Mesmo padrão da Diagonal de Manutenção — barra por mês, cor por tipo de evento, listrado = tem comentário.")
@@ -423,7 +423,7 @@ def _aba_os(df):
         return
 
     df = df.assign(status_legivel=df["status"].map(NOMES_STATUS_OS).fillna(df["status"]))
-    hoje = pd.Timestamp.now().normalize()
+    hoje = pd.Timestamp(horario.hoje_br())
     df["atrasada"] = (df["data_fim_prev"].notna() & (df["data_fim_prev"] < hoje) & df["data_fim_real"].isna()).map({True: "Sim", False: "Não"})
     df["dias_no_status"] = (hoje - df["data_status"]).dt.days
 

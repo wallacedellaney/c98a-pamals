@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from contrato005.components import data_global
 from contrato005.components.paleta import AMBER, CATEGORICA, STATUS, layout_grafico
 from contrato005.components.utils import ordenar_unicos
@@ -70,7 +71,7 @@ def _secao_estatisticas_tat(df):
     # burocracia) não conta mais contra o prazo. Pedido do Wallace em
     # 2026-07-18: "o prazo dentro e fora do prazo so os que estao com a
     # empresa".
-    hoje = pd.Timestamp.now().normalize()
+    hoje = pd.Timestamp(horario.hoje_br())
     fora_prazo = empresa[empresa["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS]
     dentro_prazo = empresa[empresa["tat_siloms"] <= PRAZO_CONTRATUAL_TAT_DIAS]
 

@@ -5,12 +5,11 @@ e Financeiro/Fechamento) em vez de espremer tudo numa linha só — Operacional
 mais periódico (Pagamentos, Fechamento Mensal).
 """
 
-from datetime import date
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from contrato005.components import data_global
 from contrato005.components.paleta import CATEGORICA, STATUS, layout_grafico
 from contrato005.components.utils import formatar_moeda
@@ -35,7 +34,7 @@ def render(dados):
     emerg_atrasadas = emerg_abertas[emerg_abertas["dias_atraso"] > 0]
     rep_abertas = df_rep[df_rep["em_aberto"]]
 
-    hoje = date.today()
+    hoje = horario.hoje_br()
     _, _, resumo_computo = carregar_computo_mensal(hoje.year, hoje.month)
 
     st.markdown("##### Operacional")

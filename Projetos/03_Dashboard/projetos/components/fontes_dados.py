@@ -18,10 +18,10 @@ coluna que busca a ultima vez que foi atualizado so para saber")** — busca a
 data de modificação real do arquivo tratado (`_chave` aponta pra uma chave
 de `dados`, já carregada por `carregar_dados.py`), não um valor fixo."""
 
-from datetime import datetime
-
 import pandas as pd
 import streamlit as st
+
+from shared import horario
 
 FONTES = [
     {
@@ -51,7 +51,7 @@ FONTES = [
 def _formatar(mtime):
     if not mtime:
         return "—"
-    return datetime.fromtimestamp(mtime).strftime("%d/%m/%Y %H:%M")
+    return horario.fromtimestamp_br(mtime).strftime("%d/%m/%Y %H:%M")
 
 
 def secao_fontes_dados(dados):

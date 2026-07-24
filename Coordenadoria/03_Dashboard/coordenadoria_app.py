@@ -9,10 +9,9 @@ Exposto como função `render()` para poder ser embutido dentro da página
 principal "C-98A PAMALS" (ver ../../app.py), com um botão de voltar.
 """
 
-from datetime import datetime
-
 import streamlit as st
 
+from shared import horario
 from coordenadoria.components.fontes_dados import secao_fontes_dados
 from coordenadoria.components.paleta import AMBER, SECONDARY, LINE, PANEL, STATUS, INK
 from coordenadoria.data.carregar_dados import carregar_tudo
@@ -110,7 +109,7 @@ h1 {{
 }}
 .coord-selo.fora-contrato {{ background: {STATUS['critical']}22; color: {STATUS['critical']}; }}
 </style>
-<div class="c98-header"><div class="brand"><div class="mark">CO</div><div class="name">COORDENADORIA<small>C-98A PAMALS</small></div></div><div class="clock">HOJE {datetime.now().strftime('%d/%m/%Y')}</div></div>""",
+<div class="c98-header"><div class="brand"><div class="mark">CO</div><div class="name">COORDENADORIA<small>C-98A PAMALS</small></div></div><div class="clock">HOJE {horario.agora_br().strftime('%d/%m/%Y')}</div></div>""",
         unsafe_allow_html=True,
     )
 
@@ -140,6 +139,6 @@ h1 {{
                 st.session_state["venc_area"] = None
                 st.rerun()
 
-    st.caption(f"Dados atualizados em {datetime.fromtimestamp(dados['atualizado_em']).strftime('%d/%m/%Y %H:%M')}")
+    st.caption(f"Dados atualizados em {horario.fromtimestamp_br(dados['atualizado_em']).strftime('%d/%m/%Y %H:%M')}")
 
     secao_fontes_dados(dados)

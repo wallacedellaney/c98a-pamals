@@ -42,7 +42,7 @@ from docx.shared import Pt, RGBColor, Inches
 from PIL import Image, ImageDraw, ImageFont
 
 from common import DADOS_TRATADOS, LOGS, registrar_log
-from shared import drive_sync
+from shared import drive_sync, horario
 
 MESES_PT = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -732,7 +732,7 @@ def gerar_ata(ano, mes, caminho_saida, forcar_transcricao=False):
 
     doc.add_page_break()
     _titulo(doc, "ANEXO B — Controle de Reparáveis (C-98, em aberto)")
-    _paragrafo(doc, f"Contrato nº 005/CELOG-PAMALS/2025 — extraído em {datetime.now().strftime('%d/%m/%Y')}", negrito=True)
+    _paragrafo(doc, f"Contrato nº 005/CELOG-PAMALS/2025 — extraído em {horario.agora_br().strftime('%d/%m/%Y')}", negrito=True)
     colunas_rep = ["os", "pn", "nomenclatura", "unidade_solicitante", "situacao", "onde_se_encontra", "tat_siloms"]
     caminho_base_rep = caminho_saida.parent / f"_anexo_b_reparaveis_{ano}-{mes:02d}"
     _construir_anexo_imagem_paginado(doc, reparaveis, colunas_rep, caminho_base_rep)

@@ -8,12 +8,13 @@ aeronave. Combina duas fontes, lado a lado na mesma linha por aeronave:
 Ver 00_Instrucoes/diagonal_manutencao.md.
 """
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from coordenadoria.components.filtros import filtro_colunas
 from coordenadoria.components.paleta import (
     AMBER, CATEGORICA, COR_SITUACAO, CYAN, INK, LINE, NOME_SITUACAO, PANEL, SECONDARY, layout_grafico,
@@ -384,12 +385,16 @@ def render(dados):
         return
 
     if dados["diagonal_atualizado_em"]:
-        atualizado = datetime.fromtimestamp(dados["diagonal_atualizado_em"]).strftime("%d/%m/%Y %H:%M")
+        atualizado = horario.fromtimestamp_br(dados["diagonal_atualizado_em"]).strftime("%d/%m/%Y %H:%M")
         st.caption(f"Última atualização dos dados (Diagonal): **{atualizado}**")
     if not df_real.empty:
         st.caption(f"Situação real de hoje: **{df_real['periodo_inicio'].max().strftime('%d/%m/%Y')}** ({len(df_real)} aeronave(s) indisponível(is) no último relatório de Disponibilidade Diária)")
 
-    hoje = pd.Timestamp.now().normalize()
+    # Horário de Brasília explícito, não `pd.Timestamp.now()` puro — esse
+    # usa o fuso do sistema que roda o código (UTC no GitHub Actions/
+    # Streamlit Cloud), o que já causou a "Previsão de situação — próximos
+    # 7 dias" não bater com a Disponibilidade Diária (bug real, 2026-07-24).
+    hoje = pd.Timestamp(horario.hoje_br())
 
     c1, c2, c3 = st.columns([1, 1, 2])
     with c1:

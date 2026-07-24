@@ -315,8 +315,8 @@ _ICONE_PASTA = ('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" str
 def _formatar_ultima_atualizacao(mtime):
     if not mtime:
         return "—"
-    from datetime import datetime
-    return datetime.fromtimestamp(mtime).strftime("%d/%m/%Y %H:%M")
+    from shared import horario
+    return horario.fromtimestamp_br(mtime).strftime("%d/%m/%Y %H:%M")
 
 
 def _fontes_dados_geral():

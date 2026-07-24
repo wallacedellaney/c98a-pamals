@@ -53,8 +53,8 @@ def render(dados):
 
     atualizado_em = dados.get("emergencias_totais_atualizado_em")
     if atualizado_em:
-        from datetime import datetime
-        st.caption(f"Última extração: **{datetime.fromtimestamp(atualizado_em).strftime('%d/%m/%Y %H:%M')}**")
+        from shared import horario
+        st.caption(f"Última extração: **{horario.fromtimestamp_br(atualizado_em).strftime('%d/%m/%Y %H:%M')}**")
 
     st.markdown("##### Busca e filtros")
     c1, c2, c3, c4 = st.columns(4)

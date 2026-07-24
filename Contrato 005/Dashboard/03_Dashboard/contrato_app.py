@@ -11,11 +11,11 @@ Exposto como função `render()` para poder ser embutido dentro da página princ
 
 import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
 
+from shared import horario
 from contrato005.components import data_global
 from contrato005.components.fontes_dados import secao_fontes_dados
 from contrato005.components.paleta import AMBER, SECONDARY, LINE
@@ -140,7 +140,7 @@ def render(ao_voltar=None, paginas_ocultas=(), modo_externo=False):
                 <div class="mark">98</div>
                 <div class="name">C-98 / OPS<small>CONTRATO 005 · CELOG-PAMALS · VEE ONE</small></div>
             </div>
-            <div class="clock">HOJE {datetime.now().strftime('%d/%m/%Y')}</div>
+            <div class="clock">HOJE {horario.agora_br().strftime('%d/%m/%Y')}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -173,7 +173,7 @@ def render(ao_voltar=None, paginas_ocultas=(), modo_externo=False):
                 st.session_state["pagina"] = nome
                 st.rerun()
 
-    st.caption(f"Dados atualizados em {datetime.fromtimestamp(dados['atualizado_em']).strftime('%d/%m/%Y %H:%M')}")
+    st.caption(f"Dados atualizados em {horario.fromtimestamp_br(dados['atualizado_em']).strftime('%d/%m/%Y %H:%M')}")
 
     if not modo_externo:
         secao_fontes_dados(dados)

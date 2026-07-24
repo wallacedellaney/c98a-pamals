@@ -54,16 +54,22 @@ from pathlib import Path
 
 import streamlit as st
 
-from contrato_app import render
-
 RAIZ = Path(__file__).resolve().parents[3]
-# Permite `from shared import drive_sync, estado` (usado por
-# atualizar_drive.py) e `import home_hero` (hero da tela inicial), mesmo
-# rodando este app isolado, sem o C-98A PAMALS/app.py principal.
+# Permite `from shared import drive_sync, estado, horario` a partir daqui E
+# de dentro de `contrato_app`/`contrato005` (usado por atualizar_drive.py,
+# home_hero.py, e agora também horario.py pra converter timestamps pro
+# fuso de Brasília) — precisa vir ANTES de `from contrato_app import
+# render` (bug real visto em 2026-07-24: contrato_app.py ganhou um `from
+# shared import horario` no próprio topo do módulo, e como esse import
+# rodava antes desse sys.path.insert, quebrava com "No module named
+# 'shared'" só neste runner standalone — o site principal não sofria
+# porque o RAIZ dele já está no sys.path bem antes de importar
+# contrato_app).
 if str(RAIZ) not in sys.path:
     sys.path.insert(0, str(RAIZ))
 
 from shared import drive_sync
+from contrato_app import render
 
 PAGINAS_OCULTAS = set()
 
@@ -88,12 +94,12 @@ def _registrar_acesso(email):
     st.error que travaria a tela."""
     if not PLANILHA_LOG_ACESSOS_ID:
         return
-    from datetime import datetime
+    from shared import horario
     try:
         drive_sync.garantir_credencial_arquivo()
         drive_sync.adicionar_linha(
             PLANILHA_LOG_ACESSOS_ID, ABA_LOG_ACESSOS,
-            [datetime.now().strftime("%d/%m/%Y %H:%M:%S"), email],
+            [horario.agora_br().strftime("%d/%m/%Y %H:%M:%S"), email],
         )
     except drive_sync.DriveSyncError:
         pass

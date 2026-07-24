@@ -15,13 +15,12 @@ número) e 2 colunas "Status" (uma é detalhe de entrega em texto livre, a
 planilha original, renomeados aqui pra ficar claro.
 """
 
-from datetime import datetime
 
 import openpyxl
 import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado
+from shared import drive_sync, estado, horario
 
 FONTE = BASES_ORIGINAIS / "Devolucoes" / "Devolucoes (Google Sheets).xlsx"
 ABA = "DEVOLUÇÃO"
@@ -143,7 +142,7 @@ def main():
 def _registrar_historico(df):
     """Acrescenta o snapshot de hoje (1 linha por item) — se já rodou hoje
     antes, substitui só as linhas de hoje (não duplica)."""
-    hoje = datetime.now().date().isoformat()
+    hoje = horario.hoje_br().isoformat()
     novo = df[COLUNAS_HISTORICO].copy()
     novo.insert(0, "data_snapshot", hoje)
 
@@ -169,7 +168,7 @@ def atualizar_do_drive():
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "devolucoes",
             remote_modified_time=metadados["modifiedTime"],
-            local_updated_at=datetime.now().isoformat(),
+            local_updated_at=horario.agora_br().isoformat(),
             status="atualizado",
             record_count=len(df),
             last_error=None,

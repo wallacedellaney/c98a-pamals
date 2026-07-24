@@ -20,13 +20,12 @@ passou do limite) por aquela quantidade de horas/pousos/dias.
 """
 
 import re
-from datetime import datetime
 
 import openpyxl
 import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado
+from shared import drive_sync, estado, horario
 
 FONTE = BASES_ORIGINAIS / "Vencimentos" / "Vencimentos_C-98U8.xlsx"
 
@@ -145,7 +144,7 @@ def atualizar_do_drive():
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "vencimentos_tmot",
             remote_modified_time=metadados["modifiedTime"],
-            local_updated_at=datetime.now().isoformat(),
+            local_updated_at=horario.agora_br().isoformat(),
             status="atualizado",
             record_count=len(df),
             last_error=None,

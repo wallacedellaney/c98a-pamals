@@ -20,10 +20,10 @@ de `dados`, já carregada por `carregar_dados.py`), não um valor fixo.
 Fontes calculadas na hora (Cômputo Mensal/Apresentação/Ata — sem arquivo
 próprio de "última atualização") mostram "—"."""
 
-from datetime import datetime
-
 import pandas as pd
 import streamlit as st
+
+from shared import horario
 
 FONTES = [
     {
@@ -102,7 +102,7 @@ FONTES = [
 def _formatar(mtime):
     if not mtime:
         return "—"
-    return datetime.fromtimestamp(mtime).strftime("%d/%m/%Y %H:%M")
+    return horario.fromtimestamp_br(mtime).strftime("%d/%m/%Y %H:%M")
 
 
 def secao_fontes_dados(dados):

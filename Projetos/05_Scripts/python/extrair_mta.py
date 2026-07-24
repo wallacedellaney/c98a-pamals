@@ -16,7 +16,7 @@ import openpyxl
 import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado
+from shared import drive_sync, estado, horario
 
 from projetos.config import mta_config as cfg
 from projetos.regras.mta_regras import normalizar, situacao_consolidada
@@ -158,7 +158,7 @@ def _registrar_historico(df):
     rodou hoje antes, substitui só as linhas de hoje (não duplica). Base pra
     barra temporal pedida pelo Wallace em 2026-07-09 — só existe história a
     partir do dia em que essa função passou a rodar."""
-    hoje = datetime.now().date().isoformat()
+    hoje = horario.hoje_br().isoformat()
     novo = df[COLUNAS_HISTORICO].copy()
     novo.insert(0, "data_snapshot", hoje)
 
@@ -184,7 +184,7 @@ def atualizar_do_drive():
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "mta",
             remote_modified_time=metadados["modifiedTime"],
-            local_updated_at=datetime.now().isoformat(),
+            local_updated_at=horario.agora_br().isoformat(),
             status="atualizado",
             record_count=len(df),
             last_error=None,

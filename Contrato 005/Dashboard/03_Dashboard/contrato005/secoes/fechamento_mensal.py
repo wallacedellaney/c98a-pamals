@@ -11,6 +11,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from contrato005.components.paleta import AMBER, LINE, PANEL, STATUS, layout_grafico
 from contrato005.components.utils import AVISO_MMAM_PREVIA, ordenar_unicos
 
@@ -35,7 +36,7 @@ def _opcoes_mes(dados):
     2026-07-14: "é para sempre aparecer no mes atual"), não um mês fixo; se
     não houver dado ainda, usa só o mês atual."""
     df = dados.get("emergencias_totais")
-    padrao = pd.Timestamp.now().to_period("M")
+    padrao = pd.Timestamp(horario.hoje_br()).to_period("M")
     if df is None or df.empty or "data_abertura" not in df.columns:
         return [padrao]
     periodos = pd.to_datetime(df["data_abertura"].dropna()).dt.to_period("M").unique()
@@ -52,7 +53,7 @@ def render(dados):
     st.caption("Fechamento mensal do Contrato 005 — cômputo do mês e atrasos.")
 
     opcoes = _opcoes_mes(dados)
-    padrao = pd.Timestamp.now().to_period("M")
+    padrao = pd.Timestamp(horario.hoje_br()).to_period("M")
     indice_padrao = opcoes.index(padrao) if padrao in opcoes else len(opcoes) - 1
 
     mes_escolhido = st.selectbox(

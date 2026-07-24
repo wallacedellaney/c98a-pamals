@@ -17,7 +17,7 @@ import openpyxl
 import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado
+from shared import drive_sync, estado, horario
 
 from projetos.config import tpjl_config as cfg
 from projetos.regras.tpjl_regras import normalizar, status_atual, situacao_previsao
@@ -152,7 +152,7 @@ def _registrar_historico(resultados):
     (não duplica). Base pra barra temporal pedida pelo Wallace em
     2026-07-09 — só existe história a partir do dia em que essa função
     passou a rodar."""
-    hoje = datetime.now().date().isoformat()
+    hoje = horario.hoje_br().isoformat()
     partes = []
     for ano, (df, _lidos) in resultados.items():
         parte = df.copy()
@@ -198,7 +198,7 @@ def atualizar_do_drive():
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "tpjl", status="erro",
             last_error="; ".join(erros),
-            local_updated_at=datetime.now().isoformat(),
+            local_updated_at=horario.agora_br().isoformat(),
             record_count=total,
         )
         raise RuntimeError("; ".join(erros))
@@ -207,7 +207,7 @@ def atualizar_do_drive():
     estado.atualizar_estado(
         ESTADO_ATUALIZACOES, "tpjl",
         remote_modified_time=modificado_mais_recente,
-        local_updated_at=datetime.now().isoformat(),
+        local_updated_at=horario.agora_br().isoformat(),
         status="atualizado",
         record_count=total,
         record_count_2025=len(resultados[2025][0]),

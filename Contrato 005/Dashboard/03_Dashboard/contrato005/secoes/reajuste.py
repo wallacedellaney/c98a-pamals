@@ -6,12 +6,11 @@ uma aba chamada reajuste onde tem todas essas infomacoes ai dessa
 planilha". Ver 00_Instrucoes/reajuste.md.
 """
 
-from datetime import datetime
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from shared import horario
 from contrato005.components.paleta import AMBER, CATEGORICA, CYAN, INK, LINE, PANEL, SECONDARY, STATUS, layout_grafico
 from contrato005.components.utils import formatar_moeda as _fmt_moeda
 from contrato005.components.utils import formatar_numero
@@ -46,7 +45,7 @@ def render(dados):
         return
 
     if dados.get("reajuste_atualizado_em"):
-        atualizado = datetime.fromtimestamp(dados["reajuste_atualizado_em"]).strftime("%d/%m/%Y %H:%M")
+        atualizado = horario.fromtimestamp_br(dados["reajuste_atualizado_em"]).strftime("%d/%m/%Y %H:%M")
         st.caption(f"Última atualização dos dados: **{atualizado}**")
 
     # --- Valor do contrato: assinatura -> 1° Reajuste -> 2° Reajuste (atual) ---

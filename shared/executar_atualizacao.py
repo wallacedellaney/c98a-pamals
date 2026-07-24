@@ -16,11 +16,13 @@ Ver 00_Instrucoes/atualizacoes.md (raiz do projeto).
 
 import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 LOG = RAIZ / "shared" / "automacao.log"
+
+sys.path.insert(0, str(RAIZ))
+from shared import horario  # noqa: E402 — precisa vir depois do sys.path.insert acima
 
 SCRIPTS = {
     "disponibilidade_diaria": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_disponibilidade_diaria.py",
@@ -82,7 +84,7 @@ def _sincronizar_com_remoto():
 
 def _executar_uma(fonte):
     script = SCRIPTS[fonte]
-    agora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    agora = horario.agora_br().strftime("%Y-%m-%d %H:%M:%S")
 
     _sincronizar_com_remoto()
 
@@ -104,7 +106,7 @@ def _executar_uma(fonte):
         return True
 
     subprocess.run(["git", "add", "-A"], cwd=str(RAIZ), check=True)
-    mensagem = f"Atualização automática: {fonte} ({datetime.now().strftime('%d/%m/%Y %H:%M')})"
+    mensagem = f"Atualização automática: {fonte} ({horario.agora_br().strftime('%d/%m/%Y %H:%M')})"
     subprocess.run(["git", "commit", "-m", mensagem], cwd=str(RAIZ), check=True)
     push = subprocess.run(["git", "push", "origin", "main"], cwd=str(RAIZ), capture_output=True, text=True)
     if push.returncode != 0:

@@ -338,6 +338,40 @@ tinham rodado nenhum horário do dia até de tarde. Investigando:
   manualmente várias vezes (2026-07-21, 22 e 23) pra manter os dados em
   dia mesmo com as 2 automações falhando ao mesmo tempo.
 
+## Achado e corrigido em 2026-07-24 — horários apareciam em UTC, não Brasília
+
+Wallace: "acho que o horario da atualizaaao aparece o utc zero, traz para
+horario de brasilia". Causa: `datetime.now()`/`date.today()`/
+`datetime.fromtimestamp()`/`pd.Timestamp.now()` puros usam o fuso do
+SISTEMA que está rodando o código — o Mac do Wallace já é Brasília, mas o
+GitHub Actions e o Streamlit Cloud rodam em UTC. Toda vez que o código
+mostrava "Última atualização" (ou decidia "que dia é hoje" — dia útil,
+mês/ano atual, prazo de DPE) rodando na nuvem, ficava 3h adiantado.
+
+**Corrigido em todo o projeto** (35 arquivos): novo módulo
+`shared/horario.py` com `agora_br()`/`hoje_br()`/`fromtimestamp_br()`
+(usa `zoneinfo.ZoneInfo("America/Sao_Paulo")`, biblioteca padrão, sem
+dependência nova) — substituiu todo uso de `datetime.now()`,
+`date.today()`, `datetime.fromtimestamp()` e `pd.Timestamp.now()` nas 3
+áreas: captions de "Última atualização"/cabeçalho "HOJE", checagem de dia
+útil (`garantir_disponibilidade_atualizada`), seleção de mês/ano atual
+(Fechamento Mensal, Visão Geral, Reparáveis), snapshot diário de cada
+fonte (`hoje` usado como chave do histórico) e o timestamp das mensagens
+de commit automático (`shared/executar_atualizacao.py`). Inclui também um
+bug real achado de quebra (não só cosmético): `pd.Timestamp.now()` na
+Diagonal de Manutenção alimentava a "Previsão de situação — próximos 7
+dias" com o "hoje" errado, o que contribuiu pro mesmo sintoma já visto em
+2026-07-23 ("nao ta batendo com a disp diaria").
+
+**Detalhe de ordem de import**: `Contrato 005/Dashboard/03_Dashboard/app.py`
+(runner standalone do site 005CELOG2025) importava `contrato_app` ANTES de
+colocar a raiz do projeto no `sys.path` — funcionava antes porque
+`contrato_app.py` só usava `shared` dentro de função (import tardio); ao
+`contrato_app.py` ganhar `from shared import horario` no topo do módulo,
+quebrou só nesse runner (`ModuleNotFoundError: No module named 'shared'`).
+Corrigido invertendo a ordem (sys.path primeiro, import de `contrato_app`
+depois).
+
 ## Histórico — tentativas anteriores (mantido por contexto)
 
 * **UI com botão + credencial própria (Fase 1, 2026-07-04/05):** o site
