@@ -109,5 +109,3 @@ e-mail, depois); a credencial do Google é secret próprio desse segundo app
 (não compartilhado com o site principal). Atualiza sozinho, sem
 configuração extra — mesmo repositório, mesmo ciclo automático de 2 em 2h. Ver
 `Contrato 005/Dashboard/00_Instrucoes/site_005celog2025.md`.
-
-<!-- teste hook auto-push -->
