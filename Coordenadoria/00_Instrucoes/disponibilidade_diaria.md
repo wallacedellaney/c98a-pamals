@@ -81,6 +81,26 @@ comparação diária, alertas, painel por unidade):
   mês** (decisão confirmada com o Wallace — média simples dos relatórios
   daquele mês, não pondera por dias úteis restantes).
 
+## Bug corrigido em 2026-07-23 — a verificação só rodava dentro da própria página
+
+Wallace, sobre a Diagonal de Manutenção ("Previsão de situação — próximos 7
+dias"): "nao ta batendo com a disp diaria, tem que ir atualizando ne". Causa
+real: `_garantir_relatorio_hoje()` (a busca automática "na hora" descrita
+acima) só rodava dentro do `render()` da própria página Disponibilidade
+Diária — se o Wallace abrisse direto "Diagonal de Manutenção" (ou
+"Dashboard") sem visitar Disponibilidade Diária antes na mesma sessão, essa
+verificação nunca disparava, e `disp_aeronaves`/`disp_relatorios` ficavam
+com o que já estava em disco (só a automação de 2 em 2h atualizava).
+
+**Corrigido**: a função foi promovida pra `coordenadoria/utils.py`
+(`garantir_disponibilidade_atualizada()`) e passou a ser chamada em
+`coordenadoria_app.py::render()`, **antes** de `carregar_tudo()` — ou seja,
+roda uma vez por acesso à Coordenadoria, **qualquer** que seja a página
+escolhida, e os dados já chegam frescos na primeira renderização (não
+precisa mais de `st.rerun()` como no design original). O resultado fica
+disponível em `dados["disp_status_atualizacao"]` pra quem quiser mostrar
+status (hoje só a própria Disponibilidade Diária mostra).
+
 ## Bug corrigido em 2026-07-07 — BOM quebrava o parser na busca automática
 
 Na primeira vez que a busca automática (`atualizar_do_drive()`, GitHub

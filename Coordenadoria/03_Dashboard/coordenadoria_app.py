@@ -17,7 +17,7 @@ from coordenadoria.components.fontes_dados import secao_fontes_dados
 from coordenadoria.components.paleta import AMBER, SECONDARY, LINE, PANEL, STATUS, INK
 from coordenadoria.data.carregar_dados import carregar_tudo
 from coordenadoria.secoes import dashboard_geral, rac, disponibilidade_diaria, diagonal_manutencao, vencimentos, motores, previsao_mensal
-from coordenadoria.utils import atualizar_dados_rac
+from coordenadoria.utils import atualizar_dados_rac, garantir_disponibilidade_atualizada
 
 PAGINAS = {
     "Dashboard": dashboard_geral,
@@ -34,7 +34,13 @@ def render(ao_voltar=None):
     if "coord_pagina" not in st.session_state:
         st.session_state["coord_pagina"] = "Dashboard"
 
+    # Antes de carregar qualquer dado — garante que a Disponibilidade Diária
+    # está em dia (busca no Drive na hora se hoje ainda não tiver relatório
+    # salvo), pra QUALQUER página da Coordenadoria já usar dado fresco (não
+    # só a própria tela de Disponibilidade Diária). Ver docstring da função.
+    status_disponibilidade = garantir_disponibilidade_atualizada()
     dados = carregar_tudo()
+    dados["disp_status_atualizacao"] = status_disponibilidade
 
     st.markdown(
         f"""<style>

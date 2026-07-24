@@ -2,6 +2,7 @@
 
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
@@ -17,6 +18,49 @@ SCRIPT_GERAR_MOTORES = DASHBOARD_ROOT / "05_Scripts" / "python" / "extrair_motor
 RAC_PLANILHA_URL = "https://docs.google.com/spreadsheets/d/1o8supQLcHkC1WZZCZDAtuRKGB_VUlQ8qBlYj7racsGQ/edit"
 DISPONIBILIDADE_PASTA_URL = "https://drive.google.com/drive/folders/1JLrUGunWo5ABsR3WuYo88b2WD4QWoxNH"
 VENCIMENTOS_PLANILHA_URL = "https://docs.google.com/spreadsheets/d/178vQ-lRP52sw30kQArqcsQGXfj2OLblaFCgjIXWFIl8/edit"
+
+# Sys.path pro Scripts da Coordenadoria — permite `import
+# extrair_disponibilidade_diaria` direto, sem subprocesso, dentro de
+# garantir_disponibilidade_atualizada() (ver abaixo).
+SCRIPTS_PYTHON = DASHBOARD_ROOT / "05_Scripts" / "python"
+if str(SCRIPTS_PYTHON) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_PYTHON))
+
+
+@st.cache_data(ttl=1800, show_spinner="Verificando relatório mais recente no Drive...")
+def garantir_disponibilidade_atualizada():
+    """"Sempre busca o dia de hj e atualiza" (pedido do Wallace em
+    2026-07-23) — em vez de esperar o ciclo automático de 2 em 2h (que já se
+    mostrou não 100% confiável, ver 00_Instrucoes/atualizacoes.md), checa o
+    Drive na hora, se hoje for dia útil e ainda não tiver sido verificado
+    nos últimos 30min (`ttl` do cache — compartilhado entre todo mundo que
+    usar a Coordenadoria, pra não bater no Drive toda hora).
+
+    Chamada em `coordenadoria_app.py`, ANTES de `carregar_tudo()` — não só
+    na página "Disponibilidade Diária" (onde foi criada originalmente).
+    Motivo: a Diagonal de Manutenção e o Dashboard Geral também usam
+    `disp_aeronaves`/`disp_relatorios` (ex.: "Previsão de situação — próximos
+    7 dias"), e ficavam com dado desatualizado sempre que o Wallace abria
+    essas páginas sem antes visitar Disponibilidade Diária na mesma sessão
+    (bug real visto em 2026-07-23: "nao ta batendo com a disp diaria, tem
+    que ir atualizando ne"). Chamando aqui, central, TODA página da
+    Coordenadoria se beneficia, e como isso roda antes de `carregar_tudo()`,
+    o dado já sai fresco na primeira renderização — sem precisar de
+    `st.rerun()`.
+
+    Nunca deixa a página quebrar por causa disso — qualquer erro só fica
+    guardado no dict devolvido, pra quem chamar decidir se mostra aviso."""
+    agora = datetime.now()
+    if agora.weekday() >= 5:
+        return {"tentou": False, "motivo": "fim de semana — não sai relatório", "verificado_em": agora}
+    try:
+        from shared import drive_sync
+        import extrair_disponibilidade_diaria as edd
+        drive_sync.garantir_credencial_arquivo()
+        resultado = edd.atualizar_do_drive()
+        return {"tentou": True, "resultado": resultado, "verificado_em": agora}
+    except Exception as e:
+        return {"tentou": True, "erro": str(e), "verificado_em": agora}
 
 
 def atualizar_dados_rac():
