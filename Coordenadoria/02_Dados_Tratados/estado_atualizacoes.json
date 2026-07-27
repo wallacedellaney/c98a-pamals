@@ -3,12 +3,12 @@
     "status": "sem_novidade",
     "last_error": null,
     "remote_modified_time": "2026-07-27T11:44:01.587Z",
-    "local_updated_at": "2026-07-27T14:21:50.967968-03:00",
+    "local_updated_at": "2026-07-27T17:07:36.084086-03:00",
     "record_count": 16
   },
   "rac": {
-    "remote_modified_time": "2026-07-27T16:13:35.214Z",
-    "local_updated_at": "2026-07-27T14:21:59.838931-03:00",
+    "remote_modified_time": "2026-07-27T18:01:41.961Z",
+    "local_updated_at": "2026-07-27T17:07:42.986465-03:00",
     "status": "atualizado",
     "record_count": 30,
     "last_error": null
