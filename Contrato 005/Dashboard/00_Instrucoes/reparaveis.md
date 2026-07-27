@@ -27,13 +27,14 @@ Ler a aba diretamente (já é planilha, não precisa reconstruir tabela de PDF).
 | UNIDADE SOLIC. | Base/esquadrão que solicitou (ex.: PAMALS, BAMN, BANT, PAMASP, BABE...) |
 | ST_OS | Situação da OS (`REC`, `AUT`, `OS concluída`) |
 | TAT SILOMS | Tempo em aberto (dias) segundo o sistema SILOMS |
+| TAT (empresa) | Coluna "TAT " sob "INFORMAÇÕES DA EMPRESA" — TAT real reportado pela própria VEE ONE (em dias), só preenchido depois que o item já foi entregue (vem "NÃO APLICÁVEL" enquanto em reparo). Campo tratado: `tat_empresa`. Ver seção própria abaixo. |
 | ONDE SE ENCONTRA | Local/empresa onde a peça está (ex.: VEE ONE, LEAP, WILLIAM, uma base, ou "PROCURANDO") |
 | RECIBO CASO TENHA | Número do recibo de entrega, quando existe |
-| CONDIÇÃO | Situação do reparo (ex.: EM REPARO, REPARADO, CONDENADO, EM QUARENTENA...). **Importante:** em ~17% das OS (as que já têm `RECIBO`), esta coluna traz uma data (prevista de devolução) em vez de texto — ver tratamento abaixo. |
+| CONDIÇÃO | Situação do reparo (ex.: EM REPARO, REPARADO, CONDENADO, EM QUARENTENA...). **Importante:** em ~17% das OS (as que já têm `RECIBO`), esta coluna traz uma data em vez de texto — **essa data é a data em que o item foi entregue de verdade** (confirmado pelo Wallace em 2026-07-27: "quando tem data na condicao significa que foi a data que foi entregeu"), não uma previsão/estimativa — ver tratamento abaixo. |
 | SN TROCADO (EXCHANGE) | Número de série recebido de volta, quando o item foi trocado (exchange) |
 | TERMO DE RECEBIMENTO | Identificação do termo, quando emitido |
 
-**Colunas que existem na planilha mas não são extraídas** (confirmado que não interessam): `Qt` (na verdade é só um número sequencial de linha, não quantidade), `TAT REAL` (a própria planilha marca como "ainda não confiável"), `OBSERVAÇÃO COORDENADORIA/FISCAL`, `OBSERVAÇÃO VEE ONE`, `Data de devolução empresa`, e o resto do bloco "COMREC/ACERTO VIRTUAL" (Data do Termo, Recebimento do Termo, Solicitar Acerto, OS Concluída, etc.).
+**Colunas que existem na planilha mas não são extraídas** (confirmado que não interessam): `Qt` (na verdade é só um número sequencial de linha, não quantidade), `OBSERVAÇÃO COORDENADORIA/FISCAL`, `OBSERVAÇÃO VEE ONE`, `Data de devolução empresa`, e o resto do bloco "COMREC/ACERTO VIRTUAL" (Data do Termo, Recebimento do Termo, Solicitar Acerto, OS Concluída, etc.). **`TAT (empresa)` (antiga "TAT REAL", marcada como "ainda não confiável") passou a ser extraída em 2026-07-27** — Wallace confirmou que já está disponível/confiável ("tem o TAT DA EMPRESA AGORA").
 
 ## O que extrair
 
@@ -41,7 +42,7 @@ Ler a aba diretamente (já é planilha, não precisa reconstruir tabela de PDF).
 * unidade solicitante;
 * situação (ST_OS) e condição (reparo);
 * onde se encontra;
-* data início, TAT SILOMS;
+* data início, TAT SILOMS, TAT empresa;
 * recibo e termo de recebimento.
 
 ## Regra de OS em aberto
@@ -52,7 +53,7 @@ Manter apenas OS cuja situação (`ST_OS`) seja diferente de "OS concluída" (`R
 
 * Datas convertidas para tipo data.
 * Normalizar `CONDIÇÃO` (variações de grafia, ex.: "DEVOLVIDO NO ESTADO" vs "DEVOLVODO NO ESTADO").
-* **Quando `CONDIÇÃO` contém uma data em vez de texto de status**: mover esse valor para um campo separado `data_retorno_prevista` e deixar `condicao` vazio para essa linha (não somar a data à contagem "OS por condição").
+* **Quando `CONDIÇÃO` contém uma data em vez de texto de status**: mover esse valor para um campo separado `data_entrega` e deixar `condicao` vazio para essa linha (não somar a data à contagem "OS por condição"). Renomeado de `data_retorno_prevista` em 2026-07-27 — o valor é a data real de entrega, não uma previsão (ver tabela de colunas acima).
 * Colunas com tipo misto (texto/número, ex.: CFF) viram texto na exibição do dashboard, sem alterar o dado tratado.
 * **PN sempre normalizado pra texto na extração** (`parse_texto_pn` em `extrair_reparaveis.py`) — bug real visto em 2026-07-13: uma OS nova com PN só numérico foi lida como `int` pelo openpyxl, deixando a coluna com tipos mistos (`int` e `str`) e quebrando `sorted()` no Streamlit Cloud (`TypeError: '<' not supported between instances of 'int' and 'str'`), além da conversão pra Arrow do `st.dataframe`. Diferente do caso do CFF acima, aqui a correção é NA EXTRAÇÃO (dado tratado já sai só como texto), não só na exibição — e a mesma correção foi replicada em `extrair_emergencias.py` (coluna PN também existe lá). Ver também `components/utils.py::ordenar_unicos`, usado em 7 telas como defesa adicional contra esse mesmo padrão de bug com qualquer outra coluna.
 
@@ -126,3 +127,14 @@ por `onde_se_encontra` (com uma linha vertical marcando os 110 dias) —
 sugestão própria pra responder "pense em outras estatísticas que podemos
 fazer", mostra onde o item costuma ficar parado por mais tempo. A tabela
 com os números fica num expander opcional embaixo do gráfico.
+
+**Card de TAT real da empresa (2026-07-27)** — desde que `tat_empresa`
+passou a ser extraído (Wallace: "tem o TAT DA EMPRESA AGORA"), 2 cards a
+mais: "Itens com TAT real da empresa (já entregues)" (quantidade) + "Média
+de TAT real — empresa" (média de `tat_empresa`). Diferente dos cards de
+prazo contratual acima (que olham só `abertos`, com base em `tat_siloms` —
+o único TAT disponível enquanto o item ainda está em andamento), esses 2
+novos cards olham a base **inteira** (abertos + concluídos), porque
+`tat_empresa` só existe depois que o item já foi entregue — é uma medida
+retrospectiva (real, reportada pela empresa), não do que está em
+andamento agora.

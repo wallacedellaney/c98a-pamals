@@ -135,7 +135,7 @@ COLUNAS_REPARAVEL = [
     ("sn", "SN", 0.7), ("unidade_solicitante", "UNIDADE SOLICITANTE", 0.8), ("situacao", "SITUAÇÃO", 0.8),
     ("condicao", "CONDIÇÃO", 0.9), ("onde_se_encontra", "ONDE SE ENCONTRA", 0.9),
     ("data_inicio", "DATA INÍCIO", 0.7), ("tat_siloms", "TAT SILOMS", 0.6),
-    ("data_retorno_prevista", "DATA RETORNO PREVISTA", 0.8),
+    ("data_entrega", "DATA DE ENTREGA", 0.8),
     ("sn_trocado_exchange", "SN TROCADO (EXCHANGE)", 0.8), ("termo_recebimento", "TERMO RECEBIMENTO", 0.9),
 ]
 COLUNAS_PAGAMENTO = [

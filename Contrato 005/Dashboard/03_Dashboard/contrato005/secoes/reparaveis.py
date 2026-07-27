@@ -87,6 +87,19 @@ def _secao_estatisticas_tat(df):
     c5.metric(f"Fora do prazo contratual (> {PRAZO_CONTRATUAL_TAT_DIAS} dias) — empresa/terceirizados", len(fora_prazo), delta_color="inverse")
     c6.metric("Vencem o prazo contratual este mês — empresa/terceirizados", len(vence_mes), delta_color="inverse")
 
+    # TAT real reportado pela própria empresa (coluna "TAT " da fonte, sob
+    # "INFORMAÇÕES DA EMPRESA") — disponível a partir de 2026-07-27 (Wallace:
+    # "tem o TAT DA EMPRESA AGORA"). Só existe depois que o item já foi
+    # entregue (vem "NÃO APLICÁVEL" enquanto em reparo, já tratado como None
+    # na extração) — por isso olha o `df` inteiro, não só `abertos`: é uma
+    # medida retrospectiva (itens já concluídos), não do que está em
+    # andamento agora (isso continua sendo o tat_siloms, acima).
+    com_tat_empresa = df[df["tat_empresa"].notna()]
+    if not com_tat_empresa.empty:
+        c7, c8 = st.columns(2)
+        c7.metric("Itens com TAT real da empresa (já entregues)", len(com_tat_empresa))
+        c8.metric("Média de TAT real — empresa", f"{com_tat_empresa['tat_empresa'].mean():.0f} dias")
+
     g1, g2 = st.columns(2)
     with g1:
         st.caption("Com a empresa e terceirizados x Entregue (falta burocracia)")
@@ -186,12 +199,12 @@ def render(dados):
 
     tabela = filtrado[[
         "os", "pn", "cff", "nomenclatura", "sn", "unidade_solicitante", "situacao",
-        "condicao", "onde_se_encontra", "data_inicio", "tat_siloms",
-        "data_retorno_prevista", "sn_trocado_exchange", "termo_recebimento",
+        "condicao", "onde_se_encontra", "data_inicio", "tat_siloms", "tat_empresa",
+        "data_entrega", "sn_trocado_exchange", "termo_recebimento",
     ]].copy()
     # Colunas com tipos misturados (data/vazio, número/texto) viram string só
     # para exibição — evita erro de serialização da tabela, sem alterar o xlsx.
-    for coluna in ("data_inicio", "data_retorno_prevista", "cff", "sn", "sn_trocado_exchange", "termo_recebimento"):
+    for coluna in ("data_inicio", "data_entrega", "cff", "sn", "sn_trocado_exchange", "termo_recebimento"):
         tabela[coluna] = tabela[coluna].astype(str).replace({"None": "", "nan": "", "NaT": ""})
 
     st.dataframe(tabela, width="stretch", hide_index=True, height=420)

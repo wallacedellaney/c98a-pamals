@@ -5,8 +5,13 @@ Carrega a tabela de reparáveis C-98 a partir da planilha do Google Sheets
 Campos importantes (confirmado pelo Wallace): OS, PN, CFF, NOMENCLATURA, SN,
 DATA INICIO, UNIDADE SOLIC., ST_OS, TAT SILOMS, ONDE SE ENCONTRA,
 RECIBO CASO TENHA, CONDIÇÃO, SN TROCADO (EXCHANGE), TERMO DE RECEBIMENTO.
-Colunas fora dessa lista (Qt, TAT REAL, observações, bloco de acerto virtual
-além do Termo de Recebimento) não são extraídas.
+Colunas fora dessa lista (Qt, observações, bloco de acerto virtual além do
+Termo de Recebimento) não são extraídas.
+
+`tat_empresa` (coluna "TAT " sob "INFORMAÇÕES DA EMPRESA") entrou em
+2026-07-27, confirmado pelo Wallace ("tem o TAT DA EMPRESA AGORA") — TAT
+real reportado pela própria VEE ONE (em dias), só preenchido quando o item
+já foi entregue (vem "NÃO APLICÁVEL" enquanto ainda está em reparo).
 
 Regras de tratamento vêm de 00_Instrucoes/reparaveis.md.
 """
@@ -31,8 +36,8 @@ DRIVE_FILE_ID = "1dy_U2Pu5mw6se_gsGvPnuiErKlUJbHnE743f5fnSQ4o"
 
 COLUNAS = [
     "os", "pn", "cff", "nomenclatura", "sn", "data_inicio", "unidade_solicitante",
-    "situacao", "tat_siloms", "onde_se_encontra", "recibo", "condicao",
-    "data_retorno_prevista", "sn_trocado_exchange", "termo_recebimento",
+    "situacao", "tat_siloms", "tat_empresa", "onde_se_encontra", "recibo", "condicao",
+    "data_entrega", "sn_trocado_exchange", "termo_recebimento",
 ]
 
 # Snapshot diário das OS em aberto — mesmo padrão de Emergências/RAC/MTA/TPJL.
@@ -111,20 +116,24 @@ def extrair():
 
         condicao_bruta = row[16]
         # Quando a OS já tem recibo (foi enviada a uma base), a coluna CONDIÇÃO às
-        # vezes traz a data prevista de devolução em vez de um status em texto.
+        # vezes traz uma data em vez de um status em texto — confirmado pelo
+        # Wallace em 2026-07-27: essa data É a data em que o item foi
+        # entregue de verdade (não uma previsão/estimativa), por isso o
+        # campo se chama `data_entrega`, não `data_retorno_prevista` (nome
+        # antigo, renomeado nessa mesma data).
         if hasattr(condicao_bruta, "date"):
             condicao = None
-            data_retorno_prevista = condicao_bruta.date() if hasattr(condicao_bruta, "date") else condicao_bruta
+            data_entrega = condicao_bruta.date() if hasattr(condicao_bruta, "date") else condicao_bruta
         else:
             condicao_texto = str(condicao_bruta or "").strip()
             if condicao_texto and DATA_RE.match(condicao_texto):
                 condicao = None
-                data_retorno_prevista, erro_retorno = parse_data(condicao_texto)
+                data_entrega, erro_retorno = parse_data(condicao_texto)
                 if erro_retorno:
                     inconsistencias.append(f"OS {os_num}: {erro_retorno} (em CONDIÇÃO)")
             else:
                 condicao = CONDICOES_PADRONIZADAS.get(condicao_texto, condicao_texto) or None
-                data_retorno_prevista = None
+                data_entrega = None
 
         linhas.append({
             "os": os_num,
@@ -136,10 +145,16 @@ def extrair():
             "unidade_solicitante": row[7],
             "situacao": situacao,
             "tat_siloms": parse_inteiro(row[9]),
+            # TAT reportado pela própria empresa (VEE ONE), coluna "TAT " sob
+            # "INFORMAÇÕES DA EMPRESA" — confirmado disponível pelo Wallace em
+            # 2026-07-27 ("tem o TAT DA EMPRESA AGORA"). Vem "NÃO APLICÁVEL"
+            # (texto) enquanto o item ainda não foi entregue — `parse_inteiro`
+            # já trata isso como None, igual qualquer outro texto não numérico.
+            "tat_empresa": parse_inteiro(row[11]),
             "onde_se_encontra": row[14],
             "recibo": row[15],
             "condicao": condicao,
-            "data_retorno_prevista": data_retorno_prevista,
+            "data_entrega": data_entrega,
             "sn_trocado_exchange": row[17],
             "termo_recebimento": row[19],
             "em_aberto": situacao != "OS concluída",
