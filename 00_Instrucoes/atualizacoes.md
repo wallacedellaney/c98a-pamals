@@ -372,6 +372,45 @@ quebrou só nesse runner (`ModuleNotFoundError: No module named 'shared'`).
 Corrigido invertendo a ordem (sys.path primeiro, import de `contrato_app`
 depois).
 
+## Verificação ao vivo em TODAS as fontes (2026-07-27)
+
+Wallace, depois de mais um dia sem nenhuma automação ter rodado: "nada roda
+automatico ja descobri, ruim demais ne". Em vez de continuar caçando falha
+por falha do GitHub Actions/launchd (os 2 já se mostraram não confiáveis o
+bastante sozinhos, repetidas vezes — ver seções acima), o mecanismo criado
+em 2026-07-23 só pra Disponibilidade Diária ("confere e busca sozinho ao
+abrir o site") foi generalizado pra **todas** as fontes com
+`atualizar_do_drive()`: Emergências, Pagamentos, Reparáveis, Empréstimos
+(Contrato 005), RAC, Vencimentos TMOT, Motores (Coordenadoria), MTA, TPJL,
+Consumo/Estoque/Solicitações (Projetos).
+
+`shared/verificacao_ao_vivo.py::criar_verificador(nome_fonte, atualizar_fn)`
+generaliza a função que já existia em `coordenadoria/utils.py` — devolve
+uma função cacheada 30min (`st.cache_data`, compartilhada entre todo mundo
+que acessar, pra não bater no Drive a cada clique), chamada em cada
+`<area>_app.py::render()` ANTES de `carregar_tudo()`. GitHub Actions e o
+`launchd` continuam existindo como automação de fundo, mas deixam de ser a
+**única** forma do dado ficar em dia — agora o próprio acesso ao site já
+corrige sozinho, sem o Wallace precisar saber que a automação externa
+falhou.
+
+**Bug real achado ao implementar**: Contrato 005, Coordenadoria e Projetos
+têm cada um seu próprio `05_Scripts/python/common.py` (mesmo nome nas 3
+áreas) — importar os extratores de mais de uma área **direto** (sem
+subprocesso) no mesmo processo Python faz elas colidirem no nome do módulo
+`common` (o Python só permite 1 módulo com esse nome por processo; a
+primeira área a importar "vence", as outras quebram com
+`ImportError: cannot import name 'X' from 'common'`). Como o site
+principal carrega as 3 áreas no mesmo processo, isso quebrava na hora.
+**Corrigido**: Contrato 005 e Projetos usam `atualizar_fonte()` (a ponte
+via subprocesso que `atualizar_drive.py` já tinha, usada pelos botões
+"Atualizar X") em vez de importar o extrator direto — cada subprocesso
+monta o próprio `sys.path` do zero, sem risco de colisão. Coordenadoria
+continua com import direto (só ela mesma no processo desde o início, sem
+esse risco — mesmo padrão já usado pela Disponibilidade Diária desde
+2026-07-23). `contrato005/data/atualizar_drive.py` ganhou a entrada
+"devolucoes" (Empréstimos), que ainda não tinha.
+
 ## Histórico — tentativas anteriores (mantido por contexto)
 
 * **UI com botão + credencial própria (Fase 1, 2026-07-04/05):** o site
