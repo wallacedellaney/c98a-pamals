@@ -301,10 +301,10 @@ matricula,dia,fim_de_semana,montada
 2723,21,False,0.0
 2723,22,False,0.0
 2723,23,False,0.0
-2723,24,False,0.0
-2723,25,True,0.0
-2723,26,True,0.0
-2723,27,False,0.0
+2723,24,False,1.0
+2723,25,True,1.0
+2723,26,True,1.0
+2723,27,False,1.0
 2723,28,False,
 2723,29,False,
 2723,30,False,
@@ -397,7 +397,7 @@ matricula,dia,fim_de_semana,montada
 2729,24,False,0.0
 2729,25,True,0.0
 2729,26,True,0.0
-2729,27,False,0.0
+2729,27,False,1.0
 2729,28,False,
 2729,29,False,
 2729,30,False,
