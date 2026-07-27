@@ -61,14 +61,23 @@ def _parse_dpe(texto, ano_referencia):
     Se não achar, retorna (None, texto) — condição em texto livre, sem inventar data."""
     if not texto:
         return None, None
-    m = RE_DATA_COMPLETA.match(texto.strip())
+    # O relatório sempre termina a linha da aeronave com ponto final (ex.:
+    # "DPE: 28/07.") — sem tirar esse ponto, RE_DATA_CURTA (que exige fim de
+    # string logo após os dígitos) nunca batia, e NENHUMA data de DPE real
+    # do relatório era reconhecida (bug real visto em 2026-07-27: Wallace
+    # notou que a "Previsão de situação — próximos 7 dias" ficava idêntica
+    # a semana inteira — causa era essa: toda aeronave indisponível caía no
+    # fallback de +14 dias em vez da DPE real, porque `dpe_data` sempre
+    # vinha vazio mesmo quando o relatório tinha a data escrita).
+    texto_limpo = texto.strip().rstrip(".")
+    m = RE_DATA_COMPLETA.match(texto_limpo)
     if m:
         d, mth, y = m.groups()
         try:
             return date(int(y), int(mth), int(d)), texto
         except ValueError:
             return None, texto
-    m = RE_DATA_CURTA.match(texto.strip())
+    m = RE_DATA_CURTA.match(texto_limpo)
     if m:
         d, mth = m.groups()
         try:

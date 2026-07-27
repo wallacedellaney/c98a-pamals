@@ -81,6 +81,32 @@ comparação diária, alertas, painel por unidade):
   mês** (decisão confirmada com o Wallace — média simples dos relatórios
   daquele mês, não pondera por dias úteis restantes).
 
+## Bug corrigido em 2026-07-27 — DPE nunca era reconhecida (ponto final quebrava o regex)
+
+Wallace, sobre a Diagonal de Manutenção: "previsao de disponibilidade ta
+tudo igual 27 ate dia 02/08". Investigando, achei que **todas** as 14
+aeronaves indisponíveis do relatório do dia tinham `dpe_data` vazio — mesmo
+o relatório trazendo a data escrita (ex.: "2733 - II - ... - DPE: 28/07.").
+
+**Causa real**: `RE_DATA_CURTA = re.compile(r"^(\d{2})/(\d{2})$")` exige
+que a string termine (`$`) logo depois dos dígitos — mas o relatório
+sempre fecha a linha da aeronave com **ponto final** ("DPE: 28/07."), então
+o texto chegava em `_parse_dpe()` como `"28/07."`, com o ponto sobrando, e
+o regex nunca batia. Resultado: `dpe_data` ficava `None` pra praticamente
+toda aeronave indisponível, e `_previsao_situacao_7dias()` (Diagonal de
+Manutenção) caía sempre no fallback "+14 dias" em vez da DPE real — como
+14 dias é maior que a janela de 7 dias mostrada, a previsão inteira parecia
+travada/idêntica a semana toda (a única variação vinha de inspeções
+programadas da Diagonal terminando no meio da semana, não da DPE).
+
+**Corrigido**: `_parse_dpe()` agora tira um ponto final (`.rstrip(".")`) do
+texto antes de tentar casar com os regex de data. Testado com o relatório
+de 27/07: as 14 aeronaves indisponíveis passaram a ter DPE de verdade
+(28/07, 31/07, 27/07, 03/08, 30/09 etc., além dos casos de texto livre tipo
+"A ser definido"/"Aguarda DPE do PAMASP" que continuam sem data, como
+esperado) — a previsão de 7 dias na Diagonal de Manutenção passou a variar
+dia a dia de verdade.
+
 ## Bug corrigido em 2026-07-23 — a verificação só rodava dentro da própria página
 
 Wallace, sobre a Diagonal de Manutenção ("Previsão de situação — próximos 7
