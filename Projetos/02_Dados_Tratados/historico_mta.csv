@@ -1346,7 +1346,7 @@ data_snapshot,linha,situacao_consolidada,aprovado,tramite,valor,executora,pacote
 2026-07-28,17760,"Aprovado, aguardando atendimento",SIM,,1468159.32,CELOG,A,HORA DE VOO,Não
 2026-07-28,17761,"Aprovado, aguardando atendimento",SIM,,1704503.0,CELOG,A,HORA DE VOO,Não
 2026-07-28,17762,"Aprovado, aguardando atendimento",SIM,,1704503.0,CELOG,A,HORA DE VOO,Não
-2026-07-28,17763,Em trâmite,SIM,EM TRÂMITE,236343.68,CELOG,A,HORA DE VOO,Não
+2026-07-28,17763,Atendido,SIM,ATENDIDO,236343.68,CELOG,A,HORA DE VOO,Não
 2026-07-28,18140,"Aprovado, aguardando atendimento",SIM,,1295422.28,CELOG,A,HORA DE VOO,Não
 2026-07-28,19240,"Aprovado, aguardando atendimento",SIM,,500000.0,CELOG,D,PARCELA FIXA,Não
 2026-07-28,19241,Não aprovado,NÃO,BLOQUEIO,5000000.0,CELOG,D,PARCELA FIXA,Não
