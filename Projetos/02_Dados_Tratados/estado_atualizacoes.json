@@ -1,14 +1,14 @@
 {
   "mta": {
-    "remote_modified_time": "2026-07-27T13:08:05.912Z",
-    "local_updated_at": "2026-07-28T13:55:22.133034-03:00",
+    "remote_modified_time": "2026-07-28T19:11:05.561Z",
+    "local_updated_at": "2026-07-28T17:50:49.193031-03:00",
     "status": "atualizado",
     "record_count": 82,
     "last_error": null
   },
   "tpjl": {
-    "remote_modified_time": "2026-07-28T14:13:50.278Z",
-    "local_updated_at": "2026-07-28T13:55:55.762772-03:00",
+    "remote_modified_time": "2026-07-28T19:44:53.629Z",
+    "local_updated_at": "2026-07-28T17:51:28.937569-03:00",
     "status": "atualizado",
     "record_count": 238,
     "record_count_2025": 185,
@@ -18,7 +18,7 @@
   "tpjl_extras": {
     "status": "atualizado",
     "last_error": null,
-    "local_updated_at": "2026-07-28T13:56:07.440578-03:00",
+    "local_updated_at": "2026-07-28T17:51:44.706248-03:00",
     "record_count": 21668,
     "remote_modified_time": "2026-07-14T16:38:21.000Z",
     "record_count_consumo": 11298,
