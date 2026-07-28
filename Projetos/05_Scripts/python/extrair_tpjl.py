@@ -18,6 +18,7 @@ import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
 from shared import drive_sync, estado, horario
+from shared.escrita_atomica import caminho_temporario
 
 from projetos.config import tpjl_config as cfg
 from projetos.regras.tpjl_regras import normalizar, status_atual, situacao_previsao
@@ -127,9 +128,10 @@ def main():
     resultados, inconsistencias = extrair()
 
     destino = DADOS_TRATADOS / "base_tpjl_tratada.xlsx"
-    with pd.ExcelWriter(destino) as writer:
-        for ano, (df, _lidos) in resultados.items():
-            df.to_excel(writer, index=False, sheet_name=f"TPJL_{ano}")
+    with caminho_temporario(destino) as tmp:
+        with pd.ExcelWriter(tmp) as writer:
+            for ano, (df, _lidos) in resultados.items():
+                df.to_excel(writer, index=False, sheet_name=f"TPJL_{ano}")
 
     registrar_log(
         nome_execucao="extrair_tpjl",

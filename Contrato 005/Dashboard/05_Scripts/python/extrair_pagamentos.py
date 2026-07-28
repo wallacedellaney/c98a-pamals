@@ -13,6 +13,7 @@ import pandas as pd
 
 from common import XLSX_PAGAMENTOS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
 from shared import drive_sync, estado, horario
+from shared.escrita_atomica import caminho_temporario
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
@@ -228,10 +229,11 @@ def main():
     df_empenhos = empenhos_para_dataframe(empenhos)
 
     destino = DADOS_TRATADOS / "base_pagamentos_tratada.xlsx"
-    with pd.ExcelWriter(destino) as writer:
-        pd.DataFrame([contrato]).to_excel(writer, index=False, sheet_name="Contrato")
-        df.to_excel(writer, index=False, sheet_name="Pagamentos")
-        df_empenhos.to_excel(writer, index=False, sheet_name="Empenhos")
+    with caminho_temporario(destino) as tmp:
+        with pd.ExcelWriter(tmp) as writer:
+            pd.DataFrame([contrato]).to_excel(writer, index=False, sheet_name="Contrato")
+            df.to_excel(writer, index=False, sheet_name="Pagamentos")
+            df_empenhos.to_excel(writer, index=False, sheet_name="Empenhos")
 
     registrar_log(
         nome_execucao="extrair_pagamentos",

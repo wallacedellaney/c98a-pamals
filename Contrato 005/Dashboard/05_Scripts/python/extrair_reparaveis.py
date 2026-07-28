@@ -24,6 +24,7 @@ import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
 from shared import drive_sync, estado, horario
+from shared.escrita_atomica import caminho_temporario
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
@@ -175,7 +176,8 @@ def main():
     df, inconsistencias = extrair()
 
     destino = DADOS_TRATADOS / "base_reparaveis_tratada.xlsx"
-    df.to_excel(destino, index=False, sheet_name="Reparaveis")
+    with caminho_temporario(destino) as tmp:
+        df.to_excel(tmp, index=False, sheet_name="Reparaveis")
 
     registrar_log(
         nome_execucao="extrair_reparaveis",

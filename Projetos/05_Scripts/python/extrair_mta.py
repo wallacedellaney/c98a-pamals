@@ -17,6 +17,7 @@ import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
 from shared import drive_sync, estado, horario
+from shared.escrita_atomica import caminho_temporario
 
 from projetos.config import mta_config as cfg
 from projetos.regras.mta_regras import normalizar, situacao_consolidada
@@ -137,7 +138,8 @@ def main():
     df, inconsistencias = extrair()
 
     destino = DADOS_TRATADOS / "base_mta_tratada.xlsx"
-    df.to_excel(destino, index=False, sheet_name="MTA")
+    with caminho_temporario(destino) as tmp:
+        df.to_excel(tmp, index=False, sheet_name="MTA")
 
     registrar_log(
         nome_execucao="extrair_mta",

@@ -25,6 +25,7 @@ import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
 from shared import drive_sync, estado, horario
+from shared.escrita_atomica import caminho_temporario
 
 FONTE = BASES_ORIGINAIS / "RAC" / "Analise critica de emergencias C-98 2026 (Google Sheets).xlsx"
 ABA = "Rac"
@@ -136,9 +137,10 @@ def main():
     df_aeronaves, df_pendencias, inconsistencias = extrair()
 
     destino = DADOS_TRATADOS / "base_rac_tratada.xlsx"
-    with pd.ExcelWriter(destino) as writer:
-        df_aeronaves.to_excel(writer, index=False, sheet_name="Aeronaves")
-        df_pendencias.to_excel(writer, index=False, sheet_name="Pendencias")
+    with caminho_temporario(destino) as tmp:
+        with pd.ExcelWriter(tmp) as writer:
+            df_aeronaves.to_excel(writer, index=False, sheet_name="Aeronaves")
+            df_pendencias.to_excel(writer, index=False, sheet_name="Pendencias")
 
     registrar_log(
         nome_execucao="extrair_rac",

@@ -28,6 +28,7 @@ import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
 from shared import drive_sync, estado, horario
+from shared.escrita_atomica import caminho_temporario
 
 PASTA_ORIGEM = BASES_ORIGINAIS / "Disponibilidade_Diaria"
 
@@ -246,9 +247,10 @@ def main():
     df_relatorios, df_aeronaves, inconsistencias = extrair()
 
     destino = DADOS_TRATADOS / "base_disponibilidade_diaria.xlsx"
-    with pd.ExcelWriter(destino) as writer:
-        df_relatorios.to_excel(writer, index=False, sheet_name="Relatorios")
-        df_aeronaves.to_excel(writer, index=False, sheet_name="Aeronaves")
+    with caminho_temporario(destino) as tmp:
+        with pd.ExcelWriter(tmp) as writer:
+            df_relatorios.to_excel(writer, index=False, sheet_name="Relatorios")
+            df_aeronaves.to_excel(writer, index=False, sheet_name="Aeronaves")
 
     registrar_log(
         nome_execucao="extrair_disponibilidade_diaria",

@@ -30,6 +30,7 @@ import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
 from shared import drive_sync, estado, horario
+from shared.escrita_atomica import caminho_temporario
 
 ARQUIVO_FONTE = BASES_ORIGINAIS / "Motores" / "MOTORES_C98.xlsx"
 
@@ -314,12 +315,13 @@ def main():
     dados, inconsistencias = extrair()
 
     destino = DADOS_TRATADOS / "base_motores_tratada.xlsx"
-    with pd.ExcelWriter(destino) as writer:
-        dados["situacao"].to_excel(writer, index=False, sheet_name="Situacao")
-        dados["diagonal"].to_excel(writer, index=False, sheet_name="Diagonal")
-        dados["os"].to_excel(writer, index=False, sheet_name="OS")
-        dados["helice"].to_excel(writer, index=False, sheet_name="Helice")
-        dados["diagonal_meta"].to_excel(writer, index=False, sheet_name="DiagonalMeta")
+    with caminho_temporario(destino) as tmp:
+        with pd.ExcelWriter(tmp) as writer:
+            dados["situacao"].to_excel(writer, index=False, sheet_name="Situacao")
+            dados["diagonal"].to_excel(writer, index=False, sheet_name="Diagonal")
+            dados["os"].to_excel(writer, index=False, sheet_name="OS")
+            dados["helice"].to_excel(writer, index=False, sheet_name="Helice")
+            dados["diagonal_meta"].to_excel(writer, index=False, sheet_name="DiagonalMeta")
 
     _registrar_historico_situacao(dados["situacao"])
     _registrar_historico_diagonal(dados["diagonal"])

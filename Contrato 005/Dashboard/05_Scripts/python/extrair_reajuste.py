@@ -26,6 +26,7 @@ import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
 from shared import drive_sync, estado, horario
+from shared.escrita_atomica import caminho_temporario
 
 ARQUIVO_FONTE = (
     BASES_ORIGINAIS / "Reajuste"
@@ -214,11 +215,12 @@ def main():
     dados = extrair()
 
     destino = DADOS_TRATADOS / "base_reajuste_tratada.xlsx"
-    with pd.ExcelWriter(destino) as writer:
-        dados["indicadores"].to_excel(writer, index=False, sheet_name="Indicadores")
-        dados["notas_fiscais"].to_excel(writer, index=False, sheet_name="NotasFiscais")
-        dados["cronograma_mensal"].to_excel(writer, index=False, sheet_name="CronogramaMensal")
-        dados["cronograma_resumo"].to_excel(writer, index=False, sheet_name="CronogramaResumo")
+    with caminho_temporario(destino) as tmp:
+        with pd.ExcelWriter(tmp) as writer:
+            dados["indicadores"].to_excel(writer, index=False, sheet_name="Indicadores")
+            dados["notas_fiscais"].to_excel(writer, index=False, sheet_name="NotasFiscais")
+            dados["cronograma_mensal"].to_excel(writer, index=False, sheet_name="CronogramaMensal")
+            dados["cronograma_resumo"].to_excel(writer, index=False, sheet_name="CronogramaResumo")
 
     registrar_log(
         nome_execucao="extrair_reajuste",

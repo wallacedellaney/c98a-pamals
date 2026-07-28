@@ -26,6 +26,7 @@ import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
 from shared import drive_sync, estado, horario
+from shared.escrita_atomica import caminho_temporario
 
 FONTE = BASES_ORIGINAIS / "Vencimentos" / "Vencimentos_C-98U8.xlsx"
 
@@ -115,8 +116,9 @@ def main():
     df, inconsistencias = extrair()
 
     destino = DADOS_TRATADOS / "base_vencimentos_tratada.xlsx"
-    with pd.ExcelWriter(destino) as writer:
-        df.to_excel(writer, index=False, sheet_name="TMOT")
+    with caminho_temporario(destino) as tmp:
+        with pd.ExcelWriter(tmp) as writer:
+            df.to_excel(writer, index=False, sheet_name="TMOT")
 
     registrar_log(
         nome_execucao="extrair_vencimentos",

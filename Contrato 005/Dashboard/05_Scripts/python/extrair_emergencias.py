@@ -19,6 +19,7 @@ import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
 from shared import drive_sync, estado, horario
+from shared.escrita_atomica import caminho_temporario
 
 warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
 
@@ -167,7 +168,8 @@ def main():
     df, inconsistencias = extrair()
 
     destino = DADOS_TRATADOS / "base_emergencias_tratada.xlsx"
-    df.to_excel(destino, index=False, sheet_name="Emergencias")
+    with caminho_temporario(destino) as tmp:
+        df.to_excel(tmp, index=False, sheet_name="Emergencias")
 
     registrar_log(
         nome_execucao="extrair_emergencias",
@@ -193,7 +195,8 @@ def extrair_historico_completo():
     df, inconsistencias = extrair(historico_completo=True)
 
     destino = DADOS_TRATADOS / "historico_completo_emergencias.xlsx"
-    df.to_excel(destino, index=False, sheet_name="Emergencias")
+    with caminho_temporario(destino) as tmp:
+        df.to_excel(tmp, index=False, sheet_name="Emergencias")
 
     registrar_log(
         nome_execucao="extrair_historico_completo_emergencias",
