@@ -27,7 +27,8 @@ def _ler_csv(caminho_str, _mtime, **kwargs):
 
 def carregar_emergencias():
     caminho = DADOS_TRATADOS / "base_emergencias_tratada.xlsx"
-    return _ler_excel(str(caminho), caminho.stat().st_mtime), caminho.stat().st_mtime
+    mtime = caminho.stat().st_mtime
+    return _ler_excel(str(caminho), mtime), mtime
 
 
 def carregar_historico_emergencias():
@@ -133,7 +134,8 @@ def carregar_devolucoes():
 
 def carregar_reparaveis():
     caminho = DADOS_TRATADOS / "base_reparaveis_tratada.xlsx"
-    return _ler_excel(str(caminho), caminho.stat().st_mtime), caminho.stat().st_mtime
+    mtime = caminho.stat().st_mtime
+    return _ler_excel(str(caminho), mtime), mtime
 
 
 def _carregar_historico_generico(nome_arquivo, dtype=None):
