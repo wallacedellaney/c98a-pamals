@@ -15,6 +15,7 @@ from shared import estado
 DASHBOARD_ROOT = Path(__file__).resolve().parents[3]
 DADOS_TRATADOS = DASHBOARD_ROOT / "02_Dados_Tratados"
 ESTADO_ATUALIZACOES = DADOS_TRATADOS / "estado_atualizacoes.json"
+CONTRATO005_DADOS_TRATADOS = DASHBOARD_ROOT.parent / "Contrato 005" / "Dashboard" / "02_Dados_Tratados"
 
 
 @st.cache_data
@@ -100,6 +101,23 @@ def carregar_tpjl_extras():
     return dados, mtime
 
 
+def carregar_empenhos_contrato005():
+    """Lê os empenhos reais (número/valor/saldo, aba "Empenhos") e o
+    cronograma físico financeiro (aba "CronogramaMensal") já tratados pelo
+    Contrato 005 — usados na análise de saldo do MTA (Hora de Voo) pra
+    cruzar a fila de solicitações com o que já é empenho de verdade e o
+    saldo real. Leitura direta do arquivo tratado da outra área (só
+    dados, sem import de pacote — mesma regra de sempre entre áreas). Ver
+    Contrato 005/Dashboard/00_Instrucoes/reajuste.md."""
+    caminho_pagamentos = CONTRATO005_DADOS_TRATADOS / "base_pagamentos_tratada.xlsx"
+    caminho_reajuste = CONTRATO005_DADOS_TRATADOS / "base_reajuste_tratada.xlsx"
+    if not caminho_pagamentos.exists() or not caminho_reajuste.exists():
+        return None
+    empenhos = _ler_excel(str(caminho_pagamentos), caminho_pagamentos.stat().st_mtime, sheet_name="Empenhos")
+    cronograma = _ler_excel(str(caminho_reajuste), caminho_reajuste.stat().st_mtime, sheet_name="CronogramaMensal")
+    return {"empenhos": empenhos, "cronograma_mensal": cronograma}
+
+
 def carregar_tudo():
     df_mta, mtime_mta = carregar_mta()
     df_tpjl, mtime_tpjl = carregar_tpjl()
@@ -109,6 +127,7 @@ def carregar_tudo():
         "mta_atualizado_em": mtime_mta,
         "mta_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "mta"),
         "mta_historico": carregar_historico_mta(),
+        "empenhos_contrato005": carregar_empenhos_contrato005(),
         "tpjl": df_tpjl,
         "tpjl_atualizado_em": mtime_tpjl,
         "tpjl_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "tpjl"),

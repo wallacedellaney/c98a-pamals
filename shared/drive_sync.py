@@ -126,12 +126,20 @@ def adicionar_linha(spreadsheet_id, aba, valores):
         raise DriveSyncError(f"Falha ao gravar em {spreadsheet_id}/{aba}: {e}") from e
 
 
-def ler_linhas(spreadsheet_id, aba):
-    """Lê todas as linhas de `aba` (lista de listas, primeira linha = cabeçalho)."""
+def ler_linhas(spreadsheet_id, aba, intervalo="A:Z", value_render_option="FORMATTED_VALUE"):
+    """Lê todas as linhas de `aba` (lista de listas, primeira linha =
+    cabeçalho) via API do Google Sheets — ao contrário de `baixar_arquivo`
+    (export de arquivo .xlsx), não sofre com colunas ocultas/filtro que
+    fazem o export truncar abas inteiras (achado na aba "Página7" de
+    Motores em 2026-07-28, ver `Coordenadoria/00_Instrucoes/motores.md`).
+    `intervalo` é só a parte "A1:AB100" (sem o nome da aba, que entra
+    separado). `value_render_option="UNFORMATTED_VALUE"` devolve número cru
+    em vez do texto formatado (ex.: 200000.0 em vez de "R$ 200.000,00")."""
     try:
         servico = _obter_servico_sheets()
         resposta = servico.spreadsheets().values().get(
-            spreadsheetId=spreadsheet_id, range=f"{aba}!A:Z",
+            spreadsheetId=spreadsheet_id, range=f"{aba}!{intervalo}",
+            valueRenderOption=value_render_option,
         ).execute()
         return resposta.get("values", [])
     except HttpError as e:

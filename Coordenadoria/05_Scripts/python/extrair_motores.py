@@ -256,7 +256,76 @@ def _extrair_diagonal(wb, inconsistencias):
     return pd.DataFrame(linhas, columns=["serial", "anv", "ano", "mes", "evento", "comentario"])
 
 
-def extrair():
+ABA_FINANCEIRO = "Página7"
+COL_FINANCEIRO = {"pacote": 12, "sigla_projeto": 17, "atividade": 18, "tarefa": 19, "categoria": 20, "valor_total": 26}
+LINHA_CABECALHO_FINANCEIRO = 4  # 1-based, igual à planilha
+
+
+def _valor_monetario(valor, contexto, inconsistencias):
+    if valor in (None, ""):
+        return None
+    if isinstance(valor, (int, float)):
+        return float(valor)
+    inconsistencias.append(f"Valor inválido (não numérico) em {contexto}: {valor!r} — não somado.")
+    return None
+
+
+def _extrair_financeiro_motores(inconsistencias):
+    """Tabela de valores financeiros (Pacote/Sigla Projeto/Atividade/Tarefa/
+    Categoria/Valor Total) da aba "Página7" — colunas M/R/S/T/U/AA, cabeçalho
+    na linha 4. Achado pelo Wallace em 2026-07-28 ("da coluna K até V tem
+    valores financeiro"): tarefas de motor por trás do "Para Motores" do MTA
+    (Material HSI, Reparo de acessórios, Revisão Geral = TBO, Publicações
+    etc.), com o mesmo "Pacote" (A/B/C/RAP) usado no MTA.
+
+    Lida via API do Google Sheets (`drive_sync.ler_linhas`), não pelo export
+    de arquivo usado nas outras abas dessa planilha — essa aba tem colunas
+    ocultas + filtro que fazem o export .xlsx do Drive truncar a tabela
+    inteira (só vinha o bloco de notas solto em A2:G8, sem a tabela
+    financeira). `UNFORMATTED_VALUE` traz o número cru da coluna Valor Total
+    em vez do texto formatado em R$."""
+    linhas_brutas = drive_sync.ler_linhas(
+        DRIVE_FILE_ID, ABA_FINANCEIRO, intervalo="A1:AB300", value_render_option="UNFORMATTED_VALUE"
+    )
+    registros = []
+    for i, row in enumerate(linhas_brutas[LINHA_CABECALHO_FINANCEIRO:], start=LINHA_CABECALHO_FINANCEIRO + 1):
+        def _cel(idx):
+            return row[idx] if idx < len(row) else None
+
+        sigla = _texto(_cel(COL_FINANCEIRO["sigla_projeto"]))
+        if not sigla:
+            continue
+        registros.append({
+            "pacote": _texto(_cel(COL_FINANCEIRO["pacote"])),
+            "sigla_projeto": sigla,
+            "atividade": _texto(_cel(COL_FINANCEIRO["atividade"])),
+            "tarefa": _texto(_cel(COL_FINANCEIRO["tarefa"])),
+            "categoria": _texto(_cel(COL_FINANCEIRO["categoria"])),
+            "valor_total": _valor_monetario(_cel(COL_FINANCEIRO["valor_total"]), f"Página7 linha {i}", inconsistencias),
+        })
+    return pd.DataFrame(registros, columns=["pacote", "sigla_projeto", "atividade", "tarefa", "categoria", "valor_total"])
+
+
+COLUNAS_FINANCEIRO = ["pacote", "sigla_projeto", "atividade", "tarefa", "categoria", "valor_total"]
+
+
+def _financeiro_existente():
+    """Reaproveita a última tabela financeira gravada (aba "Financeiro" de
+    base_motores_tratada.xlsx) quando essa extração roda sem rede/credencial
+    do Google — só quem tem rede (`atualizar_do_drive`) busca a versão nova
+    pela API do Sheets; reprocessamento local (botão "Atualizar dados" do
+    site) não deve travar nem apagar o último dado bom só por rodar
+    offline."""
+    destino = DADOS_TRATADOS / "base_motores_tratada.xlsx"
+    if not destino.exists():
+        return pd.DataFrame(columns=COLUNAS_FINANCEIRO)
+    try:
+        return pd.read_excel(destino, sheet_name="Financeiro")
+    except ValueError:
+        return pd.DataFrame(columns=COLUNAS_FINANCEIRO)
+
+
+def extrair(df_financeiro=None):
     inconsistencias = []
     wb = openpyxl.load_workbook(ARQUIVO_FONTE, data_only=True)
     df_situacao = _extrair_situacao_generico(wb["SILOMS"], COL_SITUACAO, LINHA_INICIO_SITUACAO)
@@ -264,9 +333,11 @@ def extrair():
     df_os = _extrair_os(wb, inconsistencias)
     df_diagonal = _extrair_diagonal(wb, inconsistencias)
     df_diagonal_meta = _extrair_diagonal_metadados(wb)
+    if df_financeiro is None:
+        df_financeiro = _financeiro_existente()
     return {
         "situacao": df_situacao, "diagonal": df_diagonal, "os": df_os, "helice": df_helice,
-        "diagonal_meta": df_diagonal_meta,
+        "diagonal_meta": df_diagonal_meta, "financeiro": df_financeiro,
     }, inconsistencias
 
 
@@ -310,9 +381,9 @@ def _registrar_historico_diagonal(df_diagonal):
     historico.to_csv(HISTORICO_DIAGONAL, index=False)
 
 
-def main():
+def main(df_financeiro=None):
     DADOS_TRATADOS.mkdir(parents=True, exist_ok=True)
-    dados, inconsistencias = extrair()
+    dados, inconsistencias = extrair(df_financeiro=df_financeiro)
 
     destino = DADOS_TRATADOS / "base_motores_tratada.xlsx"
     with caminho_temporario(destino) as tmp:
@@ -322,6 +393,7 @@ def main():
             dados["os"].to_excel(writer, index=False, sheet_name="OS")
             dados["helice"].to_excel(writer, index=False, sheet_name="Helice")
             dados["diagonal_meta"].to_excel(writer, index=False, sheet_name="DiagonalMeta")
+            dados["financeiro"].to_excel(writer, index=False, sheet_name="Financeiro")
 
     _registrar_historico_situacao(dados["situacao"])
     _registrar_historico_diagonal(dados["diagonal"])
@@ -343,13 +415,33 @@ def main():
 
 def atualizar_do_drive():
     """Busca a versão mais recente direto do Google Drive, sobrescreve a
-    cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md."""
+    cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md.
+
+    A tabela financeira da "Página7" é buscada à parte, pela API do Sheets
+    (`_extrair_financeiro_motores`), não pelo export de arquivo usado pro
+    resto da planilha — sozinha aqui porque tem sua própria falha possível
+    (API do Sheets fora do ar, aba renomeada) sem derrubar a atualização das
+    outras 4 abas; se falhar, cai no fallback de `extrair()` (reaproveita a
+    última tabela financeira boa)."""
     try:
         metadados = drive_sync.obter_metadados(DRIVE_FILE_ID)
         conteudo = drive_sync.baixar_arquivo(DRIVE_FILE_ID, exportar_como=drive_sync.XLSX_MIME)
         ARQUIVO_FONTE.parent.mkdir(parents=True, exist_ok=True)
         ARQUIVO_FONTE.write_bytes(conteudo)
-        dados = main()
+
+        inconsistencias_financeiro = []
+        try:
+            df_financeiro = _extrair_financeiro_motores(inconsistencias_financeiro)
+        except Exception as e:
+            df_financeiro = None  # extrair() cai no fallback (última tabela boa)
+            registrar_log(
+                nome_execucao="extrair_motores_financeiro",
+                arquivos_lidos=[f"Google Sheets {DRIVE_FILE_ID} / {ABA_FINANCEIRO}"],
+                arquivos_gerados=[],
+                inconsistencias=[f"Falha ao buscar tabela financeira via API do Sheets: {e}"],
+            )
+
+        dados = main(df_financeiro=df_financeiro)
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "motores",
             remote_modified_time=metadados["modifiedTime"],
