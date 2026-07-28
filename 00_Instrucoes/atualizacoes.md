@@ -372,6 +372,21 @@ quebrou só nesse runner (`ModuleNotFoundError: No module named 'shared'`).
 Corrigido invertendo a ordem (sys.path primeiro, import de `contrato_app`
 depois).
 
+## Disponibilidade Diária — agendamento próprio de 30 em 30 min (2026-07-28)
+
+Wallace: "cara a disp diaria roda de 30 em 30 min". Motivo: o relatório é
+postado num horário imprevisível de manhã (já vimos das 8h44 às 11h44) — o
+ciclo "todos" de 2 em 2h podia perder a janela e só pegar o relatório 1-2h
+depois de publicado. `.github/workflows/atualizacoes.yml` ganhou um 2º
+`cron`, só pra essa fonte: `22,52 11-23 * * 1-5` (a cada 30min, 8h-20h
+local, seg-sex — minuto :22/:52, diferente do :07 já usado pelo ciclo de
+2h, pra intercalar em vez de disparar 2x ao mesmo tempo). O workflow usa
+`github.event.schedule` (a string do cron que disparou) pra decidir qual
+passo rodar: o cron de 30min chama só `disponibilidade_diaria`, o de 2h (ou
+disparo manual) continua chamando `todos`/a fonte escolhida. O `launchd` do
+Mac continua só no ciclo de 2h (não replicado pra 30min) — a verificação ao
+vivo (seção abaixo) já cobre o intervalo entre execuções desse workflow.
+
 ## Verificação ao vivo em TODAS as fontes (2026-07-27)
 
 Wallace, depois de mais um dia sem nenhuma automação ter rodado: "nada roda

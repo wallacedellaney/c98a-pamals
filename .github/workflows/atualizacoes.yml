@@ -12,9 +12,16 @@ name: Atualizações automáticas
 # (:07, não hora cheia) pra reduzir atraso: 11h07, 13h07, 15h07, 17h07,
 # 19h07, 21h07, 23h07 UTC = 8h07, 10h07, 12h07, 14h07, 16h07, 18h07, 20h07
 # local — cobre o horário comercial de 2 em 2 horas.
+# Disponibilidade Diária ganhou um agendamento PRÓPRIO, de 30 em 30 minutos
+# (2026-07-28, Wallace: "cara a disp diaria roda de 30 em 30 min") — o
+# relatório é postado num horário imprevisível de manhã, e esperar até 2h
+# pelo próximo ciclo "todos" fazia a checagem perder a janela com frequência.
+# Minuto :22/:52 (não :07, que já é usado pelo ciclo de 2h) pra intercalar
+# em vez de disparar 2 vezes no mesmo minuto.
 on:
   schedule:
     - cron: "7 11,13,15,17,19,21,23 * * 1-5"
+    - cron: "22,52 11-23 * * 1-5"
   workflow_dispatch:
     inputs:
       fonte:
@@ -67,5 +74,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Buscar, reprocessar e enviar pro GitHub
+      - name: Buscar, reprocessar e enviar pro GitHub (ciclo de 2h ou manual)
+        if: github.event.schedule != '22,52 11-23 * * 1-5'
         run: python3 shared/executar_atualizacao.py "${{ inputs.fonte || 'todos' }}"
+
+      - name: Buscar só Disponibilidade Diária (ciclo de 30 em 30 min)
+        if: github.event.schedule == '22,52 11-23 * * 1-5'
+        run: python3 shared/executar_atualizacao.py disponibilidade_diaria
