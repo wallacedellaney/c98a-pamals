@@ -426,6 +426,31 @@ esse risco — mesmo padrão já usado pela Disponibilidade Diária desde
 2026-07-23). `contrato005/data/atualizar_drive.py` ganhou a entrada
 "devolucoes" (Empréstimos), que ainda não tinha.
 
+## Achado e corrigido em 2026-07-28 — escrita não-atômica causava KeyError esporádico
+
+Wallace: "erro nos reparaveis que achei no 005 contrato" — colou um
+traceback do Streamlit Cloud, `KeyError: "['em_aberto'] not in index"` em
+`reparaveis.py`, mesmo o arquivo commitado no GitHub tendo a coluna
+`em_aberto` normalmente. Causa mais provável: desde a "Verificação ao vivo"
+(seção acima), qualquer acesso ao site pode disparar, na hora, um
+subprocesso que reescreve `base_reparaveis_tratada.xlsx` — e
+`df.to_excel(destino, ...)` **não é atômico**: por uma fração de segundo o
+arquivo fica truncado/incompleto no meio da escrita. Se outra sessão do
+Streamlit (ex.: outro usuário na empresa, ou o próprio site recarregando)
+ler o arquivo bem nesse instante, pega um `.xlsx` corrompido sem a coluna —
+some sozinho no próximo carregamento, por isso nunca reproduzia de propósito.
+
+**Corrigido**: novo `shared/escrita_atomica.py::caminho_temporario(destino)`
+— escreve num arquivo `.tmp` do lado e só troca pelo definitivo com
+`os.replace()` no final (troca atômica do sistema operacional: quem for ler
+`destino` nesse meio tempo sempre vê a versão anterior completa, nunca uma
+versão pela metade). Aplicado nas 12 fontes automáticas (as mesmas da seção
+"Verificação ao vivo" acima): Reparáveis, Empréstimos, Emergências,
+Pagamentos, Reajuste, MTA, TPJL, Consumo/Estoque/Solicitações do TPJL,
+Disponibilidade Diária, RAC, Vencimentos TMOT e Motores. Vencimentos por
+Operador e Diagonal de Manutenção ficaram de fora por enquanto — continuam
+manuais (sem "Verificação ao vivo"), risco de concorrência bem menor.
+
 ## Histórico — tentativas anteriores (mantido por contexto)
 
 * **UI com botão + credencial própria (Fase 1, 2026-07-04/05):** o site
