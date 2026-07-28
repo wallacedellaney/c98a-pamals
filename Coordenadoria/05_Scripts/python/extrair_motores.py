@@ -256,73 +256,52 @@ def _extrair_diagonal(wb, inconsistencias):
     return pd.DataFrame(linhas, columns=["serial", "anv", "ano", "mes", "evento", "comentario"])
 
 
-ABA_FINANCEIRO = "Página7"
-COL_FINANCEIRO = {"pacote": 12, "sigla_projeto": 17, "atividade": 18, "tarefa": 19, "categoria": 20, "valor_total": 26}
-LINHA_CABECALHO_FINANCEIRO = 4  # 1-based, igual à planilha
-
-
-def _valor_monetario(valor, contexto, inconsistencias):
-    if valor in (None, ""):
-        return None
-    if isinstance(valor, (int, float)):
-        return float(valor)
-    inconsistencias.append(f"Valor inválido (não numérico) em {contexto}: {valor!r} — não somado.")
-    return None
-
-
-def _extrair_financeiro_motores(inconsistencias):
-    """Tabela de valores financeiros (Pacote/Sigla Projeto/Atividade/Tarefa/
-    Categoria/Valor Total) da aba "Página7" — colunas M/R/S/T/U/AA, cabeçalho
-    na linha 4. Achado pelo Wallace em 2026-07-28 ("da coluna K até V tem
-    valores financeiro"): tarefas de motor por trás do "Para Motores" do MTA
-    (Material HSI, Reparo de acessórios, Revisão Geral = TBO, Publicações
-    etc.), com o mesmo "Pacote" (A/B/C/RAP) usado no MTA.
-
-    Lida via API do Google Sheets (`drive_sync.ler_linhas`), não pelo export
-    de arquivo usado nas outras abas dessa planilha — essa aba tem colunas
-    ocultas + filtro que fazem o export .xlsx do Drive truncar a tabela
-    inteira (só vinha o bloco de notas solto em A2:G8, sem a tabela
-    financeira). `UNFORMATTED_VALUE` traz o número cru da coluna Valor Total
-    em vez do texto formatado em R$."""
-    linhas_brutas = drive_sync.ler_linhas(
-        DRIVE_FILE_ID, ABA_FINANCEIRO, intervalo="A1:AB300", value_render_option="UNFORMATTED_VALUE"
-    )
-    registros = []
-    for i, row in enumerate(linhas_brutas[LINHA_CABECALHO_FINANCEIRO:], start=LINHA_CABECALHO_FINANCEIRO + 1):
-        def _cel(idx):
-            return row[idx] if idx < len(row) else None
-
-        sigla = _texto(_cel(COL_FINANCEIRO["sigla_projeto"]))
-        if not sigla:
-            continue
-        registros.append({
-            "pacote": _texto(_cel(COL_FINANCEIRO["pacote"])),
-            "sigla_projeto": sigla,
-            "atividade": _texto(_cel(COL_FINANCEIRO["atividade"])),
-            "tarefa": _texto(_cel(COL_FINANCEIRO["tarefa"])),
-            "categoria": _texto(_cel(COL_FINANCEIRO["categoria"])),
-            "valor_total": _valor_monetario(_cel(COL_FINANCEIRO["valor_total"]), f"Página7 linha {i}", inconsistencias),
-        })
-    return pd.DataFrame(registros, columns=["pacote", "sigla_projeto", "atividade", "tarefa", "categoria", "valor_total"])
-
-
 COLUNAS_FINANCEIRO = ["pacote", "sigla_projeto", "atividade", "tarefa", "categoria", "valor_total"]
+
+# Tabela financeira (Pacote/Sigla Projeto/Atividade/Tarefa/Categoria/Valor
+# Total) da aba "Página7" da planilha de Motores — colunas M/R/S/T/U/AA,
+# transcrita manualmente a partir de uma print do Wallace em 2026-07-28
+# ("da coluna K até V tem valores financeiro").  Tarefas de motor por trás
+# do "Para Motores" do MTA (Material HSI, Reparo de acessórios, Revisão
+# Geral = TBO, Publicações etc.), com o mesmo "Pacote" (A/B/C/RAP) usado no
+# MTA. **Fixa por decisão do Wallace em 2026-07-28** ("vai ser sempre
+# aqueles dados, pode gravar, não vai mudar") — não é lida do Drive (nem
+# por export de arquivo, que trunca essa aba por causa de colunas ocultas +
+# filtro, nem pela API do Sheets, que devolveu a mesma tabela vazia — a aba
+# provavelmente nunca chegou a ser compartilhada com a conta de serviço).
+DADOS_FINANCEIRO_MOTORES = [
+    ("A",   "C-98", "REQUISIÇÃO PUBLICAÇÃO",                    "Maintenance and Overhaul Collection PN 3077123 PT6A-34/114A", "MOTOR", 200000.00),
+    ("A",   "C-98", "CNT 048/CELOG-PAMASP/2022 - PW - Material", "Material HSI PT6A-114A (1/2)",                               "MOTOR", 700000.00),
+    ("B",   "C-98", "CNT 048/CELOG-PAMASP/2022 - PW - Material", "Material HSI PT6A-114A (2/2)",                               "MOTOR", 800000.00),
+    ("A",   "C-98", "Requisição CABW",                           "Material reparo acessórios PT6A-114A (1/3)",                 "MOTOR", 400000.00),
+    ("A",   "C-98", "Requisição CABW",                           "Material reparo acessórios PT6A-114A (2/3)",                 "MOTOR", 400000.00),
+    ("A",   "C-98", "Requisição CABW",                           "Material reparo acessórios PT6A-114A (3/3)",                 "MOTOR", 400000.00),
+    ("A",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - Material",      "Material reparo PT6A-114A (1/3)",                            "MOTOR", 1000000.00),
+    ("B",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - Material",      "Material reparo PT6A-114A (2/3)",                            "MOTOR", 1000000.00),
+    ("B",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - Material",      "Material reparo PT6A-114A (3/3)",                            "MOTOR", 1000000.00),
+    ("A",   "C-98", "REQUISIÇÃO PUBLICAÇÃO",                    "Publicações",                                                 "MOTOR", 563000.00),
+    ("A",   "C-98", "REQUISIÇÃO PUBLICAÇÃO",                    "Publicações de Acessórios PT6A-114A",                         "MOTOR", 320000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "Reparo de CTVR 2 EA (1/2)",                                   "MOTOR", 120000.00),
+    ("C",   "C-98", "REQUISIÇÃO SERVIÇO",                       "Reparo de CTVR 2 EA (2/2)",                                   "MOTOR", 120000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "Reparo de PTVR 2 EA (1/2)",                                   "MOTOR", 80000.00),
+    ("C",   "C-98", "REQUISIÇÃO SERVIÇO",                       "Reparo de PTVR 2 EA (2/2)",                                   "MOTOR", 80000.00),
+    ("RAP", "C-98", "CNT 031/CELOG-PAMASP/2022 - PW - RG",       "Revisão Geral PT6A-114A (1/6)",                              "MOTOR", 3800000.00),
+    ("RAP", "C-98", "CNT 031/CELOG-PAMASP/2022 - PW - RG",       "Revisão Geral PT6A-114A (2/6)",                              "MOTOR", 3800000.00),
+    ("A",   "C-98", "CNT 031/CELOG-PAMASP/2022 - PW - RG",       "Revisão Geral PT6A-114A (3/6)",                              "MOTOR", 3800000.00),
+    ("A",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - XXX - RG",      "Revisão Geral PT6A-114A (4/6)",                              "MOTOR", 3800000.00),
+    ("B",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - XXX - RG",      "Revisão Geral PT6A-114A (5/6)",                              "MOTOR", 3800000.00),
+    ("B",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - XXX - RG",      "Revisão Geral PT6A-114A (6/6)",                              "MOTOR", 3800000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "RG FCU 3 EA (1/2)",                                           "MOTOR", 430000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "RG FCU 3 EA (2/2)",                                           "MOTOR", 430000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "RG Fuel Pump 5 EA (1/1)",                                     "MOTOR", 425000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "RG IGNITION EXCITER 4 EA (1/1)",                             "MOTOR", 60000.00),
+]
 
 
 def _financeiro_existente():
-    """Reaproveita a última tabela financeira gravada (aba "Financeiro" de
-    base_motores_tratada.xlsx) quando essa extração roda sem rede/credencial
-    do Google — só quem tem rede (`atualizar_do_drive`) busca a versão nova
-    pela API do Sheets; reprocessamento local (botão "Atualizar dados" do
-    site) não deve travar nem apagar o último dado bom só por rodar
-    offline."""
-    destino = DADOS_TRATADOS / "base_motores_tratada.xlsx"
-    if not destino.exists():
-        return pd.DataFrame(columns=COLUNAS_FINANCEIRO)
-    try:
-        return pd.read_excel(destino, sheet_name="Financeiro")
-    except ValueError:
-        return pd.DataFrame(columns=COLUNAS_FINANCEIRO)
+    """Devolve a tabela financeira fixa (ver DADOS_FINANCEIRO_MOTORES) —
+    não depende de arquivo nem de rede."""
+    return pd.DataFrame(DADOS_FINANCEIRO_MOTORES, columns=COLUNAS_FINANCEIRO)
 
 
 def extrair(df_financeiro=None):
@@ -417,31 +396,15 @@ def atualizar_do_drive():
     """Busca a versão mais recente direto do Google Drive, sobrescreve a
     cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md.
 
-    A tabela financeira da "Página7" é buscada à parte, pela API do Sheets
-    (`_extrair_financeiro_motores`), não pelo export de arquivo usado pro
-    resto da planilha — sozinha aqui porque tem sua própria falha possível
-    (API do Sheets fora do ar, aba renomeada) sem derrubar a atualização das
-    outras 4 abas; se falhar, cai no fallback de `extrair()` (reaproveita a
-    última tabela financeira boa)."""
+    A tabela financeira (aba "Página7") não entra nessa busca — é fixa
+    (ver DADOS_FINANCEIRO_MOTORES), `main()` já usa ela por padrão."""
     try:
         metadados = drive_sync.obter_metadados(DRIVE_FILE_ID)
         conteudo = drive_sync.baixar_arquivo(DRIVE_FILE_ID, exportar_como=drive_sync.XLSX_MIME)
         ARQUIVO_FONTE.parent.mkdir(parents=True, exist_ok=True)
         ARQUIVO_FONTE.write_bytes(conteudo)
 
-        inconsistencias_financeiro = []
-        try:
-            df_financeiro = _extrair_financeiro_motores(inconsistencias_financeiro)
-        except Exception as e:
-            df_financeiro = None  # extrair() cai no fallback (última tabela boa)
-            registrar_log(
-                nome_execucao="extrair_motores_financeiro",
-                arquivos_lidos=[f"Google Sheets {DRIVE_FILE_ID} / {ABA_FINANCEIRO}"],
-                arquivos_gerados=[],
-                inconsistencias=[f"Falha ao buscar tabela financeira via API do Sheets: {e}"],
-            )
-
-        dados = main(df_financeiro=df_financeiro)
+        dados = main()
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "motores",
             remote_modified_time=metadados["modifiedTime"],

@@ -343,11 +343,13 @@ def _secao_financeiro(eventos, df_financeiro):
     ano" (o empenho de um ciclo precisa cobrir a execução até março do ano
     seguinte, mesma lógica de defasagem/RAP vista no Contrato 005/MTA).
 
-    **Dado ainda manual** (transcrito de uma print em 2026-07-28) — a aba
-    "Página7" da planilha "MOTORES C-98" tem colunas ocultas + filtro que a
-    conta de serviço, mesmo lendo direto pela API do Sheets, não retornou
-    (aba não compartilhada com a conta de serviço, ver
-    00_Instrucoes/motores.md); não atualiza sozinho ainda."""
+    **Dado fixo** (transcrito de uma print do Wallace em 2026-07-28, ver
+    `DADOS_FINANCEIRO_MOTORES` em `extrair_motores.py`) — a aba "Página7" da
+    planilha "MOTORES C-98" tem colunas ocultas + filtro que nem o export de
+    arquivo nem a API do Sheets conseguiram ler (aba nunca chegou a ser
+    compartilhada com a conta de serviço). Confirmado pelo Wallace que esses
+    valores não mudam ("vai ser sempre aqueles dados, pode gravar, não vai
+    mudar") — por isso fixo no código em vez de tentar sincronizar."""
     st.markdown("##### Análise financeira — TBO/HSI/Reparo (Página7)")
     if df_financeiro is None or df_financeiro.empty:
         st.info('Sem dados financeiros carregados — clique em "Atualizar dados" acima.')
