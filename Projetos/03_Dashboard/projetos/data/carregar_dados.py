@@ -115,7 +115,23 @@ def carregar_empenhos_contrato005():
         return None
     empenhos = _ler_excel(str(caminho_pagamentos), caminho_pagamentos.stat().st_mtime, sheet_name="Empenhos")
     cronograma = _ler_excel(str(caminho_reajuste), caminho_reajuste.stat().st_mtime, sheet_name="CronogramaMensal")
-    return {"empenhos": empenhos, "cronograma_mensal": cronograma}
+    indicadores = _ler_excel(str(caminho_reajuste), caminho_reajuste.stat().st_mtime, sheet_name="Indicadores")
+
+    # Saldo da autorização do contrato inteiro (Módulo 1+2+3) — quanto ainda
+    # PODE ser empenhado dentro do que já foi autorizado, bem maior que o
+    # saldo dos empenhos já emitidos (aba "Empenhos") porque cobre a
+    # autorização toda, não só os NEs já formalizados. Wallace, 2026-07-28:
+    # "pega meus saldos que tenho modulo 2 e modulo 3 para entrar na conta
+    # geral" — usa o rótulo "após 2° Reajuste" (único, não se repete entre
+    # seções, ao contrário de "após 1° Reajuste").
+    linha_saldo = indicadores[indicadores["indicador"] == "Saldo do Contrato após 2° Reajuste"]
+    saldo_geral_contrato = float(linha_saldo["valor"].iloc[0]) if not linha_saldo.empty else None
+
+    return {
+        "empenhos": empenhos,
+        "cronograma_mensal": cronograma,
+        "saldo_geral_contrato": saldo_geral_contrato,
+    }
 
 
 def carregar_tudo():

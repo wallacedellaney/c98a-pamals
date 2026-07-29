@@ -269,10 +269,12 @@ def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
     empenho (deslocada 1 mês — defasagem empenho→uso, RAP tratado como
     prioridade e somado já no próximo mês) e subtrai o gasto médio mensal
     do cronograma. Devolve (tabela mês a mês, primeiro mês em que o saldo
-    fica negativo — ou None se não fica, dentro do horizonte)."""
+    fica negativo — ou None se não fica, dentro do horizonte, detalhe por
+    mês de quais parcelas do MTA entram nesse mês — pra painel clicável)."""
     mes0 = pd.Timestamp(horario.hoje_br()).replace(day=1)
 
     entradas = {}
+    detalhe_entradas = {}
     for _, row in fila_hv.iterrows():
         valor = row["valor"] or 0
         if pd.isna(valor):
@@ -285,6 +287,8 @@ def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
         else:
             continue
         entradas[mes_uso] = entradas.get(mes_uso, 0) + valor
+        rotulo = str(row["tarefa"]) + (" — RAP, prioridade" if row["pacote"] == "RAP" else "")
+        detalhe_entradas.setdefault(mes_uso, []).append({"parcela": rotulo, "valor": valor})
 
     linhas = []
     saldo = saldo_inicial
@@ -294,7 +298,10 @@ def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
         entrada = entradas.get(mes, 0.0)
         saida = media_mensal or 0.0
         saldo_final = saldo + entrada - saida
-        linhas.append({"mes": mes, "saldo_inicial": saldo, "entrada": entrada, "saida": saida, "saldo_final": saldo_final})
+        linhas.append({
+            "mes": mes, "saldo_inicial": saldo, "entrada": entrada, "saida": saida, "saldo_final": saldo_final,
+            "entradas_detalhe": detalhe_entradas.get(mes, []),
+        })
         if saldo_final < 0 and mes_critico is None:
             mes_critico = mes
         saldo = saldo_final
@@ -302,14 +309,47 @@ def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
     return pd.DataFrame(linhas), mes_critico
 
 
+def _painel_detalhe_mes(linha):
+    entradas = linha["entradas_detalhe"]
+    if entradas:
+        linhas_entrada = "".join(
+            f'<div style="font-size:13.5px;color:{SECONDARY};margin-bottom:4px;">'
+            f'• {e["parcela"]} — <strong style="color:{INK};">{moeda_completa(e["valor"])}</strong></div>'
+            for e in entradas
+        )
+    else:
+        linhas_entrada = f'<div style="font-size:13.5px;color:{SECONDARY};">Nenhuma parcela prevista pra entrar nesse mês.</div>'
+
+    st.markdown(
+        f"""<div style="background:{PANEL};border:1px solid {LINE};border-left:3px solid {AMBER};
+        border-radius:10px;padding:16px 18px;margin-top:10px;">
+            <div style="font-weight:700;color:{INK};margin-bottom:10px;font-size:15px;">
+                Detalhe — {linha['mes_label']}
+            </div>
+            <div style="font-size:13.5px;color:{SECONDARY};margin-bottom:6px;">
+                <strong style="color:{INK};">Saldo inicial:</strong> {moeda_completa(linha['saldo_inicial'])}</div>
+            <div style="font-size:13.5px;color:{SECONDARY};margin-bottom:6px;">
+                <strong style="color:{INK};">Saída (gasto médio do cronograma):</strong> {moeda_completa(linha['saida'])}</div>
+            <div style="font-size:13.5px;color:{SECONDARY};margin:10px 0 4px;">
+                <strong style="color:{INK};">Entrada — {moeda_completa(linha['entrada'])} no total:</strong></div>
+            {linhas_entrada}
+            <div style="font-size:13.5px;color:{SECONDARY};margin-top:10px;">
+                <strong style="color:{INK};">Saldo final do mês:</strong> {moeda_completa(linha['saldo_final'])}</div>
+        </div>""",
+        unsafe_allow_html=True,
+    )
+
+
 def _analise_saldo(df, dados):
     st.markdown('<div class="pj-titulo-secao">Análise do dinheiro em saldo (Hora de Voo)</div>', unsafe_allow_html=True)
     st.caption(
-        "Cruza a fila de solicitações de Hora de Voo do MTA com o saldo real dos "
-        "empenhos do Contrato 005 (aba \"Empenhos\", CELOG-PAMALS). O empenho previsto "
-        "pra um mês só é de fato utilizado no mês seguinte (ex.: Hora de Voo prevista "
-        "pra junho é usada em julho). RAP = saldo de empenho que não é diretamente de "
-        "2026 (ano anterior), ainda não usado — prioridade de uso."
+        "Cruza a fila de solicitações de Hora de Voo do MTA com o dinheiro real do "
+        "Contrato 005 (VEE ONE) — a aba \"Empenhos\" não distingue categoria (o mesmo "
+        "código ND cobre Hora de Voo, Parcela Fixa, Requisição e Sob Demanda), então o "
+        "valor empenhado/saldo abaixo é do **contrato inteiro**, não só Hora de Voo. O "
+        "empenho previsto pra um mês só é de fato utilizado no mês seguinte (ex.: Hora "
+        "de Voo prevista pra junho é usada em julho). RAP = saldo de empenho que não é "
+        "diretamente de 2026 (ano anterior), ainda não usado — prioridade de uso."
     )
 
     empenhos_info = dados.get("empenhos_contrato005")
@@ -321,7 +361,7 @@ def _analise_saldo(df, dados):
         valor_empenhado_real = emp["valor_empenhado"].sum(skipna=True)
         saldo_total_real = emp["saldo"].sum(skipna=True)
         saldo_rap = emp.loc[eh_rap_emp, "saldo"].sum(skipna=True)
-        saldo_ano_corrente = emp.loc[~eh_rap_emp, "saldo"].sum(skipna=True)
+        saldo_geral_contrato = empenhos_info.get("saldo_geral_contrato")
 
         cronograma = empenhos_info["cronograma_mensal"]
         vigente = cronograma[cronograma["apos_1_reajuste"]]
@@ -332,7 +372,7 @@ def _analise_saldo(df, dados):
     else:
         emp = None
         eh_rap_emp = None
-        valor_empenhado_real = saldo_total_real = saldo_rap = saldo_ano_corrente = media_mensal = None
+        valor_empenhado_real = saldo_total_real = saldo_rap = saldo_geral_contrato = media_mensal = None
 
     hv = df[df["para_contrato"] == "HORA DE VOO"].copy()
     eh_rap_mta = hv["pacote"] == "RAP"
@@ -348,16 +388,20 @@ def _analise_saldo(df, dados):
     with aba_resumo:
         cartoes_empenho = []
         if empenhos_info is not None:
-            cartoes_empenho = [
-                cartao_indicador("Empenhado (real, Contrato 005)", moeda_compacta(valor_empenhado_real),
-                                  moeda_completa(valor_empenhado_real), "primary"),
-                cartao_indicador("Saldo em aberto (real, ainda não gasto)", moeda_compacta(saldo_total_real),
-                                  moeda_completa(saldo_total_real), "warning"),
-                cartao_indicador("RAP — resto a pagar (empenho pré-2026)", moeda_compacta(saldo_rap),
+            cartoes_empenho = []
+            if saldo_geral_contrato is not None:
+                cartoes_empenho.append(
+                    cartao_indicador("Saldo geral do contrato (Módulo 1+2+3)", moeda_compacta(saldo_geral_contrato),
+                                      "Quanto ainda pode ser empenhado dentro da autorização (Reajuste)", "primary")
+                )
+            cartoes_empenho += [
+                cartao_indicador("Já empenhado (NE emitidas)", moeda_compacta(valor_empenhado_real),
+                                  "Formalizado em nota de empenho — " + moeda_completa(valor_empenhado_real), "info"),
+                cartao_indicador("→ saldo desses empenhos (ainda não liquidado)", moeda_compacta(saldo_total_real),
+                                  "Já é dinheiro formal, só falta gastar/liquidar", "warning"),
+                cartao_indicador("→ dos quais RAP (pré-2026)", moeda_compacta(saldo_rap),
                                   "Prioridade: já deveria ter sido usado" if saldo_rap else "Sem RAP no momento",
                                   "critical" if saldo_rap else "neutro"),
-                cartao_indicador("Saldo do ano corrente (2026)", moeda_compacta(saldo_ano_corrente),
-                                  "Dentro do prazo normal de uso", "info"),
             ]
             if media_mensal:
                 cartoes_empenho.append(
@@ -382,11 +426,12 @@ def _analise_saldo(df, dados):
 
     with aba_projecao:
         st.caption(
-            "Projeção mês a mês do saldo real: parte do saldo de hoje, soma cada parcela de Hora de Voo "
-            "que ainda vai virar empenho (deslocada 1 mês pela defasagem empenho→uso; RAP entra já no "
-            "próximo mês, por prioridade) e subtrai o gasto médio mensal do cronograma. Não considera "
-            "novos ciclos de MTA além do que já está na fila — se a DIRMAB atrasar uma parcela, a data "
-            "muda."
+            "Projeção mês a mês do **saldo dos empenhos já emitidos** (não do saldo geral do contrato, "
+            "que é só o limite de autorização — isso aqui é dinheiro já formalizado): parte do saldo de "
+            "hoje, soma cada parcela de Hora de Voo que ainda vai virar empenho (deslocada 1 mês pela "
+            "defasagem empenho→uso; RAP entra já no próximo mês, por prioridade) e subtrai o gasto médio "
+            "mensal do cronograma. Não considera novos ciclos de MTA além do que já está na fila — se a "
+            "DIRMAB atrasar uma parcela, a data muda."
         )
         if empenhos_info is None or not media_mensal:
             st.info("Sem dados de empenhos/cronograma do Contrato 005 — não dá pra projetar.")
@@ -415,7 +460,17 @@ def _analise_saldo(df, dados):
             fig.update_traces(text=[moeda_compacta(v) for v in projecao["saldo_final"]], textposition="outside", cliponaxis=False)
             fig.update_layout(xaxis_title="", yaxis_title="Saldo projetado", legend_title="", showlegend=False)
             layout_grafico(fig, altura=340)
-            st.plotly_chart(fig, width="stretch")
+            evento_proj = st.plotly_chart(
+                fig, width="stretch", key="mta_projecao_chart", on_select="rerun", selection_mode="points"
+            )
+            st.caption("👆 Clique num mês na barra pra ver o detalhe: saldo inicial, o que entra (qual parcela) e o que sai.")
+
+            pontos = evento_proj.selection.get("points", []) if evento_proj else []
+            if pontos:
+                mes_clicado = pontos[0].get("x")
+                linha_clicada = projecao[projecao["mes_label"] == mes_clicado]
+                if not linha_clicada.empty:
+                    _painel_detalhe_mes(linha_clicada.iloc[0])
 
             tabela_proj = projecao[["mes_label", "saldo_inicial", "entrada", "saida", "saldo_final"]].copy()
             for coluna in ("saldo_inicial", "entrada", "saida", "saldo_final"):
