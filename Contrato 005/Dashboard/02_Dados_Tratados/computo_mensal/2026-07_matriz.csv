@@ -27,7 +27,7 @@ matricula,dia,fim_de_semana,montada
 2702,26,True,1.0
 2702,27,False,1.0
 2702,28,False,1.0
-2702,29,False,
+2702,29,False,1.0
 2702,30,False,
 2702,31,False,
 2703,1,False,1.0
@@ -58,7 +58,7 @@ matricula,dia,fim_de_semana,montada
 2703,26,True,1.0
 2703,27,False,1.0
 2703,28,False,1.0
-2703,29,False,
+2703,29,False,1.0
 2703,30,False,
 2703,31,False,
 2704,1,False,1.0
@@ -89,7 +89,7 @@ matricula,dia,fim_de_semana,montada
 2704,26,True,1.0
 2704,27,False,1.0
 2704,28,False,1.0
-2704,29,False,
+2704,29,False,1.0
 2704,30,False,
 2704,31,False,
 2708,1,False,1.0
@@ -120,7 +120,7 @@ matricula,dia,fim_de_semana,montada
 2708,26,True,1.0
 2708,27,False,1.0
 2708,28,False,1.0
-2708,29,False,
+2708,29,False,1.0
 2708,30,False,
 2708,31,False,
 2709,1,False,1.0
@@ -151,7 +151,7 @@ matricula,dia,fim_de_semana,montada
 2709,26,True,1.0
 2709,27,False,1.0
 2709,28,False,1.0
-2709,29,False,
+2709,29,False,1.0
 2709,30,False,
 2709,31,False,
 2719,1,False,1.0
@@ -182,7 +182,7 @@ matricula,dia,fim_de_semana,montada
 2719,26,True,1.0
 2719,27,False,1.0
 2719,28,False,1.0
-2719,29,False,
+2719,29,False,1.0
 2719,30,False,
 2719,31,False,
 2720,1,False,1.0
@@ -213,7 +213,7 @@ matricula,dia,fim_de_semana,montada
 2720,26,True,1.0
 2720,27,False,1.0
 2720,28,False,1.0
-2720,29,False,
+2720,29,False,1.0
 2720,30,False,
 2720,31,False,
 2721,1,False,1.0
@@ -244,7 +244,7 @@ matricula,dia,fim_de_semana,montada
 2721,26,True,1.0
 2721,27,False,1.0
 2721,28,False,1.0
-2721,29,False,
+2721,29,False,0.0
 2721,30,False,
 2721,31,False,
 2722,1,False,1.0
@@ -275,7 +275,7 @@ matricula,dia,fim_de_semana,montada
 2722,26,True,1.0
 2722,27,False,1.0
 2722,28,False,1.0
-2722,29,False,
+2722,29,False,1.0
 2722,30,False,
 2722,31,False,
 2723,1,False,0.0
@@ -306,7 +306,7 @@ matricula,dia,fim_de_semana,montada
 2723,26,True,1.0
 2723,27,False,1.0
 2723,28,False,1.0
-2723,29,False,
+2723,29,False,1.0
 2723,30,False,
 2723,31,False,
 2727,1,False,1.0
@@ -337,7 +337,7 @@ matricula,dia,fim_de_semana,montada
 2727,26,True,1.0
 2727,27,False,1.0
 2727,28,False,1.0
-2727,29,False,
+2727,29,False,1.0
 2727,30,False,
 2727,31,False,
 2728,1,False,1.0
@@ -368,7 +368,7 @@ matricula,dia,fim_de_semana,montada
 2728,26,True,1.0
 2728,27,False,1.0
 2728,28,False,1.0
-2728,29,False,
+2728,29,False,1.0
 2728,30,False,
 2728,31,False,
 2729,1,False,1.0
@@ -399,7 +399,7 @@ matricula,dia,fim_de_semana,montada
 2729,26,True,0.0
 2729,27,False,1.0
 2729,28,False,1.0
-2729,29,False,
+2729,29,False,1.0
 2729,30,False,
 2729,31,False,
 2731,1,False,1.0
@@ -430,7 +430,7 @@ matricula,dia,fim_de_semana,montada
 2731,26,True,1.0
 2731,27,False,1.0
 2731,28,False,1.0
-2731,29,False,
+2731,29,False,1.0
 2731,30,False,
 2731,31,False,
 2733,1,False,1.0
@@ -461,7 +461,7 @@ matricula,dia,fim_de_semana,montada
 2733,26,True,1.0
 2733,27,False,1.0
 2733,28,False,1.0
-2733,29,False,
+2733,29,False,1.0
 2733,30,False,
 2733,31,False,
 2736,1,False,1.0
@@ -492,7 +492,7 @@ matricula,dia,fim_de_semana,montada
 2736,26,True,1.0
 2736,27,False,1.0
 2736,28,False,1.0
-2736,29,False,
+2736,29,False,1.0
 2736,30,False,
 2736,31,False,
 2737,1,False,1.0
@@ -523,7 +523,7 @@ matricula,dia,fim_de_semana,montada
 2737,26,True,1.0
 2737,27,False,1.0
 2737,28,False,1.0
-2737,29,False,
+2737,29,False,1.0
 2737,30,False,
 2737,31,False,
 2738,1,False,1.0
@@ -554,7 +554,7 @@ matricula,dia,fim_de_semana,montada
 2738,26,True,1.0
 2738,27,False,1.0
 2738,28,False,1.0
-2738,29,False,
+2738,29,False,1.0
 2738,30,False,
 2738,31,False,
 2739,1,False,1.0
@@ -585,7 +585,7 @@ matricula,dia,fim_de_semana,montada
 2739,26,True,1.0
 2739,27,False,1.0
 2739,28,False,1.0
-2739,29,False,
+2739,29,False,1.0
 2739,30,False,
 2739,31,False,
 2740,1,False,1.0
@@ -616,7 +616,7 @@ matricula,dia,fim_de_semana,montada
 2740,26,True,1.0
 2740,27,False,1.0
 2740,28,False,1.0
-2740,29,False,
+2740,29,False,1.0
 2740,30,False,
 2740,31,False,
 2741,1,False,1.0
@@ -647,7 +647,7 @@ matricula,dia,fim_de_semana,montada
 2741,26,True,0.0
 2741,27,False,1.0
 2741,28,False,1.0
-2741,29,False,
+2741,29,False,1.0
 2741,30,False,
 2741,31,False,
 2742,1,False,1.0
@@ -678,7 +678,7 @@ matricula,dia,fim_de_semana,montada
 2742,26,True,1.0
 2742,27,False,1.0
 2742,28,False,1.0
-2742,29,False,
+2742,29,False,1.0
 2742,30,False,
 2742,31,False,
 2743,1,False,1.0
@@ -709,6 +709,6 @@ matricula,dia,fim_de_semana,montada
 2743,26,True,1.0
 2743,27,False,1.0
 2743,28,False,1.0
-2743,29,False,
+2743,29,False,1.0
 2743,30,False,
 2743,31,False,
