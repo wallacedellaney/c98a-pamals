@@ -330,7 +330,7 @@ def _painel_detalhe_mes(linha):
             <div style="font-size:13.5px;color:{SECONDARY};margin-bottom:6px;">
                 <strong style="color:{INK};">Saldo inicial:</strong> {moeda_completa(linha['saldo_inicial'])}</div>
             <div style="font-size:13.5px;color:{SECONDARY};margin-bottom:6px;">
-                <strong style="color:{INK};">Saída (gasto médio do cronograma):</strong> {moeda_completa(linha['saida'])}</div>
+                <strong style="color:{INK};">Saída (gasto médio, horas restantes ÷ meses × valor da hora):</strong> {moeda_completa(linha['saida'])}</div>
             <div style="font-size:13.5px;color:{SECONDARY};margin:10px 0 4px;">
                 <strong style="color:{INK};">Entrada — {moeda_completa(linha['entrada'])} no total:</strong></div>
             {linhas_entrada}
@@ -408,18 +408,25 @@ def _analise_saldo(df, dados):
     rap_mta = hv[eh_rap_mta]
     fila_projetavel = hv[hv["situacao_consolidada"] != "Atendido"]  # fila + RAP, o que ainda pode virar empenho
 
-    # Média de gasto mensal ajustada — Wallace, 2026-07-28: "ajusta o
-    # consumo com base no que falta de horas de voo disponivel divididos
-    # pelo quantidade de meses, ai para o proximo ano a media desse".
-    # Substitui a média do Cronograma (contrato inteiro, não só Hora de
-    # Voo) por: (fila + RAP, o que ainda falta) ÷ meses que faltam no ano
-    # corrente. A mesma média é usada pra projetar os meses do ano
-    # seguinte também, por falta de parcela nova conhecida pra lá.
-    falta_hora_voo = fila_mta["valor"].sum(skipna=True) + rap_mta["valor"].sum(skipna=True)
-    meses_restantes_ano = max(12 - horario.hoje_br().month, 1)
-    media_mensal = falta_hora_voo / meses_restantes_ano if falta_hora_voo else None
-
     mes_emp_feito, mes_uso_feito, mes_emp_prox, mes_uso_prox = _empenhado_ate_mta(hv)
+
+    # Média de gasto mensal — Wallace, 2026-07-28: "media de gasto nao é do
+    # cronograma é o real, quantas horas falta no ano? [...] divide por
+    # quantos meses nao paguei e multiplica pela hora de voo (valor)"; e
+    # "desses valores ai so nao paguei ainda julho ne, junho ja empenhei"
+    # — "meses não pagos" conta a partir do mês seguinte ao último
+    # empenhado de verdade (não do mês corrente do calendário).
+    pendente_hv = pd.concat([fila_mta, rap_mta])
+    horas_restantes = pendente_hv["tarefa"].str.extract(r"(\d+)\s*HV")[0].astype(float).sum()
+    valor_hora_voo = empenhos_info.get("valor_hora_voo") if empenhos_info is not None else None
+    meses_nao_pagos = (
+        max(12 - mes_emp_feito.month, 1) if mes_emp_feito is not None
+        else max(12 - horario.hoje_br().month, 1)
+    )
+    media_mensal = (
+        (horas_restantes / meses_nao_pagos) * valor_hora_voo
+        if horas_restantes and valor_hora_voo else None
+    )
 
     aba_resumo, aba_projecao, aba_parcelas, aba_empenhos = st.tabs(
         ["📊 Resumo", "📈 Até quando dá a grana", "📅 Parcelas do MTA", "📄 Empenhos (Contrato 005)"]
@@ -467,16 +474,19 @@ def _analise_saldo(df, dados):
             # "$" dispara modo matemático (LaTeX) no markdown do Streamlit —
             # escapa pra "R$" aparecer como texto, não sumir no meio da conta.
             conta = (
-                f"O que falta de Hora de Voo (fila + RAP) = **{moeda_completa(falta_hora_voo)}** ÷ "
-                f"**{meses_restantes_ano} mês(es) restante(s) de {horario.hoje_br().year}** "
+                f"Horas de Hora de Voo ainda não atendidas = **{horas_restantes:.0f} HV** ÷ "
+                f"**{meses_nao_pagos} mês(es) não pago(s)** × **{moeda_completa(valor_hora_voo)}/HV** "
                 f"= **{moeda_completa(media_mensal)}/mês**"
             ).replace("R$", "R\\$")
             st.markdown(conta)
             grade_indicadores([
-                cartao_indicador("O que falta (fila + RAP)", moeda_compacta(falta_hora_voo),
-                                  "Hora de Voo ainda não atendida", "warning"),
-                cartao_indicador("÷ meses restantes do ano", str(meses_restantes_ano),
-                                  f"De agora até dez/{horario.hoje_br().year}", "neutro"),
+                cartao_indicador("Horas ainda não atendidas", f"{horas_restantes:.0f} HV",
+                                  "Somado das parcelas fila + RAP", "warning"),
+                cartao_indicador("÷ meses não pagos", str(meses_nao_pagos),
+                                  f"A partir de {_mes_ano((mes_emp_feito + pd.DateOffset(months=1)).strftime('%Y-%m'))}"
+                                  if mes_emp_feito is not None else "Meses restantes do ano", "neutro"),
+                cartao_indicador("× valor da hora de voo", moeda_completa(valor_hora_voo),
+                                  "Real, pós 2° Reajuste (Contrato 005)", "info"),
                 cartao_indicador("= Média de gasto mensal", moeda_compacta(media_mensal),
                                   "Usada na projeção — inclusive pra 2027", "primary"),
             ])
@@ -502,11 +512,12 @@ def _analise_saldo(df, dados):
             "que é só o limite de autorização — isso aqui é dinheiro já formalizado): parte do saldo de "
             "hoje, soma cada parcela de Hora de Voo que ainda vai virar empenho (deslocada 1 mês pela "
             "defasagem empenho→uso; RAP entra já no próximo mês, por prioridade) e subtrai o gasto médio "
-            "mensal do cronograma. Não considera novos ciclos de MTA além do que já está na fila — se a "
+            "mensal (ver conta em \"Consumo\", na aba Resumo — horas restantes ÷ meses não pagos × valor "
+            "da hora de voo). Não considera novos ciclos de MTA além do que já está na fila — se a "
             "DIRMAB atrasar uma parcela, a data muda."
         )
         if empenhos_info is None or not media_mensal:
-            st.info("Sem dados de empenhos/cronograma do Contrato 005 — não dá pra projetar.")
+            st.info("Sem dados de empenhos/hora de voo do Contrato 005 — não dá pra projetar.")
         else:
             projecao, mes_critico = _projetar_saldo(saldo_total_real, media_mensal, fila_projetavel)
 
@@ -610,6 +621,18 @@ def _analise_saldo(df, dados):
                     "valor_empenhado": "Valor empenhado", "saldo": "Saldo",
                 }),
                 hide_index=True, width="stretch", height=280,
+            )
+
+            st.caption(
+                "Pode ter atraso entre o MTA marcar uma parcela \"Atendido\" e o empenho real aparecer "
+                "aqui — o histórico diário abaixo garante que dá pra sempre achar quando um NE "
+                "apareceu ou mudou de saldo, o dinheiro nunca \"some\" nesse meio-tempo."
+            )
+            secao_evolucao(
+                empenhos_info.get("historico_empenhos"), chave=["numero_empenho"],
+                key_slider="mta_empenhos_evolucao_slider",
+                colunas_exibir=["numero_empenho", "valor_empenhado", "saldo"],
+                nomes_colunas={"numero_empenho": "Nº Empenho", "valor_empenhado": "Valor empenhado", "saldo": "Saldo"},
             )
 
 
