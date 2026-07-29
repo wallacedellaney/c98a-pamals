@@ -22,8 +22,6 @@ FONTES = [
     ("emergencias", "Emergências", SCRIPTS_DIR / "extrair_emergencias.py"),
     ("reparaveis", "Reparáveis", SCRIPTS_DIR / "extrair_reparaveis.py"),
     ("pagamentos", "Pagamentos", SCRIPTS_DIR / "extrair_pagamentos.py"),
-    # "devolucoes" (Empréstimos) acrescentada em 2026-07-27, pra entrar na
-    # verificação ao vivo (ver shared/verificacao_ao_vivo.py).
     ("devolucoes", "Empréstimos", SCRIPTS_DIR / "extrair_devolucoes.py"),
 ]
 

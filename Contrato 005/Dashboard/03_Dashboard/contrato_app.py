@@ -16,38 +16,14 @@ from pathlib import Path
 import streamlit as st
 
 from shared import horario
-from shared.verificacao_ao_vivo import criar_verificador
 from contrato005.components import data_global
 from contrato005.components.fontes_dados import secao_fontes_dados
 from contrato005.components.paleta import AMBER, SECONDARY, LINE
-from contrato005.data.atualizar_drive import atualizar_fonte
 from contrato005.data.carregar_dados import carregar_tudo
 from contrato005.secoes import (
     visao_geral, reparaveis, emergencias, emergencias_totais,
     fechamento_mensal, emprestimos, pagamentos, analise_periodo, reajuste,
 )
-
-# Verificação ao vivo (2026-07-27, ver shared/verificacao_ao_vivo.py) —
-# Emergências, Pagamentos, Reparáveis e Empréstimos também têm
-# `atualizar_do_drive()` própria; até agora só a Disponibilidade Diária
-# (Coordenadoria) conferia sozinha ao abrir o site. Wallace: "nada roda
-# automatico ja descobri, ruim demais ne" — GitHub Actions e o launchd do
-# Mac continuam existindo como automação de fundo, mas não são mais a
-# única forma do dado ficar em dia. Usa `atualizar_fonte()` (subprocesso,
-# já existia pra `atualizar_drive.py`) em vez de importar o extrator
-# direto — bug real achado ao testar: Contrato 005, Projetos e
-# Coordenadoria têm cada um seu próprio `05_Scripts/python/common.py`, e
-# como o site principal carrega as 3 áreas no MESMO processo, importar os
-# extratores de mais de uma área ao mesmo tempo fazia elas colidirem no
-# nome do módulo `common` (`ImportError: cannot import name
-# 'XLSX_PAGAMENTOS' from 'common'` — o Python só permite 1 módulo chamado
-# "common" por processo; o `common.py` errado ficava "grudado"). Rodando
-# como subprocesso (interpretador novo a cada chamada), cada área monta o
-# próprio sys.path do zero, sem esse risco.
-_verificar_emergencias = criar_verificador("Emergências", lambda: atualizar_fonte("emergencias"))
-_verificar_pagamentos = criar_verificador("Pagamentos", lambda: atualizar_fonte("pagamentos"))
-_verificar_reparaveis = criar_verificador("Reparáveis", lambda: atualizar_fonte("reparaveis"))
-_verificar_devolucoes = criar_verificador("Empréstimos", lambda: atualizar_fonte("devolucoes"))
 
 PAGINAS = {
     "Visão Geral": visao_geral,
@@ -101,15 +77,6 @@ def render(ao_voltar=None, paginas_ocultas=(), modo_externo=False):
 
     if "pagina" not in st.session_state or st.session_state["pagina"] not in paginas:
         st.session_state["pagina"] = next(iter(paginas))
-
-    # Verificação ao vivo — antes de carregar qualquer dado, garante que as
-    # 4 fontes estão em dia (busca no Drive na hora se necessário). Roda
-    # nos 2 sites (principal e 005CELOG2025), já que os dois chamam este
-    # `render()`.
-    _verificar_emergencias()
-    _verificar_pagamentos()
-    _verificar_reparaveis()
-    _verificar_devolucoes()
 
     dados = carregar_tudo()
     dados["modo_externo"] = modo_externo
