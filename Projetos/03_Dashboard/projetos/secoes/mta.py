@@ -267,11 +267,12 @@ def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
     """Projeção mês a mês do saldo real do Contrato 005: parte do saldo em
     aberto de hoje, soma cada parcela de Hora de Voo que ainda vai virar
     empenho ("Mês previsto" do MTA é o mês de USO — o empenho de fato
-    acontece 1 mês antes; RAP tratado como prioridade e somado já no
-    próximo mês) e subtrai o gasto médio mensal (ver `_analise_saldo`).
-    Devolve (tabela mês a mês, primeiro mês em que o saldo fica negativo —
-    ou None se não fica, dentro do horizonte, detalhe por mês de quais
-    parcelas do MTA entram nesse mês — pra painel clicável)."""
+    acontece 1 mês depois, ex.: horas de junho são empenhadas em julho;
+    RAP tratado como prioridade e somado já no próximo mês) e subtrai o
+    gasto médio mensal (ver `_analise_saldo`). Devolve (tabela mês a mês,
+    primeiro mês em que o saldo fica negativo — ou None se não fica,
+    dentro do horizonte, detalhe por mês de quais parcelas do MTA entram
+    nesse mês — pra painel clicável)."""
     mes0 = pd.Timestamp(horario.hoje_br()).replace(day=1)
 
     entradas = {}
@@ -284,7 +285,7 @@ def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
             mes_empenho = mes0 + pd.DateOffset(months=1)
         elif pd.notna(row["mes_previsto"]):
             mes_uso = pd.Timestamp(row["mes_previsto"]).replace(day=1)
-            mes_empenho = max(mes_uso - pd.DateOffset(months=1), mes0)
+            mes_empenho = max(mes_uso + pd.DateOffset(months=1), mes0)
         else:
             continue
         entradas[mes_empenho] = entradas.get(mes_empenho, 0) + valor
@@ -341,34 +342,21 @@ def _painel_detalhe_mes(linha):
     )
 
 
-def _empenhado_ate_mta(hv):
-    """Até qual mês o empenho real de Hora de Voo já está feito, e qual é o
-    próximo — Wallace, 2026-07-28: "deixa claro ate qual mes que ta pago,
-    por exemplo eu empenhei um valor ja referente a junho, julho nem
-    emepnhei ainda". Uma parcela só conta como "empenhada" se TODAS as
-    linhas dela (às vezes uma parcela vem dividida em 2, ex. 2048 + outro
-    código) estiverem "Atendido". "Mês previsto" é o mês de uso — o
-    empenho real é 1 mês antes. Devolve (mes_empenho_feito, mes_uso_feito,
-    mes_empenho_proximo, mes_uso_proximo) — qualquer um pode vir None se
-    não houver parcela nessa condição."""
-    trabalho = hv[hv["pacote"] != "RAP"].copy()
-    trabalho["parcela_num"] = trabalho["tarefa"].str.extract(r"(\d+)/\d+").astype(float)
-    por_parcela = trabalho.groupby("parcela_num").agg(
-        completa=("situacao_consolidada", lambda s: (s == "Atendido").all()),
-        mes_previsto=("mes_previsto", "first"),
-    ).reset_index().sort_values("parcela_num")
-
-    feitas = por_parcela[por_parcela["completa"] & por_parcela["mes_previsto"].notna()]
-    pendentes = por_parcela[~por_parcela["completa"] & por_parcela["mes_previsto"].notna()]
-
-    mes_uso_feito = mes_empenho_feito = mes_uso_proximo = mes_empenho_proximo = None
-    if not feitas.empty:
-        mes_uso_feito = pd.Timestamp(feitas.iloc[-1]["mes_previsto"]).replace(day=1)
-        mes_empenho_feito = mes_uso_feito - pd.DateOffset(months=1)
-    if not pendentes.empty:
-        mes_uso_proximo = pd.Timestamp(pendentes.iloc[0]["mes_previsto"]).replace(day=1)
-        mes_empenho_proximo = mes_uso_proximo - pd.DateOffset(months=1)
-    return mes_empenho_feito, mes_uso_feito, mes_empenho_proximo, mes_uso_proximo
+def _empenhado_ate_calendario():
+    """Até qual mês o empenho de Hora de Voo já está feito, e qual é o
+    próximo — direto do calendário, sem depender do "Atendido" do MTA (que
+    não bate 1:1 com a data real do empenho). Regra confirmada pelo
+    Wallace em 2026-07-28: "horas de junho, empenhado em julho" — o
+    empenho de um mês de uso acontece no mês seguinte, então o mês de uso
+    corrente (hoje) só termina de ser empenhado no mês que vem; o mês de
+    uso anterior já foi. Devolve (mes_uso_feito, mes_empenho_feito,
+    mes_uso_proximo, mes_empenho_proximo)."""
+    mes_atual = pd.Timestamp(horario.hoje_br()).replace(day=1)
+    mes_uso_feito = mes_atual - pd.DateOffset(months=1)
+    mes_empenho_feito = mes_atual
+    mes_uso_proximo = mes_atual
+    mes_empenho_proximo = mes_atual + pd.DateOffset(months=1)
+    return mes_uso_feito, mes_empenho_feito, mes_uso_proximo, mes_empenho_proximo
 
 
 def _analise_saldo(df, dados):
@@ -379,10 +367,9 @@ def _analise_saldo(df, dados):
         "código ND cobre Hora de Voo, Parcela Fixa, Requisição e Sob Demanda), então o "
         "valor empenhado/saldo abaixo é do **contrato inteiro**, não só Hora de Voo. O "
         "\"Mês previsto\" do MTA é o **mês de uso** — o empenho de fato acontece 1 mês "
-        "antes (ex.: Hora de Voo com uso previsto em julho tem o empenho feito em "
-        "junho; Wallace, 2026-07-28: \"eu empenhei um valor já referente a junho, "
-        "julho nem empenhei ainda\"). RAP = saldo de empenho que não é diretamente de "
-        "2026 (ano anterior), ainda não usado — prioridade de uso."
+        "depois (ex.: horas de junho são empenhadas em julho; Wallace, 2026-07-28: "
+        "\"horas de junho, empenhado em julho\"). RAP = saldo de empenho que não é "
+        "diretamente de 2026 (ano anterior), ainda não usado — prioridade de uso."
     )
 
     empenhos_info = dados.get("empenhos_contrato005")
@@ -394,12 +381,10 @@ def _analise_saldo(df, dados):
         valor_empenhado_real = emp["valor_empenhado"].sum(skipna=True)
         saldo_total_real = emp["saldo"].sum(skipna=True)
         saldo_rap = emp.loc[eh_rap_emp, "saldo"].sum(skipna=True)
-        saldo_geral_contrato = empenhos_info.get("saldo_geral_contrato")
-
     else:
         emp = None
         eh_rap_emp = None
-        valor_empenhado_real = saldo_total_real = saldo_rap = saldo_geral_contrato = None
+        valor_empenhado_real = saldo_total_real = saldo_rap = None
 
     hv = df[df["para_contrato"] == "HORA DE VOO"].copy()
     eh_rap_mta = hv["pacote"] == "RAP"
@@ -408,18 +393,32 @@ def _analise_saldo(df, dados):
     rap_mta = hv[eh_rap_mta]
     fila_projetavel = hv[hv["situacao_consolidada"] != "Atendido"]  # fila + RAP, o que ainda pode virar empenho
 
-    mes_emp_feito, mes_uso_feito, mes_emp_prox, mes_uso_prox = _empenhado_ate_mta(hv)
+    # Dinheiro do ano da MTA (não é saldo do contrato) — Wallace,
+    # 2026-07-28: "acho q se somar dinheiro so do contrato da na aba
+    # atividade da planilha mta da aba solicitações" / "é dinheiro do ano
+    # da mta e nao o saldo do contrato". Filtra TODO o MTA (não só Hora de
+    # Voo) pela Atividade "CNT 005/CELOG-PAMALS/2025 - VEE ONE" — pega
+    # também as poucas linhas de Sob Demanda que são desse mesmo contrato,
+    # substitui o "Saldo do Contrato após 2° Reajuste" (R$76,9 mi, que é
+    # só o teto de autorização plurianual, número grande demais e sem
+    # relação direta com o ano corrente).
+    cnt005_mta = df[df["atividade"] == "CNT 005/CELOG-PAMALS/2025 - VEE ONE"]
+    dinheiro_ano_mta = cnt005_mta["valor"].sum(skipna=True)
+    dinheiro_ano_mta_atendido = cnt005_mta.loc[cnt005_mta["situacao_consolidada"] == "Atendido", "valor"].sum(skipna=True)
+    dinheiro_ano_mta_saldo = dinheiro_ano_mta - dinheiro_ano_mta_atendido
+
+    mes_uso_feito, mes_emp_feito, mes_uso_prox, mes_emp_prox = _empenhado_ate_calendario()
 
     # Média de gasto mensal — Wallace, 2026-07-28: "media de gasto nao é do
     # cronograma é o real, quantas horas falta no ano? [...] divide por
-    # quantos meses nao paguei e multiplica pela hora de voo (valor)"; e
-    # "desses valores ai so nao paguei ainda julho ne, junho ja empenhei"
-    # — "meses não pagos" conta a partir do mês seguinte ao último
-    # empenhado de verdade (não do mês corrente do calendário). Horas
-    # restantes vêm da Disponibilidade Diária (Coordenadoria) — "horas nao
-    # voadas e extraida na disp diaria, tem a quantidade disponivel ai
-    # ainda": esforço anual previsto − realizado, dado operacional real
-    # (cresce dia a dia), mais confiável que somar "1000 HV" do texto das
+    # quantos meses nao paguei e multiplica pela hora de voo (valor)".
+    # "Meses não pagos" = meses de uso (a partir de hoje até dezembro)
+    # cujo empenho ainda não aconteceu — o mês corrente conta (seu
+    # empenho só sai no mês que vem). Horas restantes vêm da
+    # Disponibilidade Diária (Coordenadoria) — "horas nao voadas e
+    # extraida na disp diaria, tem a quantidade disponivel ai ainda":
+    # esforço anual previsto − realizado, dado operacional real (cresce
+    # dia a dia), mais confiável que somar "1000 HV" do texto das
     # parcelas do MTA (que é só o que foi parcelado/orçado). Cai pro texto
     # das parcelas só se a Disponibilidade Diária não estiver disponível.
     esforco_anual = dados.get("esforco_anual")
@@ -431,10 +430,7 @@ def _analise_saldo(df, dados):
         horas_restantes = pendente_hv["tarefa"].str.extract(r"(\d+)\s*HV")[0].astype(float).sum()
         fonte_horas = "Somado das parcelas MTA (fila + RAP) — Disponibilidade Diária não encontrada"
     valor_hora_voo = empenhos_info.get("valor_hora_voo") if empenhos_info is not None else None
-    meses_nao_pagos = (
-        max(12 - mes_emp_feito.month, 1) if mes_emp_feito is not None
-        else max(12 - horario.hoje_br().month, 1)
-    )
+    meses_nao_pagos = max(12 - mes_uso_prox.month + 1, 1)
     media_mensal = (
         (horas_restantes / meses_nao_pagos) * valor_hora_voo
         if horas_restantes and valor_hora_voo else None
@@ -460,13 +456,15 @@ def _analise_saldo(df, dados):
             st.divider()
 
         st.markdown("###### Dinheiro do contrato")
-        cartoes_empenho = []
+        cartoes_empenho = [
+            cartao_indicador("Dinheiro do ano (MTA, CNT 005/VEE ONE)", moeda_compacta(dinheiro_ano_mta),
+                              "Toda solicitação do MTA dessa atividade (Hora de Voo + Sob Demanda)", "primary"),
+            cartao_indicador("→ já atendido", moeda_compacta(dinheiro_ano_mta_atendido),
+                              "Virou empenho", "good"),
+            cartao_indicador("→ saldo (ainda não atendido)", moeda_compacta(dinheiro_ano_mta_saldo),
+                              "Fila + RAP, ainda não virou empenho", "warning"),
+        ]
         if empenhos_info is not None:
-            if saldo_geral_contrato is not None:
-                cartoes_empenho.append(
-                    cartao_indicador("Saldo geral do contrato (Módulo 1+2+3)", moeda_compacta(saldo_geral_contrato),
-                                      "Quanto ainda pode ser empenhado dentro da autorização (Reajuste)", "primary")
-                )
             cartoes_empenho += [
                 cartao_indicador("Já empenhado (NE emitidas)", moeda_compacta(valor_empenhado_real),
                                   "Formalizado em nota de empenho — " + moeda_completa(valor_empenhado_real), "info"),
@@ -476,9 +474,9 @@ def _analise_saldo(df, dados):
                                   "Prioridade: já deveria ter sido usado" if saldo_rap else "Sem RAP no momento",
                                   "critical" if saldo_rap else "neutro"),
             ]
-            grade_indicadores(cartoes_empenho)
         else:
-            st.info("Dados de empenhos do Contrato 005 não encontrados em 02_Dados_Tratados/ — mostrando só a fila do MTA.")
+            st.info("Dados de empenhos do Contrato 005 não encontrados em 02_Dados_Tratados/ — mostrando só o dinheiro do MTA.")
+        grade_indicadores(cartoes_empenho)
 
         if media_mensal:
             st.divider()
@@ -494,8 +492,7 @@ def _analise_saldo(df, dados):
             grade_indicadores([
                 cartao_indicador("Horas não voadas", f"{horas_restantes:.0f} HV", fonte_horas, "warning"),
                 cartao_indicador("÷ meses não pagos", str(meses_nao_pagos),
-                                  f"A partir de {_mes_ano((mes_emp_feito + pd.DateOffset(months=1)).strftime('%Y-%m'))}"
-                                  if mes_emp_feito is not None else "Meses restantes do ano", "neutro"),
+                                  f"Uso de {_mes_ano(mes_uso_prox.strftime('%Y-%m'))} até dez/{mes_uso_prox.year}", "neutro"),
                 cartao_indicador("× valor da hora de voo", moeda_completa(valor_hora_voo),
                                   "Real, pós 2° Reajuste (Contrato 005)", "info"),
                 cartao_indicador("= Média de gasto mensal", moeda_compacta(media_mensal),
