@@ -266,11 +266,12 @@ def _analise_financeira(df):
 def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
     """Projeção mês a mês do saldo real do Contrato 005: parte do saldo em
     aberto de hoje, soma cada parcela de Hora de Voo que ainda vai virar
-    empenho (deslocada 1 mês — defasagem empenho→uso, RAP tratado como
-    prioridade e somado já no próximo mês) e subtrai o gasto médio mensal
-    do cronograma. Devolve (tabela mês a mês, primeiro mês em que o saldo
-    fica negativo — ou None se não fica, dentro do horizonte, detalhe por
-    mês de quais parcelas do MTA entram nesse mês — pra painel clicável)."""
+    empenho ("Mês previsto" do MTA é o mês de USO — o empenho de fato
+    acontece 1 mês antes; RAP tratado como prioridade e somado já no
+    próximo mês) e subtrai o gasto médio mensal (ver `_analise_saldo`).
+    Devolve (tabela mês a mês, primeiro mês em que o saldo fica negativo —
+    ou None se não fica, dentro do horizonte, detalhe por mês de quais
+    parcelas do MTA entram nesse mês — pra painel clicável)."""
     mes0 = pd.Timestamp(horario.hoje_br()).replace(day=1)
 
     entradas = {}
@@ -280,15 +281,15 @@ def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
         if pd.isna(valor):
             continue
         if row["pacote"] == "RAP":
-            mes_uso = mes0 + pd.DateOffset(months=1)
+            mes_empenho = mes0 + pd.DateOffset(months=1)
         elif pd.notna(row["mes_previsto"]):
-            mes_emp = pd.Timestamp(row["mes_previsto"]).replace(day=1)
-            mes_uso = mes_emp + pd.DateOffset(months=1)
+            mes_uso = pd.Timestamp(row["mes_previsto"]).replace(day=1)
+            mes_empenho = max(mes_uso - pd.DateOffset(months=1), mes0)
         else:
             continue
-        entradas[mes_uso] = entradas.get(mes_uso, 0) + valor
+        entradas[mes_empenho] = entradas.get(mes_empenho, 0) + valor
         rotulo = str(row["tarefa"]) + (" — RAP, prioridade" if row["pacote"] == "RAP" else "")
-        detalhe_entradas.setdefault(mes_uso, []).append({"parcela": rotulo, "valor": valor})
+        detalhe_entradas.setdefault(mes_empenho, []).append({"parcela": rotulo, "valor": valor})
 
     linhas = []
     saldo = saldo_inicial
@@ -340,6 +341,36 @@ def _painel_detalhe_mes(linha):
     )
 
 
+def _empenhado_ate_mta(hv):
+    """Até qual mês o empenho real de Hora de Voo já está feito, e qual é o
+    próximo — Wallace, 2026-07-28: "deixa claro ate qual mes que ta pago,
+    por exemplo eu empenhei um valor ja referente a junho, julho nem
+    emepnhei ainda". Uma parcela só conta como "empenhada" se TODAS as
+    linhas dela (às vezes uma parcela vem dividida em 2, ex. 2048 + outro
+    código) estiverem "Atendido". "Mês previsto" é o mês de uso — o
+    empenho real é 1 mês antes. Devolve (mes_empenho_feito, mes_uso_feito,
+    mes_empenho_proximo, mes_uso_proximo) — qualquer um pode vir None se
+    não houver parcela nessa condição."""
+    trabalho = hv[hv["pacote"] != "RAP"].copy()
+    trabalho["parcela_num"] = trabalho["tarefa"].str.extract(r"(\d+)/\d+").astype(float)
+    por_parcela = trabalho.groupby("parcela_num").agg(
+        completa=("situacao_consolidada", lambda s: (s == "Atendido").all()),
+        mes_previsto=("mes_previsto", "first"),
+    ).reset_index().sort_values("parcela_num")
+
+    feitas = por_parcela[por_parcela["completa"] & por_parcela["mes_previsto"].notna()]
+    pendentes = por_parcela[~por_parcela["completa"] & por_parcela["mes_previsto"].notna()]
+
+    mes_uso_feito = mes_empenho_feito = mes_uso_proximo = mes_empenho_proximo = None
+    if not feitas.empty:
+        mes_uso_feito = pd.Timestamp(feitas.iloc[-1]["mes_previsto"]).replace(day=1)
+        mes_empenho_feito = mes_uso_feito - pd.DateOffset(months=1)
+    if not pendentes.empty:
+        mes_uso_proximo = pd.Timestamp(pendentes.iloc[0]["mes_previsto"]).replace(day=1)
+        mes_empenho_proximo = mes_uso_proximo - pd.DateOffset(months=1)
+    return mes_empenho_feito, mes_uso_feito, mes_empenho_proximo, mes_uso_proximo
+
+
 def _analise_saldo(df, dados):
     st.markdown('<div class="pj-titulo-secao">Análise do dinheiro em saldo (Hora de Voo)</div>', unsafe_allow_html=True)
     st.caption(
@@ -347,9 +378,11 @@ def _analise_saldo(df, dados):
         "Contrato 005 (VEE ONE) — a aba \"Empenhos\" não distingue categoria (o mesmo "
         "código ND cobre Hora de Voo, Parcela Fixa, Requisição e Sob Demanda), então o "
         "valor empenhado/saldo abaixo é do **contrato inteiro**, não só Hora de Voo. O "
-        "empenho previsto pra um mês só é de fato utilizado no mês seguinte (ex.: Hora "
-        "de Voo prevista pra junho é usada em julho). RAP = saldo de empenho que não é "
-        "diretamente de 2026 (ano anterior), ainda não usado — prioridade de uso."
+        "\"Mês previsto\" do MTA é o **mês de uso** — o empenho de fato acontece 1 mês "
+        "antes (ex.: Hora de Voo com uso previsto em julho tem o empenho feito em "
+        "junho; Wallace, 2026-07-28: \"eu empenhei um valor já referente a junho, "
+        "julho nem empenhei ainda\"). RAP = saldo de empenho que não é diretamente de "
+        "2026 (ano anterior), ainda não usado — prioridade de uso."
     )
 
     empenhos_info = dados.get("empenhos_contrato005")
@@ -363,16 +396,10 @@ def _analise_saldo(df, dados):
         saldo_rap = emp.loc[eh_rap_emp, "saldo"].sum(skipna=True)
         saldo_geral_contrato = empenhos_info.get("saldo_geral_contrato")
 
-        cronograma = empenhos_info["cronograma_mensal"]
-        vigente = cronograma[cronograma["apos_1_reajuste"]]
-        media_mensal = (
-            (vigente["modulo_1"] + vigente["modulo_2"] + vigente["modulo_3"]).mean()
-            if not vigente.empty else None
-        )
     else:
         emp = None
         eh_rap_emp = None
-        valor_empenhado_real = saldo_total_real = saldo_rap = saldo_geral_contrato = media_mensal = None
+        valor_empenhado_real = saldo_total_real = saldo_rap = saldo_geral_contrato = None
 
     hv = df[df["para_contrato"] == "HORA DE VOO"].copy()
     eh_rap_mta = hv["pacote"] == "RAP"
@@ -381,14 +408,41 @@ def _analise_saldo(df, dados):
     rap_mta = hv[eh_rap_mta]
     fila_projetavel = hv[hv["situacao_consolidada"] != "Atendido"]  # fila + RAP, o que ainda pode virar empenho
 
+    # Média de gasto mensal ajustada — Wallace, 2026-07-28: "ajusta o
+    # consumo com base no que falta de horas de voo disponivel divididos
+    # pelo quantidade de meses, ai para o proximo ano a media desse".
+    # Substitui a média do Cronograma (contrato inteiro, não só Hora de
+    # Voo) por: (fila + RAP, o que ainda falta) ÷ meses que faltam no ano
+    # corrente. A mesma média é usada pra projetar os meses do ano
+    # seguinte também, por falta de parcela nova conhecida pra lá.
+    falta_hora_voo = fila_mta["valor"].sum(skipna=True) + rap_mta["valor"].sum(skipna=True)
+    meses_restantes_ano = max(12 - horario.hoje_br().month, 1)
+    media_mensal = falta_hora_voo / meses_restantes_ano if falta_hora_voo else None
+
+    mes_emp_feito, mes_uso_feito, mes_emp_prox, mes_uso_prox = _empenhado_ate_mta(hv)
+
     aba_resumo, aba_projecao, aba_parcelas, aba_empenhos = st.tabs(
         ["📊 Resumo", "📈 Até quando dá a grana", "📅 Parcelas do MTA", "📄 Empenhos (Contrato 005)"]
     )
 
     with aba_resumo:
+        if mes_emp_feito is not None:
+            st.markdown("###### Até qual mês o empenho de Hora de Voo já está feito")
+            cartoes_ate_quando = [
+                cartao_indicador("✅ Empenhado até", _mes_ano(mes_emp_feito.strftime("%Y-%m")),
+                                  f"Cobre o uso de {_mes_ano(mes_uso_feito.strftime('%Y-%m'))}", "good"),
+            ]
+            if mes_emp_prox is not None:
+                cartoes_ate_quando.append(
+                    cartao_indicador("⏳ Próximo a empenhar", _mes_ano(mes_emp_prox.strftime("%Y-%m")),
+                                      f"Referente ao uso de {_mes_ano(mes_uso_prox.strftime('%Y-%m'))}", "warning")
+                )
+            grade_indicadores(cartoes_ate_quando)
+            st.divider()
+
+        st.markdown("###### Dinheiro do contrato")
         cartoes_empenho = []
         if empenhos_info is not None:
-            cartoes_empenho = []
             if saldo_geral_contrato is not None:
                 cartoes_empenho.append(
                     cartao_indicador("Saldo geral do contrato (Módulo 1+2+3)", moeda_compacta(saldo_geral_contrato),
@@ -403,26 +457,44 @@ def _analise_saldo(df, dados):
                                   "Prioridade: já deveria ter sido usado" if saldo_rap else "Sem RAP no momento",
                                   "critical" if saldo_rap else "neutro"),
             ]
-            if media_mensal:
-                cartoes_empenho.append(
-                    cartao_indicador("Média de gasto mensal (cronograma)", moeda_compacta(media_mensal),
-                                      moeda_completa(media_mensal) + "/mês, pós 1° Reajuste", "info")
-                )
+            grade_indicadores(cartoes_empenho)
         else:
             st.info("Dados de empenhos do Contrato 005 não encontrados em 02_Dados_Tratados/ — mostrando só a fila do MTA.")
 
+        if media_mensal:
+            st.divider()
+            st.markdown("###### Consumo (Hora de Voo) — conta aberta")
+            # "$" dispara modo matemático (LaTeX) no markdown do Streamlit —
+            # escapa pra "R$" aparecer como texto, não sumir no meio da conta.
+            conta = (
+                f"O que falta de Hora de Voo (fila + RAP) = **{moeda_completa(falta_hora_voo)}** ÷ "
+                f"**{meses_restantes_ano} mês(es) restante(s) de {horario.hoje_br().year}** "
+                f"= **{moeda_completa(media_mensal)}/mês**"
+            ).replace("R$", "R\\$")
+            st.markdown(conta)
+            grade_indicadores([
+                cartao_indicador("O que falta (fila + RAP)", moeda_compacta(falta_hora_voo),
+                                  "Hora de Voo ainda não atendida", "warning"),
+                cartao_indicador("÷ meses restantes do ano", str(meses_restantes_ano),
+                                  f"De agora até dez/{horario.hoje_br().year}", "neutro"),
+                cartao_indicador("= Média de gasto mensal", moeda_compacta(media_mensal),
+                                  "Usada na projeção — inclusive pra 2027", "primary"),
+            ])
+
+        st.divider()
+        st.markdown("###### Fila do MTA (Hora de Voo)")
         cartoes_mta = [
-            cartao_indicador("MTA — Hora de Voo já atendida", moeda_compacta(atendido["valor"].sum(skipna=True)),
+            cartao_indicador("Já atendida", moeda_compacta(atendido["valor"].sum(skipna=True)),
                               f"{len(atendido)} parcela(s) — pode virar empenho", "good"),
-            cartao_indicador("MTA — ainda na fila (aprovado/em trâmite)", moeda_compacta(fila_mta["valor"].sum(skipna=True)),
+            cartao_indicador("Ainda na fila (aprovado/em trâmite)", moeda_compacta(fila_mta["valor"].sum(skipna=True)),
                               f"{len(fila_mta)} parcela(s) pendente(s)", "warning"),
         ]
         if not rap_mta.empty:
             cartoes_mta.append(
-                cartao_indicador("MTA — RAP (Hora de Voo)", moeda_compacta(rap_mta["valor"].sum(skipna=True)),
+                cartao_indicador("RAP (Hora de Voo)", moeda_compacta(rap_mta["valor"].sum(skipna=True)),
                                   f"{len(rap_mta)} parcela(s) — prioridade", "critical")
             )
-        grade_indicadores(cartoes_empenho + cartoes_mta)
+        grade_indicadores(cartoes_mta)
 
     with aba_projecao:
         st.caption(
@@ -502,15 +574,15 @@ def _analise_saldo(df, dados):
                 st.plotly_chart(fig, width="stretch")
 
             with col2:
-                st.caption("Mês do empenho x mês de uso real (defasagem de 1 mês)")
+                st.caption("Mês de uso (\"Mês previsto\" do MTA) x mês do empenho real (1 mês antes)")
                 detalhe = []
                 for _, row in ordenado.iterrows():
                     if row["pacote"] == "RAP":
-                        mes_emp, mes_uso = "RAP (ciclo anterior)", "Usar já — prioridade"
+                        mes_emp, mes_uso = "Já processado — RAP", "Ciclo anterior"
                     elif pd.notna(row["mes_previsto"]):
                         ts = pd.Timestamp(row["mes_previsto"])
-                        mes_emp = _mes_ano(ts.strftime("%Y-%m"))
-                        mes_uso = _mes_ano((ts + pd.DateOffset(months=1)).strftime("%Y-%m"))
+                        mes_uso = _mes_ano(ts.strftime("%Y-%m"))
+                        mes_emp = _mes_ano((ts - pd.DateOffset(months=1)).strftime("%Y-%m"))
                     else:
                         mes_emp, mes_uso = "—", "—"
                     detalhe.append({
