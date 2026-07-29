@@ -415,9 +415,21 @@ def _analise_saldo(df, dados):
     # quantos meses nao paguei e multiplica pela hora de voo (valor)"; e
     # "desses valores ai so nao paguei ainda julho ne, junho ja empenhei"
     # — "meses não pagos" conta a partir do mês seguinte ao último
-    # empenhado de verdade (não do mês corrente do calendário).
-    pendente_hv = pd.concat([fila_mta, rap_mta])
-    horas_restantes = pendente_hv["tarefa"].str.extract(r"(\d+)\s*HV")[0].astype(float).sum()
+    # empenhado de verdade (não do mês corrente do calendário). Horas
+    # restantes vêm da Disponibilidade Diária (Coordenadoria) — "horas nao
+    # voadas e extraida na disp diaria, tem a quantidade disponivel ai
+    # ainda": esforço anual previsto − realizado, dado operacional real
+    # (cresce dia a dia), mais confiável que somar "1000 HV" do texto das
+    # parcelas do MTA (que é só o que foi parcelado/orçado). Cai pro texto
+    # das parcelas só se a Disponibilidade Diária não estiver disponível.
+    esforco_anual = dados.get("esforco_anual")
+    if esforco_anual is not None:
+        horas_restantes = esforco_anual["horas_nao_voadas"]
+        fonte_horas = f"Disponibilidade Diária, {pd.Timestamp(esforco_anual['data_referencia']).strftime('%d/%m/%Y')} — {esforco_anual['horas_previstas']:.0f}h previstas − {esforco_anual['horas_realizadas']:.0f}h realizadas"
+    else:
+        pendente_hv = pd.concat([fila_mta, rap_mta])
+        horas_restantes = pendente_hv["tarefa"].str.extract(r"(\d+)\s*HV")[0].astype(float).sum()
+        fonte_horas = "Somado das parcelas MTA (fila + RAP) — Disponibilidade Diária não encontrada"
     valor_hora_voo = empenhos_info.get("valor_hora_voo") if empenhos_info is not None else None
     meses_nao_pagos = (
         max(12 - mes_emp_feito.month, 1) if mes_emp_feito is not None
@@ -474,14 +486,13 @@ def _analise_saldo(df, dados):
             # "$" dispara modo matemático (LaTeX) no markdown do Streamlit —
             # escapa pra "R$" aparecer como texto, não sumir no meio da conta.
             conta = (
-                f"Horas de Hora de Voo ainda não atendidas = **{horas_restantes:.0f} HV** ÷ "
+                f"Horas não voadas = **{horas_restantes:.0f} HV** ÷ "
                 f"**{meses_nao_pagos} mês(es) não pago(s)** × **{moeda_completa(valor_hora_voo)}/HV** "
                 f"= **{moeda_completa(media_mensal)}/mês**"
             ).replace("R$", "R\\$")
             st.markdown(conta)
             grade_indicadores([
-                cartao_indicador("Horas ainda não atendidas", f"{horas_restantes:.0f} HV",
-                                  "Somado das parcelas fila + RAP", "warning"),
+                cartao_indicador("Horas não voadas", f"{horas_restantes:.0f} HV", fonte_horas, "warning"),
                 cartao_indicador("÷ meses não pagos", str(meses_nao_pagos),
                                   f"A partir de {_mes_ano((mes_emp_feito + pd.DateOffset(months=1)).strftime('%Y-%m'))}"
                                   if mes_emp_feito is not None else "Meses restantes do ano", "neutro"),

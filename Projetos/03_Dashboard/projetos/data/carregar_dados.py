@@ -16,6 +16,7 @@ DASHBOARD_ROOT = Path(__file__).resolve().parents[3]
 DADOS_TRATADOS = DASHBOARD_ROOT / "02_Dados_Tratados"
 ESTADO_ATUALIZACOES = DADOS_TRATADOS / "estado_atualizacoes.json"
 CONTRATO005_DADOS_TRATADOS = DASHBOARD_ROOT.parent / "Contrato 005" / "Dashboard" / "02_Dados_Tratados"
+COORDENADORIA_DADOS_TRATADOS = DASHBOARD_ROOT.parent / "Coordenadoria" / "02_Dados_Tratados"
 
 
 @st.cache_data
@@ -158,6 +159,42 @@ def carregar_empenhos_contrato005():
     }
 
 
+def _horas_para_decimal(texto):
+    """"10070:00"/"5063:50" (formato H:MM da Disponibilidade Diária) -> horas
+    decimais (10070.0 / 5063.83...)."""
+    if pd.isna(texto):
+        return None
+    horas, minutos = str(texto).split(":")
+    return int(horas) + int(minutos) / 60
+
+
+def carregar_esforco_anual():
+    """Horas de Hora de Voo previstas x realizadas no ano, da Disponibilidade
+    Diária (Coordenadoria) — Wallace, 2026-07-28: "horas nao voadas e
+    extraida na disp diaria, tem a quantidade disponivel ai ainda". Fonte
+    mais real (voo de verdade, cresce dia a dia) do que somar "1000 HV" do
+    texto das parcelas do MTA (que é só o que foi orçado/parcelado, não o
+    que de fato voou). Usa o relatório mais recente. Leitura direta do
+    arquivo tratado da outra área (só dados, sem import de pacote)."""
+    caminho = COORDENADORIA_DADOS_TRATADOS / "base_disponibilidade_diaria.xlsx"
+    if not caminho.exists():
+        return None
+    relatorios = _ler_excel(str(caminho), caminho.stat().st_mtime, sheet_name="Relatorios")
+    if relatorios.empty:
+        return None
+    ultimo = relatorios.sort_values("data_referencia").iloc[-1]
+    previsto = _horas_para_decimal(ultimo["esforco_anual_previsto"])
+    realizado = _horas_para_decimal(ultimo["esforco_anual_realizado"])
+    if previsto is None or realizado is None:
+        return None
+    return {
+        "data_referencia": ultimo["data_referencia"],
+        "horas_previstas": previsto,
+        "horas_realizadas": realizado,
+        "horas_nao_voadas": previsto - realizado,
+    }
+
+
 def carregar_tudo():
     df_mta, mtime_mta = carregar_mta()
     df_tpjl, mtime_tpjl = carregar_tpjl()
@@ -168,6 +205,7 @@ def carregar_tudo():
         "mta_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "mta"),
         "mta_historico": carregar_historico_mta(),
         "empenhos_contrato005": carregar_empenhos_contrato005(),
+        "esforco_anual": carregar_esforco_anual(),
         "tpjl": df_tpjl,
         "tpjl_atualizado_em": mtime_tpjl,
         "tpjl_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "tpjl"),
