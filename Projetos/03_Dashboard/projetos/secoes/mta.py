@@ -378,13 +378,12 @@ def _analise_saldo(df, dados):
         emp["ano"] = emp["numero_empenho"].astype(str).str[:4]
         eh_rap_emp = emp["ano"] != "2026"
 
-        valor_empenhado_real = emp["valor_empenhado"].sum(skipna=True)
         saldo_total_real = emp["saldo"].sum(skipna=True)
         saldo_rap = emp.loc[eh_rap_emp, "saldo"].sum(skipna=True)
     else:
         emp = None
         eh_rap_emp = None
-        valor_empenhado_real = saldo_total_real = saldo_rap = None
+        saldo_total_real = saldo_rap = None
 
     hv = df[df["para_contrato"] == "HORA DE VOO"].copy()
     eh_rap_mta = hv["pacote"] == "RAP"
@@ -466,9 +465,7 @@ def _analise_saldo(df, dados):
         ]
         if empenhos_info is not None:
             cartoes_empenho += [
-                cartao_indicador("Já empenhado (NE emitidas)", moeda_compacta(valor_empenhado_real),
-                                  "Formalizado em nota de empenho — " + moeda_completa(valor_empenhado_real), "info"),
-                cartao_indicador("→ saldo desses empenhos (ainda não liquidado)", moeda_compacta(saldo_total_real),
+                cartao_indicador("Saldo dos empenhos (ainda não liquidado)", moeda_compacta(saldo_total_real),
                                   "Já é dinheiro formal, só falta gastar/liquidar", "warning"),
                 cartao_indicador("→ dos quais RAP (pré-2026)", moeda_compacta(saldo_rap),
                                   "Prioridade: já deveria ter sido usado" if saldo_rap else "Sem RAP no momento",
