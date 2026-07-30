@@ -267,30 +267,29 @@ def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
     """Projeção mês a mês do saldo real do Contrato 005: parte do saldo em
     aberto de hoje, soma cada parcela de Hora de Voo que ainda vai virar
     empenho ("Mês previsto" do MTA é o mês de USO — o empenho de fato
-    acontece 1 mês depois, ex.: horas de junho são empenhadas em julho;
-    RAP tratado como prioridade e somado já no próximo mês) e subtrai o
-    gasto médio mensal (ver `_analise_saldo`). Devolve (tabela mês a mês,
-    primeiro mês em que o saldo fica negativo — ou None se não fica,
-    dentro do horizonte, detalhe por mês de quais parcelas do MTA entram
-    nesse mês — pra painel clicável)."""
+    acontece 1 mês depois, ex.: horas de junho são empenhadas em julho) e
+    subtrai o gasto médio mensal (ver `_analise_saldo`). `fila_hv` NÃO deve
+    incluir RAP — Wallace, 2026-07-30: "o valor de RAP da MTA já foi
+    processo, virou dinheiro e já usei, o resultado dele são os empenhos
+    que não são final 2026, então tira ele da linha cronológica de
+    entrada" — o RAP já está refletido no `saldo_inicial` (via saldo dos
+    empenhos pré-2026 do Contrato 005), contá-lo de novo aqui como entrada
+    futura duplicaria esse dinheiro. Devolve (tabela mês a mês, primeiro
+    mês em que o saldo fica negativo — ou None se não fica, dentro do
+    horizonte, detalhe por mês de quais parcelas do MTA entram nesse mês —
+    pra painel clicável)."""
     mes0 = pd.Timestamp(horario.hoje_br()).replace(day=1)
 
     entradas = {}
     detalhe_entradas = {}
     for _, row in fila_hv.iterrows():
         valor = row["valor"] or 0
-        if pd.isna(valor):
+        if pd.isna(valor) or pd.isna(row["mes_previsto"]):
             continue
-        if row["pacote"] == "RAP":
-            mes_empenho = mes0 + pd.DateOffset(months=1)
-        elif pd.notna(row["mes_previsto"]):
-            mes_uso = pd.Timestamp(row["mes_previsto"]).replace(day=1)
-            mes_empenho = max(mes_uso + pd.DateOffset(months=1), mes0)
-        else:
-            continue
+        mes_uso = pd.Timestamp(row["mes_previsto"]).replace(day=1)
+        mes_empenho = max(mes_uso + pd.DateOffset(months=1), mes0)
         entradas[mes_empenho] = entradas.get(mes_empenho, 0) + valor
-        rotulo = str(row["tarefa"]) + (" — RAP, prioridade" if row["pacote"] == "RAP" else "")
-        detalhe_entradas.setdefault(mes_empenho, []).append({"parcela": rotulo, "valor": valor})
+        detalhe_entradas.setdefault(mes_empenho, []).append({"parcela": str(row["tarefa"]), "valor": valor})
 
     linhas = []
     saldo = saldo_inicial
@@ -390,7 +389,10 @@ def _analise_saldo(df, dados):
     atendido = hv[hv["situacao_consolidada"] == "Atendido"]
     fila_mta = hv[(hv["situacao_consolidada"] != "Atendido") & ~eh_rap_mta]
     rap_mta = hv[eh_rap_mta]
-    fila_projetavel = hv[hv["situacao_consolidada"] != "Atendido"]  # fila + RAP, o que ainda pode virar empenho
+    # Projeção usa só a fila (sem RAP) — RAP já virou empenho de verdade e
+    # já está refletido no saldo inicial (saldo dos empenhos pré-2026),
+    # contá-lo de novo como entrada futura duplicaria o dinheiro.
+    fila_projetavel = fila_mta
 
     # Dinheiro do ano da MTA (não é saldo do contrato) — Wallace,
     # 2026-07-28: "acho q se somar dinheiro so do contrato da na aba
@@ -515,11 +517,11 @@ def _analise_saldo(df, dados):
         st.caption(
             "Projeção mês a mês do **saldo dos empenhos já emitidos** (não do saldo geral do contrato, "
             "que é só o limite de autorização — isso aqui é dinheiro já formalizado): parte do saldo de "
-            "hoje, soma cada parcela de Hora de Voo que ainda vai virar empenho (deslocada 1 mês pela "
-            "defasagem empenho→uso; RAP entra já no próximo mês, por prioridade) e subtrai o gasto médio "
-            "mensal (ver conta em \"Consumo\", na aba Resumo — horas restantes ÷ meses não pagos × valor "
-            "da hora de voo). Não considera novos ciclos de MTA além do que já está na fila — se a "
-            "DIRMAB atrasar uma parcela, a data muda."
+            "hoje, soma cada parcela de Hora de Voo ainda na fila (sem RAP — RAP já virou empenho de "
+            "verdade e já está no saldo inicial, contar de novo duplicaria) deslocada 1 mês pela "
+            "defasagem empenho→uso, e subtrai o gasto médio mensal (ver conta em \"Consumo\", na aba "
+            "Resumo — horas restantes ÷ meses não pagos × valor da hora de voo). Não considera novos "
+            "ciclos de MTA além do que já está na fila — se a DIRMAB atrasar uma parcela, a data muda."
         )
         if empenhos_info is None or not media_mensal:
             st.info("Sem dados de empenhos/hora de voo do Contrato 005 — não dá pra projetar.")
