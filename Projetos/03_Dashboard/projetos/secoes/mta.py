@@ -262,6 +262,23 @@ def _analise_financeira(df):
         resumo[col] = resumo[col].apply(moeda_completa)
     st.dataframe(resumo, hide_index=True, width="stretch")
 
+    with st.expander("ℹ️ O que entra em cada categoria"):
+        st.markdown(
+            "- **Hora de Voo** — só o Contrato 005/CELOG-PAMALS (VEE ONE): as 10 parcelas anuais "
+            "de horas de voo (\"Hora de Voo 01/10\" a \"10/10\"), ~1000 HV cada.\n"
+            "- **Motores** — qualquer linha com \"Para Motores\" = Sim, **de vários contratos "
+            "diferentes** (não só o 005): Revisão Geral (RG) e material de motor do CNT 006/2026, "
+            "CNT 048/2022 e CNT 031/2022 (todos PW/PAMASP), câmbio de motor (CABW-PAMASP/2026) e "
+            "requisições de serviço/publicação ligadas a motor.\n"
+            "- **Requisição** — pedidos de material/serviço fora do escopo de Hora de Voo e Motores: "
+            "Requisição CABW (ex.: consumíveis, GPS), Requisição FMS e pedidos pontuais por base "
+            "(ex.: \"2025-BABR-24\").\n"
+            "- **Sob Demanda** — só Contrato 005 (VEE ONE): \"Módulo Extra\", trabalho extra além das "
+            "parcelas fixas de Hora de Voo (aquisição, publicações).\n"
+            "- **Parcela Fixa** — projeto de Modernização do C-98 (contrato à parte, ainda sem número "
+            "definido — \"CNT XXX/CELOG-PAMALS/2026\"), em 4 parcelas."
+        )
+
 
 def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
     """Projeção mês a mês do saldo real do Contrato 005: parte do saldo em
