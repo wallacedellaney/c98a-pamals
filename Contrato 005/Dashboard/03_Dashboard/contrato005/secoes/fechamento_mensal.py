@@ -320,16 +320,14 @@ def _justificativas_mes(mes_escolhido, tabela_entregas):
     """Espelha TODAS as colunas de "entregas" do mês no Drive, igual ao
     site (pedido do Wallace, 2026-07-31), com um campo editável pra empresa
     (VEE ONE) escrever a justificativa de cada atraso e um "check" de
-    Status — só habilita edição depois que o mês de referência termina de
-    verdade ("sempre no fechamento mensal do mes, depois do dia 31 que
-    habilita"). Devolve a tabela exibida (com Justificativa/Status), usada
-    também na exportação CSV."""
+    Status — editável o mês inteiro, desde a primeira entrega (Wallace,
+    2026-07-31: "muda para poder ir justificando durante todo mes";
+    antes disso só liberava depois do mês fechar, decisão revertida).
+    Devolve a tabela exibida (com Justificativa/Status), usada também na
+    exportação CSV."""
     st.markdown("##### 📝 Justificativas da empresa (VEE ONE)")
 
     mes_ref_str = str(mes_escolhido)
-    fim_mes = mes_escolhido.end_time.normalize()
-    hoje = pd.Timestamp(horario.hoje_br()).normalize()
-    mes_encerrado = hoje > fim_mes
 
     tabela_entregas = tabela_entregas.copy()
     tabela_entregas["Emergência"] = tabela_entregas["Emergência"].astype(str)
@@ -354,16 +352,7 @@ def _justificativas_mes(mes_escolhido, tabela_entregas):
     colunas_ordem = ["Status"] + [c for c in tabela_entregas.columns] + ["Justificativa"]
     exibir = exibir[colunas_ordem]
 
-    if not mes_encerrado:
-        st.info(
-            f"O campo de justificativa habilita para edição depois que **{_formatar_mes(mes_escolhido)}** "
-            "terminar (após o último dia do mês) — as entregas já estão espelhadas no Drive, mostrando "
-            "só leitura por enquanto."
-        )
-        st.dataframe(exibir, hide_index=True, width="stretch", height=min(35 * (len(exibir) + 1) + 3, 380))
-        return exibir
-
-    st.caption("Mês encerrado — a empresa já pode escrever/editar a justificativa de cada atraso abaixo.")
+    st.caption("A empresa pode escrever/editar a justificativa de cada atraso abaixo, a qualquer momento do mês.")
     editada = st.data_editor(
         exibir, hide_index=True, width="stretch", height=min(35 * (len(exibir) + 1) + 3, 380),
         disabled=[c for c in colunas_ordem if c != "Justificativa"],
