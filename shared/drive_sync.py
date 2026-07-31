@@ -48,15 +48,25 @@ def garantir_credencial_arquivo():
     faz nada. Chamar SEMPRE antes de qualquer `subprocess.run` que dispare
     um extrator com `--atualizar-do-drive`, nunca dentro de `drive_sync.py`
     em si (que também é importado pelos scripts standalone, fora do
-    contexto do Streamlit)."""
-    if CAMINHO_CREDENCIAIS.exists():
+    contexto do Streamlit).
+
+    Best-effort só — nunca levanta exceção. Se não der pra materializar
+    (secret não configurado nesse deploy, st.secrets indisponível, etc.),
+    simplesmente não faz nada; quem chamou vai bater no erro de verdade
+    (DriveSyncError, já tratado) na próxima chamada real ao Drive/Sheets,
+    em vez de derrubar a página aqui (achado real em produção, 2026-07-31:
+    isso já quebrou a aba Atrasos duas vezes com AttributeError)."""
+    try:
+        if CAMINHO_CREDENCIAIS.exists():
+            return
+        import streamlit as st
+        conteudo = st.secrets.get("GOOGLE_SERVICE_ACCOUNT_JSON")
+        if not conteudo:
+            return
+        CAMINHO_CREDENCIAIS.parent.mkdir(parents=True, exist_ok=True)
+        CAMINHO_CREDENCIAIS.write_text(conteudo, encoding="utf-8")
+    except Exception:
         return
-    import streamlit as st
-    conteudo = st.secrets.get("GOOGLE_SERVICE_ACCOUNT_JSON")
-    if not conteudo:
-        return
-    CAMINHO_CREDENCIAIS.parent.mkdir(parents=True, exist_ok=True)
-    CAMINHO_CREDENCIAIS.write_text(conteudo, encoding="utf-8")
 
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 TEXTO_MIME = "text/plain"
