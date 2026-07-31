@@ -122,7 +122,14 @@ def adicionar_linha(spreadsheet_id, aba, valores):
             insertDataOption="INSERT_ROWS",
             body={"values": [valores]},
         ).execute()
-    except HttpError as e:
+    except DriveSyncError:
+        raise
+    except Exception as e:
+        # Não só HttpError — a lib do Google pode propagar outras exceções
+        # (ex.: AttributeError numa resposta malformada, erro de rede) que
+        # escapavam sem virar DriveSyncError, quebrando a página inteira em
+        # vez do "só um aviso discreto" que todo chamador espera (achado
+        # real em produção, 2026-07-31 — ver justificativas.py).
         raise DriveSyncError(f"Falha ao gravar em {spreadsheet_id}/{aba}: {e}") from e
 
 
@@ -142,7 +149,9 @@ def ler_linhas(spreadsheet_id, aba, intervalo="A:Z", value_render_option="FORMAT
             valueRenderOption=value_render_option,
         ).execute()
         return resposta.get("values", [])
-    except HttpError as e:
+    except DriveSyncError:
+        raise
+    except Exception as e:
         raise DriveSyncError(f"Falha ao ler {spreadsheet_id}/{aba}: {e}") from e
 
 
@@ -157,7 +166,9 @@ def primeira_aba(spreadsheet_id):
             spreadsheetId=spreadsheet_id, fields="sheets.properties.title"
         ).execute()
         return resposta["sheets"][0]["properties"]["title"]
-    except HttpError as e:
+    except DriveSyncError:
+        raise
+    except Exception as e:
         raise DriveSyncError(f"Falha ao consultar abas de {spreadsheet_id}: {e}") from e
 
 
@@ -176,7 +187,9 @@ def sobrescrever_aba(spreadsheet_id, aba, linhas_com_cabecalho):
             spreadsheetId=spreadsheet_id, range=f"{aba}!A1",
             valueInputOption="USER_ENTERED", body={"values": linhas_com_cabecalho},
         ).execute()
-    except HttpError as e:
+    except DriveSyncError:
+        raise
+    except Exception as e:
         raise DriveSyncError(f"Falha ao sobrescrever {spreadsheet_id}/{aba}: {e}") from e
 
 

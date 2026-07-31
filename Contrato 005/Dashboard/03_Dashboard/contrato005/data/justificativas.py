@@ -39,9 +39,15 @@ def carregar_justificativas():
     qualquer outra falha de acesso — nunca quebra a página de Atrasos por
     causa disso."""
     try:
+        drive_sync.garantir_credencial_arquivo()
         aba = drive_sync.primeira_aba(PLANILHA_JUSTIFICATIVAS_ID)
         linhas = drive_sync.ler_linhas(PLANILHA_JUSTIFICATIVAS_ID, aba)
-    except drive_sync.DriveSyncError:
+    except Exception:
+        # Não só DriveSyncError — qualquer falha aqui (credencial, planilha
+        # ainda não compartilhada, erro de rede) não pode derrubar a página
+        # de Atrasos inteira (achado real em produção, 2026-07-31: um
+        # AttributeError não coberto por "except DriveSyncError" quebrava
+        # o site — ver drive_sync.py).
         return pd.DataFrame(columns=COLUNAS)
     if not linhas or len(linhas) < 2:
         return pd.DataFrame(columns=COLUNAS)
@@ -109,6 +115,7 @@ def sincronizar_mes(mes_referencia, tabela_entregas, justificativas_por_emergenc
         mes_referencia, tabela_entregas, justificativas_por_emergencia or {}, todas
     )
     completo = pd.concat([outros_meses, linhas_mes], ignore_index=True)
+    drive_sync.garantir_credencial_arquivo()
     aba = drive_sync.primeira_aba(PLANILHA_JUSTIFICATIVAS_ID)
     valores = [COLUNAS] + completo[COLUNAS].astype(str).values.tolist()
     drive_sync.sobrescrever_aba(PLANILHA_JUSTIFICATIVAS_ID, aba, valores)
