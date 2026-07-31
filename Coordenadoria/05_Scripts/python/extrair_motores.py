@@ -256,7 +256,55 @@ def _extrair_diagonal(wb, inconsistencias):
     return pd.DataFrame(linhas, columns=["serial", "anv", "ano", "mes", "evento", "comentario"])
 
 
-def extrair():
+COLUNAS_FINANCEIRO = ["pacote", "sigla_projeto", "atividade", "tarefa", "categoria", "valor_total"]
+
+# Tabela financeira (Pacote/Sigla Projeto/Atividade/Tarefa/Categoria/Valor
+# Total) da aba "Página7" da planilha de Motores — colunas M/R/S/T/U/AA,
+# transcrita manualmente a partir de uma print do Wallace em 2026-07-28
+# ("da coluna K até V tem valores financeiro").  Tarefas de motor por trás
+# do "Para Motores" do MTA (Material HSI, Reparo de acessórios, Revisão
+# Geral = TBO, Publicações etc.), com o mesmo "Pacote" (A/B/C/RAP) usado no
+# MTA. **Fixa por decisão do Wallace em 2026-07-28** ("vai ser sempre
+# aqueles dados, pode gravar, não vai mudar") — não é lida do Drive (nem
+# por export de arquivo, que trunca essa aba por causa de colunas ocultas +
+# filtro, nem pela API do Sheets, que devolveu a mesma tabela vazia — a aba
+# provavelmente nunca chegou a ser compartilhada com a conta de serviço).
+DADOS_FINANCEIRO_MOTORES = [
+    ("A",   "C-98", "REQUISIÇÃO PUBLICAÇÃO",                    "Maintenance and Overhaul Collection PN 3077123 PT6A-34/114A", "MOTOR", 200000.00),
+    ("A",   "C-98", "CNT 048/CELOG-PAMASP/2022 - PW - Material", "Material HSI PT6A-114A (1/2)",                               "MOTOR", 700000.00),
+    ("B",   "C-98", "CNT 048/CELOG-PAMASP/2022 - PW - Material", "Material HSI PT6A-114A (2/2)",                               "MOTOR", 800000.00),
+    ("A",   "C-98", "Requisição CABW",                           "Material reparo acessórios PT6A-114A (1/3)",                 "MOTOR", 400000.00),
+    ("A",   "C-98", "Requisição CABW",                           "Material reparo acessórios PT6A-114A (2/3)",                 "MOTOR", 400000.00),
+    ("A",   "C-98", "Requisição CABW",                           "Material reparo acessórios PT6A-114A (3/3)",                 "MOTOR", 400000.00),
+    ("A",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - Material",      "Material reparo PT6A-114A (1/3)",                            "MOTOR", 1000000.00),
+    ("B",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - Material",      "Material reparo PT6A-114A (2/3)",                            "MOTOR", 1000000.00),
+    ("B",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - Material",      "Material reparo PT6A-114A (3/3)",                            "MOTOR", 1000000.00),
+    ("A",   "C-98", "REQUISIÇÃO PUBLICAÇÃO",                    "Publicações",                                                 "MOTOR", 563000.00),
+    ("A",   "C-98", "REQUISIÇÃO PUBLICAÇÃO",                    "Publicações de Acessórios PT6A-114A",                         "MOTOR", 320000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "Reparo de CTVR 2 EA (1/2)",                                   "MOTOR", 120000.00),
+    ("C",   "C-98", "REQUISIÇÃO SERVIÇO",                       "Reparo de CTVR 2 EA (2/2)",                                   "MOTOR", 120000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "Reparo de PTVR 2 EA (1/2)",                                   "MOTOR", 80000.00),
+    ("C",   "C-98", "REQUISIÇÃO SERVIÇO",                       "Reparo de PTVR 2 EA (2/2)",                                   "MOTOR", 80000.00),
+    ("RAP", "C-98", "CNT 031/CELOG-PAMASP/2022 - PW - RG",       "Revisão Geral PT6A-114A (1/6)",                              "MOTOR", 3800000.00),
+    ("RAP", "C-98", "CNT 031/CELOG-PAMASP/2022 - PW - RG",       "Revisão Geral PT6A-114A (2/6)",                              "MOTOR", 3800000.00),
+    ("A",   "C-98", "CNT 031/CELOG-PAMASP/2022 - PW - RG",       "Revisão Geral PT6A-114A (3/6)",                              "MOTOR", 3800000.00),
+    ("A",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - XXX - RG",      "Revisão Geral PT6A-114A (4/6)",                              "MOTOR", 3800000.00),
+    ("B",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - XXX - RG",      "Revisão Geral PT6A-114A (5/6)",                              "MOTOR", 3800000.00),
+    ("B",   "C-98", "CNT XXX/CELOG-PAMASP/2026 - XXX - RG",      "Revisão Geral PT6A-114A (6/6)",                              "MOTOR", 3800000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "RG FCU 3 EA (1/2)",                                           "MOTOR", 430000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "RG FCU 3 EA (2/2)",                                           "MOTOR", 430000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "RG Fuel Pump 5 EA (1/1)",                                     "MOTOR", 425000.00),
+    ("A",   "C-98", "REQUISIÇÃO SERVIÇO",                       "RG IGNITION EXCITER 4 EA (1/1)",                             "MOTOR", 60000.00),
+]
+
+
+def _financeiro_existente():
+    """Devolve a tabela financeira fixa (ver DADOS_FINANCEIRO_MOTORES) —
+    não depende de arquivo nem de rede."""
+    return pd.DataFrame(DADOS_FINANCEIRO_MOTORES, columns=COLUNAS_FINANCEIRO)
+
+
+def extrair(df_financeiro=None):
     inconsistencias = []
     wb = openpyxl.load_workbook(ARQUIVO_FONTE, data_only=True)
     df_situacao = _extrair_situacao_generico(wb["SILOMS"], COL_SITUACAO, LINHA_INICIO_SITUACAO)
@@ -264,9 +312,11 @@ def extrair():
     df_os = _extrair_os(wb, inconsistencias)
     df_diagonal = _extrair_diagonal(wb, inconsistencias)
     df_diagonal_meta = _extrair_diagonal_metadados(wb)
+    if df_financeiro is None:
+        df_financeiro = _financeiro_existente()
     return {
         "situacao": df_situacao, "diagonal": df_diagonal, "os": df_os, "helice": df_helice,
-        "diagonal_meta": df_diagonal_meta,
+        "diagonal_meta": df_diagonal_meta, "financeiro": df_financeiro,
     }, inconsistencias
 
 
@@ -310,9 +360,9 @@ def _registrar_historico_diagonal(df_diagonal):
     historico.to_csv(HISTORICO_DIAGONAL, index=False)
 
 
-def main():
+def main(df_financeiro=None):
     DADOS_TRATADOS.mkdir(parents=True, exist_ok=True)
-    dados, inconsistencias = extrair()
+    dados, inconsistencias = extrair(df_financeiro=df_financeiro)
 
     destino = DADOS_TRATADOS / "base_motores_tratada.xlsx"
     with caminho_temporario(destino) as tmp:
@@ -322,6 +372,7 @@ def main():
             dados["os"].to_excel(writer, index=False, sheet_name="OS")
             dados["helice"].to_excel(writer, index=False, sheet_name="Helice")
             dados["diagonal_meta"].to_excel(writer, index=False, sheet_name="DiagonalMeta")
+            dados["financeiro"].to_excel(writer, index=False, sheet_name="Financeiro")
 
     _registrar_historico_situacao(dados["situacao"])
     _registrar_historico_diagonal(dados["diagonal"])
@@ -343,12 +394,16 @@ def main():
 
 def atualizar_do_drive():
     """Busca a versão mais recente direto do Google Drive, sobrescreve a
-    cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md."""
+    cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md.
+
+    A tabela financeira (aba "Página7") não entra nessa busca — é fixa
+    (ver DADOS_FINANCEIRO_MOTORES), `main()` já usa ela por padrão."""
     try:
         metadados = drive_sync.obter_metadados(DRIVE_FILE_ID)
         conteudo = drive_sync.baixar_arquivo(DRIVE_FILE_ID, exportar_como=drive_sync.XLSX_MIME)
         ARQUIVO_FONTE.parent.mkdir(parents=True, exist_ok=True)
         ARQUIVO_FONTE.write_bytes(conteudo)
+
         dados = main()
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "motores",

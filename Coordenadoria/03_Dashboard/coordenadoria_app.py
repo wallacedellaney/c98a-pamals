@@ -12,27 +12,11 @@ principal "C-98A PAMALS" (ver ../../app.py), com um botão de voltar.
 import streamlit as st
 
 from shared import horario
-from shared.verificacao_ao_vivo import criar_verificador
 from coordenadoria.components.fontes_dados import secao_fontes_dados
 from coordenadoria.components.paleta import AMBER, SECONDARY, LINE, PANEL, STATUS, INK
 from coordenadoria.data.carregar_dados import carregar_tudo
 from coordenadoria.secoes import dashboard_geral, rac, disponibilidade_diaria, diagonal_manutencao, vencimentos, motores, previsao_mensal
-from coordenadoria.utils import atualizar_dados_rac, garantir_disponibilidade_atualizada
-
-# Verificação ao vivo (2026-07-27, ver shared/verificacao_ao_vivo.py) — RAC,
-# Vencimentos TMOT e Motores também têm `atualizar_do_drive()` própria, mas
-# só a Disponibilidade Diária tinha o mecanismo de "confere sozinho ao
-# abrir o site" até agora (Wallace: "nada roda automatico ja descobri, ruim
-# demais ne"). Vencimentos por Operador e Diagonal de Manutenção continuam
-# de fora de propósito — são manuais mesmo, cada operador manda diferente
-# (ver 00_Instrucoes/vencimentos.md).
-import extrair_rac
-import extrair_vencimentos
-import extrair_motores
-
-_verificar_rac = criar_verificador("RAC", extrair_rac.atualizar_do_drive)
-_verificar_vencimentos = criar_verificador("Vencimentos TMOT", extrair_vencimentos.atualizar_do_drive)
-_verificar_motores = criar_verificador("Motores", extrair_motores.atualizar_do_drive)
+from coordenadoria.utils import atualizar_dados_rac
 
 PAGINAS = {
     "Dashboard": dashboard_geral,
@@ -49,16 +33,7 @@ def render(ao_voltar=None):
     if "coord_pagina" not in st.session_state:
         st.session_state["coord_pagina"] = "Dashboard"
 
-    # Antes de carregar qualquer dado — garante que a Disponibilidade Diária
-    # está em dia (busca no Drive na hora se hoje ainda não tiver relatório
-    # salvo), pra QUALQUER página da Coordenadoria já usar dado fresco (não
-    # só a própria tela de Disponibilidade Diária). Ver docstring da função.
-    status_disponibilidade = garantir_disponibilidade_atualizada()
-    _verificar_rac()
-    _verificar_vencimentos()
-    _verificar_motores()
     dados = carregar_tudo()
-    dados["disp_status_atualizacao"] = status_disponibilidade
 
     st.markdown(
         f"""<style>

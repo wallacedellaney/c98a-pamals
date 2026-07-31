@@ -141,6 +141,35 @@ def _preparar_tabela(df, colunas_data=(), colunas_hora=(), colunas_fabricante=()
     return df.fillna("—")
 
 
+def _moeda_completa(valor):
+    if valor is None or pd.isna(valor):
+        return "—"
+    return f"R$ {valor:,.2f}".replace(",", "_").replace(".", ",").replace("_", ".")
+
+
+def _moeda_compacta(valor):
+    if valor is None or pd.isna(valor):
+        return "—"
+    if abs(valor) >= 1_000_000:
+        return f"R$ {valor / 1_000_000:.1f} mi".replace(".", ",")
+    if abs(valor) >= 1_000:
+        return f"R$ {valor / 1_000:.0f} mil"
+    return _moeda_completa(valor)
+
+
+def _tipo_tarefa_financeiro(tarefa):
+    t = str(tarefa).upper()
+    if "REVISÃO GERAL" in t or "REVISAO GERAL" in t:
+        return "Revisão Geral (TBO)"
+    if "HSI" in t:
+        return "HSI"
+    if "REPARO" in t:
+        return "Reparo de acessórios"
+    if "PUBLICA" in t or "OVERHAUL COLLECTION" in t:
+        return "Publicação/Documentação"
+    return "Outro"
+
+
 def _card_indicador(col, icone, valor, label, sub, cor):
     with col:
         st.markdown(
@@ -184,7 +213,11 @@ def render(dados):
     with aba_geral:
         _aba_visao_geral(situacao, "motor", "motores_sit", historico=dados.get("motores_historico_situacao"))
     with aba_diagonal:
-        _aba_diagonal(dados.get("motores_diagonal"), situacao, historico=dados.get("motores_historico_diagonal"))
+        _aba_diagonal(
+            dados.get("motores_diagonal"), situacao,
+            historico=dados.get("motores_historico_diagonal"),
+            financeiro=dados.get("motores_financeiro"),
+        )
     with aba_os:
         _aba_os(dados.get("motores_os"))
     with aba_helice:
@@ -301,7 +334,94 @@ def _aba_visao_geral(df, rotulo, key_sufixo, historico=None):
             )
 
 
-def _aba_diagonal(df, situacao, historico=None):
+def _secao_financeiro(eventos, df_financeiro):
+    """Cruza o dinheiro alocado pra Motores (Pacote/Atividade/Tarefa/Valor,
+    aba "Página7" da planilha de Motores) com o calendário de TBO/HSI da
+    Diagonal — pedido do Wallace em 2026-07-28: "estuda elas, na diagonal de
+    motores tem oq precisa né, HSI, TBO (TBO) é revisão geral... mas esse
+    dinheiro até o final do ano geralmente tem que dar até março do outro
+    ano" (o empenho de um ciclo precisa cobrir a execução até março do ano
+    seguinte, mesma lógica de defasagem/RAP vista no Contrato 005/MTA).
+
+    **Dado fixo** (transcrito de uma print do Wallace em 2026-07-28, ver
+    `DADOS_FINANCEIRO_MOTORES` em `extrair_motores.py`) — a aba "Página7" da
+    planilha "MOTORES C-98" tem colunas ocultas + filtro que nem o export de
+    arquivo nem a API do Sheets conseguiram ler (aba nunca chegou a ser
+    compartilhada com a conta de serviço). Confirmado pelo Wallace que esses
+    valores não mudam ("vai ser sempre aqueles dados, pode gravar, não vai
+    mudar") — por isso fixo no código em vez de tentar sincronizar."""
+    st.markdown("##### Análise financeira — TBO/HSI/Reparo (Página7)")
+    if df_financeiro is None or df_financeiro.empty:
+        st.info('Sem dados financeiros carregados — clique em "Atualizar dados" acima.')
+        return
+
+    fin = df_financeiro.copy()
+    fin["valor_total"] = pd.to_numeric(fin["valor_total"], errors="coerce")
+    fin["tipo"] = fin["tarefa"].apply(_tipo_tarefa_financeiro)
+    eh_rap = fin["pacote"] == "RAP"
+
+    valor_total = fin["valor_total"].sum(skipna=True)
+    valor_rap = fin.loc[eh_rap, "valor_total"].sum(skipna=True)
+    valor_normal = fin.loc[~eh_rap, "valor_total"].sum(skipna=True)
+    valor_tbo = fin.loc[fin["tipo"] == "Revisão Geral (TBO)", "valor_total"].sum(skipna=True)
+    valor_hsi = fin.loc[fin["tipo"] == "HSI", "valor_total"].sum(skipna=True)
+
+    l1 = st.columns(4)
+    _card_indicador(l1[0], "💰", _moeda_compacta(valor_total), "Valor total alocado", "Pacote A/B/C/RAP", INK)
+    _card_indicador(l1[1], "🔴", _moeda_compacta(valor_rap), "RAP (resto a pagar)",
+                     "prioridade — ciclo anterior" if valor_rap else "sem RAP no momento",
+                     STATUS["critical"] if valor_rap else STATUS["good"])
+    _card_indicador(l1[2], "🔧", _moeda_compacta(valor_tbo), "Revisão Geral (TBO)", "material + serviço", AMBER)
+    _card_indicador(l1[3], "🛠️", _moeda_compacta(valor_hsi), "HSI", "material", CYAN)
+
+    # "Esse dinheiro... tem que dar até março do outro ano" — janela até
+    # 31/mar do ano seguinte, mesma lógica de carência do Contrato 005/MTA.
+    if eventos is not None and not eventos.empty:
+        ano_corrente = horario.hoje_br().year
+        data_alvo = pd.Timestamp(year=ano_corrente + 1, month=3, day=31)
+        ate_marco = eventos[eventos["periodo"] <= data_alvo]
+        st.caption(
+            f"**{len(ate_marco)} evento(s) de TBO/HSI** (vencidos + projetados) até 31/03/{ano_corrente + 1} "
+            f"— o valor acima (sobretudo o saldo fora do RAP, {_moeda_compacta(valor_normal)}) precisa cobrir "
+            "esse período, não só até o fim deste ano."
+        )
+
+    st.caption(
+        "Classificação de tipo (TBO/HSI/Reparo/Publicação) é heurística, a partir do texto da Tarefa — "
+        "e a correspondência entre parcela financeira e evento físico da Diagonal ainda não foi confirmada "
+        "1 a 1 com o Wallace."
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.caption("Valor por pacote")
+        agrupado = fin.groupby("pacote", dropna=True)["valor_total"].sum(min_count=1).reset_index().sort_values("valor_total")
+        fig = px.bar(agrupado, x="valor_total", y="pacote", orientation="h", color_discrete_sequence=[AMBER])
+        fig.update_traces(text=[_moeda_compacta(v) for v in agrupado["valor_total"]], textposition="outside", cliponaxis=False)
+        fig.update_layout(xaxis_title="", yaxis_title="", yaxis={"type": "category"})
+        layout_grafico(fig, altura=280)
+        st.plotly_chart(fig, width="stretch", key="motores_fin_pacote")
+
+    with col2:
+        st.caption("Valor por tipo de tarefa")
+        agrupado = fin.groupby("tipo", dropna=True)["valor_total"].sum(min_count=1).reset_index().sort_values("valor_total")
+        fig = px.bar(agrupado, x="valor_total", y="tipo", orientation="h", color_discrete_sequence=[CYAN])
+        fig.update_traces(text=[_moeda_compacta(v) for v in agrupado["valor_total"]], textposition="outside", cliponaxis=False)
+        fig.update_layout(xaxis_title="", yaxis_title="", yaxis={"type": "category"})
+        layout_grafico(fig, altura=280)
+        st.plotly_chart(fig, width="stretch", key="motores_fin_tipo")
+
+    with st.expander("📋 Tabela completa (Página7)"):
+        tabela = fin.copy()
+        tabela["valor_total"] = tabela["valor_total"].apply(_moeda_completa)
+        tabela = tabela.rename(columns={
+            "pacote": "Pacote", "sigla_projeto": "Projeto", "atividade": "Atividade",
+            "tarefa": "Tarefa", "categoria": "Categoria", "valor_total": "Valor total", "tipo": "Tipo",
+        })
+        st.dataframe(tabela, hide_index=True, width="stretch", height=340)
+
+
+def _aba_diagonal(df, situacao, historico=None, financeiro=None):
     if df is None or df.empty:
         st.info("Sem dados de Diagonal carregados.")
         return
@@ -388,6 +508,8 @@ def _aba_diagonal(df, situacao, historico=None):
         layout_grafico(fig, altura=max(280, 28 * linha_tempo["rotulo"].nunique()))
         st.plotly_chart(fig, width="stretch", key="motores_diag_timeline")
         st.caption("Listrado (╱) = célula com comentário anexado na planilha original — passe o mouse pra ler.")
+
+    _secao_financeiro(eventos, financeiro)
 
     with st.expander("📋 Tabela completa (todos os marcadores da grade, incl. fora de TBO/HSI)"):
         bruto = df.copy()

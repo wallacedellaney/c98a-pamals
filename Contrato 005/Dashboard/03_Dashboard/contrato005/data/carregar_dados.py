@@ -31,6 +31,22 @@ def carregar_emergencias():
     return _ler_excel(str(caminho), mtime), mtime
 
 
+@st.cache_data
+def _historico_com_data_convertida(caminho_str, _mtime, dtype=None):
+    """Lê o histórico e já converte "data_snapshot" pra datetime uma vez só,
+    em cache — sem isso, cada consumidor (slider de data global, comparação
+    de período, Empréstimos, Análise de Período...) refazia
+    `pd.to_datetime()` na coluna inteira a cada rerun do Streamlit (todo
+    clique), sobre até ~13 mil linhas somadas — achado real: "ta lendo o
+    005, so ele, o c98 nao, cada clique ta carregando, devagar" (2026-07-30).
+    Com a coluna já convertida aqui, as chamadas repetidas de
+    `pd.to_datetime()` nos consumidores viram passthrough barato (já é
+    datetime64), não parsing de string de novo."""
+    df = pd.read_csv(caminho_str, dtype=dtype or {})
+    df["data_snapshot"] = pd.to_datetime(df["data_snapshot"])
+    return df
+
+
 def carregar_historico_emergencias():
     """Snapshot diário das emergências em aberto, acumulado desde 2026-07-06
     (não existe histórico anterior a essa data). Ver emergencias.md."""
@@ -42,9 +58,7 @@ def carregar_historico_emergencias():
             "estoque",
         ])
     mtime = caminho.stat().st_mtime
-    df = _ler_csv(str(caminho), mtime, dtype={"matricula_aeronave": str, "numero_emergencia": str})
-    df["data_snapshot"] = pd.to_datetime(df["data_snapshot"])
-    return df
+    return _historico_com_data_convertida(str(caminho), mtime, dtype={"matricula_aeronave": str, "numero_emergencia": str})
 
 
 def carregar_emergencias_totais():
@@ -141,12 +155,13 @@ def carregar_reparaveis():
 def _carregar_historico_generico(nome_arquivo, dtype=None):
     """Loader genérico pros históricos diários usados no controle de data
     global (ver components/data_global.py) — todos seguem o mesmo formato
-    (1 coluna data_snapshot + colunas específicas da fonte)."""
+    (1 coluna data_snapshot + colunas específicas da fonte). "data_snapshot"
+    já sai convertida pra datetime (ver _historico_com_data_convertida)."""
     caminho = DADOS_TRATADOS / nome_arquivo
     if not caminho.exists():
         return pd.DataFrame(columns=["data_snapshot"])
     mtime = caminho.stat().st_mtime
-    return _ler_csv(str(caminho), mtime, dtype=dtype or {})
+    return _historico_com_data_convertida(str(caminho), mtime, dtype=dtype)
 
 
 def carregar_historico_reparaveis():

@@ -32,6 +32,13 @@ COLUNAS_HISTORICO = [
     "valor_nfs", "faturado", "pendente", "situacao",
 ]
 
+# Snapshot diário da aba EMPENHOS — pedido do Wallace em 2026-07-28: entre o
+# MTA marcar uma parcela "Atendido" e ela aparecer como empenho real aqui
+# pode ter atraso; com o histórico dá pra sempre achar quando um NE
+# apareceu/mudou de saldo, "o dinheiro nunca some" mesmo com esse delay.
+HISTORICO_EMPENHOS = DADOS_TRATADOS / "historico_empenhos.csv"
+COLUNAS_HISTORICO_EMPENHOS = ["numero_empenho", "valor_empenhado", "saldo", "responsavel", "justificativa"]
+
 # Colunas C..N da aba Controle de Pagamentos (mesma estrutura nos dois blocos de
 # lançamentos: mensal e por módulo/orçamento). Ver pagamentos.md.
 COLS_PAGAMENTO = [
@@ -247,7 +254,7 @@ def main():
     if inconsistencias:
         print(f"{len(inconsistencias)} inconsistência(s) encontrada(s), ver log em 06_Logs/.")
 
-    return df
+    return df, df_empenhos
 
 
 def _registrar_historico(df):
@@ -266,6 +273,23 @@ def _registrar_historico(df):
     historico.to_csv(HISTORICO_PAGAMENTOS, index=False)
 
 
+def _registrar_historico_empenhos(df_empenhos):
+    """Acrescenta o snapshot de hoje da aba EMPENHOS (1 linha por NE) — se já
+    rodou hoje antes, substitui só as linhas de hoje (não duplica). Ver
+    HISTORICO_EMPENHOS acima."""
+    hoje = horario.hoje_br().isoformat()
+    novo = df_empenhos[COLUNAS_HISTORICO_EMPENHOS].copy()
+    novo.insert(0, "data_snapshot", hoje)
+
+    if HISTORICO_EMPENHOS.exists():
+        historico = pd.read_csv(HISTORICO_EMPENHOS, dtype={"numero_empenho": str})
+        historico = historico[historico["data_snapshot"] != hoje]
+        historico = pd.concat([historico, novo], ignore_index=True)
+    else:
+        historico = novo
+    historico.to_csv(HISTORICO_EMPENHOS, index=False)
+
+
 def atualizar_do_drive():
     """Busca a versão mais recente direto do Google Drive, sobrescreve a
     cópia local e reprocessa. Ver 00_Instrucoes/atualizacoes.md."""
@@ -274,8 +298,9 @@ def atualizar_do_drive():
         conteudo = drive_sync.baixar_arquivo(DRIVE_FILE_ID, exportar_como=drive_sync.XLSX_MIME)
         XLSX_PAGAMENTOS.parent.mkdir(parents=True, exist_ok=True)
         XLSX_PAGAMENTOS.write_bytes(conteudo)
-        df = main()
+        df, df_empenhos = main()
         _registrar_historico(df)
+        _registrar_historico_empenhos(df_empenhos)
         estado.atualizar_estado(
             ESTADO_ATUALIZACOES, "pagamentos",
             remote_modified_time=metadados["modifiedTime"],

@@ -23,30 +23,6 @@ ORDEM_SITUACAO = ["DI", "DO", "II", "IN", "ITR", "IS", "IP"]
 FILTRO_KEYS = ["disp_f_unidade", "disp_f_situacao", "disp_f_busca"]
 
 
-def _secao_status_atualizacao(status, datas):
-    """Mostra quando a Coordenadoria checou o Drive por último (a busca em
-    si roda central, em coordenadoria_app.py::render(), antes de qualquer
-    página carregar dados — ver garantir_disponibilidade_atualizada()) e se
-    o relatório mais recente já é o de hoje — "se tiver desatualizado, se
-    encomode": avisa visivelmente em vez de ficar quieto."""
-    if not status:
-        return
-    hoje = horario.hoje_br()
-    mais_recente = datas[0] if datas else None
-    verificado_em = status["verificado_em"].strftime("%H:%M")
-
-    if status.get("erro"):
-        st.warning(f"⚠️ Não consegui verificar o Drive agora ({verificado_em}): {status['erro']}")
-    elif mais_recente is not None and hoje.weekday() < 5 and mais_recente < hoje:
-        dias_atras = (hoje - mais_recente).days
-        st.warning(
-            f"⚠️ Relatório desatualizado — o mais recente é de **{mais_recente.strftime('%d/%m/%Y')}** "
-            f"({dias_atras} dia(s) atrás), ainda não saiu o de hoje. Última verificação no Drive: {verificado_em}."
-        )
-    else:
-        st.caption(f"✅ Relatório em dia. Última verificação no Drive: **{verificado_em}**.")
-
-
 def render(dados):
     if st.session_state.get("disp_aeronave_selecionada"):
         _detalhe_aeronave(dados, st.session_state["disp_aeronave_selecionada"])
@@ -68,7 +44,6 @@ def render(dados):
     _estilo()
 
     datas = sorted(relatorios["data_referencia"].dt.date.unique(), reverse=True)
-    _secao_status_atualizacao(dados.get("disp_status_atualizacao", {}), datas)
 
     if "disp_idx" not in st.session_state:
         st.session_state["disp_idx"] = 0

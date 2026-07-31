@@ -126,16 +126,58 @@ def adicionar_linha(spreadsheet_id, aba, valores):
         raise DriveSyncError(f"Falha ao gravar em {spreadsheet_id}/{aba}: {e}") from e
 
 
-def ler_linhas(spreadsheet_id, aba):
-    """Lê todas as linhas de `aba` (lista de listas, primeira linha = cabeçalho)."""
+def ler_linhas(spreadsheet_id, aba, intervalo="A:Z", value_render_option="FORMATTED_VALUE"):
+    """Lê todas as linhas de `aba` (lista de listas, primeira linha =
+    cabeçalho) via API do Google Sheets — ao contrário de `baixar_arquivo`
+    (export de arquivo .xlsx), não sofre com colunas ocultas/filtro que
+    fazem o export truncar abas inteiras (achado na aba "Página7" de
+    Motores em 2026-07-28, ver `Coordenadoria/00_Instrucoes/motores.md`).
+    `intervalo` é só a parte "A1:AB100" (sem o nome da aba, que entra
+    separado). `value_render_option="UNFORMATTED_VALUE"` devolve número cru
+    em vez do texto formatado (ex.: 200000.0 em vez de "R$ 200.000,00")."""
     try:
         servico = _obter_servico_sheets()
         resposta = servico.spreadsheets().values().get(
-            spreadsheetId=spreadsheet_id, range=f"{aba}!A:Z",
+            spreadsheetId=spreadsheet_id, range=f"{aba}!{intervalo}",
+            valueRenderOption=value_render_option,
         ).execute()
         return resposta.get("values", [])
     except HttpError as e:
         raise DriveSyncError(f"Falha ao ler {spreadsheet_id}/{aba}: {e}") from e
+
+
+def primeira_aba(spreadsheet_id):
+    """Nome da primeira aba de uma planilha — usado quando criamos a
+    planilha via API do Drive (create_file) e não sabemos se o Google deu o
+    nome padrão em inglês ("Sheet1") ou em português ("Página1"), sem
+    precisar abrir a planilha manualmente pra conferir."""
+    try:
+        servico = _obter_servico_sheets()
+        resposta = servico.spreadsheets().get(
+            spreadsheetId=spreadsheet_id, fields="sheets.properties.title"
+        ).execute()
+        return resposta["sheets"][0]["properties"]["title"]
+    except HttpError as e:
+        raise DriveSyncError(f"Falha ao consultar abas de {spreadsheet_id}: {e}") from e
+
+
+def sobrescrever_aba(spreadsheet_id, aba, linhas_com_cabecalho):
+    """Limpa `aba` inteira e regrava com `linhas_com_cabecalho` (lista de
+    listas, primeira linha = cabeçalho) — forma mais simples de "upsert" pra
+    planilhas pequenas (poucas centenas de linhas), sem precisar calcular
+    qual linha específica mudou. A planilha precisa estar compartilhada como
+    EDITOR com a conta de serviço."""
+    try:
+        servico = _obter_servico_sheets()
+        servico.spreadsheets().values().clear(
+            spreadsheetId=spreadsheet_id, range=f"{aba}!A:Z", body={}
+        ).execute()
+        servico.spreadsheets().values().update(
+            spreadsheetId=spreadsheet_id, range=f"{aba}!A1",
+            valueInputOption="USER_ENTERED", body={"values": linhas_com_cabecalho},
+        ).execute()
+    except HttpError as e:
+        raise DriveSyncError(f"Falha ao sobrescrever {spreadsheet_id}/{aba}: {e}") from e
 
 
 def obter_metadados(file_id):

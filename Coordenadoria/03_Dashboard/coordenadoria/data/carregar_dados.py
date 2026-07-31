@@ -86,7 +86,7 @@ def carregar_motores():
     00_Instrucoes/motores.md."""
     caminho = DADOS_TRATADOS / "base_motores_tratada.xlsx"
     if not caminho.exists():
-        return None, None, None, None, None, None
+        return None, None, None, None, None, None, None
     mtime = caminho.stat().st_mtime
     # dtype=str nos campos identificadores — sem isso, o pandas relê "2702"
     # do Excel como número (openpyxl/Excel não guarda "isso é texto" pra
@@ -100,11 +100,12 @@ def carregar_motores():
     })
     helice = _ler_excel(str(caminho), mtime, sheet_name="Helice", dtype=dtype_id)
     diagonal_meta = _ler_excel(str(caminho), mtime, sheet_name="DiagonalMeta", dtype={"serial": str})
+    financeiro = _ler_excel(str(caminho), mtime, sheet_name="Financeiro")
     for df in (situacao, diagonal, os_df, helice):
         for coluna in df.columns:
             if coluna.startswith("data_") or coluna == "data_status" or coluna.endswith("_prev") or coluna.endswith("_real"):
                 df[coluna] = pd.to_datetime(df[coluna], errors="coerce")
-    return situacao, diagonal, os_df, helice, diagonal_meta, mtime
+    return situacao, diagonal, os_df, helice, diagonal_meta, financeiro, mtime
 
 
 def carregar_historico_motores_situacao():
@@ -138,7 +139,7 @@ def carregar_tudo():
     tmot, mtime_venc = carregar_vencimentos()
     venc_operadores, mtime_venc_op = carregar_vencimentos_operadores()
     diagonal, mtime_diagonal = carregar_diagonal_manutencao()
-    motores_situacao, motores_diagonal, motores_os, motores_helice, motores_diagonal_meta, mtime_motores = carregar_motores()
+    motores_situacao, motores_diagonal, motores_os, motores_helice, motores_diagonal_meta, motores_financeiro, mtime_motores = carregar_motores()
     return {
         "rac_aeronaves": aeronaves,
         "rac_pendencias": pendencias,
@@ -158,6 +159,7 @@ def carregar_tudo():
         "motores_os": motores_os,
         "motores_helice": motores_helice,
         "motores_diagonal_meta": motores_diagonal_meta,
+        "motores_financeiro": motores_financeiro,
         "motores_atualizado_em": mtime_motores,
         "motores_historico_situacao": carregar_historico_motores_situacao(),
         "motores_historico_diagonal": carregar_historico_motores_diagonal(),
