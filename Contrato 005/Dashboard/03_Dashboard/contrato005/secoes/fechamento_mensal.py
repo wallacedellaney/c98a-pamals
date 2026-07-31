@@ -475,7 +475,13 @@ def _computo_mensal(mes_escolhido):
     styler = pivot.style.format(precision=0, na_rep="").apply(_cor_linha, axis=1)
     styler = styler.format(lambda v: "" if pd.isna(v) else f"{v:.0f}%", subset=pd.IndexSlice[["% Montadas"], :])
 
-    altura_tabela = min(35 * (len(pivot) + 1) + 3, 700)
+    # Sem teto de altura (era min(..., 700)) — Wallace: "arruma o fechamento
+    # para nao prcisar rolar o mapa de aeronaves montadas, se eu quiser ver
+    # tudo ja ta ali, preciso ficar rolando a tela". Com o teto, a matriz
+    # inteira (30+ aeronaves) não cabia nos 700px e ganhava uma barra de
+    # rolagem PRÓPRIA, além da rolagem da página — agora a tabela cresce o
+    # necessário pra mostrar todas as linhas de uma vez, só a página rola.
+    altura_tabela = 35 * (len(pivot) + 1) + 3
     colunas_config = {
         coluna: st.column_config.NumberColumn(width="small") for coluna in pivot.columns
     }
