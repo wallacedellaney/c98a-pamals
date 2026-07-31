@@ -1,0 +1,85 @@
+*C-98 - 30/07/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+17 D / 21 M
+(12 DI / 05 DO / 02 II / 03 IN / 00 ITR / 05 IS / 02 IP)
+ 
+*Previsão até o final do dia: 19 D / 21 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis:* 19
+- 2733, 2743
+
+
+*Montadas:* 22
+- 2721
+
+
+*Esforço  Aéreo*
+Anual: 10070:00 / 5132:10 / 50,96% 
+
+
+*Motores disponíveis: 22*
+
+
+*CLA*
+[ ] 2723 - IN - Realizando instalação de hélice. - DPE: 04/08
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*PAMA-LS*
+[ ] 2704 - DI
+[ ] 2706 - IP - 75 APE- DPE: A ser definido.
+[ ] 2724 - IP - ANV acidentada.
+[ ] 2726 - IS - 91 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2728 - IN - REALIZANDO SERVIÇO DE MONTAGEM APÓS A AVALIAÇÃO DE SINISTRO - DPE: 30/09
+[ ] 2730 - IS - SEM MOTOR - 44 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+[ ] 2743 - IN - "DEICE BOOT" da hélice danificado, hélice já foi reparada e entregue à TAOP - DPE: 30/07.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - II - ANV realizando inspeção programada ID5-15-06/+4200FH/48M - DPE: 30/07
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2702 - DI
+[ ] 2703 - DO
+[ ] 2708 - DO
+[ ] 2729 - II - Realizando inspeções ID 0A,02,07,10,11,12,21,22 / 2900FH/HSI/ COR 48M - DPE: 14/08
+
+
+*2º ETA*
+[ ] 2719 - DI
+[ ] 2722 - DO
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - DI
+[ ] 2721 - IS - Motor recolhido para reparo na geradora de gases - DPE: 03/08
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2738 - DI
+[ ] 2740 - DI
+[ ] 2741 - DO
