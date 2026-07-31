@@ -22,6 +22,7 @@ if str(SCRIPTS_PYTHON) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_PYTHON))
 
 from contrato005.data.carregar_dados import carregar_computo_mensal
+from contrato005.data.justificativas import carregar_justificativas, salvar_justificativas_mes
 from calcular_computo_mensal import _tem_comentario_cancelamento
 
 MESES_PT = [
@@ -198,12 +199,13 @@ def _atrasos(dados, mes_escolhido):
     if total_abertas:
         tabela_abertas = abertas[[
             "numero_emergencia", "pn", "nomenclatura", "matricula_aeronave", "tpemg", "situacao",
-            "data_abertura", "prazo_entrega", "dias_atraso",
+            "data_abertura", "prazo_entrega", "dias_atraso", "obs_coordenadoria_fiscal", "obs_vee_one",
         ]].rename(columns={
             "numero_emergencia": "Emergência", "pn": "PN", "nomenclatura": "Nomenclatura",
             "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
             "situacao": "Situação", "data_abertura": "Abertura", "prazo_entrega": "Prazo",
-            "dias_atraso": "Dias de atraso",
+            "dias_atraso": "Dias de atraso", "obs_coordenadoria_fiscal": "Obs. Coordenadoria",
+            "obs_vee_one": "Obs. VEE ONE",
         }).sort_values("Dias de atraso", ascending=False)
         st.dataframe(tabela_abertas, hide_index=True, width="stretch", height=min(35 * (len(tabela_abertas) + 1) + 3, 320))
     else:
@@ -288,12 +290,14 @@ def _atrasos(dados, mes_escolhido):
     tabela = filtrado[[
         "numero_emergencia", "pn", "nomenclatura", "matricula_aeronave", "tpemg", "data_abertura",
         "prazo_entrega", "atendido_cancelado_fmt", "dias_atraso", "situacao_prazo",
+        "obs_coordenadoria_fiscal", "obs_vee_one",
     ]].rename(columns={
         "numero_emergencia": "Emergência", "pn": "PN", "nomenclatura": "Nomenclatura",
         "matricula_aeronave": "Aeronave", "tpemg": "Tipo",
         "data_abertura": "Abertura", "prazo_entrega": "Prazo",
         "atendido_cancelado_fmt": "Cancelamento/conclusão", "dias_atraso": "Dias de atraso",
-        "situacao_prazo": "Situação",
+        "situacao_prazo": "Situação", "obs_coordenadoria_fiscal": "Obs. Coordenadoria",
+        "obs_vee_one": "Obs. VEE ONE",
     })
     evento = st.dataframe(
         tabela, hide_index=True, width="stretch", height=min(35 * (len(tabela) + 1) + 3, 420),
@@ -303,8 +307,76 @@ def _atrasos(dados, mes_escolhido):
     if linhas_sel:
         _detalhe_emergencia(filtrado.iloc[linhas_sel[0]].to_dict())
 
-    csv = tabela.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Exportar (CSV)", csv, file_name=f"atrasos_{mes_escolhido}.csv", mime="text/csv")
+    st.divider()
+    _justificativas_mes(mes_escolhido, filtrado)
+
+    justificativas_todas = carregar_justificativas()
+    mes_ref_str = str(mes_escolhido)
+    mapa_justificativa = dict(zip(
+        justificativas_todas.loc[justificativas_todas["mes_referencia"] == mes_ref_str, "numero_emergencia"],
+        justificativas_todas.loc[justificativas_todas["mes_referencia"] == mes_ref_str, "justificativa_empresa"],
+    ))
+    tabela_export = tabela.copy()
+    tabela_export["Justificativa (empresa)"] = tabela_export["Emergência"].astype(str).map(mapa_justificativa).fillna("")
+    csv = tabela_export.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        "⬇️ Exportar com justificativas (CSV)", csv, file_name=f"atrasos_{mes_escolhido}.csv", mime="text/csv",
+    )
+
+
+def _justificativas_mes(mes_escolhido, concluidas_mes):
+    """Campo editável pra empresa (VEE ONE) escrever a justificativa de cada
+    atraso do mês — só habilita depois que o mês de referência termina de
+    verdade (pedido do Wallace, 2026-07-30: "sempre no fechamento mensal do
+    mes, depois do dia 31 que habilita"), pra não editar um mês ainda em
+    andamento. Persiste numa planilha própria do Drive (ver
+    contrato005/data/justificativas.py), preservando os outros meses já
+    salvos a cada gravação."""
+    st.markdown("##### 📝 Justificativas da empresa (VEE ONE)")
+
+    mes_ref_str = str(mes_escolhido)
+    fim_mes = mes_escolhido.end_time.normalize()
+    hoje = pd.Timestamp(horario.hoje_br()).normalize()
+    mes_encerrado = hoje > fim_mes
+
+    justificativas_todas = carregar_justificativas()
+    justificativas_mes = justificativas_todas[justificativas_todas["mes_referencia"] == mes_ref_str]
+    mapa = dict(zip(justificativas_mes["numero_emergencia"], justificativas_mes["justificativa_empresa"]))
+
+    base = concluidas_mes[[
+        "numero_emergencia", "pn", "matricula_aeronave", "obs_coordenadoria_fiscal", "obs_vee_one",
+    ]].rename(columns={
+        "numero_emergencia": "Emergência", "pn": "PN", "matricula_aeronave": "Aeronave",
+        "obs_coordenadoria_fiscal": "Obs. Coordenadoria", "obs_vee_one": "Obs. VEE ONE",
+    }).copy()
+    base["Justificativa"] = base["Emergência"].astype(str).map(mapa).fillna("")
+
+    if not mes_encerrado:
+        st.info(
+            f"O campo de justificativa habilita para edição depois que **{_formatar_mes(mes_escolhido)}** "
+            "terminar (após o último dia do mês) — mostrando só leitura por enquanto."
+        )
+        st.dataframe(base, hide_index=True, width="stretch", height=min(35 * (len(base) + 1) + 3, 380))
+        return
+
+    st.caption("Mês encerrado — a empresa já pode escrever/editar a justificativa de cada atraso abaixo.")
+    editada = st.data_editor(
+        base, hide_index=True, width="stretch", height=min(35 * (len(base) + 1) + 3, 380),
+        disabled=["Emergência", "PN", "Aeronave", "Obs. Coordenadoria", "Obs. VEE ONE"],
+        key=f"justificativas_editor_{mes_ref_str}",
+    )
+    if st.button("💾 Salvar justificativas", key=f"justificativas_salvar_{mes_ref_str}"):
+        try:
+            salvar_justificativas_mes(
+                mes_referencia=mes_ref_str,
+                numeros_emergencia=editada["Emergência"].tolist(),
+                textos=editada["Justificativa"].tolist(),
+                agora_str=pd.Timestamp(horario.hoje_br()).strftime("%Y-%m-%d %H:%M"),
+            )
+            st.success("Justificativas salvas no Drive.")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Falha ao salvar no Drive: {e}")
 
 
 def _apresentacao_rma(mes_escolhido):
@@ -475,7 +547,13 @@ def _computo_mensal(mes_escolhido):
     styler = pivot.style.format(precision=0, na_rep="").apply(_cor_linha, axis=1)
     styler = styler.format(lambda v: "" if pd.isna(v) else f"{v:.0f}%", subset=pd.IndexSlice[["% Montadas"], :])
 
-    altura_tabela = min(35 * (len(pivot) + 1) + 3, 700)
+    # Sem teto de altura (era min(..., 700)) — Wallace: "arruma o fechamento
+    # para nao prcisar rolar o mapa de aeronaves montadas, se eu quiser ver
+    # tudo ja ta ali, preciso ficar rolando a tela". Com o teto, a matriz
+    # inteira (30+ aeronaves) não cabia nos 700px e ganhava uma barra de
+    # rolagem PRÓPRIA, além da rolagem da página — agora a tabela cresce o
+    # necessário pra mostrar todas as linhas de uma vez, só a página rola.
+    altura_tabela = 35 * (len(pivot) + 1) + 3
     colunas_config = {
         coluna: st.column_config.NumberColumn(width="small") for coluna in pivot.columns
     }
