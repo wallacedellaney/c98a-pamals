@@ -22,7 +22,7 @@ if str(SCRIPTS_PYTHON) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_PYTHON))
 
 from contrato005.data.carregar_dados import carregar_computo_mensal
-from contrato005.data.justificativas import carregar_justificativas, salvar_justificativas_mes
+from contrato005.data.justificativas import carregar_justificativas, sincronizar_mes, STATUS_PENDENTE
 from calcular_computo_mensal import _tem_comentario_cancelamento
 
 MESES_PT = [
@@ -308,30 +308,22 @@ def _atrasos(dados, mes_escolhido):
         _detalhe_emergencia(filtrado.iloc[linhas_sel[0]].to_dict())
 
     st.divider()
-    _justificativas_mes(mes_escolhido, filtrado)
+    exibir = _justificativas_mes(mes_escolhido, tabela)
 
-    justificativas_todas = carregar_justificativas()
-    mes_ref_str = str(mes_escolhido)
-    mapa_justificativa = dict(zip(
-        justificativas_todas.loc[justificativas_todas["mes_referencia"] == mes_ref_str, "numero_emergencia"],
-        justificativas_todas.loc[justificativas_todas["mes_referencia"] == mes_ref_str, "justificativa_empresa"],
-    ))
-    tabela_export = tabela.copy()
-    tabela_export["Justificativa (empresa)"] = tabela_export["Emergência"].astype(str).map(mapa_justificativa).fillna("")
-    csv = tabela_export.to_csv(index=False).encode("utf-8")
+    csv = exibir.to_csv(index=False).encode("utf-8")
     st.download_button(
         "⬇️ Exportar com justificativas (CSV)", csv, file_name=f"atrasos_{mes_escolhido}.csv", mime="text/csv",
     )
 
 
-def _justificativas_mes(mes_escolhido, concluidas_mes):
-    """Campo editável pra empresa (VEE ONE) escrever a justificativa de cada
-    atraso do mês — só habilita depois que o mês de referência termina de
-    verdade (pedido do Wallace, 2026-07-30: "sempre no fechamento mensal do
-    mes, depois do dia 31 que habilita"), pra não editar um mês ainda em
-    andamento. Persiste numa planilha própria do Drive (ver
-    contrato005/data/justificativas.py), preservando os outros meses já
-    salvos a cada gravação."""
+def _justificativas_mes(mes_escolhido, tabela_entregas):
+    """Espelha TODAS as colunas de "entregas" do mês no Drive, igual ao
+    site (pedido do Wallace, 2026-07-31), com um campo editável pra empresa
+    (VEE ONE) escrever a justificativa de cada atraso e um "check" de
+    Status — só habilita edição depois que o mês de referência termina de
+    verdade ("sempre no fechamento mensal do mes, depois do dia 31 que
+    habilita"). Devolve a tabela exibida (com Justificativa/Status), usada
+    também na exportação CSV."""
     st.markdown("##### 📝 Justificativas da empresa (VEE ONE)")
 
     mes_ref_str = str(mes_escolhido)
@@ -339,44 +331,53 @@ def _justificativas_mes(mes_escolhido, concluidas_mes):
     hoje = pd.Timestamp(horario.hoje_br()).normalize()
     mes_encerrado = hoje > fim_mes
 
-    justificativas_todas = carregar_justificativas()
-    justificativas_mes = justificativas_todas[justificativas_todas["mes_referencia"] == mes_ref_str]
-    mapa = dict(zip(justificativas_mes["numero_emergencia"], justificativas_mes["justificativa_empresa"]))
+    tabela_entregas = tabela_entregas.copy()
+    tabela_entregas["Emergência"] = tabela_entregas["Emergência"].astype(str)
 
-    base = concluidas_mes[[
-        "numero_emergencia", "pn", "matricula_aeronave", "obs_coordenadoria_fiscal", "obs_vee_one",
-    ]].rename(columns={
-        "numero_emergencia": "Emergência", "pn": "PN", "matricula_aeronave": "Aeronave",
-        "obs_coordenadoria_fiscal": "Obs. Coordenadoria", "obs_vee_one": "Obs. VEE ONE",
-    }).copy()
-    base["Justificativa"] = base["Emergência"].astype(str).map(mapa).fillna("")
+    justificativas_todas = carregar_justificativas()
+    salvas_mes = justificativas_todas[justificativas_todas["Mês de referência"] == mes_ref_str]
+    ja_espelhadas = set(salvas_mes["Emergência"])
+    faltando = set(tabela_entregas["Emergência"]) - ja_espelhadas
+    if faltando:
+        try:
+            sincronizar_mes(mes_ref_str, tabela_entregas)
+            justificativas_todas = carregar_justificativas()
+            salvas_mes = justificativas_todas[justificativas_todas["Mês de referência"] == mes_ref_str]
+        except Exception as e:
+            st.caption(f"⚠️ Não deu pra espelhar as entregas novas no Drive agora ({e}).")
+
+    mapa_justificativa = dict(zip(salvas_mes["Emergência"], salvas_mes["Justificativa (empresa)"]))
+    mapa_status = dict(zip(salvas_mes["Emergência"], salvas_mes["Status"]))
+    exibir = tabela_entregas.copy()
+    exibir["Justificativa"] = exibir["Emergência"].map(mapa_justificativa).fillna("")
+    exibir["Status"] = exibir["Emergência"].map(mapa_status).fillna(STATUS_PENDENTE)
+    colunas_ordem = ["Status"] + [c for c in tabela_entregas.columns] + ["Justificativa"]
+    exibir = exibir[colunas_ordem]
 
     if not mes_encerrado:
         st.info(
             f"O campo de justificativa habilita para edição depois que **{_formatar_mes(mes_escolhido)}** "
-            "terminar (após o último dia do mês) — mostrando só leitura por enquanto."
+            "terminar (após o último dia do mês) — as entregas já estão espelhadas no Drive, mostrando "
+            "só leitura por enquanto."
         )
-        st.dataframe(base, hide_index=True, width="stretch", height=min(35 * (len(base) + 1) + 3, 380))
-        return
+        st.dataframe(exibir, hide_index=True, width="stretch", height=min(35 * (len(exibir) + 1) + 3, 380))
+        return exibir
 
     st.caption("Mês encerrado — a empresa já pode escrever/editar a justificativa de cada atraso abaixo.")
     editada = st.data_editor(
-        base, hide_index=True, width="stretch", height=min(35 * (len(base) + 1) + 3, 380),
-        disabled=["Emergência", "PN", "Aeronave", "Obs. Coordenadoria", "Obs. VEE ONE"],
+        exibir, hide_index=True, width="stretch", height=min(35 * (len(exibir) + 1) + 3, 380),
+        disabled=[c for c in colunas_ordem if c != "Justificativa"],
         key=f"justificativas_editor_{mes_ref_str}",
     )
     if st.button("💾 Salvar justificativas", key=f"justificativas_salvar_{mes_ref_str}"):
         try:
-            salvar_justificativas_mes(
-                mes_referencia=mes_ref_str,
-                numeros_emergencia=editada["Emergência"].tolist(),
-                textos=editada["Justificativa"].tolist(),
-                agora_str=pd.Timestamp(horario.hoje_br()).strftime("%Y-%m-%d %H:%M"),
-            )
+            justificativas_editadas = dict(zip(editada["Emergência"], editada["Justificativa"]))
+            sincronizar_mes(mes_ref_str, tabela_entregas, justificativas_por_emergencia=justificativas_editadas)
             st.success("Justificativas salvas no Drive.")
             st.rerun()
         except Exception as e:
             st.error(f"Falha ao salvar no Drive: {e}")
+    return editada
 
 
 def _apresentacao_rma(mes_escolhido):
