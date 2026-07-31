@@ -1,0 +1,87 @@
+*C-98 - 31/07/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+18 D / 20 M
+(14 DI / 04 DO / 01 II / 02 IN / 00 ITR / 06 IS / 02 IP)
+ 
+*Previsão até o final do dia: 18 D / 20 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis:* 19
+- 2723
+
+
+*Montadas:* 20
+
+
+*Esforço  Aéreo*
+Anual: 10070:00 / 5172:10 / 51,36% 
+
+
+*Motores disponíveis: 22*
+
+
+*CLA*
+[ ] 2723 - IN - Realizando instalação de hélice. - DPE: 04/08
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*PAMA-LS*
+[ ] 2704 - DI
+[ ] 2706 - IP - 75 APE- DPE: A ser definido.
+[ ] 2724 - IP - ANV acidentada.
+[ ] 2726 - IS - 91 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2728 - IN - REALIZANDO SERVIÇO DE MONTAGEM APÓS A AVALIAÇÃO DE SINISTRO - DPE: 30/09
+[ ] 2730 - IS - SEM MOTOR - 44 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Hélice recolhida - DPE: 01 DIA após chegada do item.
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2702 - DI
+[ ] 2703 - DO
+[ ] 2708 - DO
+[ ] 2729 - II - Realizando inspeções ID 0A,02,07,10,11,12,21,22 / 2900FH/HSI/ COR 48M - DPE: 14/08
+
+
+*2º ETA*
+[ ] 2719 - DI
+[ ] 2722 - DO
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - DI
+[ ] 2721 - IS - Motor recolhido para reparo na geradora de gases - DPE: 28/08
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2738 - DI
+[ ] 2740 - DI
+[ ] 2741 - DI
