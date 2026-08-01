@@ -183,20 +183,36 @@ def primeira_aba(spreadsheet_id):
 
 
 def sobrescrever_aba(spreadsheet_id, aba, linhas_com_cabecalho):
-    """Limpa `aba` inteira e regrava com `linhas_com_cabecalho` (lista de
-    listas, primeira linha = cabeçalho) — forma mais simples de "upsert" pra
+    """Regrava `aba` inteira com `linhas_com_cabecalho` (lista de listas,
+    primeira linha = cabeçalho) — forma mais simples de "upsert" pra
     planilhas pequenas (poucas centenas de linhas), sem precisar calcular
     qual linha específica mudou. A planilha precisa estar compartilhada como
-    EDITOR com a conta de serviço."""
+    EDITOR com a conta de serviço.
+
+    NÃO limpa antes de escrever — escreve primeiro (update sobrescreve
+    célula a célula dentro do range novo) e só depois limpa o que sobrou de
+    uma versão ANTERIOR maior que a nova. Se o update falhar, os dados
+    antigos continuam intactos (achado real em produção, 2026-07-31: um
+    clear-antes-de-escrever apagou a planilha de justificativas inteira
+    quando o update seguinte falhou por payload inválido — perda de dado
+    real, não só um erro de tela)."""
     try:
         servico = _obter_servico_sheets()
-        servico.spreadsheets().values().clear(
-            spreadsheetId=spreadsheet_id, range=f"{aba}!A:Z", body={}
-        ).execute()
+        antigo = servico.spreadsheets().values().get(
+            spreadsheetId=spreadsheet_id, range=f"{aba}!A:A",
+        ).execute().get("values", [])
+        n_linhas_antigas = len(antigo)
         servico.spreadsheets().values().update(
             spreadsheetId=spreadsheet_id, range=f"{aba}!A1",
             valueInputOption="USER_ENTERED", body={"values": linhas_com_cabecalho},
         ).execute()
+        n_linhas_novas = len(linhas_com_cabecalho)
+        if n_linhas_antigas > n_linhas_novas:
+            servico.spreadsheets().values().clear(
+                spreadsheetId=spreadsheet_id,
+                range=f"{aba}!A{n_linhas_novas + 1}:Z{n_linhas_antigas}",
+                body={},
+            ).execute()
     except DriveSyncError:
         raise
     except Exception as e:

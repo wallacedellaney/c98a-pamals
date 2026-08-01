@@ -102,6 +102,23 @@ def _montar_linhas_mes(mes_referencia, tabela_entregas, justificativas_por_emerg
     return linhas[COLUNAS]
 
 
+def _matriz_segura(df):
+    """Converte cada célula pra string pura, célula a célula — nunca confia
+    só no `.astype(str)` do DataFrame inteiro. Qualquer valor "vazio" (NaN,
+    None, NaT, pd.NA) vira string vazia explicitamente via `pd.isna`, em vez
+    de depender da conversão automática do pandas. Existe porque um valor
+    não-string (ex.: float NaN) chegando no corpo da requisição HTTP pro
+    Sheets faz o `json.dumps` da lib do Google serializar como token cru
+    `NaN`, que o parser estrito do Google rejeita como "Invalid JSON
+    payload" (achado real em produção, 2026-07-31 — a causa exata não foi
+    localizada com certeza, então a defesa aqui é blindar por célula em vez
+    de confiar no cast do DataFrame)."""
+    linhas = []
+    for linha in df.values.tolist():
+        linhas.append(["" if pd.isna(v) else str(v) for v in linha])
+    return linhas
+
+
 def sincronizar_mes(mes_referencia, tabela_entregas, justificativas_por_emergencia=None):
     """Espelha TODAS as colunas de "entregas" do mês no Drive (igual ao
     site) — chamada automaticamente assim que aparece uma emergência do mês
@@ -117,5 +134,5 @@ def sincronizar_mes(mes_referencia, tabela_entregas, justificativas_por_emergenc
     completo = pd.concat([outros_meses, linhas_mes], ignore_index=True)
     drive_sync.garantir_credencial_arquivo()
     aba = drive_sync.primeira_aba(PLANILHA_JUSTIFICATIVAS_ID)
-    valores = [COLUNAS] + completo[COLUNAS].astype(str).values.tolist()
+    valores = [COLUNAS] + _matriz_segura(completo[COLUNAS])
     drive_sync.sobrescrever_aba(PLANILHA_JUSTIFICATIVAS_ID, aba, valores)
