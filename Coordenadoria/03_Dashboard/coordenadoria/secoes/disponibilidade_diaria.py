@@ -522,6 +522,23 @@ def _grafico_evolucao_mes(relatorios):
         color_discrete_sequence=[STATUS["good"], CYAN],
     )
     fig.for_each_trace(lambda t: t.update(name={"disponiveis_hoje": "Disponíveis (D)", "montadas_hoje": "Montadas (M)"}[t.name]))
+
+    # Linha da média do mês — pedido do Wallace, 2026-07-31: "coloca a
+    # linha da media no grafico". Uma linha pontilhada por métrica, na
+    # mesma cor da série, com o valor médio no rótulo.
+    media_d = do_mes["disponiveis_hoje"].mean()
+    media_m = do_mes["montadas_hoje"].mean()
+    fig.add_hline(
+        y=media_d, line_dash="dash", line_color=STATUS["good"], opacity=0.6,
+        annotation_text=f"Média D: {media_d:.1f}", annotation_position="bottom left",
+        annotation_font_color=STATUS["good"],
+    )
+    fig.add_hline(
+        y=media_m, line_dash="dash", line_color=CYAN, opacity=0.6,
+        annotation_text=f"Média M: {media_m:.1f}", annotation_position="top left",
+        annotation_font_color=CYAN,
+    )
+
     ultimo_dia_mes = mes_escolhido.end_time.day
     fig.update_layout(
         xaxis_title="Dia do mês", yaxis_title="Quantidade de aeronaves", legend_title="",
