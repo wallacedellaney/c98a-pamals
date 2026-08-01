@@ -19,6 +19,10 @@ from coordenadoria.components.paleta import (
 from coordenadoria.utils import atualizar_dados_disponibilidade, DISPONIBILIDADE_PASTA_URL
 
 ORDEM_SITUACAO = ["DI", "DO", "II", "IN", "ITR", "IS", "IP"]
+MESES_PT = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+]
 
 FILTRO_KEYS = ["disp_f_unidade", "disp_f_situacao", "disp_f_busca"]
 
@@ -489,6 +493,45 @@ def _grafico_mensal(relatorios):
     st.caption("Média simples dos relatórios daquele mês (não pondera por dias úteis restantes).")
 
 
+def _grafico_evolucao_mes(relatorios):
+    """Evolução dia a dia dentro de um mês escolhido — mesmo padrão do
+    gráfico "Evolução da % de aeronaves montadas no mês" do Cômputo Mensal
+    (Contrato 005), mas aqui com a quantidade de aeronaves Disponíveis (D =
+    DI+DO) e Montadas (M), não %. Pedido do Wallace, 2026-07-31: "coloca um
+    grafico igual o da media mensal, que tem um grafico do mes inteiro
+    [...] mostrando a evolucao no mes, coloca selecionavel o mes tb [...]
+    importante o tanto de aeronave montada e o tanto de aeronave
+    disponivel(di+do)" — diferente de `_grafico_mensal` (1 ponto = média do
+    mês inteiro, comparando vários meses), este mostra 1 ponto por dia,
+    dentro de um único mês por vez."""
+    st.markdown("##### Evolução no mês — Disponíveis (D) x Montadas (M)")
+
+    rel = relatorios.copy()
+    rel["mes"] = rel["data_referencia"].dt.to_period("M")
+    meses = sorted(rel["mes"].unique())
+    mes_escolhido = st.selectbox(
+        "Mês", meses, index=len(meses) - 1,
+        format_func=lambda p: f"{MESES_PT[p.month - 1]}/{p.year}", key="disp_grafico_mes",
+    )
+
+    do_mes = rel[rel["mes"] == mes_escolhido].sort_values("data_referencia").copy()
+    do_mes["dia"] = do_mes["data_referencia"].dt.day
+
+    fig = px.line(
+        do_mes, x="dia", y=["disponiveis_hoje", "montadas_hoje"], markers=True,
+        color_discrete_sequence=[STATUS["good"], CYAN],
+    )
+    fig.for_each_trace(lambda t: t.update(name={"disponiveis_hoje": "Disponíveis (D)", "montadas_hoje": "Montadas (M)"}[t.name]))
+    ultimo_dia_mes = mes_escolhido.end_time.day
+    fig.update_layout(
+        xaxis_title="Dia do mês", yaxis_title="Quantidade de aeronaves", legend_title="",
+        xaxis_range=[0.5, ultimo_dia_mes + 0.5],
+    )
+    layout_grafico(fig, altura=260)
+    st.plotly_chart(fig, width="stretch")
+    st.caption("Sem ponto nos dias sem relatório salvo (fim de semana, ou dia útil sem busca ainda).")
+
+
 def _secao_evolucao(relatorios):
     """Evolução diária/semanal/mensal da frota inteira, tudo dentro da
     própria Disponibilidade Diária (2026-07-23, pedido do Wallace:
@@ -504,6 +547,8 @@ def _secao_evolucao(relatorios):
     datas = sorted(relatorios["data_referencia"].dt.date.unique())
 
     _tabela_semana(relatorios, datas)
+    st.divider()
+    _grafico_evolucao_mes(relatorios)
     st.divider()
     _grafico_mensal(relatorios)
 

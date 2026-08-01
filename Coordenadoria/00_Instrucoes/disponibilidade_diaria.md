@@ -81,6 +81,21 @@ comparação diária, alertas, painel por unidade):
   mês** (decisão confirmada com o Wallace — média simples dos relatórios
   daquele mês, não pondera por dias úteis restantes).
 
+## Gráfico "Evolução no mês" (2026-07-31)
+
+Pedido do Wallace: "coloca um grafico igual o da media mensal, que tem um
+grafico do mes inteiro, pode ser naquele padrao, na aba de grafico e
+historico, ai vc vai mostrando a evolucao no mes, coloca selecionavel o mes
+tb, julho agost. importante o tanto de aeronave montada e o tanto de
+aeronave disponivel(di+do)" — diferente da "Comparação mensal" (1 ponto =
+média do mês inteiro, comparando vários meses lado a lado), este novo
+gráfico (`_grafico_evolucao_mes`, logo acima da Comparação mensal na aba
+"Evolução e histórico") mostra **1 ponto por dia**, dentro de um único mês
+selecionável (seletor "Mês", igual ao padrão do Cômputo Mensal no Contrato
+005) — 2 linhas: Disponíveis (D = DI+DO) e Montadas (M), em quantidade real
+de aeronaves (não %). Sem ponto nos dias sem relatório salvo (fim de
+semana).
+
 ## Bug corrigido em 2026-07-27 — DPE nunca era reconhecida (ponto final quebrava o regex)
 
 Wallace, sobre a Diagonal de Manutenção: "previsao de disponibilidade ta
