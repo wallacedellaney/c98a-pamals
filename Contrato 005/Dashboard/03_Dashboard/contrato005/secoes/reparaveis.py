@@ -35,6 +35,34 @@ PRAZO_CONTRATUAL_TAT_DIAS = 110
 # linhas por padrão, já que pandas ignora grupos NaN).
 LOCAL_NAO_INFORMADO = "Em processo interno / não informado pela empresa"
 
+MESES_PT = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+]
+
+
+def _secao_historico_mensal(df):
+    """Número de OS abertas (campo Data Início) por mês — pedido do
+    Wallace, 2026-08-03: "coloca uma coluna tb do historico por mes de
+    numero de aberturas". Usa TODAS as OS (abertas e concluídas, não só as
+    em aberto hoje) — "abertura" é sobre quando a OS entrou, não sobre a
+    situação atual dela."""
+    st.markdown("##### Histórico mensal — número de aberturas")
+    st.caption("Quantidade de OS abertas (Data Início) por mês, independente da situação atual (em aberto ou já concluída).")
+
+    hist = df.copy()
+    hist["mes"] = hist["data_inicio"].dt.to_period("M")
+    contagem = hist.groupby("mes").size().reset_index(name="Aberturas").sort_values("mes")
+    contagem["Mês"] = contagem["mes"].apply(lambda p: f"{MESES_PT[p.month - 1]}/{p.year}")
+
+    fig = px.bar(contagem, x="Mês", y="Aberturas", color_discrete_sequence=[CATEGORICA[0]])
+    fig.update_traces(text=contagem["Aberturas"], textposition="outside")
+    fig.update_layout(xaxis_title="", yaxis_title="Nº de aberturas", showlegend=False)
+    layout_grafico(fig)
+    st.plotly_chart(fig, width="stretch")
+
+    st.dataframe(contagem[["Mês", "Aberturas"]], hide_index=True, width="stretch")
+
 
 def _secao_estatisticas_tat(df):
     abertos = df[df["em_aberto"]].copy()
@@ -217,3 +245,6 @@ def render(dados):
         fig.update_layout(yaxis_title="", xaxis_title="Quantidade", showlegend=False)
         layout_grafico(fig)
         st.plotly_chart(fig, width="stretch")
+
+    st.divider()
+    _secao_historico_mensal(df)
