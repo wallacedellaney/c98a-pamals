@@ -290,12 +290,19 @@ def atualizar_do_drive():
         pasta_ano = _achar_subpasta(PASTA_RAIZ_DRIVE_ID, str(agora.year))
         if pasta_ano is None:
             raise drive_sync.DriveSyncError(f"Pasta do ano {agora.year} não encontrada.")
-        pasta_mes = _achar_subpasta(pasta_ano["id"], f"{agora.month:02d} ")
-        if pasta_mes is None:
-            raise drive_sync.DriveSyncError(f"Pasta do mês {agora.month:02d} não encontrada em {pasta_ano['name']}.")
 
-        filhos = drive_sync.listar_pasta(pasta_mes["id"])
-        docs = [(f, RE_NOME_DOC.search(f["name"])) for f in filhos]
+        # O relatório do dia às vezes aparece direto na pasta do ANO, antes
+        # de alguém criar/mover pra uma subpasta "MM Mês" (achado em
+        # 2026-08-03: "Disponibilidade 03/08" sem existir ainda pasta "08
+        # Agosto") — olhar sempre os filhos diretos do ano, além da
+        # subpasta do mês (se já existir), mesmo princípio de sempre:
+        # formato da fonte muda, não travar (ver Coordenadoria/CLAUDE.md).
+        candidatos = list(drive_sync.listar_pasta(pasta_ano["id"]))
+        pasta_mes = _achar_subpasta(pasta_ano["id"], f"{agora.month:02d} ")
+        if pasta_mes is not None:
+            candidatos.extend(drive_sync.listar_pasta(pasta_mes["id"]))
+
+        docs = [(f, RE_NOME_DOC.search(f["name"])) for f in candidatos]
         docs = [(f, m) for f, m in docs if m]
         if not docs:
             # Mesmo sem relatório novo pra buscar, reprocessa o que já existe
@@ -312,7 +319,11 @@ def atualizar_do_drive():
             return {"status": "sem_novidade", "motivo": "nenhum relatório na pasta do mês atual",
                     "record_count": len(df_relatorios)}
 
-        doc, m = max(docs, key=lambda par: int(par[1].group(1)))
+        # Ordena por (mês, dia) — não só dia — porque agora os candidatos
+        # podem vir de pastas de meses diferentes (ano + subpasta do mês
+        # atual) ao mesmo tempo; comparar só o dia faria "31" (de julho)
+        # vencer errado "03" (de agosto).
+        doc, m = max(docs, key=lambda par: (int(par[1].group(2)), int(par[1].group(1))))
         dia, mes = m.group(1), m.group(2)
         nome_local = f"Disponibilidade_{dia}_{mes}_{agora.year}.txt"
         caminho = PASTA_ORIGEM / nome_local
