@@ -23,6 +23,7 @@ if str(SCRIPTS_PYTHON) not in sys.path:
 
 from contrato005.data.carregar_dados import carregar_computo_mensal
 from contrato005.data.justificativas import carregar_justificativas, sincronizar_mes, STATUS_PENDENTE
+from contrato005.components.exportar import gerar_pdf_bytes, gerar_xlsx_bytes
 from calcular_computo_mensal import _tem_comentario_cancelamento
 
 MESES_PT = [
@@ -162,6 +163,29 @@ def _detalhe_emergencia(registro):
     )
 
 
+def _botoes_download(df, nome_arquivo_base, titulo_pdf, subtitulo_pdf, key_prefix):
+    """3 botões lado a lado — CSV, Excel e PDF — pedido do Wallace,
+    2026-08-03: "os dados de atrasos e justificativas de emergencia ter
+    opcao de download em pdf e xlsx", além do CSV que já existia."""
+    c1, c2, c3 = st.columns(3)
+    csv = df.to_csv(index=False).encode("utf-8")
+    c1.download_button(
+        "⬇️ CSV", csv, file_name=f"{nome_arquivo_base}.csv", mime="text/csv",
+        key=f"{key_prefix}_csv", width="stretch",
+    )
+    xlsx = gerar_xlsx_bytes(df, nome_aba=titulo_pdf)
+    c2.download_button(
+        "⬇️ Excel (.xlsx)", xlsx, file_name=f"{nome_arquivo_base}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        key=f"{key_prefix}_xlsx", width="stretch",
+    )
+    pdf = gerar_pdf_bytes(df, titulo_pdf, subtitulo_pdf)
+    c3.download_button(
+        "⬇️ PDF", pdf, file_name=f"{nome_arquivo_base}.pdf", mime="application/pdf",
+        key=f"{key_prefix}_pdf", width="stretch",
+    )
+
+
 def _atrasos(dados, mes_escolhido):
     st.subheader(f"Atrasos — {_formatar_mes(mes_escolhido)}")
     st.caption(
@@ -208,6 +232,10 @@ def _atrasos(dados, mes_escolhido):
             "obs_vee_one": "Obs. VEE ONE",
         }).sort_values("Dias de atraso", ascending=False)
         st.dataframe(tabela_abertas, hide_index=True, width="stretch", height=min(35 * (len(tabela_abertas) + 1) + 3, 320))
+        _botoes_download(
+            tabela_abertas, f"situacao_atual_{mes_escolhido}", "Situação atual (em aberto agora)",
+            _formatar_mes(mes_escolhido), "atrasos_situacao_atual",
+        )
     else:
         st.success("Nenhuma emergência em aberto no momento.")
 
@@ -310,9 +338,9 @@ def _atrasos(dados, mes_escolhido):
     st.divider()
     exibir = _justificativas_mes(mes_escolhido, tabela)
 
-    csv = exibir.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        "⬇️ Exportar com justificativas (CSV)", csv, file_name=f"atrasos_{mes_escolhido}.csv", mime="text/csv",
+    _botoes_download(
+        exibir, f"atrasos_justificativas_{mes_escolhido}", "Atrasos e justificativas",
+        _formatar_mes(mes_escolhido), "atrasos_justificativas",
     )
 
 

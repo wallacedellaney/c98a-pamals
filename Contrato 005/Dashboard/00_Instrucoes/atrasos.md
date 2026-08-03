@@ -57,6 +57,22 @@ ao clicar numa linha, agora mostram PN e Nomenclatura logo depois da
 Emergência (já vinham na fonte `emergencias_totais`, só não apareciam
 aqui).
 
+## Exportação — CSV, Excel e PDF (2026-08-03)
+
+Pedido do Wallace: "os dados de atrasos e justificativas de emergencia ter
+opcao de download em pdf e xlsx" — além do CSV que já existia, as tabelas
+"Situação atual" e "Atrasos e justificativas" (Entregas + Justificativa/
+Status) ganharam botões de Excel (.xlsx) e PDF, lado a lado com o CSV.
+Implementado em `contrato005/components/exportar.py` (`gerar_xlsx_bytes`/
+`gerar_pdf_bytes`, reaproveitável por qualquer seção) — o PDF sai em
+paisagem (A4), com quebra de linha automática célula a célula, pensado pra
+muitas colunas e texto livre (observações, justificativa). A fonte padrão
+do PDF só cobre latin-1: emoji do Status (✅/⏳) e travessão viram texto
+puro ("[OK]"/"[Pendente]", "-") antes de gerar, em vez de embutir uma
+fonte Unicode só pra isso. Depende do pacote `fpdf2` (adicionado ao
+`requirements.txt` da raiz, compartilhado pelos 2 deploys — nunca criar um
+`requirements.txt` local, ver `site_005celog2025.md`).
+
 ## Validado em
 
 2026-07-10, julho/2026: 10 entregas no mês, 8 no prazo (80%), 1 registro
