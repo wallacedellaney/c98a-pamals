@@ -136,13 +136,27 @@ def _baixar_transcricao_manual(arquivos_pasta):
 
 
 def _baixar_rma_em_andamento(arquivos_pasta):
+    """Aceita tanto "RMA em andamento {MÊS}.xlsx" (nome original, visto só
+    em Junho/2026 — a pasta desse mês tinha os dois arquivos) quanto "Pré
+    RMA C-98 {Mês}-26.xlsx" (nome usado em todos os meses, incluindo Maio e
+    Julho, onde "RMA em andamento" nunca existiu) — achado real em
+    2026-08-03, tentando gerar a Apresentação de Julho: mesma estrutura de
+    abas (1.1/1.2/4.1), só o nome do arquivo no Drive mudou. Prioriza "RMA
+    em andamento" quando os dois existirem (nome original, já validado)."""
     candidato = next(
         (f for f in arquivos_pasta if "rma em andamento" in f["name"].lower() and f["name"].lower().endswith(".xlsx")),
         None,
     )
     if candidato is None:
-        raise FileNotFoundError("Arquivo 'RMA em andamento {MÊS}.xlsx' não encontrado na pasta do mês no Drive.")
-    return drive_sync.baixar_arquivo(candidato["id"])
+        candidato = next(
+            (f for f in arquivos_pasta if "pré rma" in f["name"].lower() or "pre rma" in f["name"].lower()),
+            None,
+        )
+    if candidato is None:
+        raise FileNotFoundError(
+            "Nenhum arquivo 'RMA em andamento {MÊS}.xlsx' ou 'Pré RMA C-98 {Mês}-26.xlsx' encontrado na pasta do mês no Drive."
+        )
+    return drive_sync.baixar_arquivo(candidato["id"]), candidato["name"]
 
 
 # ---------------------------------------------------------------------------
@@ -531,8 +545,8 @@ def gerar_ata(ano, mes, caminho_saida, forcar_transcricao=False):
     arquivos_lidos = []
     arquivos_pasta = _localizar_pasta_mes(ano, mes)
 
-    conteudo_rma = _baixar_rma_em_andamento(arquivos_pasta)
-    arquivos_lidos.append(f"Drive: RMA em andamento {MESES_PT[mes-1]}.xlsx")
+    conteudo_rma, nome_rma = _baixar_rma_em_andamento(arquivos_pasta)
+    arquivos_lidos.append(f"Drive: {nome_rma}")
     indicadores = extrair_indicadores_rma(conteudo_rma, ano, mes)
 
     # Transcrição manual (escrita pelo Wallace, salva no Drive) tem

@@ -944,7 +944,7 @@ def gerar_apresentacao(ano, mes, caminho_saida, caminho_referencia=None):
     # Ata de Reunião usa, não o resumo (local) do Cômputo Mensal (ver
     # docstring de `_construir_tabela_matriz`).
     arquivos_pasta_mes = _localizar_pasta_mes(ano, mes)
-    conteudo_rma_oficial = _baixar_rma_em_andamento(arquivos_pasta_mes)
+    conteudo_rma_oficial, _nome_rma = _baixar_rma_em_andamento(arquivos_pasta_mes)
     indicadores_oficiais = extrair_indicadores_rma(conteudo_rma_oficial, ano, mes)
 
     caminho_saida_tmp = Path(caminho_saida)
