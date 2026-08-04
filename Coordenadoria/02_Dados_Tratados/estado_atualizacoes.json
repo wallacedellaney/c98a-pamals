@@ -8,21 +8,21 @@
   },
   "rac": {
     "remote_modified_time": "2026-08-03T11:48:36.222Z",
-    "local_updated_at": "2026-08-03T14:29:49.732378-03:00",
+    "local_updated_at": "2026-08-04T05:10:49.509892-03:00",
     "status": "atualizado",
     "record_count": 30,
     "last_error": null
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-07-22T18:56:17.644Z",
-    "local_updated_at": "2026-08-03T14:30:20.211179-03:00",
+    "local_updated_at": "2026-08-04T05:11:19.736437-03:00",
     "status": "atualizado",
     "record_count": 193,
     "last_error": null
   },
   "motores": {
     "remote_modified_time": "2026-07-30T14:16:46.831Z",
-    "local_updated_at": "2026-08-03T14:31:42.359620-03:00",
+    "local_updated_at": "2026-08-04T05:12:34.823222-03:00",
     "status": "atualizado",
     "record_count": 39,
     "last_error": null
