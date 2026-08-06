@@ -7,10 +7,10 @@
     "last_error": null
   },
   "pagamentos": {
-    "remote_modified_time": "2026-08-03T20:24:12.363Z",
-    "local_updated_at": "2026-08-06T10:01:47.036011-03:00",
+    "remote_modified_time": "2026-08-06T17:21:39.594Z",
+    "local_updated_at": "2026-08-06T14:23:44.460873-03:00",
     "status": "atualizado",
-    "record_count": 31,
+    "record_count": 32,
     "last_error": null
   },
   "devolucoes": {
