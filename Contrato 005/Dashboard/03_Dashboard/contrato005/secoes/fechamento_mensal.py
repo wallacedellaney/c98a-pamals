@@ -13,7 +13,7 @@ import streamlit as st
 
 from shared import horario
 from contrato005.components.paleta import AMBER, LINE, PANEL, STATUS, layout_grafico
-from contrato005.components.utils import AVISO_MMAM_PREVIA, ordenar_unicos
+from contrato005.components.utils import AVISO_MMAM_PREVIA, ordenar_unicos, formatar_moeda, formatar_numero
 
 ABREV_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 
@@ -72,12 +72,14 @@ def render(dados):
     # empresa (005CELOG2025) — pedido do Wallace em 2026-07-18: "volta ele
     # [Fechamento Mensal], so nao quero apresentacao rma e ata de
     # reuniao(no site do contrato), no outro c98 geral tudo". Cômputo
-    # Mensal e Atrasos continuam visíveis nos 2 sites.
+    # Mensal, Atrasos e Financeiro (RMA) continuam visíveis nos 2 sites —
+    # "Financeiro" só mostra os valores oficiais já apurados (aba 4.1),
+    # mesmo princípio de transparência de "Atrasos".
     if dados.get("modo_externo"):
-        aba_computo, aba_atrasos = st.tabs(["Cômputo Mensal", "Atrasos"])
+        aba_computo, aba_atrasos, aba_financeiro = st.tabs(["Cômputo Mensal", "Atrasos", "Financeiro (RMA)"])
     else:
-        aba_computo, aba_atrasos, aba_apresentacao, aba_ata = st.tabs(
-            ["Cômputo Mensal", "Atrasos", "Apresentação (RMA)", "Ata de Reunião"]
+        aba_computo, aba_atrasos, aba_financeiro, aba_apresentacao, aba_ata = st.tabs(
+            ["Cômputo Mensal", "Atrasos", "Financeiro (RMA)", "Apresentação (RMA)", "Ata de Reunião"]
         )
         with aba_apresentacao:
             _apresentacao_rma(mes_escolhido)
@@ -86,6 +88,9 @@ def render(dados):
 
     with aba_computo:
         _computo_mensal(mes_escolhido)
+
+    with aba_financeiro:
+        _financeiro_rma(mes_escolhido)
 
     with aba_atrasos:
         _atrasos(dados, mes_escolhido)
@@ -395,6 +400,80 @@ def _justificativas_mes(mes_escolhido, tabela_entregas):
         except Exception as e:
             st.error(f"Falha ao salvar no Drive: {e}")
     return editada
+
+
+def _financeiro_rma(mes_escolhido):
+    """Valores financeiros oficiais do mês (aba "4.1" da planilha "Pré RMA
+    C-98 {Mês}-26.xlsx", Drive) — pedido do Wallace, 2026-08-06: "a aba 4.1
+    tem uns valores financeiros com base nas horas voadas, cria uma aba no
+    fechamento mensal com a descricao dos valores". Mesma fonte oficial já
+    usada pela Ata de Reunião (`extrair_indicadores_rma`, em
+    gerar_ata_reuniao.py) — não recalculado por nós, só exibido com
+    descrição de cada valor. Cacheado por mês em session_state (troca de
+    mês não reaproveita o resultado de outro)."""
+    st.subheader(f"Financeiro (RMA) — {_formatar_mes(mes_escolhido)}")
+    st.caption(
+        "Valores oficiais da aba \"4.1\" da planilha \"Pré RMA C-98\" do mês (Drive) — horas de voo e o "
+        "valor a faturar do Módulo 1 (Hora de Voo), já com o IFD (Índice Final de Desempenho) aplicado. "
+        "Fonte oficial, não recalculada por nós — mesma planilha usada na Ata de Reunião."
+    )
+
+    mes_ref_str = str(mes_escolhido)
+    ano, mes = mes_escolhido.year, mes_escolhido.month
+    chave_cache = f"financeiro_rma_{mes_ref_str}"
+
+    if st.button("💰 Buscar valores financeiros no Drive", key="financeiro_rma_buscar"):
+        with st.spinner("Buscando a planilha oficial no Drive..."):
+            try:
+                from shared import drive_sync
+                drive_sync.garantir_credencial_arquivo()
+                import gerar_ata_reuniao
+                arquivos_pasta = gerar_ata_reuniao._localizar_pasta_mes(ano, mes)
+                conteudo_rma, nome_rma = gerar_ata_reuniao._baixar_rma_em_andamento(arquivos_pasta)
+                indicadores = gerar_ata_reuniao.extrair_indicadores_rma(conteudo_rma, ano, mes)
+                st.session_state[chave_cache] = {"indicadores": indicadores, "arquivo": nome_rma}
+            except Exception as e:
+                st.error(f"Falha ao buscar os valores financeiros: {e}")
+
+    resultado = st.session_state.get(chave_cache)
+    if not resultado:
+        st.info("Clique em \"Buscar valores financeiros no Drive\" pra carregar os números oficiais deste mês.")
+        return
+
+    ind = resultado["indicadores"]
+    import gerar_ata_reuniao
+    fmt_horas = gerar_ata_reuniao._fmt_horas_timedelta
+    st.caption(f"Fonte: {resultado['arquivo']}")
+
+    st.markdown("##### Horas de voo")
+    c1, c2 = st.columns(2)
+    c1.metric("Horas voadas", fmt_horas(ind["horas_voadas"]))
+    c2.metric("Horas faturadas", fmt_horas(ind["horas_faturadas"]))
+
+    st.markdown("##### Desempenho (MMAM / IFD)")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("MMAM", f"{formatar_numero(ind['mmam'] * 100)}%")
+    c2.metric("Pontuação obtida", formatar_numero(ind["pontuacao_obtida"]))
+    c3.metric("Pontuação máxima", formatar_numero(ind["pont_max"]))
+    c4.metric("IFD", formatar_numero(ind["ifd"], casas=3))
+
+    st.markdown("##### Valores a faturar — Módulo 1 (Hora de Voo)")
+    st.markdown(
+        f"O valor unitário da hora de voo ({formatar_moeda(ind['valor_unitario_hora'])}) é calculado com base "
+        f"nas horas efetivamente realizadas no período ({fmt_horas(ind['horas_voadas'])}), totalizando um "
+        f"subtotal (antes do IFD) de {formatar_moeda(ind['valor_total_antes_ifd'])}. Aplicado o Índice Final "
+        f"de Desempenho (IFD) de {formatar_numero(ind['ifd'], casas=3)}, o valor final do Módulo 1 é de "
+        f"{formatar_moeda(ind['valor_total_modulo1'])}, com multa sobre itens entregues em atraso de "
+        f"{formatar_moeda(ind['multa'])}."
+    )
+    tabela = pd.DataFrame([
+        {"Descrição": "Valor unitário da hora de voo", "Valor": formatar_moeda(ind["valor_unitario_hora"])},
+        {"Descrição": "Subtotal Módulo 1 (antes do IFD)", "Valor": formatar_moeda(ind["valor_total_antes_ifd"])},
+        {"Descrição": "Total Módulo 1 (após IFD)", "Valor": formatar_moeda(ind["valor_total_modulo1"])},
+        {"Descrição": "Multa sobre itens entregues em atraso", "Valor": formatar_moeda(ind["multa"])},
+        {"Descrição": "VALOR TOTAL A SER FATURADO NO MÊS", "Valor": formatar_moeda(ind["valor_total_mes"])},
+    ])
+    st.dataframe(tabela, hide_index=True, width="stretch")
 
 
 def _apresentacao_rma(mes_escolhido):
