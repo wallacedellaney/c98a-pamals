@@ -2116,3 +2116,6 @@ data_snapshot,linha,situacao_consolidada,aprovado,tramite,valor,executora,pacote
 2026-08-10,63940,"Aprovado, aguardando atendimento",SIM,,528395.93,CELOG,A,HORA DE VOO,Não
 2026-08-10,63960,Não aprovado,NÃO,,1000000.0,CELOG,B,SOB DEMANDA,SIM
 2026-08-10,64340,"Aprovado, aguardando atendimento",SIM,,4394700.0,CABW,C,SOB DEMANDA,SIM
+2026-08-10,64760,Sem informação,SIM,PROCESSADO,3306000.0,CABW,RAP,SOB DEMANDA,SIM
+2026-08-10,64780,Sem informação,SIM,PROCESSADO,3306000.0,CABW,RAP,SOB DEMANDA,SIM
+2026-08-10,64800,"Aprovado, aguardando atendimento",SIM,,212577.0,CELOG,A,PARCELA FIXA,NÃO
