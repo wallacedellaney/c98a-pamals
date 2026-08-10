@@ -15,21 +15,21 @@
   },
   "devolucoes": {
     "remote_modified_time": "2026-08-07T15:27:30.061Z",
-    "local_updated_at": "2026-08-07T20:42:47.017058-03:00",
+    "local_updated_at": "2026-08-10T08:56:58.995223-03:00",
     "status": "atualizado",
     "record_count": 359,
     "last_error": null
   },
   "reparaveis": {
     "remote_modified_time": "2026-08-06T18:41:56.223Z",
-    "local_updated_at": "2026-08-07T20:42:41.602274-03:00",
+    "local_updated_at": "2026-08-10T08:56:53.301450-03:00",
     "status": "atualizado",
     "record_count": 509,
     "last_error": null
   },
   "reajuste": {
     "remote_modified_time": "2026-08-06T16:01:17.292Z",
-    "local_updated_at": "2026-08-07T20:42:57.531031-03:00",
+    "local_updated_at": "2026-08-10T08:57:11.131688-03:00",
     "status": "atualizado",
     "record_count": 54,
     "last_error": null
