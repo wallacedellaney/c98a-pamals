@@ -2088,7 +2088,7 @@ data_snapshot,linha,situacao_consolidada,aprovado,tramite,valor,executora,pacote
 2026-08-10,18140,"Aprovado, aguardando atendimento",SIM,,1295422.28,CELOG,A,HORA DE VOO,Não
 2026-08-10,19240,"Aprovado, aguardando atendimento",SIM,,500000.0,CELOG,D,PARCELA FIXA,Não
 2026-08-10,19241,Não aprovado,NÃO,BLOQUEIO,5000000.0,CELOG,D,PARCELA FIXA,Não
-2026-08-10,19260,Sem informação,SIM,CANCELADO,,CELOG,D,PARCELA FIXA,Não
+2026-08-10,19260,Não aprovado,NÃO,CANCELADO,,CELOG,D,PARCELA FIXA,Não
 2026-08-10,19600,Não aprovado,NÃO,CANCELADO,,CELOG,D,PARCELA FIXA,Não
 2026-08-10,19620,Não aprovado,NÃO,CANCELADO,,CELOG,D,PARCELA FIXA,Não
 2026-08-10,23120,Não aprovado,NÃO,,9389.96,CABW,C,REQUISIÇÃO,Não
