@@ -1,4 +1,4 @@
-*C-98 - 07/08/2026*
+*C-98 - 10/08/2026*
 
 
 *RESUMO:*
@@ -6,7 +6,7 @@
 
 *Disponibilidade*
 15 D / 20 M
-(09 DI / 03 DO / 05 II / 05 IN / 00 ITR / 05 IS / 02 IP)
+(12 DI / 03 DO / 02 II / 02 IN / 01 ITR / 07 IS / 02 IP)
  
 *Previsão até o final do dia: 16 D / 20 M*
 
@@ -15,7 +15,7 @@
 
 
 *Disponíveis:* 16
-- 2709, 2720, 2733, 2741
+- 2741
 
 
 *Montadas:* 20
@@ -31,7 +31,7 @@ Anual: 10070:00 / 5543:40 / 55,05%
 
 
 *CLA*
-[ ] 2723 - ITR - Itens de hélice enviados na sexta. - DPE: 11/08
+[ ] 2723 - ITR - Itens de hélice desembarcaram em Belém em 08/08. - DPE: 11/08
 
 
 *DACTA II*
@@ -76,8 +76,8 @@ Anual: 10070:00 / 5543:40 / 55,05%
 
 
 *6º ETA*
-[ ] 2709 - II - Realizando inspeções 5-15-0A/2800FH - DPE: 07/08
-[ ] 2720 - IN - Pesquisa de pane, fuel flow apresenta oscilação intermitente e liquidômetros não confiáveis. - DPE: 07/08
+[ ] 2709 - IS - Porcas de hélice já se encontram em Brasília - DPE: 11/08
+[ ] 2720 - DI
 [ ] 2721 - IS - Motor recolhido para reparo na geradora de gases - DPE: 11/09
 
 
@@ -86,4 +86,4 @@ Anual: 10070:00 / 5543:40 / 55,05%
 [ ] 2737 - DI
 [ ] 2738 - DI
 [ ] 2740 - DI
-[ ] 2741 - IN - Vazamento de óleo pela bomba de retorno. DPE: 14/08
+[ ] 2741 - IN - Vazamento de óleo pela bomba de retorno e flange do motor. DPE: 14/08
