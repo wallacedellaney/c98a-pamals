@@ -1,0 +1,89 @@
+*C-98 - 11/08/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+13 D / 19 M
+(09 DI / 04 DO / 06 II / 02 IN / 00 ITR / 06 IS / 02 IP)
+ 
+*Previsão até o final do dia: 15 D / 19 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis:* 15
+- 2727, 2738
+
+
+*Montadas:* 19
+
+
+
+
+*Esforço  Aéreo*
+Anual: 10070:00 / 5658:35 / 56,19% 
+
+
+*Motores disponíveis: 22*
+
+
+*CLA*
+[ ] 2723 - II - INSPEÇÃO ID5-15-06,08,09 +MOT 3000FH - DPE: 11/08
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*PAMA-LS*
+[ ] 2704 - DI
+[ ] 2706 - IP - 73 APE- DPE: A ser definido.
+[ ] 2724 - IP - ANV acidentada.
+[ ] 2726 - IS - 87 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2728 - IN - REALIZANDO SERVIÇO DE MONTAGEM APÓS A AVALIAÇÃO DE SINISTRO - DPE: 30/09
+[ ] 2730 - IS - SEM MOTOR - 44 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 09 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 72 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - IS - Aguardando hélice. - DPE: 01 DIA após chegada do item.                             
+[ ] 2733 - DI
+[ ] 2739 - DI
+
+
+*1°/15°GAV*
+[ ] 2727 - II - REALIZ INSP ID5-15-06B(ANV) E 100H(MOT) - DPE: 12/08
+
+
+*1º/5º GAV*
+[ ] 2702 - DI
+[ ] 2703 - II - Realizando inspeções 06,08,MG / 4200FH - DPE: 11/08
+[ ] 2708 - DO
+[ ] 2729 - II - Realizando inspeções ID 0A,02,07,10,11,12,21,22 / 2900FH/HSI/ COR 48M - DPE: 25/09
+
+
+*2º ETA*
+[ ] 2719 - DI
+[ ] 2722 - DO
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DO
+[ ] 2720 - DI
+[ ] 2721 - IS - Motor recolhido para reparo na geradora de gases - DPE: 11/09
+
+
+*7º ETA*
+[ ] 2736 - II - REALIZANDO INSPEÇÃO PROGRAMADA ID5-15-06 - DPE: 19/08
+[ ] 2737 - DI
+[ ] 2738 - II - REALIZANDO INSPEÇÃO 0A E 100H - DPE: 14/08
+[ ] 2740 - DI
+[ ] 2741 - IN -AERONAVE AGUARDANDO AVALIAÇÃO PRESENCIAL DA EQUIPE TÉCNICA DO PAMASP SOBRE O VAZAMENTO DE ÓLEO PELA BOMBA DE RETORNO E FLANGE G DO MOTOR.. DPE: SEM DPE.
