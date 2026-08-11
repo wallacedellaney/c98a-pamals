@@ -9,12 +9,28 @@ controle de arrastar em vez de selecionar aeronave/data fixa).
 
 Só existe história a partir do dia em que a automação começou a gravar —
 não há como reconstruir o passado.
+
+**Detalhe "o que era → o que virou" (pedido do Wallace em 2026-08-11)**: a
+aba "Alterados" não mostrava só o valor atual de cada item mudado, sem dar
+pra saber o que tinha mudado de fato. Agora `calcular_evolucao` também monta
+uma tabela campo a campo (`detalhe`) com o valor de cada campo antes e
+depois, exibida na aba "Alterados" abaixo da tabela resumo.
 """
 
 import pandas as pd
 import streamlit as st
 
 from projetos.components.paleta import INK, LINE, PANEL, SECONDARY, STATUS
+
+
+def _formatar_valor(v):
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return "—"
+    if isinstance(v, str) and v.strip() == "":
+        return "—"
+    if isinstance(v, pd.Timestamp):
+        return v.strftime("%d/%m/%Y")
+    return str(v)
 
 
 def selecionar_data_comparacao(historico, key):
@@ -53,11 +69,13 @@ def selecionar_data_comparacao(historico, key):
     return escolhida, mais_recente
 
 
-def calcular_evolucao(historico, chave, data_escolhida, data_atual):
+def calcular_evolucao(historico, chave, data_escolhida, data_atual, nomes_colunas=None):
     """Compara o snapshot de `data_escolhida` com o de `data_atual` usando
     `chave` (lista de colunas) como identificador do item. Devolve
-    (novos, removidos, alterados) — cada um um DataFrame no formato do
-    snapshot atual (ou do anterior, no caso de removidos)."""
+    (novos, removidos, alterados, detalhe) — os 3 primeiros são DataFrames no
+    formato do snapshot atual (ou do anterior, no caso de removidos);
+    `detalhe` é uma tabela campo a campo (Item/Campo/Era/Virou) só com os
+    campos que de fato mudaram em cada item alterado."""
     anterior = historico[historico["data_snapshot"] == data_escolhida].copy()
     atual = historico[historico["data_snapshot"] == data_atual].copy()
 
@@ -76,6 +94,7 @@ def calcular_evolucao(historico, chave, data_escolhida, data_atual):
     anterior_idx = anterior.set_index("_chave")
     atual_idx = atual.set_index("_chave")
     alteradas = []
+    linhas_detalhe = []
     for chave_valor in comuns:
         linha_ant = anterior_idx.loc[chave_valor]
         linha_atu = atual_idx.loc[chave_valor]
@@ -83,11 +102,23 @@ def calcular_evolucao(historico, chave, data_escolhida, data_atual):
             linha_ant = linha_ant.iloc[0]
         if isinstance(linha_atu, pd.DataFrame):
             linha_atu = linha_atu.iloc[0]
-        if any(str(linha_ant[c]) != str(linha_atu[c]) for c in colunas_comparar):
+        campos_mudados = [c for c in colunas_comparar if str(linha_ant[c]) != str(linha_atu[c])]
+        if campos_mudados:
             alteradas.append(chave_valor)
+            rotulo_item = " / ".join(
+                f"{(nomes_colunas or {}).get(c, c)} {linha_atu[c]}" for c in chave
+            )
+            for c in campos_mudados:
+                linhas_detalhe.append({
+                    "Item": rotulo_item,
+                    "Campo": (nomes_colunas or {}).get(c, c),
+                    "Era": _formatar_valor(linha_ant[c]),
+                    "Virou": _formatar_valor(linha_atu[c]),
+                })
 
     alterados = atual[atual["_chave"].isin(alteradas)].drop(columns="_chave") if alteradas else atual.iloc[0:0].drop(columns="_chave")
-    return novos, removidos, alterados
+    detalhe = pd.DataFrame(linhas_detalhe, columns=["Item", "Campo", "Era", "Virou"])
+    return novos, removidos, alterados, detalhe
 
 
 def secao_evolucao(historico, chave, key_slider, colunas_exibir, nomes_colunas=None):
@@ -97,7 +128,7 @@ def secao_evolucao(historico, chave, key_slider, colunas_exibir, nomes_colunas=N
     if data_escolhida is None:
         return
 
-    novos, removidos, alterados = calcular_evolucao(historico, chave, data_escolhida, data_atual)
+    novos, removidos, alterados, detalhe = calcular_evolucao(historico, chave, data_escolhida, data_atual, nomes_colunas)
     escolhida_fmt = pd.Timestamp(data_escolhida).strftime("%d/%m/%Y")
     atual_fmt = pd.Timestamp(data_atual).strftime("%d/%m/%Y")
     st.caption(f"Comparando {escolhida_fmt} → {atual_fmt}")
@@ -132,3 +163,9 @@ def secao_evolucao(historico, chave, key_slider, colunas_exibir, nomes_colunas=N
         else:
             tabela = alterados[colunas_exibir].rename(columns=nomes_colunas or {})
             st.dataframe(tabela, hide_index=True, width="stretch", height=260)
+            st.markdown(
+                f'<div style="margin-top:10px;font-size:13px;font-weight:600;color:{INK};">'
+                f"O que era → o que virou</div>",
+                unsafe_allow_html=True,
+            )
+            st.dataframe(detalhe, hide_index=True, width="stretch", height=min(260, 46 + 35 * len(detalhe)))
