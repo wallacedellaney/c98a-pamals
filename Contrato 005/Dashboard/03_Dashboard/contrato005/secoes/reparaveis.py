@@ -1,5 +1,8 @@
 """Tela de detalhe — Reparáveis."""
 
+import sys
+from pathlib import Path
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -8,6 +11,10 @@ from shared import horario
 from contrato005.components import data_global
 from contrato005.components.paleta import AMBER, CATEGORICA, STATUS, layout_grafico
 from contrato005.components.utils import ordenar_unicos
+
+SCRIPTS_PYTHON = Path(__file__).resolve().parents[3] / "05_Scripts" / "python"
+if str(SCRIPTS_PYTHON) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_PYTHON))
 
 # "Onde se encontra" que significa que o item JÁ foi entregue pelo
 # fornecedor (VEE ONE) pra unidade/base — só falta encerrar a burocracia da
@@ -39,6 +46,92 @@ MESES_PT = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ]
+
+
+def _mesclar_complemento_rma(df, complemento):
+    """Mescla "Data de devolução empresa"/"Onde se encontra"/"Recibo" vindos
+    da RMA em andamento do mês por cima da planilha geral, só pras OS que a
+    RMA já confirma como devolvidas — pedido do Wallace, 2026-08-12: a
+    burocracia da OS pode continuar aberta na planilha geral por um tempo
+    mesmo depois da empresa já ter devolvido de verdade (ver RMA, aba 1.8 +
+    1.10). Nunca inventa: só sobrescreve os 3 campos quando a RMA de fato
+    trouxe um valor pra aquela OS; `situacao`/`em_aberto` continuam vindo só
+    da planilha geral (não foi pedido mexer nisso). Cria a coluna `fonte`
+    (ex.: "RMA Julho/2026") — vazia pra OS sem complemento, indicando que a
+    informação é só da planilha geral mesmo."""
+    df = df.copy()
+    df["fonte"] = ""
+    if complemento is None or complemento.empty:
+        return df
+
+    # `data_entrega` é datetime64 na base tratada — pode receber tanto uma
+    # data real (data_devolucao_empresa) quanto texto ambíguo não-parseável
+    # (data_devolucao_empresa_texto, ex.: "14/5/2025 E 25/07/2025"), então
+    # precisa virar coluna de objeto antes de misturar os dois tipos.
+    df["data_entrega"] = df["data_entrega"].astype(object)
+
+    mais_recente = (
+        complemento.sort_values(["ano_referencia", "mes_referencia"])
+        .drop_duplicates("os", keep="last")
+        .set_index("os")
+    )
+    df["os"] = df["os"].astype(str)
+    for numero_os, linha in mais_recente.iterrows():
+        idx = df.index[df["os"] == numero_os]
+        if idx.empty:
+            continue
+        if linha["onde_se_encontra"]:
+            df.loc[idx, "onde_se_encontra"] = linha["onde_se_encontra"]
+        if linha["recibo"]:
+            df.loc[idx, "recibo"] = linha["recibo"]
+        if pd.notna(linha["data_devolucao_empresa"]):
+            df.loc[idx, "data_entrega"] = linha["data_devolucao_empresa"]
+        elif linha["data_devolucao_empresa_texto"]:
+            df.loc[idx, "data_entrega"] = linha["data_devolucao_empresa_texto"]
+        df.loc[idx, "fonte"] = linha["fonte"]
+    return df
+
+
+def _secao_complemento_rma():
+    """Botão pra repetir, em qualquer mês futuro, o cruzamento que o Wallace
+    pediu manualmente em 2026-08-12 pra julho — sem precisar pedir de novo
+    na conversa. Ver `extrair_reparaveis_rma.py`."""
+    with st.expander("🔄 Complementar com a RMA em andamento do mês"):
+        st.caption(
+            "Busca no Drive a \"RMA em andamento\" (ou \"Pré RMA\") do mês escolhido, cruza a aba 1.8 "
+            "(OS devolvidas no mês) com a 1.10 (recibo/local/data de devolução) e complementa \"ONDE SE "
+            "ENCONTRA\"/\"Data de devolução empresa\"/\"RECIBO CASO TENHA\" na tabela acima, pras OS que a "
+            "burocracia da planilha geral ainda não fechou."
+        )
+        hoje = horario.hoje_br()
+        col_ano, col_mes, col_botao = st.columns([1, 2, 2])
+        with col_ano:
+            ano = st.number_input("Ano", min_value=2025, max_value=2035, value=hoje.year, step=1, key="rep_rma_ano")
+        with col_mes:
+            mes = st.selectbox(
+                "Mês", options=list(range(1, 13)), index=hoje.month - 1,
+                format_func=lambda m: MESES_PT[m - 1], key="rep_rma_mes",
+            )
+        with col_botao:
+            st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
+            if st.button("Buscar e complementar", key="rep_rma_buscar", width="stretch"):
+                with st.spinner("Buscando a RMA do mês no Drive..."):
+                    try:
+                        from shared import drive_sync
+                        drive_sync.garantir_credencial_arquivo()
+                        import extrair_reparaveis_rma
+                        resultado = extrair_reparaveis_rma.atualizar_do_mes(int(ano), int(mes))
+                        st.success(
+                            f"Complementado a partir de \"{resultado['arquivo']}\": "
+                            f"{resultado['os_complementadas_no_mes']} OS com dado na aba 1.10 "
+                            f"({resultado['os_entregues_no_mes']} entregues neste mês [aba 1.8] + "
+                            f"{resultado['os_historico']} histórico de meses anteriores; "
+                            f"{resultado['total_acumulado']} acumuladas no total, "
+                            f"{resultado['inconsistencias']} inconsistência(s) — ver log em 06_Logs/)."
+                        )
+                        st.cache_data.clear()
+                    except Exception as e:
+                        st.error(f"Falha ao buscar/complementar: {e}")
 
 
 def _secao_historico_mensal(df):
@@ -189,7 +282,7 @@ def render(dados):
 
     st.title("Reparáveis")
 
-    df = dados["reparaveis"].copy()
+    df = _mesclar_complemento_rma(dados["reparaveis"], dados.get("reparaveis_complemento_rma"))
     df["onde_se_encontra"] = df["onde_se_encontra"].fillna(LOCAL_NAO_INFORMADO)
 
     _secao_estatisticas_tat(df)
@@ -228,14 +321,27 @@ def render(dados):
     tabela = filtrado[[
         "os", "pn", "cff", "nomenclatura", "sn", "unidade_solicitante", "situacao",
         "condicao", "onde_se_encontra", "data_inicio", "tat_siloms", "tat_empresa",
-        "data_entrega", "sn_trocado_exchange", "termo_recebimento",
+        "data_entrega", "recibo", "sn_trocado_exchange", "termo_recebimento", "fonte",
     ]].copy()
     # Colunas com tipos misturados (data/vazio, número/texto) viram string só
     # para exibição — evita erro de serialização da tabela, sem alterar o xlsx.
-    for coluna in ("data_inicio", "data_entrega", "cff", "sn", "sn_trocado_exchange", "termo_recebimento"):
+    for coluna in ("data_inicio", "data_entrega", "cff", "sn", "sn_trocado_exchange", "termo_recebimento", "recibo"):
         tabela[coluna] = tabela[coluna].astype(str).replace({"None": "", "nan": "", "NaT": ""})
+    tabela = tabela.rename(columns={
+        "onde_se_encontra": "ONDE SE ENCONTRA", "data_entrega": "Data de devolução empresa",
+        "recibo": "RECIBO CASO TENHA",
+        "fonte": "Fonte (onde/devolução/recibo)",
+    })
 
     st.dataframe(tabela, width="stretch", hide_index=True, height=420)
+    st.caption(
+        "\"ONDE SE ENCONTRA\", \"Data de devolução empresa\" e \"RECIBO CASO TENHA\" vêm da planilha geral "
+        "(Controle de Reparáveis) por padrão. Quando a coluna \"Fonte\" mostra \"RMA {Mês}/{Ano} (entregue no "
+        "mês)\", a aba 1.8 da RMA confirma que a empresa devolveu esse item NESSE mês; \"RMA {Mês}/{Ano} "
+        "(histórico)\" é uma OS mais antiga que a aba 1.10 (controle acumulado) já tinha o dado, mas não é do "
+        "mês em referência. Nos dois casos, situação/em aberto continuam vindo só da planilha geral (não "
+        "mudam por isso) — só os 3 campos são complementados."
+    )
 
     with st.expander("Distribuição por condição"):
         contagem = filtrado["condicao"].value_counts().reset_index()
@@ -245,6 +351,9 @@ def render(dados):
         fig.update_layout(yaxis_title="", xaxis_title="Quantidade", showlegend=False)
         layout_grafico(fig)
         st.plotly_chart(fig, width="stretch")
+
+    st.divider()
+    _secao_complemento_rma()
 
     st.divider()
     _secao_historico_mensal(df)

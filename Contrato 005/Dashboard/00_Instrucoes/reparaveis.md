@@ -138,3 +138,31 @@ novos cards olham a base **inteira** (abertos + concluídos), porque
 `tat_empresa` só existe depois que o item já foi entregue — é uma medida
 retrospectiva (real, reportada pela empresa), não do que está em
 andamento agora.
+
+**Complemento com a RMA em andamento (2026-08-12)** — Wallace: "tem uns OS
+que foram entregues (a burocracia provavelmente ainda tá aberta) [...] vc
+vai na planilha de controle dos reparáveis busca essas OS [...] atualiza
+onde que tá, data de devolução pela empresa, número do recibo, só deixar
+registrado que essa informação veio da RMA de julho da empresa". A
+"planilha geral" (Controle de Reparáveis) pode demorar a fechar a
+burocracia de uma OS mesmo depois da empresa já ter devolvido de verdade
+— a RMA em andamento do mês (aba 1.8 "Materiais reparáveis devolvidos no
+mês de referência" + aba 1.10 "Controle de Ordens de Serviço abertas até
+o mês de referência") já mostra isso antes. `extrair_reparaveis_rma.py`
+cruza as 2 abas (OS da 1.8 → busca Data da devolução/Nº do Recibo/Operador
+na 1.10) e salva em `02_Dados_Tratados/reparaveis_complemento_rma.xlsx`
+(acumulado por mês, upsert por OS+mês — nunca sobrescreve a planilha geral
+nem a base tratada, só complementa na exibição). Botão "🔄 Complementar com
+a RMA em andamento do mês" na tela de Reparáveis (`_secao_complemento_rma`
+em `reparaveis.py`) busca no Drive (mesma pasta "Fechamentos mensais" >
+ano > mês já usada por Financeiro/Apresentação/Ata RMA) e roda o
+cruzamento pro mês escolhido. Na tabela principal, as 3 colunas mescladas
+aparecem como "ONDE SE ENCONTRA"/"Data de devolução empresa"/"RECIBO CASO
+TENHA", e uma coluna "Fonte" mostra "RMA {Mês}/{Ano}" quando o valor veio
+de lá (vazia = só da planilha geral). **Não muda `situacao`/`em_aberto`**
+— só os 3 campos, como pedido; a classificação "entregue, falta
+burocracia" (`LOCAIS_ENTREGUES`) já reconhece automaticamente o valor
+complementado de "onde_se_encontra" (normalizado de "PAMALS" pra
+"PAMA-LS", mesma grafia da planilha geral). OS que a 1.8 diz que foi
+devolvida mas não tem devolução/recibo/local nem na própria 1.10 (ou nem
+aparece lá) vira inconsistência no log — não inventamos o dado.

@@ -152,6 +152,22 @@ def carregar_reparaveis():
     return _ler_excel(str(caminho), mtime), mtime
 
 
+def carregar_reparaveis_complemento_rma():
+    """Complemento de "Data de devolução empresa"/"Onde se encontra"/"Recibo"
+    vindo da RMA em andamento do mês (pedido do Wallace, 2026-08-12) — pra OS
+    que a empresa já devolveu mas a burocracia da planilha geral ainda não
+    fechou. Mesclado por cima na exibição do Reparáveis, nunca sobrescreve a
+    base tratada. Ver `extrair_reparaveis_rma.py`."""
+    caminho = DADOS_TRATADOS / "reparaveis_complemento_rma.xlsx"
+    if not caminho.exists():
+        return pd.DataFrame(columns=[
+            "os", "mes_referencia", "ano_referencia", "data_devolucao_empresa",
+            "data_devolucao_empresa_texto", "onde_se_encontra", "recibo", "fonte", "arquivo_fonte",
+        ])
+    mtime = caminho.stat().st_mtime
+    return _ler_excel(str(caminho), mtime, dtype={"os": str})
+
+
 def _carregar_historico_generico(nome_arquivo, dtype=None):
     """Loader genérico pros históricos diários usados no controle de data
     global (ver components/data_global.py) — todos seguem o mesmo formato
@@ -228,6 +244,7 @@ def carregar_tudo():
         "reparaveis": df_reparaveis,
         "reparaveis_atualizado_em": mtime_rep,
         "historico_reparaveis": carregar_historico_reparaveis(),
+        "reparaveis_complemento_rma": carregar_reparaveis_complemento_rma(),
         "pagamentos": df_pagamentos,
         "pagamentos_atualizado_em": mtime_pag,
         "historico_pagamentos": carregar_historico_pagamentos(),

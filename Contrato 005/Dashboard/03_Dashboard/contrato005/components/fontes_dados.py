@@ -48,6 +48,13 @@ FONTES = [
         "_chave": "reparaveis_atualizado_em",
     },
     {
+        "Informação": "Reparáveis — complemento RMA (Onde se encontra/Recibo/Data de devolução)",
+        "De onde vem": 'Planilha "RMA em andamento {Mês}.xlsx"/"Pré RMA C-98 {Mês}-26.xlsx" (Drive) — abas 1.8 + 1.10',
+        "Como é atualizado": 'Botão "Buscar e complementar" na tela de Reparáveis',
+        "Frequência": "Sob demanda (manual, por mês)",
+        "_chave": None,
+    },
+    {
         "Informação": "Empréstimos",
         "De onde vem": 'Planilha Google Sheets "Devoluções"',
         "Como é atualizado": "Busca automática no Drive + reprocessa",
