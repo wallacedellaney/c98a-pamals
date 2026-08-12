@@ -31,9 +31,19 @@ substitui as linhas desse mês; rodar num mês novo soma, sem apagar o
 histórico de meses anteriores (e se uma OS aparecer complementada em mais
 de um mês, o dashboard usa a mais recente — ver `_mesclar_complemento_rma`
 em `reparaveis.py`).
+
+**Condenados (aba 1.9, 2026-08-12)** — Wallace: "na aba 1.9 tem os
+devolvidos condenados, busca nas OS aberto eles e acrescenta essa
+informação". A aba **1.9** "Materiais reparáveis condenados" tem, pra cada
+OS ("Nº da OS atrelada de Abertura"), a data de devolução do SN original e
+o "Motivo de Condenação" — informação que a 1.10 não tem (uma OS condenada
+pode não aparecer lá com data/recibo preenchidos). Toda OS da 1.9 vira
+`condenado=True` + `motivo_condenacao`, mesclada na mesma linha da OS (se
+ela já tinha dado da 1.10) ou como linha nova (se só existe na 1.9).
 """
 
 import io
+from datetime import date
 
 import openpyxl
 import pandas as pd
@@ -55,6 +65,12 @@ MESES_PT = [
 # entraria em LOCAIS_ENTREGUES por diferença pontual de grafia).
 NORMALIZACAO_OPERADOR = {"PAMALS": "PAMA-LS", "PAMA LS": "PAMA-LS"}
 
+# Números de OS reais têm 10 dígitos (ex.: 3040249831) — limiar bem abaixo
+# disso só pra descartar leitura errada de linha de rodapé/total (ex.: "Total
+# de itens devolvidos no período: 4 itens." — o "4" cai por acidente na
+# mesma coluna da OS quando lido célula a célula).
+OS_MINIMO_VALIDO = 100_000
+
 
 def _valor_texto(v):
     if v is None:
@@ -63,15 +79,53 @@ def _valor_texto(v):
     return texto or None
 
 
+def _parse_data_condenacao(v):
+    """Aceita datetime real ou texto "DD/MM/AAAA" — inclusive com barra
+    duplicada por erro de digitação na origem (ex.: "22//07/2026", visto na
+    aba 1.9 de julho/2026). Não inventa: formato não reconhecido vira None."""
+    if hasattr(v, "date"):
+        return v.date()
+    if not isinstance(v, str):
+        return None
+    partes = [p for p in v.strip().split("/") if p]
+    if len(partes) != 3:
+        return None
+    try:
+        d, m, y = (int(p) for p in partes)
+        return date(y, m, d)
+    except ValueError:
+        return None
+
+
+def _extrair_condenados(wb, nome_arquivo):
+    """Lê a aba 1.9 ("Materiais reparáveis condenados"). Devolve dict
+    {numero_os: {"data_devolucao": date|None, "motivo": str|None}}."""
+    if "1.9" not in wb.sheetnames:
+        return {}
+    ws = wb["1.9"]
+    condenados = {}
+    for r in range(6, ws.max_row + 1):
+        nos = ws.cell(row=r, column=8).value  # "Nº da OS atrelada de Abertura"
+        if not isinstance(nos, (int, float)) or nos < OS_MINIMO_VALIDO:
+            continue
+        condenados[int(nos)] = {
+            "data_devolucao": _parse_data_condenacao(ws.cell(row=r, column=9).value),
+            "motivo": _valor_texto(ws.cell(row=r, column=11).value),
+        }
+    return condenados
+
+
 def extrair(conteudo_bytes, ano, mes, nome_arquivo):
-    """Lê a aba 1.10 inteira (todo o controle de OS, não só as do mês) do
-    conteúdo (bytes) da RMA em andamento. Devolve (df, inconsistencias) —
-    df com colunas: os, mes_referencia, ano_referencia,
+    """Lê a aba 1.10 inteira (todo o controle de OS, não só as do mês) +
+    1.9 (condenados) do conteúdo (bytes) da RMA em andamento. Devolve (df,
+    inconsistencias) — df com colunas: os, mes_referencia, ano_referencia,
     data_devolucao_empresa, data_devolucao_empresa_texto, onde_se_encontra,
-    recibo, fonte, entregue_no_mes, arquivo_fonte. Toda OS com pelo menos um
-    dos 3 campos (devolução/recibo/operador) preenchido na 1.10 vira uma
-    linha — OS ainda sem nenhum dos 3 é a maioria (ainda em aberto de
-    verdade) e é ignorada silenciosamente, não é inconsistência.
+    recibo, fonte, entregue_no_mes, condenado, motivo_condenacao,
+    arquivo_fonte. Toda OS com pelo menos um dos 3 campos
+    (devolução/recibo/operador) preenchido na 1.10, OU que aparece na 1.9
+    (condenada), vira uma linha — OS ainda sem nenhum dos 3 e fora da 1.9 é
+    a maioria (ainda em aberto de verdade) e é ignorada silenciosamente,
+    não é inconsistência.
 
     `entregue_no_mes` (bool) — pedido do Wallace, 2026-08-12: "oq foi
     entregue no mês são da 1.8, aí vc deixa claro lá tb" — distingue a OS
@@ -91,17 +145,17 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
         ws88 = wb["1.8"]
         for r in range(6, ws88.max_row + 1):
             numero_os = ws88.cell(row=r, column=5).value
-            if isinstance(numero_os, (int, float)):
+            if isinstance(numero_os, (int, float)) and numero_os >= OS_MINIMO_VALIDO:
                 os_entregues_no_mes.add(int(numero_os))
     else:
         inconsistencias.append(f"{nome_arquivo}: aba 1.8 não encontrada — não dá pra marcar quais OS foram entregues neste mês específico.")
 
     ws810 = wb["1.10"]
     mes_ano = f"{MESES_PT[mes - 1]}/{ano}"
-    linhas = []
+    registros = {}
     for r in range(6, ws810.max_row + 1):
         nos = ws810.cell(row=r, column=7).value
-        if not isinstance(nos, (int, float)):
+        if not isinstance(nos, (int, float)) or nos < OS_MINIMO_VALIDO:
             continue
         numero_os = int(nos)
 
@@ -118,9 +172,7 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
             continue  # OS ainda em aberto de verdade, nem na própria RMA tem info — normal, maioria dos casos
 
         entregue_no_mes = numero_os in os_entregues_no_mes
-        fonte = f"RMA {mes_ano} (entregue no mês)" if entregue_no_mes else f"RMA {mes_ano} (histórico)"
-
-        linhas.append({
+        registros[numero_os] = {
             "os": str(numero_os),
             "mes_referencia": mes,
             "ano_referencia": ano,
@@ -128,10 +180,46 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
             "data_devolucao_empresa_texto": data_devolucao_texto,
             "onde_se_encontra": onde,
             "recibo": recibo,
-            "fonte": fonte,
             "entregue_no_mes": entregue_no_mes,
+            "condenado": False,
+            "motivo_condenacao": None,
             "arquivo_fonte": nome_arquivo,
-        })
+        }
+
+    # Aba 1.9 — "Materiais reparáveis condenados" (pedido do Wallace,
+    # 2026-08-12: "na aba 1.9 tem os devolvidos condenados, busca nas OS
+    # aberto eles e acrescenta essa informação"). Mescla na mesma linha da
+    # OS (se já veio da 1.10) ou cria uma linha nova (só existia na 1.9).
+    condenados = _extrair_condenados(wb, nome_arquivo)
+    for numero_os, info in condenados.items():
+        registro = registros.get(numero_os)
+        if registro is None:
+            registro = {
+                "os": str(numero_os),
+                "mes_referencia": mes,
+                "ano_referencia": ano,
+                "data_devolucao_empresa": None,
+                "data_devolucao_empresa_texto": None,
+                "onde_se_encontra": None,
+                "recibo": None,
+                "entregue_no_mes": numero_os in os_entregues_no_mes,
+                "condenado": False,
+                "motivo_condenacao": None,
+                "arquivo_fonte": nome_arquivo,
+            }
+            registros[numero_os] = registro
+        registro["condenado"] = True
+        registro["motivo_condenacao"] = info["motivo"]
+        if registro["data_devolucao_empresa"] is None and info["data_devolucao"] is not None:
+            registro["data_devolucao_empresa"] = info["data_devolucao"]
+
+    linhas = []
+    for registro in registros.values():
+        fonte = f"RMA {mes_ano} (entregue no mês)" if registro["entregue_no_mes"] else f"RMA {mes_ano} (histórico)"
+        if registro["condenado"]:
+            fonte += " — condenado"
+        registro["fonte"] = fonte
+        linhas.append(registro)
 
     return pd.DataFrame(linhas), inconsistencias
 
@@ -170,6 +258,7 @@ def atualizar_do_mes(ano, mes):
         "os_complementadas_no_mes": len(df_novo),
         "os_entregues_no_mes": int(df_novo["entregue_no_mes"].sum()) if not df_novo.empty else 0,
         "os_historico": int((~df_novo["entregue_no_mes"]).sum()) if not df_novo.empty else 0,
+        "os_condenadas": int(df_novo["condenado"].sum()) if not df_novo.empty else 0,
         "total_acumulado": len(completo),
         "inconsistencias": len(inconsistencias),
         "atualizado_em": horario.hoje_br().isoformat(),

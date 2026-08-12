@@ -88,6 +88,12 @@ def _mesclar_complemento_rma(df, complemento):
             df.loc[idx, "data_entrega"] = linha["data_devolucao_empresa"]
         elif linha["data_devolucao_empresa_texto"]:
             df.loc[idx, "data_entrega"] = linha["data_devolucao_empresa_texto"]
+        # Condenado (aba 1.9 da RMA) — sobrescreve "Condição" mesmo que a
+        # planilha geral ainda mostre "EM REPARO" (burocracia em aberto),
+        # com o motivo de condenação junto.
+        if bool(linha.get("condenado", False)):
+            motivo = linha.get("motivo_condenacao")
+            df.loc[idx, "condicao"] = f"CONDENADO — {motivo}" if motivo else "CONDENADO"
         df.loc[idx, "fonte"] = linha["fonte"]
     return df
 
@@ -98,10 +104,10 @@ def _secao_complemento_rma():
     na conversa. Ver `extrair_reparaveis_rma.py`."""
     with st.expander("🔄 Complementar com a RMA em andamento do mês"):
         st.caption(
-            "Busca no Drive a \"RMA em andamento\" (ou \"Pré RMA\") do mês escolhido, cruza a aba 1.8 "
-            "(OS devolvidas no mês) com a 1.10 (recibo/local/data de devolução) e complementa \"ONDE SE "
-            "ENCONTRA\"/\"Data de devolução empresa\"/\"RECIBO CASO TENHA\" na tabela acima, pras OS que a "
-            "burocracia da planilha geral ainda não fechou."
+            "Busca no Drive a \"RMA em andamento\" (ou \"Pré RMA\") do mês escolhido e complementa \"ONDE SE "
+            "ENCONTRA\"/\"Data de devolução empresa\"/\"RECIBO CASO TENHA\"/\"Condição\" na tabela acima, "
+            "pras OS que a burocracia da planilha geral ainda não fechou — cruzando a aba 1.10 (todo o "
+            "controle de OS, marcando quais a 1.8 confirma como entregues NESTE mês) e a 1.9 (condenados)."
         )
         hoje = horario.hoje_br()
         col_ano, col_mes, col_botao = st.columns([1, 2, 2])
@@ -123,9 +129,10 @@ def _secao_complemento_rma():
                         resultado = extrair_reparaveis_rma.atualizar_do_mes(int(ano), int(mes))
                         st.success(
                             f"Complementado a partir de \"{resultado['arquivo']}\": "
-                            f"{resultado['os_complementadas_no_mes']} OS com dado na aba 1.10 "
+                            f"{resultado['os_complementadas_no_mes']} OS com dado (1.10 + 1.9) "
                             f"({resultado['os_entregues_no_mes']} entregues neste mês [aba 1.8] + "
-                            f"{resultado['os_historico']} histórico de meses anteriores; "
+                            f"{resultado['os_historico']} histórico de meses anteriores, "
+                            f"{resultado['os_condenadas']} condenadas [aba 1.9]; "
                             f"{resultado['total_acumulado']} acumuladas no total, "
                             f"{resultado['inconsistencias']} inconsistência(s) — ver log em 06_Logs/)."
                         )
@@ -339,8 +346,10 @@ def render(dados):
         "(Controle de Reparáveis) por padrão. Quando a coluna \"Fonte\" mostra \"RMA {Mês}/{Ano} (entregue no "
         "mês)\", a aba 1.8 da RMA confirma que a empresa devolveu esse item NESSE mês; \"RMA {Mês}/{Ano} "
         "(histórico)\" é uma OS mais antiga que a aba 1.10 (controle acumulado) já tinha o dado, mas não é do "
-        "mês em referência. Nos dois casos, situação/em aberto continuam vindo só da planilha geral (não "
-        "mudam por isso) — só os 3 campos são complementados."
+        "mês em referência; \"— condenado\" no final indica que a aba 1.9 da RMA marca esse item como "
+        "condenado (aí a \"Condição\" também é sobrescrita com o motivo). Em todos os casos, situação/em "
+        "aberto continuam vindo só da planilha geral (não mudam por isso) — só os campos citados são "
+        "complementados."
     )
 
     with st.expander("Distribuição por condição"):
