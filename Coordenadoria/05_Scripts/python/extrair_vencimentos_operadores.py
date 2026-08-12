@@ -68,9 +68,9 @@ REGISTRO = [
     },
     {
         "operador": "DACTA II",
-        "arquivo": OPERADORES_DIR / "DACTA_II" / "Controle_de_Vencimentos_DACTAII_JUL_2026.ods",
+        "arquivo": OPERADORES_DIR / "DACTA_II" / "Controle_de_Vencimentos_DACTAII_AGO_2026.ods",
         "tipo": "ods",
-        "mes_fonte": "2026-07",
+        "mes_fonte": "2026-08",
     },
     {
         # Confirmado pelo Wallace: a pasta "PAMA-LS" do Drive (maio) e a pasta
@@ -78,9 +78,9 @@ REGISTRO = [
         # a base BABR mesmo, só a pasta mudou de nome. 2704 é a única
         # aeronave que é de fato do PAMA-LS (ver registro seguinte).
         "operador": "BABR",
-        "arquivo": OPERADORES_DIR / "BABR" / "Controle_de_Vencimentos_BABR_JUL_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BABR" / "Controle_de_Vencimentos_BABR_AGO_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-07",
+        "mes_fonte": "2026-08",
     },
     {
         "operador": "BABE",
@@ -95,9 +95,9 @@ REGISTRO = [
         # Formato padrão igual aos demais operadores; usamos o XLSX, não o
         # PDF duplicado da mesma pasta.
         "operador": "BACO",
-        "arquivo": OPERADORES_DIR / "BACO" / "Controle_de_Vencimentos_BACO_JUL_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BACO" / "Controle_de_Vencimentos_BACO_AGO_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-07",
+        "mes_fonte": "2026-08",
     },
     {
         # Formato diferente dos demais: sem seções POR HORA/POUSO/CALENDÁRIO,
@@ -120,12 +120,13 @@ REGISTRO = [
         "aba": "VENCIMENTO",
     },
     {
-        # Fonte íntegra de julho/2026. A ordem é a padrão, mas AERONAVE vem
-        # sem prefixo "FAB" (só o número, como na BAMN).
+        # Fonte íntegra de agosto/2026 (era julho até 2026-08-12). A ordem é
+        # a padrão, mas AERONAVE vem sem prefixo "FAB" (só o número, como na
+        # BAMN).
         "operador": "BACG",
-        "arquivo": OPERADORES_DIR / "BACG" / "Controle_de_Vencimentos_BACG_JUL_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BACG" / "Controle_de_Vencimentos_BACG_AGO_2026.xlsx",
         "tipo": "xlsx_aba_bare",
-        "mes_fonte": "2026-07",
+        "mes_fonte": "2026-08",
         "aba": "Controle de Vencimentos",
     },
     {
@@ -137,11 +138,14 @@ REGISTRO = [
         # parênteses ("1.337:20 (19,8 M)"), "ANV S/ MOTOR"/"NÃO INSTALADO(A)"
         # (item não instalado, sem vencimento aplicável) e "VENCIDA" (vencido
         # sabido, mas sem valor informado). "JUL / 27" (mês/ano com espaços)
-        # também apareceu na coluna de data.
+        # também apareceu na coluna de data. Fonte de agosto/2026 veio com
+        # nome de arquivo diferente no Drive ("DIAGONAL E CONTROL ITENS
+        # C-98.xlsx", sem indicação de mês no nome) — mesmas 3 abas, mesmo
+        # formato, confirmado.
         "operador": "BANT",
-        "arquivo": OPERADORES_DIR / "BANT" / "DIAGONAL_E_VENC_ITENS_C98_JUL26_BANT.xlsx",
+        "arquivo": OPERADORES_DIR / "BANT" / "DIAGONAL_E_VENC_ITENS_C98_AGO26_BANT.xlsx",
         "tipo": "xlsx_aba_bare",
-        "mes_fonte": "2026-07",
+        "mes_fonte": "2026-08",
         "aba": "Controle de Vencimento de Itens",
     },
 ]
