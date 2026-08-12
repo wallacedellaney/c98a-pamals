@@ -58,9 +58,22 @@ def _mesclar_complemento_rma(df, complemento):
     trouxe um valor pra aquela OS; `situacao`/`em_aberto` continuam vindo só
     da planilha geral (não foi pedido mexer nisso). Cria a coluna `fonte`
     (ex.: "RMA Julho/2026") — vazia pra OS sem complemento, indicando que a
-    informação é só da planilha geral mesmo."""
+    informação é só da planilha geral mesmo.
+
+    **TAT real calculado (2026-08-12)** — Wallace: "a empresa tem mais OS
+    né, acho que ela computou desde o início [...] vamos pegar o que tá com
+    OS concluída na nossa planilha e buscar os dados de entrega na deles,
+    para irmos criando o TAT real se tiver data de entrega [...] ou
+    completar com o que tiver". A 1.10 da RMA cobre bem mais OS do que a
+    planilha geral já tem `tat_empresa` preenchido (o "TAT" que a própria
+    empresa relata lá) — quando falta `tat_empresa` mas a gente tem
+    `data_inicio` (planilha geral) e a data de devolução (RMA), calcula
+    `tat_empresa = (data_devolução − data_início).dias` — não é inventar
+    dado, é derivar de 2 datas reais. `tat_calculado=True` marca as linhas
+    onde isso aconteceu (a "Fonte" ganha o sufixo "— TAT calculado")."""
     df = df.copy()
     df["fonte"] = ""
+    df["tat_calculado"] = False
     if complemento is None or complemento.empty:
         return df
 
@@ -94,7 +107,18 @@ def _mesclar_complemento_rma(df, complemento):
         if bool(linha.get("condenado", False)):
             motivo = linha.get("motivo_condenacao")
             df.loc[idx, "condicao"] = f"CONDENADO — {motivo}" if motivo else "CONDENADO"
-        df.loc[idx, "fonte"] = linha["fonte"]
+
+        fonte = linha["fonte"]
+        # TAT real calculado — só quando falta tat_empresa E temos as 2
+        # datas reais (data_inicio da planilha geral + devolução da RMA).
+        tat_atual = df.loc[idx, "tat_empresa"]
+        data_inicio = df.loc[idx, "data_inicio"]
+        if tat_atual.isna().all() and pd.notna(linha["data_devolucao_empresa"]) and data_inicio.notna().all():
+            dias = (pd.Timestamp(linha["data_devolucao_empresa"]) - data_inicio).dt.days
+            df.loc[idx, "tat_empresa"] = dias
+            df.loc[idx, "tat_calculado"] = True
+            fonte = f"{fonte} — TAT calculado" if fonte else "TAT calculado (RMA)"
+        df.loc[idx, "fonte"] = fonte
     return df
 
 
@@ -222,11 +246,25 @@ def _secao_estatisticas_tat(df):
     # na extração) — por isso olha o `df` inteiro, não só `abertos`: é uma
     # medida retrospectiva (itens já concluídos), não do que está em
     # andamento agora (isso continua sendo o tat_siloms, acima).
+    #
+    # Desde 2026-08-12, parte desse número é **calculado por nós** (não
+    # reportado pela empresa) — quando falta `tat_empresa` na planilha
+    # geral mas a RMA (que cobre mais OS, "desde o início") tem a data de
+    # devolução, `_mesclar_complemento_rma` já calculou
+    # `data_devolução − data_início` e marcou `tat_calculado=True`.
     com_tat_empresa = df[df["tat_empresa"].notna()]
     if not com_tat_empresa.empty:
+        calculados = int(com_tat_empresa["tat_calculado"].sum())
         c7, c8 = st.columns(2)
         c7.metric("Itens com TAT real da empresa (já entregues)", len(com_tat_empresa))
         c8.metric("Média de TAT real — empresa", f"{com_tat_empresa['tat_empresa'].mean():.0f} dias")
+        if calculados:
+            st.caption(
+                f"Dos {len(com_tat_empresa)} acima, {calculados} não vieram reportados pela empresa na "
+                "planilha geral — foram calculados por nós (data de devolução da RMA − data início) por "
+                "faltar o \"TAT\" na planilha geral pra esses. Ver coluna \"Fonte\" na tabela (\"— TAT "
+                "calculado\")."
+            )
 
     g1, g2 = st.columns(2)
     with g1:
@@ -347,9 +385,11 @@ def render(dados):
         "mês)\", a aba 1.8 da RMA confirma que a empresa devolveu esse item NESSE mês; \"RMA {Mês}/{Ano} "
         "(histórico)\" é uma OS mais antiga que a aba 1.10 (controle acumulado) já tinha o dado, mas não é do "
         "mês em referência; \"— condenado\" no final indica que a aba 1.9 da RMA marca esse item como "
-        "condenado (aí a \"Condição\" também é sobrescrita com o motivo). Em todos os casos, situação/em "
-        "aberto continuam vindo só da planilha geral (não mudam por isso) — só os campos citados são "
-        "complementados."
+        "condenado (aí a \"Condição\" também é sobrescrita com o motivo); \"— TAT calculado\" indica que o "
+        "\"TAT\" real (na seção \"Estatísticas de TAT\" acima) não veio reportado pela empresa — calculamos "
+        "nós (data de devolução da RMA − data início) porque faltava na planilha geral. Em todos os casos, "
+        "situação/em aberto continuam vindo só da planilha geral (não mudam por isso) — só os campos citados "
+        "são complementados."
     )
 
     with st.expander("Distribuição por condição"):
