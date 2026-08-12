@@ -189,11 +189,29 @@ def _secao_historico_mensal(df):
 
 
 def _secao_estatisticas_tat(df):
-    abertos = df[df["em_aberto"]].copy()
-    if abertos.empty:
+    st.markdown("##### Estatísticas de TAT")
+
+    # Filtro de escopo (pedido do Wallace, 2026-08-12: "coloca as OS
+    # fechadas lá tb e todas, dar por filtrar OS aberta no SILOMS e OS já
+    # fechada e todas, aí as estatística giram em todos de conforme eu
+    # selecionar e geral") — antes essa seção só olhava OS em aberto; agora
+    # todas as contas abaixo recalculam de acordo com a escolha.
+    escopo = st.radio(
+        "OS consideradas nas estatísticas abaixo",
+        ["Abertas no SILOMS", "Fechadas", "Todas"],
+        horizontal=True, key="rep_tat_escopo",
+    )
+    if escopo == "Abertas no SILOMS":
+        escopo_df = df[df["em_aberto"]].copy()
+    elif escopo == "Fechadas":
+        escopo_df = df[~df["em_aberto"]].copy()
+    else:
+        escopo_df = df.copy()
+
+    if escopo_df.empty:
+        st.info(f"Nenhuma OS em \"{escopo}\".")
         return
 
-    st.markdown("##### Estatísticas de TAT")
     st.caption(
         "\"Com a empresa e terceirizados\" = ainda não entregue pelo fornecedor. Quando \"Onde se "
         "encontra\" é BABE/BAMN/BABV/BAPV/BABR/BANT/PAMA-LS/BACO/BASM/BACG/EEAR, já foi entregue — "
@@ -201,18 +219,17 @@ def _secao_estatisticas_tat(df):
         f"etapa, ainda com a empresa). Vazio = \"{LOCAL_NAO_INFORMADO}\"."
     )
 
-    abertos = abertos.copy()
-    abertos["grupo"] = abertos["onde_se_encontra"].isin(LOCAIS_ENTREGUES).map(
+    escopo_df["grupo"] = escopo_df["onde_se_encontra"].isin(LOCAIS_ENTREGUES).map(
         {True: "Entregue (falta burocracia)", False: "Com a empresa e terceirizados"}
     )
-    empresa = abertos[abertos["grupo"] == "Com a empresa e terceirizados"]
+    empresa = escopo_df[escopo_df["grupo"] == "Com a empresa e terceirizados"]
 
     def _media_tat(sub):
         return f"{sub['tat_siloms'].mean():.0f} dias" if sub["tat_siloms"].notna().any() else "—"
 
     c1, c2 = st.columns(2)
-    c1.metric("Abertos (geral)", len(abertos))
-    c2.metric("Média de TAT geral (mesmo faltando a burocracia)", _media_tat(abertos))
+    c1.metric(f"OS — {escopo}", len(escopo_df))
+    c2.metric("Média de TAT geral (mesmo faltando a burocracia)", _media_tat(escopo_df))
 
     c3, c4 = st.columns(2)
     c3.metric("Com a empresa e terceirizados", len(empresa))
@@ -243,16 +260,16 @@ def _secao_estatisticas_tat(df):
     # "INFORMAÇÕES DA EMPRESA") — disponível a partir de 2026-07-27 (Wallace:
     # "tem o TAT DA EMPRESA AGORA"). Só existe depois que o item já foi
     # entregue (vem "NÃO APLICÁVEL" enquanto em reparo, já tratado como None
-    # na extração) — por isso olha o `df` inteiro, não só `abertos`: é uma
-    # medida retrospectiva (itens já concluídos), não do que está em
-    # andamento agora (isso continua sendo o tat_siloms, acima).
+    # na extração) — é uma medida retrospectiva (itens já concluídos ou já
+    # entregues mesmo sem burocracia fechada), respeita o escopo escolhido
+    # acima como todo o resto da seção.
     #
     # Desde 2026-08-12, parte desse número é **calculado por nós** (não
     # reportado pela empresa) — quando falta `tat_empresa` na planilha
     # geral mas a RMA (que cobre mais OS, "desde o início") tem a data de
     # devolução, `_mesclar_complemento_rma` já calculou
     # `data_devolução − data_início` e marcou `tat_calculado=True`.
-    com_tat_empresa = df[df["tat_empresa"].notna()]
+    com_tat_empresa = escopo_df[escopo_df["tat_empresa"].notna()]
     if not com_tat_empresa.empty:
         calculados = int(com_tat_empresa["tat_calculado"].sum())
         c7, c8 = st.columns(2)
@@ -269,7 +286,7 @@ def _secao_estatisticas_tat(df):
     g1, g2 = st.columns(2)
     with g1:
         st.caption("Com a empresa e terceirizados x Entregue (falta burocracia)")
-        contagem_grupo = abertos["grupo"].value_counts().reset_index()
+        contagem_grupo = escopo_df["grupo"].value_counts().reset_index()
         contagem_grupo.columns = ["grupo", "quantidade"]
         fig_grupo = px.pie(
             contagem_grupo, names="grupo", values="quantidade", hole=0.55,
@@ -297,26 +314,31 @@ def _secao_estatisticas_tat(df):
 
     st.caption("TAT médio por local ('Onde se encontra')")
     media_local = (
-        abertos.dropna(subset=["tat_siloms"])
+        escopo_df.dropna(subset=["tat_siloms"])
         .groupby("onde_se_encontra")["tat_siloms"]
         .agg(["mean", "count"])
         .reset_index()
         .rename(columns={"onde_se_encontra": "Onde se encontra", "mean": "TAT médio (dias)", "count": "Quantidade"})
         .sort_values("TAT médio (dias)", ascending=False)
     )
-    media_local["TAT médio (dias)"] = media_local["TAT médio (dias)"].round(0).astype(int)
-    fig_local = px.bar(
-        media_local, x="TAT médio (dias)", y="Onde se encontra", orientation="h",
-        color_discrete_sequence=[AMBER],
-    )
-    fig_local.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=STATUS["critical"],
-                         annotation_text=f"{PRAZO_CONTRATUAL_TAT_DIAS}d contratual")
-    fig_local.update_layout(yaxis_title="", xaxis_title="TAT médio (dias)")
-    layout_grafico(fig_local, altura=max(200, 28 * len(media_local)))
-    st.plotly_chart(fig_local, width="stretch")
+    if media_local.empty:
+        # "tat_siloms" (TAT corrente do SILOMS) normalmente só existe pra OS
+        # ainda em aberto — em "Fechadas" costuma vir tudo vazio, não é bug.
+        st.caption("Sem \"TAT SILOMS\" preenchido nas OS desse escopo — normal em \"Fechadas\".")
+    else:
+        media_local["TAT médio (dias)"] = media_local["TAT médio (dias)"].round(0).astype(int)
+        fig_local = px.bar(
+            media_local, x="TAT médio (dias)", y="Onde se encontra", orientation="h",
+            color_discrete_sequence=[AMBER],
+        )
+        fig_local.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=STATUS["critical"],
+                             annotation_text=f"{PRAZO_CONTRATUAL_TAT_DIAS}d contratual")
+        fig_local.update_layout(yaxis_title="", xaxis_title="TAT médio (dias)")
+        layout_grafico(fig_local, altura=max(200, 28 * len(media_local)))
+        st.plotly_chart(fig_local, width="stretch")
 
-    with st.expander("Ver tabela — TAT médio por local"):
-        st.dataframe(media_local, hide_index=True, width="stretch")
+        with st.expander("Ver tabela — TAT médio por local"):
+            st.dataframe(media_local, hide_index=True, width="stretch")
 
     st.divider()
 
