@@ -111,6 +111,9 @@ def _extrair_condenados(wb, nome_arquivo):
         condenados[int(nos)] = {
             "data_devolucao": _parse_data_condenacao(ws.cell(row=r, column=9).value),
             "motivo": _valor_texto(ws.cell(row=r, column=11).value),
+            "pn": _valor_texto(ws.cell(row=r, column=2).value),
+            "nomenclatura": _valor_texto(ws.cell(row=r, column=3).value),
+            "sn": _valor_texto(ws.cell(row=r, column=4).value),
         }
     return condenados
 
@@ -176,6 +179,15 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
             "os": str(numero_os),
             "mes_referencia": mes,
             "ano_referencia": ano,
+            # Descritivos (PN/Nomenclatura/Matrícula/SN) — só usados quando a
+            # OS não existe na base tratada (planilha geral/SILOMS), pra
+            # montar uma linha nova em "histórico" (ver reparaveis.py,
+            # _mesclar_complemento_rma) — pedido do Wallace, 2026-08-12:
+            # "vamos colocar no histórico".
+            "pn": _valor_texto(ws810.cell(row=r, column=2).value),
+            "nomenclatura": _valor_texto(ws810.cell(row=r, column=3).value),
+            "matricula": _valor_texto(ws810.cell(row=r, column=5).value),
+            "sn": _valor_texto(ws810.cell(row=r, column=6).value),
             "data_devolucao_empresa": data_devolucao,
             "data_devolucao_empresa_texto": data_devolucao_texto,
             "onde_se_encontra": onde,
@@ -198,6 +210,10 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
                 "os": str(numero_os),
                 "mes_referencia": mes,
                 "ano_referencia": ano,
+                "pn": info.get("pn"),
+                "nomenclatura": info.get("nomenclatura"),
+                "matricula": None,
+                "sn": info.get("sn"),
                 "data_devolucao_empresa": None,
                 "data_devolucao_empresa_texto": None,
                 "onde_se_encontra": None,
