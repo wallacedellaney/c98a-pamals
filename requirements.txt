@@ -9,3 +9,4 @@ python-pptx
 python-docx
 Pillow
 fpdf2
+pdfplumber

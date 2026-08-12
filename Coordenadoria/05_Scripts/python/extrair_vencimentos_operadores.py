@@ -67,9 +67,14 @@ REGISTRO = [
         "mes_fonte": "2026-06",
     },
     {
+        # Lê o PDF, não o ODS, desde agosto/2026 (pedido do Wallace,
+        # 2026-08-12: "lê só o pdf") — o ODS tinha uma linha com fórmula
+        # quebrada ("Erro:502", item "FLUIDO DO TKS", SN placeholder
+        # "XXXXXX") que nem aparece no PDF publicado pela CINDACTA II; o
+        # PDF é a versão oficial/limpa. Ver `_ler_pdf`.
         "operador": "DACTA II",
-        "arquivo": OPERADORES_DIR / "DACTA_II" / "Controle_de_Vencimentos_DACTAII_AGO_2026.ods",
-        "tipo": "ods",
+        "arquivo": OPERADORES_DIR / "DACTA_II" / "Controle_de_Vencimentos_DACTAII_AGO_2026.pdf",
+        "tipo": "pdf",
         "mes_fonte": "2026-08",
     },
     {
@@ -274,6 +279,65 @@ def _processar_linhas_bamn(linhas, operador, mes_fonte, arquivo_fonte, inconsist
     return itens
 
 
+def _ler_pdf(caminho):
+    """Lê o "Controle de Vencimentos" direto do PDF exportado (usado pela
+    DACTA II desde agosto/2026 — pedido do Wallace, 2026-08-12: "lê só o
+    pdf" — o .ods irmão tinha uma linha com fórmula quebrada ("Erro:502",
+    item "FLUIDO DO TKS") que nem aparece no PDF publicado, então o PDF é a
+    fonte mais limpa). Reconstrói cada linha por texto (o layout da tabela
+    não tem grade real, `extract_table` do pdfplumber não segmenta direito)
+    usando "FAB NNNN" como âncora: tudo antes vira ESPECIALIDADE/NOMENCLATURA/
+    PN/SN (PN = penúltimo token, SN = último — aproximação: PN com " OU "
+    no meio, como em "AE3663726H0520 OU S2808-8B0520", não separa
+    perfeitamente da nomenclatura, mas PN/SN aqui são só metadado, não
+    entram em nenhuma conta), tudo depois vira DISPONIBILIDADE (1 ou 2
+    tokens — "3217:50", ou "27276 Pousos"/"7 Meses" com o token de unidade
+    junto, que os regexes de vencimentos_parse.py já aceitam com espaço) e
+    DATA ESTIMADA (token seguinte). Linhas de seção ("POR HORA"/"POR
+    POUSO"/"POR CALENDÁRIO") viram marcador de seção, igual às outras
+    fontes; linhas sem "FAB NNNN" (cabeçalho, rodapé, nota de certificação)
+    são ignoradas."""
+    import pdfplumber
+
+    linhas_saida = []
+    with pdfplumber.open(caminho) as pdf:
+        for pagina in pdf.pages:
+            texto = pagina.extract_text(layout=False) or ""
+            for bruta in texto.split("\n"):
+                linha_txt = bruta.strip()
+                if not linha_txt:
+                    continue
+                if linha_txt.upper() in SECOES_VALIDAS:
+                    linhas_saida.append([linha_txt, None, None, None, None, None, None, None, None])
+                    continue
+
+                m = re.search(r"\bFAB\s*(\d{3,4})\b", linha_txt, re.IGNORECASE)
+                if not m:
+                    continue  # cabeçalho/rodapé/nota — sem coluna AERONAVE reconhecível
+
+                antes = linha_txt[:m.start()].split()
+                depois = linha_txt[m.end():].split()
+                if len(antes) < 2:
+                    continue
+                especialidade, meio = antes[0], antes[1:]
+                sn = meio[-1] if meio else None
+                pn = meio[-2] if len(meio) >= 2 else None
+                nomenclatura = " ".join(meio[:-2] if len(meio) >= 3 else meio[:-1] if meio else [])
+                aeronave = f"FAB {m.group(1)}"
+
+                if depois and len(depois) >= 2 and re.match(r"^[A-Za-zçÇ]+\.?$", depois[1]):
+                    disponibilidade, resto = f"{depois[0]} {depois[1]}", depois[2:]
+                else:
+                    disponibilidade, resto = (depois[0] if depois else None), depois[1:]
+                data_venc = resto[0] if resto else None
+
+                linhas_saida.append([
+                    especialidade, nomenclatura or None, pn, sn, aeronave,
+                    disponibilidade, data_venc, None, None,
+                ])
+    return linhas_saida
+
+
 def _ler_csv(caminho, linhas_cabecalho):
     import csv as csv_mod
 
@@ -381,6 +445,9 @@ def extrair():
             itens = _processar_linhas(linhas, reg["operador"], reg["mes_fonte"], caminho.name, inconsistencias)
         elif reg["tipo"] == "ods":
             linhas = _ler_ods(caminho)
+            itens = _processar_linhas(linhas, reg["operador"], reg["mes_fonte"], caminho.name, inconsistencias)
+        elif reg["tipo"] == "pdf":
+            linhas = _ler_pdf(caminho)
             itens = _processar_linhas(linhas, reg["operador"], reg["mes_fonte"], caminho.name, inconsistencias)
         elif reg["tipo"] == "csv_aeronave_fixa":
             linhas = _ler_csv(caminho, reg["linhas_cabecalho"])
