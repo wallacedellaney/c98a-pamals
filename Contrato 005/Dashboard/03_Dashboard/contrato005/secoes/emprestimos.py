@@ -197,6 +197,19 @@ def render(dados):
     df = df.copy()
     df["quantidade_efetiva"] = df["quantidade"].fillna(1)
 
+    # "Aguardando análise" — pedido do Wallace, 2026-08-13: "tem alguns que
+    # foram preenchidos mas ainda não foram analisados, eles preencheram lá
+    # mas não analisei" — a empresa (VEE ONE) já escreveu detalhe de
+    # entrega/recibo/data de devolução na planilha, mas a coluna "Status"
+    # continua "Pendente" porque ninguém confirmou ainda (não é a mesma
+    # coisa que "Pendente" sem informação nenhuma — aqui já tem o que
+    # revisar). Não mexemos no "Status" sozinhos (isso é julgamento do
+    # Wallace, não nosso) — só sinalizamos pra facilitar achar.
+    CAMPOS_PREENCHIDOS_PELA_EMPRESA = [
+        "detalhe_entrega", "numero_rc", "nf_devolucao_vee_one", "data_devolucao", "observacao_empresa",
+    ]
+    df["aguardando_analise"] = (df["status"] == "Pendente") & df[CAMPOS_PREENCHIDOS_PELA_EMPRESA].notna().any(axis=1)
+
     total = len(df)
     total_qtd = df["quantidade_efetiva"].sum()
     pendentes = int((df["status"] == "Pendente").sum())
@@ -217,6 +230,31 @@ def render(dados):
         "linhas. \"Pendentes\"/\"OK\" em quantidade mostram quantos itens ainda faltam devolver x quantos "
         "já foram devolvidos, de verdade (não só quantas linhas de pedido)."
     )
+
+    n_aguardando = int(df["aguardando_analise"].sum())
+    if n_aguardando:
+        st.warning(
+            f"⏳ **{n_aguardando} item(ns) com \"Status\" ainda \"Pendente\", mas a empresa já preencheu "
+            "detalhe de entrega/recibo/data de devolução na planilha** — não é a mesma coisa que \"Pendente\" "
+            "sem informação nenhuma, aqui já tem o que revisar pra fechar como \"OK\"."
+        )
+        with st.expander(f"⏳ Ver os {n_aguardando} item(ns) aguardando análise"):
+            colunas_aguardando = [
+                "numero_ordem", "part_number", "descricao", "destino", "detalhe_entrega",
+                "numero_rc", "nf_devolucao_vee_one", "data_devolucao", "observacao_empresa",
+            ]
+            nomes_aguardando = {
+                "numero_ordem": "Nº Ordem", "part_number": "Part Number", "descricao": "Descrição",
+                "destino": "Destino", "detalhe_entrega": "Detalhe entrega", "numero_rc": "Nº RC",
+                "nf_devolucao_vee_one": "NF devolução VEE ONE", "data_devolucao": "Data devolução",
+                "observacao_empresa": "Observação Empresa",
+            }
+            tabela_aguardando = df.loc[df["aguardando_analise"], colunas_aguardando].copy()
+            tabela_aguardando["data_devolucao"] = tabela_aguardando["data_devolucao"].astype(str).replace({"NaT": ""})
+            st.dataframe(
+                tabela_aguardando.rename(columns=nomes_aguardando), hide_index=True, width="stretch",
+                height=min(35 * (len(tabela_aguardando) + 1) + 3, 400),
+            )
 
     st.divider()
     historico = dados.get("historico_devolucoes")
@@ -296,7 +334,9 @@ def render(dados):
 
     c1, c2, c3, c4 = st.columns([1, 1, 1, 1.4])
     with c1:
-        status_f = st.selectbox("Status", ["Todos", "Pendente", "OK"], key="emp_f_status")
+        status_f = st.selectbox(
+            "Status", ["Todos", "Pendente", "Pendente — aguardando análise", "OK"], key="emp_f_status",
+        )
     with c2:
         categorias_f = st.multiselect("Categoria", ordenar_unicos(df["categoria"]), key="emp_f_categoria")
     with c3:
@@ -305,7 +345,9 @@ def render(dados):
         busca = st.text_input("🔎 Busca (PN, descrição, aeronave)", key="emp_f_busca")
 
     filtrado = df.copy()
-    if status_f != "Todos":
+    if status_f == "Pendente — aguardando análise":
+        filtrado = filtrado[filtrado["aguardando_analise"]]
+    elif status_f != "Todos":
         filtrado = filtrado[filtrado["status"] == status_f]
     if categorias_f:
         filtrado = filtrado[filtrado["categoria"].isin(categorias_f)]
@@ -319,10 +361,15 @@ def render(dados):
             | filtrado["anv"].astype(str).str.lower().str.contains(b, na=False)
         ]
 
+    filtrado = filtrado.copy()
+    filtrado["status_exibido"] = filtrado["status"].where(
+        ~filtrado["aguardando_analise"], "Pendente — aguardando análise",
+    )
+
     colunas_tabela = [
         "numero_ordem", "part_number", "descricao", "categoria", "quantidade_texto",
         "pedido_emg", "motivo", "pedido_envio", "anv", "destino", "numero_rc",
-        "nf_devolucao_vee_one", "data_devolucao", "observacao_fiscal", "observacao_empresa", "status",
+        "nf_devolucao_vee_one", "data_devolucao", "observacao_fiscal", "observacao_empresa", "status_exibido",
     ]
     nomes_colunas = {
         "numero_ordem": "Nº Ordem", "part_number": "Part Number", "descricao": "Descrição",
@@ -330,7 +377,7 @@ def render(dados):
         "motivo": "Motivo", "pedido_envio": "Pedido de envio", "anv": "ANV", "destino": "Destino",
         "numero_rc": "Nº RC", "nf_devolucao_vee_one": "NF devolução VEE ONE",
         "data_devolucao": "Data devolução", "observacao_fiscal": "Observação Fiscal",
-        "observacao_empresa": "Observação Empresa", "status": "Status",
+        "observacao_empresa": "Observação Empresa", "status_exibido": "Status",
     }
     tabela = filtrado[colunas_tabela].rename(columns=nomes_colunas)
     st.caption(f"{len(tabela)} de {total} itens")
