@@ -1,0 +1,46 @@
+# Execução: extrair_disponibilidade_diaria
+
+Data: 2026-08-13 21:45:23
+
+## Arquivos lidos
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_01_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_02_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_03_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_04_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_11_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_22_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_23_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_24_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_28_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_29_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_30_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_31_07_2026.txt
+
+## Arquivos gerados
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/02_Dados_Tratados/base_disponibilidade_diaria.xlsx
+
+## Inconsistências encontradas
+- nenhuma
+
+## Erros
+- nenhum
+
+## Próximas ações recomendadas
+- nenhuma
