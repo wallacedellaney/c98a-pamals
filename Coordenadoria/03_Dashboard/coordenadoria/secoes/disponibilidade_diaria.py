@@ -566,15 +566,17 @@ def _grafico_evolucao_mes(relatorios):
 
 
 def _carregar_percentuais_computo_mensal(ano, mes):
-    """Lê os CSVs que o Cômputo Mensal (Contrato 005) já grava — sem
+    """Lê os CSVs/resumo que o Cômputo Mensal (Contrato 005) já grava — sem
     importar nenhum script de lá (ver nota em `PASTA_COMPUTO_MENSAL`).
-    Devolve (contratual_df, vee_one_df), cada um com colunas dia/montada
-    (%) — ou None se o Cômputo Mensal desse mês ainda não foi calculado
-    (precisa clicar "Recalcular" no Fechamento Mensal, Contrato 005,
-    primeiro)."""
+    Devolve (contratual_df, vee_one_df, n_aeronaves_pontuadas) — os 2
+    primeiros com colunas dia/montada (%), None se o Cômputo Mensal desse
+    mês ainda não foi calculado (precisa clicar "Recalcular" no Fechamento
+    Mensal, Contrato 005, primeiro); `n_aeronaves_pontuadas` é o total de
+    aeronaves "dentro do contrato" naquele mês (None se não achar o resumo)."""
     mes_ref = f"{ano}-{mes:02d}"
     caminho_matriz = PASTA_COMPUTO_MENSAL / f"{mes_ref}_matriz.csv"
     caminho_vee_one = PASTA_COMPUTO_MENSAL / f"{mes_ref}_vee_one.csv"
+    caminho_resumo = PASTA_COMPUTO_MENSAL / f"{mes_ref}_resumo.json"
 
     contratual = None
     if caminho_matriz.exists():
@@ -582,15 +584,27 @@ def _carregar_percentuais_computo_mensal(ano, mes):
         contratual = matriz.dropna(subset=["montada"]).groupby("dia")["montada"].mean().mul(100).reset_index()
 
     vee_one = pd.read_csv(caminho_vee_one) if caminho_vee_one.exists() else None
-    return contratual, vee_one
+
+    n_pontuadas = None
+    if caminho_resumo.exists():
+        import json
+        with open(caminho_resumo, encoding="utf-8") as f:
+            n_pontuadas = len(json.load(f).get("aeronaves_pontuadas", []))
+
+    return contratual, vee_one, n_pontuadas
 
 
 def _grafico_evolucao_percentual(do_mes, mes_escolhido):
-    """3 linhas de % montadas no mesmo mês do gráfico acima — pedido do
+    """4 linhas de % montadas no mesmo mês do gráfico acima — pedido do
     Wallace, 2026-08-14: "a media de montada geral, conta itens fora do
     contrato, a media vee one real e a media contratual [...] no gráfico
     lá dentro da disp diária" (gráfico novo e separado, não misturado com a
     contagem de aeronaves do gráfico D x M acima — escalas diferentes).
+    Depois, mais uma: "coloca uma a mais, vai ser a estatística da roxa, só
+    que a porcentagem vai ser sob as aeronaves do contrato, ou seja sobre
+    23" (2026-08-14) — mesmo numerador da "Geral" (`montadas_hoje`, direto
+    do relatório diário), mas dividido pelo total de aeronaves "dentro do
+    contrato" (não pelo total do relatório inteiro).
 
     - **Geral** — direto do próprio relatório diário (Coordenadoria), soma
       dos 7 códigos de situação como total (a mesma regra de consistência
@@ -599,6 +613,11 @@ def _grafico_evolucao_percentual(do_mes, mes_escolhido):
       (confirmado pelo Wallace: "vai ser a que já puxa da todo dia, já
       puxa da mensagem da disp diária, ela já tá lá" — não é um cálculo
       novo, só uma % em cima do que a Disponibilidade Diária já extrai).
+    - **Geral / aeronaves do contrato** — mesmo `montadas_hoje`, mas
+      dividido só pelas aeronaves "dentro do contrato" (mesma contagem do
+      Cômputo Mensal, ~23) — não filtra quais aeronaves específicas estão
+      montadas, só troca o denominador; pode passar de 100% se
+      `montadas_hoje` incluir aeronave fora do contrato.
     - **Contratual** e **VEE ONE real** — vêm prontas do Cômputo Mensal
       (Contrato 005), só aeronaves "dentro do contrato" (ver
       `_carregar_percentuais_computo_mensal`)."""
@@ -608,7 +627,9 @@ def _grafico_evolucao_percentual(do_mes, mes_escolhido):
     total_situacao = do_mes[COLUNAS_SITUACAO_RESUMO].sum(axis=1)
     do_mes["pct_geral"] = (100 * do_mes["montadas_hoje"] / total_situacao).where(total_situacao > 0)
 
-    contratual, vee_one = _carregar_percentuais_computo_mensal(mes_escolhido.year, mes_escolhido.month)
+    contratual, vee_one, n_pontuadas = _carregar_percentuais_computo_mensal(mes_escolhido.year, mes_escolhido.month)
+    if n_pontuadas:
+        do_mes["pct_geral_contrato"] = 100 * do_mes["montadas_hoje"] / n_pontuadas
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(
@@ -616,6 +637,12 @@ def _grafico_evolucao_percentual(do_mes, mes_escolhido):
         name="% montadas (geral — todas as aeronaves do relatório)",
         line=dict(color=CATEGORICA[2]),
     ))
+    if n_pontuadas:
+        fig.add_trace(go.Scatter(
+            x=do_mes["dia"], y=do_mes["pct_geral_contrato"], mode="lines+markers",
+            name=f"% montadas (geral / aeronaves do contrato, {n_pontuadas})",
+            line=dict(color=CATEGORICA[2], dash="dash"), marker=dict(size=5),
+        ))
     if contratual is not None:
         fig.add_trace(go.Scatter(
             x=contratual["dia"], y=contratual["montada"], mode="lines+markers",
@@ -641,16 +668,19 @@ def _grafico_evolucao_percentual(do_mes, mes_escolhido):
     fig.update_layout(margin=dict(t=55))
     st.plotly_chart(fig, width="stretch")
 
-    if contratual is None or vee_one is None:
+    if contratual is None or vee_one is None or not n_pontuadas:
         st.info(
-            "\"Contratual\" e/ou \"real VEE ONE\" não aparecem — o Cômputo Mensal desse mês ainda não foi "
-            "calculado no Fechamento Mensal (Contrato 005). Abra lá e clique em \"🔄 Recalcular\" pra essas "
-            "2 linhas aparecerem aqui também."
+            "\"Geral / aeronaves do contrato\", \"Contratual\" e/ou \"real VEE ONE\" não aparecem — o "
+            "Cômputo Mensal desse mês ainda não foi calculado no Fechamento Mensal (Contrato 005). Abra "
+            "lá e clique em \"🔄 Recalcular\" pra essas linhas aparecerem aqui também."
         )
     st.caption(
-        "\"Geral\" conta todas as aeronaves do relatório diário (dentro ou fora do contrato). "
-        "\"Contratual\" e \"real VEE ONE\" só contam aeronaves dentro do contrato — mesmas 2 linhas do "
-        "gráfico \"Evolução da % de aeronaves montadas no mês\" no Cômputo Mensal (Contrato 005)."
+        "\"Geral\" conta todas as aeronaves do relatório diário (dentro ou fora do contrato) como total. "
+        "\"Geral / aeronaves do contrato\" usa o mesmo número de montadas do relatório, mas divide só "
+        f"pelas {n_pontuadas or '?'} aeronaves dentro do contrato — pode passar de 100% se alguma "
+        "montada estiver fora do contrato. \"Contratual\" e \"real VEE ONE\" só contam aeronaves dentro "
+        "do contrato — mesmas 2 linhas do gráfico \"Evolução da % de aeronaves montadas no mês\" no "
+        "Cômputo Mensal (Contrato 005)."
     )
 
 
