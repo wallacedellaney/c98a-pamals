@@ -29,15 +29,16 @@ def formatar_numero(valor, casas=2):
 
 AVISO_MMAM_PREVIA = (
     "⚠️ **Esta MMAM é uma prévia**, calculada automaticamente a partir dos "
-    "registros de emergências AIFP/IPLR sem estoque disponível na "
-    "plataforma — não é o valor oficial da Pré-RMA. Como é calculada: cada "
-    "aeronave dentro do contrato começa negativada (0) no próximo dia útil "
-    "após a data da informação de uma emergência AIFP/IPLR sem estoque, e "
-    "volta a montada (1) no dia do cancelamento/conclusão; sem estoque "
-    "disponível, não nega. **Pode divergir do valor real** porque não "
-    "considera ajustes manuais feitos direto na planilha oficial (Pré-RMA) "
-    "nem eventuais feriados (só pula sábado/domingo). Ver "
-    "00_Instrucoes/computo_mensal.md."
+    "registros de emergências AIFP/IPLR — não é o valor oficial da Pré-RMA. "
+    "Como é calculada: cada aeronave dentro do contrato começa negativada "
+    "(0) no próximo dia útil após a data da informação de uma emergência "
+    "AIFP/IPLR **com estoque = Não**, e volta a montada (1) no dia do "
+    "cancelamento/conclusão. **Com estoque = Sim, não nega** (a peça já "
+    "está disponível); **estoque em branco também não nega automaticamente** "
+    "(fica marcado pra revisão manual, não inventamos o dado). "
+    "**Pode divergir do valor real** porque não considera ajustes manuais "
+    "feitos direto na planilha oficial (Pré-RMA) nem eventuais feriados (só "
+    "pula sábado/domingo). Ver 00_Instrucoes/computo_mensal.md."
 )
 
 
