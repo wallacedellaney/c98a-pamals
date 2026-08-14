@@ -575,10 +575,18 @@ def _computo_mensal(mes_escolhido):
         st.info("Ainda não foi calculado pra este mês — clique em \"Recalcular\".")
         return
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("MMAM prévia", f"{resumo['mmam_previa']}%" if resumo["mmam_previa"] is not None else "—")
-    c2.metric("Aeronaves pontuadas", len(resumo["aeronaves_pontuadas"]))
-    c3.metric("Dias já decorridos", f"{resumo['ultimo_dia_calculado']} de {resumo.get('ultimo_dia_mes', resumo['ultimo_dia_calculado'])}")
+    # Calculado aqui em cima (não só lá embaixo no gráfico) pra alimentar
+    # também o card pequeno "Média real VEE ONE" — pedido do Wallace,
+    # 2026-08-14: "deixa pequeno lá nas informações a média montada do mês
+    # tb nesse padrão pra saber".
+    media_vee_one = calcular_media_diaria_vee_one(mes_escolhido.year, mes_escolhido.month)
+    mmam_vee_one = round(media_vee_one["montada"].mean(), 2) if not media_vee_one.empty else None
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("MMAM prévia (oficial)", f"{resumo['mmam_previa']}%" if resumo["mmam_previa"] is not None else "—")
+    c2.metric("Média real VEE ONE", f"{mmam_vee_one}%" if mmam_vee_one is not None else "—")
+    c3.metric("Aeronaves pontuadas", len(resumo["aeronaves_pontuadas"]))
+    c4.metric("Dias já decorridos", f"{resumo['ultimo_dia_calculado']} de {resumo.get('ultimo_dia_mes', resumo['ultimo_dia_calculado'])}")
     st.info(AVISO_MMAM_PREVIA)
 
     if resumo["inconsistencias"]:
@@ -588,13 +596,9 @@ def _computo_mensal(mes_escolhido):
 
     st.markdown("##### Evolução da % de aeronaves montadas no mês")
     media_diaria = df_matriz.dropna(subset=["montada"]).groupby("dia")["montada"].mean().mul(100).reset_index()
-
-    # Linha 2 "real da VEE ONE" — pedido do Wallace, 2026-08-14: mesma
-    # negativação, mas desconsiderando estoque e o pulo pro próximo dia
-    # útil (negativa a partir da própria data de abertura da emergência,
-    # não a data da informação). Só essa linha extra no gráfico, sem
-    # matriz 0/1 própria pra apresentar. Ver `calcular_media_diaria_vee_one`.
-    media_vee_one = calcular_media_diaria_vee_one(mes_escolhido.year, mes_escolhido.month)
+    # `media_vee_one` já foi calculado lá em cima (card "Média real VEE
+    # ONE") — reaproveita, mesma linha 2 "real da VEE ONE" (sem estoque,
+    # sem dia útil, desde a data de abertura). Ver `calcular_media_diaria_vee_one`.
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(

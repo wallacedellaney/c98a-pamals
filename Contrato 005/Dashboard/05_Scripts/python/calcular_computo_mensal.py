@@ -331,7 +331,19 @@ def calcular_media_diaria_vee_one(ano, mes, hoje=None):
         pct = 100 * (len(pontuadas) - len(negativadas)) / len(pontuadas) if pontuadas else None
         linhas.append({"dia": dia, "montada": pct})
 
-    return pd.DataFrame(linhas)
+    df = pd.DataFrame(linhas)
+
+    # Grava um CSV pequeno (dia/montada %) — pedido do Wallace, 2026-08-14:
+    # a Disponibilidade Diária (Coordenadoria) também vai plotar essa linha
+    # num gráfico próprio, e não pode importar scripts do Contrato 005 no
+    # mesmo processo Python (mesmo motivo do bug do common.py corrigido
+    # antes — cada área tem seu próprio common.py, colidem se os 2
+    # diretórios de scripts entrarem no sys.path juntos). Lendo só o CSV,
+    # sem import cruzado.
+    PASTA_COMPUTO.mkdir(parents=True, exist_ok=True)
+    df.to_csv(PASTA_COMPUTO / f"{ano}-{mes:02d}_vee_one.csv", index=False)
+
+    return df
 
 
 def carregar_mes(ano, mes):

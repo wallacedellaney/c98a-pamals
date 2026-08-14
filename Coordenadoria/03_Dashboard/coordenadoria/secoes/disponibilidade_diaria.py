@@ -7,18 +7,32 @@ comparação com o relatório anterior, alertas classificados, painel por
 unidade, busca e filtros.
 """
 
+from pathlib import Path
+
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 from shared import horario
 from coordenadoria.components.paleta import (
-    AMBER, CYAN, INK, LINE, PANEL, SECONDARY, STATUS, COR_SITUACAO, NOME_SITUACAO,
+    AMBER, CATEGORICA, CYAN, INK, LINE, PANEL, SECONDARY, STATUS, COR_SITUACAO, NOME_SITUACAO,
     ICONE_SITUACAO, COR_MD_SITUACAO, layout_grafico,
 )
 from coordenadoria.utils import atualizar_dados_disponibilidade, DISPONIBILIDADE_PASTA_URL
 
 ORDEM_SITUACAO = ["DI", "DO", "II", "IN", "ITR", "IS", "IP"]
+COLUNAS_SITUACAO_RESUMO = ["di", "do_", "ii", "in_", "itr", "is_", "ip"]
+
+# Pasta do Cômputo Mensal (Contrato 005) — pedido do Wallace, 2026-08-14:
+# jogar as linhas "contratual" e "real VEE ONE" (calculadas lá, ver
+# calcular_computo_mensal.py) também no gráfico de evolução daqui. Lê só os
+# CSVs prontos por caminho direto — nunca importa scripts do Contrato 005
+# neste processo (cada área tem seu próprio common.py; colidem se os 2
+# diretórios de scripts entrarem juntos no sys.path — bug real já visto e
+# corrigido em 2026-08-14 numa atualização manual).
+_RAIZ_PROJETO = Path(__file__).resolve().parents[4]
+PASTA_COMPUTO_MENSAL = _RAIZ_PROJETO / "Contrato 005" / "Dashboard" / "02_Dados_Tratados" / "computo_mensal"
 MESES_PT = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
@@ -547,6 +561,92 @@ def _grafico_evolucao_mes(relatorios):
     layout_grafico(fig, altura=260)
     st.plotly_chart(fig, width="stretch")
     st.caption("Sem ponto nos dias sem relatório salvo (fim de semana, ou dia útil sem busca ainda).")
+
+    _grafico_evolucao_percentual(do_mes, mes_escolhido)
+
+
+def _carregar_percentuais_computo_mensal(ano, mes):
+    """Lê os CSVs que o Cômputo Mensal (Contrato 005) já grava — sem
+    importar nenhum script de lá (ver nota em `PASTA_COMPUTO_MENSAL`).
+    Devolve (contratual_df, vee_one_df), cada um com colunas dia/montada
+    (%) — ou None se o Cômputo Mensal desse mês ainda não foi calculado
+    (precisa clicar "Recalcular" no Fechamento Mensal, Contrato 005,
+    primeiro)."""
+    mes_ref = f"{ano}-{mes:02d}"
+    caminho_matriz = PASTA_COMPUTO_MENSAL / f"{mes_ref}_matriz.csv"
+    caminho_vee_one = PASTA_COMPUTO_MENSAL / f"{mes_ref}_vee_one.csv"
+
+    contratual = None
+    if caminho_matriz.exists():
+        matriz = pd.read_csv(caminho_matriz, dtype={"matricula": str})
+        contratual = matriz.dropna(subset=["montada"]).groupby("dia")["montada"].mean().mul(100).reset_index()
+
+    vee_one = pd.read_csv(caminho_vee_one) if caminho_vee_one.exists() else None
+    return contratual, vee_one
+
+
+def _grafico_evolucao_percentual(do_mes, mes_escolhido):
+    """3 linhas de % montadas no mesmo mês do gráfico acima — pedido do
+    Wallace, 2026-08-14: "a media de montada geral, conta itens fora do
+    contrato, a media vee one real e a media contratual [...] no gráfico
+    lá dentro da disp diária" (gráfico novo e separado, não misturado com a
+    contagem de aeronaves do gráfico D x M acima — escalas diferentes).
+
+    - **Geral** — direto do próprio relatório diário (Coordenadoria), soma
+      dos 7 códigos de situação como total (a mesma regra de consistência
+      já usada na extração) e `montadas_hoje` como numerador — cobre
+      **todas** as aeronaves do relatório, dentro ou fora do contrato
+      (confirmado pelo Wallace: "vai ser a que já puxa da todo dia, já
+      puxa da mensagem da disp diária, ela já tá lá" — não é um cálculo
+      novo, só uma % em cima do que a Disponibilidade Diária já extrai).
+    - **Contratual** e **VEE ONE real** — vêm prontas do Cômputo Mensal
+      (Contrato 005), só aeronaves "dentro do contrato" (ver
+      `_carregar_percentuais_computo_mensal`)."""
+    st.markdown("##### Evolução no mês — % de aeronaves montadas (geral x contratual x VEE ONE real)")
+
+    do_mes = do_mes.copy()
+    total_situacao = do_mes[COLUNAS_SITUACAO_RESUMO].sum(axis=1)
+    do_mes["pct_geral"] = (100 * do_mes["montadas_hoje"] / total_situacao).where(total_situacao > 0)
+
+    contratual, vee_one = _carregar_percentuais_computo_mensal(mes_escolhido.year, mes_escolhido.month)
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=do_mes["dia"], y=do_mes["pct_geral"], mode="lines+markers",
+        name="% montadas (geral — todas as aeronaves do relatório)",
+        line=dict(color=CATEGORICA[2]),
+    ))
+    if contratual is not None:
+        fig.add_trace(go.Scatter(
+            x=contratual["dia"], y=contratual["montada"], mode="lines+markers",
+            name="% montadas (contratual — Cômputo Mensal oficial)", line=dict(color=AMBER),
+        ))
+    if vee_one is not None:
+        fig.add_trace(go.Scatter(
+            x=vee_one["dia"], y=vee_one["montada"], mode="lines+markers",
+            name="% montadas (real VEE ONE)", line=dict(color=CYAN, dash="dot"), marker=dict(size=5),
+        ))
+
+    ultimo_dia_mes = mes_escolhido.end_time.day
+    fig.update_layout(
+        xaxis_title="Dia do mês", yaxis_title="% montadas", yaxis_range=[0, 105], legend_title="",
+        xaxis_range=[0.5, ultimo_dia_mes + 0.5],
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+    )
+    layout_grafico(fig, altura=260)
+    st.plotly_chart(fig, width="stretch")
+
+    if contratual is None or vee_one is None:
+        st.info(
+            "\"Contratual\" e/ou \"real VEE ONE\" não aparecem — o Cômputo Mensal desse mês ainda não foi "
+            "calculado no Fechamento Mensal (Contrato 005). Abra lá e clique em \"🔄 Recalcular\" pra essas "
+            "2 linhas aparecerem aqui também."
+        )
+    st.caption(
+        "\"Geral\" conta todas as aeronaves do relatório diário (dentro ou fora do contrato). "
+        "\"Contratual\" e \"real VEE ONE\" só contam aeronaves dentro do contrato — mesmas 2 linhas do "
+        "gráfico \"Evolução da % de aeronaves montadas no mês\" no Cômputo Mensal (Contrato 005)."
+    )
 
 
 def _secao_evolucao(relatorios):
