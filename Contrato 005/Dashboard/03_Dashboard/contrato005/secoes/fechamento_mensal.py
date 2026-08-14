@@ -13,7 +13,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from shared import horario
-from contrato005.components.paleta import AMBER, CYAN, LINE, PANEL, STATUS, layout_grafico
+from contrato005.components.paleta import AMBER, CYAN, LINE, PANEL, SECONDARY, STATUS, layout_grafico
 from contrato005.components.utils import AVISO_MMAM_PREVIA, ordenar_unicos, formatar_moeda, formatar_numero
 
 ABREV_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
@@ -584,7 +584,16 @@ def _computo_mensal(mes_escolhido):
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("MMAM prévia (oficial)", f"{resumo['mmam_previa']}%" if resumo["mmam_previa"] is not None else "—")
-    c2.metric("Média real VEE ONE", f"{mmam_vee_one}%" if mmam_vee_one is not None else "—")
+    with c2:
+        st.metric("Média real VEE ONE", f"{mmam_vee_one}%" if mmam_vee_one is not None else "—")
+        # Pedido do Wallace, 2026-08-14: "escreve entre parênteses ... e
+        # deixa menor (não oficial, apenas estatístico) de outra cor" — pra
+        # não parecer que é um número contratual igual o MMAM prévia.
+        st.markdown(
+            f'<div style="font-size:11px;color:{SECONDARY};margin-top:-8px;">'
+            "(não oficial, apenas estatístico)</div>",
+            unsafe_allow_html=True,
+        )
     c3.metric("Aeronaves pontuadas", len(resumo["aeronaves_pontuadas"]))
     c4.metric("Dias já decorridos", f"{resumo['ultimo_dia_calculado']} de {resumo.get('ultimo_dia_mes', resumo['ultimo_dia_calculado'])}")
     st.info(AVISO_MMAM_PREVIA)
