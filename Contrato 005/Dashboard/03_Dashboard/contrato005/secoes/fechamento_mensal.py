@@ -9,10 +9,11 @@ from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 from shared import horario
-from contrato005.components.paleta import AMBER, LINE, PANEL, STATUS, layout_grafico
+from contrato005.components.paleta import AMBER, CYAN, LINE, PANEL, STATUS, layout_grafico
 from contrato005.components.utils import AVISO_MMAM_PREVIA, ordenar_unicos, formatar_moeda, formatar_numero
 
 ABREV_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
@@ -24,7 +25,7 @@ if str(SCRIPTS_PYTHON) not in sys.path:
 from contrato005.data.carregar_dados import carregar_computo_mensal
 from contrato005.data.justificativas import carregar_justificativas, sincronizar_mes, STATUS_PENDENTE
 from contrato005.components.exportar import gerar_pdf_bytes, gerar_xlsx_bytes
-from calcular_computo_mensal import _tem_comentario_cancelamento
+from calcular_computo_mensal import _tem_comentario_cancelamento, calcular_media_diaria_vee_one
 
 MESES_PT = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -587,13 +588,38 @@ def _computo_mensal(mes_escolhido):
 
     st.markdown("##### Evolução da % de aeronaves montadas no mês")
     media_diaria = df_matriz.dropna(subset=["montada"]).groupby("dia")["montada"].mean().mul(100).reset_index()
-    fig = px.line(media_diaria, x="dia", y="montada", markers=True, color_discrete_sequence=[AMBER])
+
+    # Linha 2 "real da VEE ONE" — pedido do Wallace, 2026-08-14: mesma
+    # negativação, mas desconsiderando estoque e o pulo pro próximo dia
+    # útil (negativa a partir do próprio dia da informação). Só essa linha
+    # extra no gráfico, sem matriz 0/1 própria pra apresentar. Ver
+    # `calcular_media_diaria_vee_one`.
+    media_vee_one = calcular_media_diaria_vee_one(mes_escolhido.year, mes_escolhido.month)
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=media_diaria["dia"], y=media_diaria["montada"], mode="lines+markers",
+        name="% montadas (oficial — c/ estoque e dia útil)", line=dict(color=AMBER),
+    ))
+    fig.add_trace(go.Scatter(
+        x=media_vee_one["dia"], y=media_vee_one["montada"], mode="lines+markers",
+        name="% montadas (real VEE ONE — s/ estoque, s/ dia útil)",
+        line=dict(color=CYAN, dash="dot"), marker=dict(size=5),
+    ))
     fig.update_layout(
         yaxis_title="% montadas", xaxis_title="Dia do mês", yaxis_range=[0, 105],
         xaxis_range=[0.5, resumo.get("ultimo_dia_mes", media_diaria["dia"].max()) + 0.5],
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
     )
-    layout_grafico(fig, altura=220)
+    layout_grafico(fig, altura=240)
     st.plotly_chart(fig, width="stretch")
+    st.caption(
+        "🟠 Linha cheia (laranja) = cômputo oficial acima (só negativa sem estoque, começa no "
+        "próximo dia útil). 🔵 Linha pontilhada (azul) = cálculo \"real\" no critério da VEE ONE — "
+        "negativa toda emergência AIFP/IPLR aberta (tenha estoque ou não) desde o próprio dia da "
+        "informação, sem esperar o próximo dia útil. É sempre igual ou mais baixa que a oficial "
+        "(nunca mais alta)."
+    )
 
     st.markdown("##### Matriz aeronave x dia (1 = montada, 0 = desmontada) — mês inteiro, sáb/dom marcados em cinza")
     st.caption(

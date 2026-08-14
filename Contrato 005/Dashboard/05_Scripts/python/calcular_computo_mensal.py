@@ -259,6 +259,80 @@ def calcular_mes(ano, mes, hoje=None):
     return df_matriz, df_motivos, resumo
 
 
+def calcular_media_diaria_vee_one(ano, mes, hoje=None):
+    """Segunda linha "real da VEE ONE" pro gráfico "Evolução da % de
+    aeronaves montadas no mês" — pedido do Wallace, 2026-08-14: "cria
+    apenas uma linha da média mensal real da VEE ONE, desconsiderando se
+    tem estoque ou não e desconsiderando negócio de dia útil, [quando]
+    abre a emergência já começa a negativar". Mesma base de emergências
+    AIFP/IPLR e mesma classificação "dentro do contrato" de `calcular_mes`,
+    só que:
+    - negativa sempre que a emergência está aberta, **estoque ou não**
+      (a regra oficial só negativa sem estoque — aqui não olha o campo);
+    - início da negativação é a própria **data da informação**, **sem**
+      pular pro próximo dia útil (a regra oficial pula sáb/dom).
+    Fim da negativação (dia anterior ao cancelamento) e a exclusão de
+    emergência cancelada (comentário da Coordenadoria) continuam iguais —
+    só estoque e dia útil mudam. Só devolve a série diária (% montadas por
+    dia) — não grava matriz 0/1 em disco, é só pra essa linha extra do
+    gráfico, não substitui o Cômputo Mensal oficial."""
+    hoje = hoje or horario.hoje_br()
+    primeiro_dia = date(ano, mes, 1)
+    ultimo_dia_mes = calendar.monthrange(ano, mes)[1]
+    ultimo_dia_calculado = hoje.day if (ano == hoje.year and mes == hoje.month) else ultimo_dia_mes
+    fim_mes = date(ano, mes, ultimo_dia_mes)
+
+    pontuadas, _ = _classificar_aeronaves()
+
+    emergencias = pd.read_excel(CAMINHO_EMERGENCIAS_HISTORICO)
+    emergencias["matricula_aeronave"] = emergencias["matricula_aeronave"].astype(str)
+    emergencias = emergencias[emergencias["tpemg"].isin(TIPOS_CONSIDERADOS)].copy()
+    emergencias["data_abertura"] = pd.to_datetime(emergencias["data_abertura"], errors="coerce").dt.date
+    emergencias["data_info"] = pd.to_datetime(emergencias["data_info"], errors="coerce").dt.date
+    emergencias["atendido_cancelado_dt"] = pd.to_datetime(emergencias["atendido_cancelado"], errors="coerce")
+
+    periodos = []
+    for _, row in emergencias.iterrows():
+        matricula = row["matricula_aeronave"]
+        if matricula not in pontuadas:
+            continue
+        if _tem_comentario_cancelamento(row.get("obs_coordenadoria_fiscal")):
+            continue
+
+        data_abertura = row["data_abertura"]
+        data_info = row["data_info"]
+        atendido_dt = row["atendido_cancelado_dt"]
+        data_fim_emergencia = atendido_dt.date() if pd.notna(atendido_dt) else None
+
+        if data_abertura is None or data_abertura > fim_mes:
+            continue
+        if data_fim_emergencia is not None and data_fim_emergencia < primeiro_dia:
+            continue
+        if data_info is None:
+            continue  # sem data da informação, não dá pra saber quando começou — não inventa
+
+        inicio_negativacao = data_info  # sem pular pro próximo dia útil, ao contrário da regra oficial
+        fim_negativacao = (
+            (data_fim_emergencia - timedelta(days=1)) if data_fim_emergencia
+            else date(ano, mes, ultimo_dia_calculado)
+        )
+        inicio_efetivo = max(inicio_negativacao, primeiro_dia)
+        fim_efetivo = min(fim_negativacao, date(ano, mes, ultimo_dia_calculado))
+        if inicio_efetivo > fim_efetivo:
+            continue
+
+        periodos.append({"matricula": matricula, "inicio": inicio_efetivo, "fim": fim_efetivo})
+
+    linhas = []
+    for dia in range(1, ultimo_dia_calculado + 1):
+        data_dia = date(ano, mes, dia)
+        negativadas = {p["matricula"] for p in periodos if p["inicio"] <= data_dia <= p["fim"]}
+        pct = 100 * (len(pontuadas) - len(negativadas)) / len(pontuadas) if pontuadas else None
+        linhas.append({"dia": dia, "montada": pct})
+
+    return pd.DataFrame(linhas)
+
+
 def carregar_mes(ano, mes):
     mes_ref = f"{ano}-{mes:02d}"
     caminho_matriz = PASTA_COMPUTO / f"{mes_ref}_matriz.csv"
