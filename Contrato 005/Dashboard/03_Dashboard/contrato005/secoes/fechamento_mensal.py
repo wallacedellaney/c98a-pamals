@@ -591,9 +591,9 @@ def _computo_mensal(mes_escolhido):
 
     # Linha 2 "real da VEE ONE" — pedido do Wallace, 2026-08-14: mesma
     # negativação, mas desconsiderando estoque e o pulo pro próximo dia
-    # útil (negativa a partir do próprio dia da informação). Só essa linha
-    # extra no gráfico, sem matriz 0/1 própria pra apresentar. Ver
-    # `calcular_media_diaria_vee_one`.
+    # útil (negativa a partir da própria data de abertura da emergência,
+    # não a data da informação). Só essa linha extra no gráfico, sem
+    # matriz 0/1 própria pra apresentar. Ver `calcular_media_diaria_vee_one`.
     media_vee_one = calcular_media_diaria_vee_one(mes_escolhido.year, mes_escolhido.month)
 
     fig = go.Figure()
@@ -615,10 +615,10 @@ def _computo_mensal(mes_escolhido):
     st.plotly_chart(fig, width="stretch")
     st.caption(
         "🟠 Linha cheia (laranja) = cômputo oficial acima (só negativa sem estoque, começa no "
-        "próximo dia útil). 🔵 Linha pontilhada (azul) = cálculo \"real\" no critério da VEE ONE — "
-        "negativa toda emergência AIFP/IPLR aberta (tenha estoque ou não) desde o próprio dia da "
-        "informação, sem esperar o próximo dia útil. É sempre igual ou mais baixa que a oficial "
-        "(nunca mais alta)."
+        "próximo dia útil após a data da informação). 🔵 Linha pontilhada (azul) = cálculo \"real\" no "
+        "critério da VEE ONE — negativa toda emergência AIFP/IPLR aberta (tenha estoque ou não) desde a "
+        "própria data de abertura, sem esperar o próximo dia útil. É sempre igual ou mais baixa que a "
+        "oficial (nunca mais alta)."
     )
 
     st.markdown("##### Matriz aeronave x dia (1 = montada, 0 = desmontada) — mês inteiro, sáb/dom marcados em cinza")

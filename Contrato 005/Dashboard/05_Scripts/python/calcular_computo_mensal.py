@@ -264,18 +264,21 @@ def calcular_media_diaria_vee_one(ano, mes, hoje=None):
     aeronaves montadas no mês" — pedido do Wallace, 2026-08-14: "cria
     apenas uma linha da média mensal real da VEE ONE, desconsiderando se
     tem estoque ou não e desconsiderando negócio de dia útil, [quando]
-    abre a emergência já começa a negativar". Mesma base de emergências
-    AIFP/IPLR e mesma classificação "dentro do contrato" de `calcular_mes`,
-    só que:
+    abre a emergência já começa a negativar" — e depois, precisando: "tipo
+    assim, começa a contar na data da emergência, sem ser da informação, o
+    da real vee one" (2026-08-14, corrige a 1ª versão que usava a data da
+    informação). Mesma base de emergências AIFP/IPLR e mesma classificação
+    "dentro do contrato" de `calcular_mes`, só que:
     - negativa sempre que a emergência está aberta, **estoque ou não**
       (a regra oficial só negativa sem estoque — aqui não olha o campo);
-    - início da negativação é a própria **data da informação**, **sem**
-      pular pro próximo dia útil (a regra oficial pula sáb/dom).
+    - início da negativação é a própria **data de abertura** (não a data
+      da informação), **sem** pular pro próximo dia útil (a regra oficial
+      usa data da informação + pula sáb/dom).
     Fim da negativação (dia anterior ao cancelamento) e a exclusão de
     emergência cancelada (comentário da Coordenadoria) continuam iguais —
-    só estoque e dia útil mudam. Só devolve a série diária (% montadas por
-    dia) — não grava matriz 0/1 em disco, é só pra essa linha extra do
-    gráfico, não substitui o Cômputo Mensal oficial."""
+    só estoque, referência de início e dia útil mudam. Só devolve a série
+    diária (% montadas por dia) — não grava matriz 0/1 em disco, é só pra
+    essa linha extra do gráfico, não substitui o Cômputo Mensal oficial."""
     hoje = hoje or horario.hoje_br()
     primeiro_dia = date(ano, mes, 1)
     ultimo_dia_mes = calendar.monthrange(ano, mes)[1]
@@ -288,7 +291,6 @@ def calcular_media_diaria_vee_one(ano, mes, hoje=None):
     emergencias["matricula_aeronave"] = emergencias["matricula_aeronave"].astype(str)
     emergencias = emergencias[emergencias["tpemg"].isin(TIPOS_CONSIDERADOS)].copy()
     emergencias["data_abertura"] = pd.to_datetime(emergencias["data_abertura"], errors="coerce").dt.date
-    emergencias["data_info"] = pd.to_datetime(emergencias["data_info"], errors="coerce").dt.date
     emergencias["atendido_cancelado_dt"] = pd.to_datetime(emergencias["atendido_cancelado"], errors="coerce")
 
     periodos = []
@@ -300,7 +302,6 @@ def calcular_media_diaria_vee_one(ano, mes, hoje=None):
             continue
 
         data_abertura = row["data_abertura"]
-        data_info = row["data_info"]
         atendido_dt = row["atendido_cancelado_dt"]
         data_fim_emergencia = atendido_dt.date() if pd.notna(atendido_dt) else None
 
@@ -308,10 +309,10 @@ def calcular_media_diaria_vee_one(ano, mes, hoje=None):
             continue
         if data_fim_emergencia is not None and data_fim_emergencia < primeiro_dia:
             continue
-        if data_info is None:
-            continue  # sem data da informação, não dá pra saber quando começou — não inventa
 
-        inicio_negativacao = data_info  # sem pular pro próximo dia útil, ao contrário da regra oficial
+        # Data de abertura, não a data da informação — sem pular pro
+        # próximo dia útil, ao contrário da regra oficial.
+        inicio_negativacao = data_abertura
         fim_negativacao = (
             (data_fim_emergencia - timedelta(days=1)) if data_fim_emergencia
             else date(ano, mes, ultimo_dia_calculado)
