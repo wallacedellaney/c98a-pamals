@@ -633,7 +633,12 @@ def _grafico_evolucao_percentual(do_mes, mes_escolhido):
         xaxis_range=[0.5, ultimo_dia_mes + 0.5],
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
     )
-    layout_grafico(fig, altura=260)
+    layout_grafico(fig, altura=300)
+    # `layout_grafico` sempre volta a margem de cima pra 10px — insuficiente
+    # pra legenda horizontal acima do gráfico, que ficava sobrepondo as
+    # linhas (achado pelo Wallace, 2026-08-14: "só a legenda que ficou
+    # embora [sobreposta]"). Abre espaço só pra essa figura.
+    fig.update_layout(margin=dict(t=55))
     st.plotly_chart(fig, width="stretch")
 
     if contratual is None or vee_one is None:

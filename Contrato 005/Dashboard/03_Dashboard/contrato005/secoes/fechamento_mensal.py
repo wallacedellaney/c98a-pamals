@@ -615,7 +615,12 @@ def _computo_mensal(mes_escolhido):
         xaxis_range=[0.5, resumo.get("ultimo_dia_mes", media_diaria["dia"].max()) + 0.5],
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
     )
-    layout_grafico(fig, altura=240)
+    layout_grafico(fig, altura=280)
+    # `layout_grafico` sempre volta a margem de cima pra 10px — insuficiente
+    # pra legenda horizontal acima do gráfico, que ficava sobrepondo as
+    # linhas (achado pelo Wallace, 2026-08-14: "só a legenda que ficou
+    # embora [embolada/sobreposta]"). Abre espaço só pra essa figura.
+    fig.update_layout(margin=dict(t=55))
     st.plotly_chart(fig, width="stretch")
     st.caption(
         "🟠 Linha cheia (laranja) = cômputo oficial acima (só negativa sem estoque, começa no "
