@@ -256,6 +256,15 @@ def calcular_mes(ano, mes, hoje=None):
     with open(PASTA_COMPUTO / f"{mes_ref}_resumo.json", "w", encoding="utf-8") as f:
         json.dump(resumo, f, ensure_ascii=False, indent=2, default=str)
 
+    # Mantém a linha "real VEE ONE" (e o CSV que a Disponibilidade Diária
+    # lê) sempre em sincronia com o oficial — achado pelo Wallace,
+    # 2026-08-17: "a linha montada real vee one tá parada, não acompanhou
+    # as outras". Antes só era recalculada quando alguém abria a página do
+    # Fechamento Mensal (Cômputo Mensal); `calcular_mes()` já roda sozinho
+    # de carona toda vez que Emergências atualiza (2 em 2h) — agora essa
+    # atualização automática recalcula as duas juntas, não só a oficial.
+    calcular_media_diaria_vee_one(ano, mes, hoje)
+
     return df_matriz, df_motivos, resumo
 
 
