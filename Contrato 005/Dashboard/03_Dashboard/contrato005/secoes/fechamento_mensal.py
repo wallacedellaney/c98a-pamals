@@ -579,7 +579,25 @@ def _computo_mensal(mes_escolhido):
     # também o card pequeno "Média real VEE ONE" — pedido do Wallace,
     # 2026-08-14: "deixa pequeno lá nas informações a média montada do mês
     # tb nesse padrão pra saber".
-    media_vee_one = calcular_media_diaria_vee_one(mes_escolhido.year, mes_escolhido.month)
+    #
+    # Essa conta lê o Excel de emergências AO VIVO (diferente do resto desta
+    # função, que só lê os CSVs já persistidos por `calcular_mes`) — roda
+    # em TODA renderização da página, não só ao clicar "Recalcular". Um
+    # `FileNotFoundError` ao vivo apareceu em produção em 2026-08-17
+    # (Streamlit Cloud, no meio de um redeploy) e derrubou a página inteira
+    # porque essa leitura não tinha proteção nenhuma. Envolvido em
+    # try/except pra nunca mais quebrar a página por isso — na falha, cai
+    # pro DataFrame vazio (mesmas colunas), que o resto do código já sabe
+    # tratar como "sem dado", e mostra um aviso discreto em vez de crashar.
+    try:
+        media_vee_one = calcular_media_diaria_vee_one(mes_escolhido.year, mes_escolhido.month)
+    except Exception:
+        media_vee_one = pd.DataFrame(columns=["dia", "montada"])
+        st.caption(
+            "⚠️ Não deu pra recalcular a linha 'real VEE ONE' agora (fonte "
+            "temporariamente indisponível) — o resto do Cômputo Mensal "
+            "segue normal. Recarregue a página em instantes."
+        )
     mmam_vee_one = round(media_vee_one["montada"].mean(), 2) if not media_vee_one.empty else None
 
     c1, c2, c3, c4 = st.columns(4)
