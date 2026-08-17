@@ -7354,7 +7354,7 @@ data_snapshot,ano,numero_requisicao,pn,status_atual,valor_total,situacao_previsa
 2026-08-17,2026,LST187002U8,2601188-204,Validada,7603.0,No prazo,
 2026-08-17,2026,LST190003U8,P7036368-01,Em Cotação,210381.85,No prazo,
 2026-08-17,2026,LST191002U8,30994-001,Análise do Pedido,5000.0,No prazo,
-2026-08-17,2026,LST196002U8,723908,Aguardando validação,163.13,No prazo,
+2026-08-17,2026,LST196002U8,723908,Aguardando validação,352.52,No prazo,
 2026-08-17,2026,LST196003U8,S3465-2-0112,Análise do Pedido,376.62,No prazo,
 2026-08-17,2026,LST196004U8,2613439-1,Em Cotação,1721.52,No prazo,
 2026-08-17,2026,LST196005U8,2617015-22,Em Cotação,2577.94,No prazo,
@@ -7372,3 +7372,4 @@ data_snapshot,ano,numero_requisicao,pn,status_atual,valor_total,situacao_previsa
 2026-08-17,2026,LST209004U8,2615018-1,Análise do Pedido,869.98,No prazo,
 2026-08-17,2026,LST209005U8,2643057-1,Validada,1379.52,No prazo,
 2026-08-17,2026,LST216004U8,S3100-527,Validada,5645.05,No prazo,
+2026-08-17,2026,LST225001U8,71014,Análise do Pedido,204.96,No prazo,
