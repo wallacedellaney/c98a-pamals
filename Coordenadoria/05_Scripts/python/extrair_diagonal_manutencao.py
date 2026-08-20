@@ -22,16 +22,27 @@ from diagonal_parse import ler_grade_generica, periodo_para_datas, RE_PLACEHOLDE
 DIAGONAL_DIR = BASES_ORIGINAIS / "Diagonal_Manutencao"
 
 REGISTRO_GRADE = [
-    {"operador": "BANT", "arquivo": DIAGONAL_DIR / "BANT" / "DIAGONAL_C-98_e_Controle_de_Itens_JUL2026.xlsx", "aba": "DIAGONAL C-98"},
-    {"operador": "DACTA II", "arquivo": DIAGONAL_DIR / "DACTA_II" / "Diagonal_de_Inspecao_CINDACTA-II_JUL2026.ods", "aba": "DIAGONAL 2026"},
-    {"operador": "BABR", "arquivo": DIAGONAL_DIR / "BABR" / "Diagonal_do_C98_6ETA_GLOG-BR_JULHO2026.xlsx", "aba": "DIAGONAL 2026"},
+    # Fonte de agosto atualizada 2x no Drive — a versão de 18/08 (.ods) tem
+    # mais linhas que a de 06/08 (.xlsx) já baixada pra Vencimentos-
+    # Operadores; "sempre pegar o mês mais recente" (vencimentos.md) — usamos
+    # a mais nova aqui, já que `ler_grade_generica` já lê .ods nativamente
+    # (mesmo leitor da DACTA II).
+    {"operador": "BANT", "arquivo": DIAGONAL_DIR / "BANT" / "DIAGONAL_C-98_e_Controle_de_Itens_AGO2026.ods", "aba": "DIAGONAL C-98"},
+    {"operador": "DACTA II", "arquivo": DIAGONAL_DIR / "DACTA_II" / "Diagonal_de_Inspecao_CINDACTA-II_AGO2026.ods", "aba": "DIAGONAL 2026"},
+    {"operador": "BABR", "arquivo": DIAGONAL_DIR / "BABR" / "Diagonal_do_C98_6ETA_GLOG-BR_AGOSTO2026.xlsx", "aba": "DIAGONAL 2026"},
     {"operador": "BABE", "arquivo": DIAGONAL_DIR / "BABE" / "Controle_Diagonal_BABE_JUL2026.xlsx", "aba": "DIAGONAL 2026"},
-    {"operador": "BACO", "arquivo": DIAGONAL_DIR / "BACO" / "Controle_Diagonal_BACO_JUL2026.xlsx", "aba": "DIAGONAL 2026"},
-    {"operador": "BACG", "arquivo": DIAGONAL_DIR / "BACG" / "Controle_Diagonal_BACG_JUL2026.xlsx", "aba": "DIAGONAL 2025"},
-    {"operador": "CLA", "arquivo": DIAGONAL_DIR / "CLA" / "Controle_de_Diagonal_CLA_JUN26_A_OUT26.xlsx", "aba": "JUN"},
+    {"operador": "BACO", "arquivo": DIAGONAL_DIR / "BACO" / "Controle_Diagonal_AGO_2026.xlsx", "aba": "DIAGONAL 2026"},
+    {"operador": "BACG", "arquivo": DIAGONAL_DIR / "BACG" / "Controle_Diagonal_AGOSTO2026.xlsx", "aba": "DIAGONAL 2025"},
+    {"operador": "CLA", "arquivo": DIAGONAL_DIR / "CLA" / "Controle_de_Diagonal_CLA_AGO_2026.xlsx", "aba": "AGO"},
+    # A partir de agosto/2026 a PAMA-LS passou a mandar a Diagonal de verdade
+    # (antes só tínhamos EVENTOS_APROXIMADOS, reconstruídos de texto — o
+    # binário original não transferia íntegro do Drive). Mesmo layout de
+    # grade dos outros operadores (bloco de 2 linhas por aeronave, mês no
+    # cabeçalho) — lida pelo mesmo `ler_grade_generica`.
+    {"operador": "PAMA-LS", "arquivo": DIAGONAL_DIR / "PAMA-LS" / "Diagonal_2704_AGOSTO_2026.xlsx", "aba": "PROJEÇÃO DE VENCIMENTOS INSPEÇÕ"},
 ]
 
-BAMN_ARQUIVO = DIAGONAL_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_JULHO_2026.ods"
+BAMN_ARQUIVO = DIAGONAL_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_AGOSTO_2026.ods"
 
 # PAMA-LS: o binário original não transferiu íntegro. Dados reconstruídos a
 # partir de texto simplificado — a atribuição exata mês-a-mês é aproximada,

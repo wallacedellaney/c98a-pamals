@@ -62,9 +62,9 @@ SECOES_VALIDAS = {"POR HORA", "POR POUSO", "POR CALENDÁRIO", "POR CALENDARIO", 
 REGISTRO = [
     {
         "operador": "CLA",
-        "arquivo": OPERADORES_DIR / "CLA" / "Controle_de_Vencimentos_CLA_JUN_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "CLA" / "Controle_de_Vencimentos_CLA_AGO_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-06",
+        "mes_fonte": "2026-08",
     },
     {
         # Lê o PDF, não o ODS, desde agosto/2026 (pedido do Wallace,
@@ -107,21 +107,27 @@ REGISTRO = [
     {
         # Formato diferente dos demais: sem seções POR HORA/POUSO/CALENDÁRIO,
         # e a coluna AERONAVE fica vazia em cada linha porque a matrícula (só
-        # a 2704) já vem fixada no cabeçalho/título do arquivo.
+        # a 2704) já vem fixada no cabeçalho/título do arquivo. Até julho a
+        # fonte só chegava como CSV reconstruído (binário do Drive não
+        # transferia íntegro); a partir de agosto/2026 passou a vir como XLSX
+        # de verdade — mesmo layout (cabeçalho na linha 4), tipo próprio
+        # "xlsx_aeronave_fixa" pra ler célula tipada (timedelta/int) em vez de
+        # texto puro do CSV.
         "operador": "PAMA-LS",
-        "arquivo": OPERADORES_DIR / "PAMA-LS-real" / "Vencimentos_2704_MAIO_2026.csv",
-        "tipo": "csv_aeronave_fixa",
-        "mes_fonte": "2026-05",
+        "arquivo": OPERADORES_DIR / "PAMA-LS-real" / "Vencimentos_2704_AGOSTO_2026.xlsx",
+        "tipo": "xlsx_aeronave_fixa",
+        "mes_fonte": "2026-08",
         "matricula_fixa": "2704",
+        "aba": "CONTROLE VENCIMENTOS C-98",
         "linhas_cabecalho": 4,
     },
     {
         # Vem numa aba "VENCIMENTO" dentro do arquivo de Diagonal, com células
         # mescladas verticalmente e ordem de colunas própria.
         "operador": "BAMN",
-        "arquivo": OPERADORES_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_JULHO_2026.ods",
+        "arquivo": OPERADORES_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_AGOSTO_2026.ods",
         "tipo": "ods_bamn",
-        "mes_fonte": "2026-07",
+        "mes_fonte": "2026-08",
         "aba": "VENCIMENTO",
     },
     {
@@ -382,6 +388,48 @@ def _processar_linhas_aeronave_fixa(linhas, operador, matricula_fixa, mes_fonte,
     return itens
 
 
+def _processar_linhas_aeronave_fixa_xlsx(linhas, operador, matricula_fixa, mes_fonte, arquivo_fonte, inconsistencias):
+    """Igual a `_processar_linhas_aeronave_fixa`, mas pra célula XLSX tipada
+    (timedelta/int/str), não texto puro de CSV — mesmo motivo de
+    `_processar_linhas` não usar `.strip()` direto no valor de
+    DISPONIBILIDADE. PAMA-LS passou do CSV reconstruído pro XLSX real em
+    agosto/2026 (ver REGISTRO)."""
+    itens = []
+    for linha in linhas:
+        if len(linha) < 7:
+            continue
+        especialidade, nomenclatura, pn, sn, _aeronave, disponibilidade, data_venc = linha[:7]
+        if nomenclatura is None or not str(nomenclatura).strip():
+            continue
+
+        tipo, valor_numerico, texto_original = classificar_disponibilidade(disponibilidade)
+        if tipo in (None, "Desconhecido"):
+            if disponibilidade not in (None, ""):
+                inconsistencias.append(
+                    f"{operador} ({arquivo_fonte}): DISPONIBILIDADE não reconhecida ({disponibilidade!r}) "
+                    f"para FAB {matricula_fixa} / {nomenclatura} — item ignorado."
+                )
+            continue
+
+        itens.append({
+            "operador": operador,
+            "mes_fonte": mes_fonte,
+            "arquivo_fonte": arquivo_fonte,
+            "secao_planilha": None,
+            "especialidade": str(especialidade).strip() if especialidade is not None else None,
+            "nomenclatura": str(nomenclatura).strip(),
+            "pn": str(pn).strip() if pn is not None else None,
+            "sn": str(sn).strip() if sn is not None else None,
+            "matricula": matricula_fixa,
+            "tipo_vencimento": tipo,
+            "disponibilidade_valor": valor_numerico,
+            "disponibilidade_texto": texto_original,
+            "data_vencimento": parse_data_vencimento(data_venc),
+            "vencido": vencido_de(tipo, valor_numerico),
+        })
+    return itens
+
+
 def _processar_linhas(linhas, operador, mes_fonte, arquivo_fonte, inconsistencias, re_aeronave=RE_AERONAVE):
     itens = []
     secao_atual = None
@@ -452,6 +500,11 @@ def extrair():
         elif reg["tipo"] == "csv_aeronave_fixa":
             linhas = _ler_csv(caminho, reg["linhas_cabecalho"])
             itens = _processar_linhas_aeronave_fixa(
+                linhas, reg["operador"], reg["matricula_fixa"], reg["mes_fonte"], caminho.name, inconsistencias
+            )
+        elif reg["tipo"] == "xlsx_aeronave_fixa":
+            linhas = _ler_xlsx(caminho, aba=reg["aba"])[reg["linhas_cabecalho"]:]
+            itens = _processar_linhas_aeronave_fixa_xlsx(
                 linhas, reg["operador"], reg["matricula_fixa"], reg["mes_fonte"], caminho.name, inconsistencias
             )
         elif reg["tipo"] == "csv_padrao_bare":

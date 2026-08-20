@@ -93,6 +93,28 @@ odfpy) + um leitor dedicado só pra BAMN (`_ler_bamn`, dentro do próprio
 `extrair_diagonal_manutencao.py`, por causa das células mescladas e ordem de
 colunas diferente) + uma lista fixa `EVENTOS_APROXIMADOS` somente pro PAMA-LS.
 
+## Atualização de agosto/2026
+
+Wallace: "olha vencimentos e diagonais do mes de agosto e atualiza para gente
+oq nao foi atualizado ainda". Fontes novas incorporadas para **BANT, DACTA
+II, BABR, BACO, BACG, CLA e BAMN**. BABE não tinha pasta de agosto no Drive
+ainda — permanece na fonte de julho.
+
+**PAMA-LS ganhou fonte real pela primeira vez** — antes só existiam os
+`EVENTOS_APROXIMADOS` (reconstrução manual, texto simplificado, porque o
+binário original não transferia íntegro do Drive). A partir de agosto/2026 a
+Diagonal real da PAMA-LS chegou em `.xlsx` (mesmo layout de grade dos outros
+operadores) e foi registrada em `REGISTRO_GRADE`, lida pelo mesmo
+`ler_grade_generica`. **Mas o layout da PAMA-LS tem uma particularidade**: o
+texto de evento aparece na própria linha "2704" (equivalente à "HORAS VOO"
+dos outros operadores), não numa segunda linha "IMPACTO DIAG." separada como
+o padrão — por isso o parser genérico só capturou 1 evento real (out/2026) na
+primeira conferência, bem menos do que o texto visível na planilha sugere.
+Mantivemos os `EVENTOS_APROXIMADOS` antigos **em paralelo** (não removidos)
+pra não perder cobertura histórica enquanto isso não for investigado a
+fundo — se precisar de um parser dedicado pra PAMA-LS (como o `_ler_bamn`),
+é só pedir.
+
 ## Atualização de julho/2026
 
 Fontes novas incorporadas para BANT, DACTA II, BABR, BABE, BACO, BAMN e

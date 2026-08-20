@@ -90,6 +90,23 @@ A pasta do Drive chamada "PAMA-LS" (maio) e a pasta "BABR" (abril/junho) parecia
 
 Todos os 9 operadores confirmados estão incorporados.
 
+### Atualização de agosto/2026
+
+Wallace: "olha vencimentos e diagonais do mes de agosto e atualiza para gente
+oq nao foi atualizado ainda". Fontes novas incorporadas para **CLA** (agora
+um arquivo único cobrindo AGO a DEZ/26, aba "AGO"), **BAMN** (arquivo
+combinado de agosto) e **PAMA-LS**. BABE não tinha pasta de agosto no Drive
+ainda — permanece na fonte de junho.
+
+**PAMA-LS passou de CSV reconstruído pra XLSX real** — até julho, o binário
+original não transferia íntegro do Drive e os dados vinham de uma
+reconstrução aproximada em texto. A partir de agosto/2026 a fonte chegou
+íntegra em `.xlsx`, mesmo layout (cabeçalho na linha 4, matrícula 2704 fixa
+no cabeçalho). Novo tipo `xlsx_aeronave_fixa` em `extrair_vencimentos_
+operadores.py` (`_processar_linhas_aeronave_fixa_xlsx`) — mesma lógica do
+tipo CSV antigo, mas lê célula tipada do Excel (timedelta/int) em vez de
+texto puro, igual ao padrão já usado em `_processar_linhas`.
+
 ### Atualização de julho/2026
 
 Fontes novas incorporadas para BANT, DACTA II, BABR, BACO, BAMN e BACG.
