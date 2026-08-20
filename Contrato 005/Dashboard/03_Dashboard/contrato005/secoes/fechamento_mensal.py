@@ -22,6 +22,13 @@ SCRIPTS_PYTHON = Path(__file__).resolve().parents[3] / "05_Scripts" / "python"
 if str(SCRIPTS_PYTHON) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_PYTHON))
 
+# Lê o tratado da Coordenadoria (Disponibilidade Diária) só como leitura de
+# arquivo — nunca importar script/pacote de lá no mesmo processo (mesma
+# regra documentada em disponibilidade_diaria.py::PASTA_COMPUTO_MENSAL, pro
+# sentido inverso: colisão de módulo `common.py` entre áreas).
+_RAIZ_PROJETO = Path(__file__).resolve().parents[5]
+CAMINHO_DISPONIBILIDADE_DIARIA = _RAIZ_PROJETO / "Coordenadoria" / "02_Dados_Tratados" / "base_disponibilidade_diaria.xlsx"
+
 from contrato005.data.carregar_dados import carregar_computo_mensal
 from contrato005.data.justificativas import carregar_justificativas, sincronizar_mes, STATUS_PENDENTE
 from contrato005.components.exportar import gerar_pdf_bytes, gerar_xlsx_bytes
@@ -555,6 +562,76 @@ def _ata_reuniao(mes_escolhido):
                 )
 
 
+def _parse_esforco_hhmm(texto):
+    """'5825:50' (HH:MM, esforço anual acumulado da Disponibilidade Diária)
+    -> horas decimais. `None`/vazio/formato não reconhecido -> None (não
+    inventa valor)."""
+    if texto is None:
+        return None
+    texto = str(texto).strip()
+    if not texto or ":" not in texto:
+        return None
+    try:
+        h, m = texto.split(":")
+        return int(h) + int(m) / 60
+    except ValueError:
+        return None
+
+
+@st.cache_data(ttl=300)
+def _carregar_horas_voadas_por_intervalo():
+    """`esforco_anual_realizado` (Disponibilidade Diária) é um acumulado do
+    ano — cada relatório novo é um total maior que o anterior, não um valor
+    diário isolado. Pedido do Wallace, 2026-08-20: "vai somando as horas por
+    dia ... sempre subtraindo o dia com o anterior" — pra achar quanto se
+    voou NUM intervalo, subtrai o acumulado de hoje pelo acumulado do
+    relatório anterior (que pode ser o dia anterior, ou vários dias atrás,
+    se algum dia não teve relatório — ex.: fim de semana). Cada linha do
+    retorno é um intervalo (data_inicio exclusive, data_fim inclusive),
+    horas voadas nesse intervalo — não "por dia" no sentido estrito, porque
+    a fonte só dá o acumulado no dia em que o relatório chegou.
+    Reinício do acumulado (virada de ano) trataria como negativo — nesse
+    caso o intervalo fica de fora (não inventa), registrado como None."""
+    if not CAMINHO_DISPONIBILIDADE_DIARIA.exists():
+        return pd.DataFrame(columns=["data_inicio", "data_fim", "horas"])
+
+    df = pd.read_excel(CAMINHO_DISPONIBILIDADE_DIARIA)
+    df["data_referencia"] = pd.to_datetime(df["data_referencia"]).dt.date
+    df["esforco_horas"] = df["esforco_anual_realizado"].apply(_parse_esforco_hhmm)
+    df = df.dropna(subset=["esforco_horas"]).sort_values("data_referencia").reset_index(drop=True)
+
+    linhas = []
+    for i in range(1, len(df)):
+        anterior, hoje = df.iloc[i - 1], df.iloc[i]
+        delta = hoje["esforco_horas"] - anterior["esforco_horas"]
+        linhas.append({
+            "data_inicio": anterior["data_referencia"],
+            "data_fim": hoje["data_referencia"],
+            "horas": round(delta, 2) if delta >= 0 else None,
+        })
+    return pd.DataFrame(linhas)
+
+
+def _horas_voadas_no_mes(mes_escolhido):
+    """Soma os intervalos cujo fim cai dentro do mês escolhido — mesma
+    convenção usada pro resto do Cômputo Mensal (atribui ao mês do dia em
+    que o relatório chegou)."""
+    try:
+        df = _carregar_horas_voadas_por_intervalo()
+    except Exception:
+        return None, pd.DataFrame()
+    if df.empty:
+        return None, df
+    do_mes = df[
+        (pd.to_datetime(df["data_fim"]).dt.year == mes_escolhido.year)
+        & (pd.to_datetime(df["data_fim"]).dt.month == mes_escolhido.month)
+    ].copy()
+    if do_mes.empty:
+        return None, do_mes
+    total = do_mes["horas"].sum(skipna=True)
+    return round(total, 2), do_mes
+
+
 def _computo_mensal(mes_escolhido):
     st.subheader(f"Cômputo Mensal — {_formatar_mes(mes_escolhido)}")
     st.caption(
@@ -600,7 +677,17 @@ def _computo_mensal(mes_escolhido):
         )
     mmam_vee_one = round(media_vee_one["montada"].mean(), 2) if not media_vee_one.empty else None
 
-    c1, c2, c3, c4 = st.columns(4)
+    # Horas voadas no mês — pedido do Wallace, 2026-08-20: "vai somando as
+    # horas por dia no fechamento mensal sempre subtraindo o dia com o
+    # anterior". Fonte: `esforco_anual_realizado` da Disponibilidade Diária
+    # (Coordenadoria), acumulado do ano — subtrai o acumulado de cada
+    # relatório novo pelo anterior pra achar quanto se voou naquele
+    # intervalo, soma os intervalos que caem dentro do mês escolhido.
+    # Protegido: é leitura de um arquivo tratado de outra área, nunca deve
+    # derrubar a página (mesma lógica do try/except da linha VEE ONE acima).
+    horas_no_mes, horas_intervalos = _horas_voadas_no_mes(mes_escolhido)
+
+    c1, c2, c3, c4, c5 = st.columns(5)
     c1.metric("MMAM prévia (oficial)", f"{resumo['mmam_previa']}%" if resumo["mmam_previa"] is not None else "—")
     with c2:
         st.metric("Média real VEE ONE", f"{mmam_vee_one}%" if mmam_vee_one is not None else "—")
@@ -614,7 +701,23 @@ def _computo_mensal(mes_escolhido):
         )
     c3.metric("Aeronaves pontuadas", len(resumo["aeronaves_pontuadas"]))
     c4.metric("Dias já decorridos", f"{resumo['ultimo_dia_calculado']} de {resumo.get('ultimo_dia_mes', resumo['ultimo_dia_calculado'])}")
+    with c5:
+        st.metric("Horas voadas no mês", f"{horas_no_mes:.2f}".replace(".", ",") if horas_no_mes is not None else "—")
+        st.markdown(
+            f'<div style="font-size:11px;color:{SECONDARY};margin-top:-8px;">'
+            "(Disponibilidade Diária, acumulado)</div>",
+            unsafe_allow_html=True,
+        )
     st.info(AVISO_MMAM_PREVIA)
+
+    if not horas_intervalos.empty:
+        with st.expander("✈️ Horas voadas por intervalo (dia atual − relatório anterior)"):
+            tabela = horas_intervalos.copy()
+            tabela["horas"] = tabela["horas"].round(2)
+            tabela = tabela.rename(columns={
+                "data_inicio": "Desde (relatório anterior)", "data_fim": "Até (este relatório)", "horas": "Horas voadas",
+            })
+            st.dataframe(tabela, width="stretch", hide_index=True)
 
     if resumo["inconsistencias"]:
         with st.expander(f"⚠️ {len(resumo['inconsistencias'])} inconsistência(s) — revisar manualmente", expanded=True):

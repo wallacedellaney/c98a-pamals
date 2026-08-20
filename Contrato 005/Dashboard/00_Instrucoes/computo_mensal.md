@@ -110,6 +110,31 @@ extra, sempre no final:
 Nenhuma das duas linhas responde ao clique (não tem "motivo de
 negativação" — clicar nelas não faz nada).
 
+## Horas voadas no mês (2026-08-20)
+
+Pedido do Wallace: "vai somando as horas por dia no fechamento mensal
+sempre subtraindo o dia com o anterior". Fonte: `esforco_anual_realizado`
+da Disponibilidade Diária (Coordenadoria) — é um acumulado do ano (cada
+relatório novo traz um total maior que o anterior, não um valor diário
+isolado). Pra achar quanto se voou num intervalo, subtrai o acumulado de um
+relatório pelo acumulado do relatório anterior (que pode ser o dia
+anterior, ou vários dias atrás, se algum dia não teve relatório — ex.: fim
+de semana).
+
+Card **"Horas voadas no mês"** (5º card, junto com MMAM prévia/VEE
+ONE/aeronaves pontuadas/dias decorridos) soma os intervalos cujo **fim**
+cai dentro do mês escolhido. Expander **"✈️ Horas voadas por intervalo"**
+logo abaixo mostra o detalhe (desde/até/horas) de cada intervalo somado.
+
+Implementado em `fechamento_mensal.py` (`_carregar_horas_voadas_por_
+intervalo`, `_horas_voadas_no_mes`) — lê `Coordenadoria/02_Dados_Tratados/
+base_disponibilidade_diaria.xlsx` **só como arquivo** (nunca importa script
+de lá no mesmo processo — mesma regra de sempre contra colisão de módulo
+`common.py` entre áreas). Protegido com try/except (mesmo padrão da linha
+VEE ONE) — se a leitura falhar, o card mostra "—" em vez de derrubar a
+página. Reinício do acumulado anual (virada de ano) resultaria em um delta
+negativo — esse intervalo fica de fora do total, não inventamos um valor.
+
 ## Limitações conhecidas
 
 - **A planilha "Pré RMA" não é buscada automaticamente** — só o `historico_completo_emergencias.xlsx` que alimenta o cálculo.
