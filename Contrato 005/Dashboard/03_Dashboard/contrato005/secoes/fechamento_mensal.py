@@ -29,7 +29,7 @@ if str(SCRIPTS_PYTHON) not in sys.path:
 _RAIZ_PROJETO = Path(__file__).resolve().parents[5]
 CAMINHO_DISPONIBILIDADE_DIARIA = _RAIZ_PROJETO / "Coordenadoria" / "02_Dados_Tratados" / "base_disponibilidade_diaria.xlsx"
 
-from contrato005.data.carregar_dados import carregar_computo_mensal
+from contrato005.data.carregar_dados import carregar_computo_mensal, carregar_reajuste
 from contrato005.data.justificativas import carregar_justificativas, sincronizar_mes, STATUS_PENDENTE
 from contrato005.components.exportar import gerar_pdf_bytes, gerar_xlsx_bytes
 from calcular_computo_mensal import _tem_comentario_cancelamento, calcular_media_diaria_vee_one
@@ -632,6 +632,27 @@ def _horas_voadas_no_mes(mes_escolhido):
     return round(total, 2), do_mes
 
 
+def _valor_hora_voo_atual():
+    """Valor da hora de voo mais recente (depois do último reajuste
+    registrado) — usado pra estimar o valor que a empresa está recebendo a
+    partir das horas voadas. Fonte: Reajuste (00_Instrucoes/reajuste.md).
+    Pega dinamicamente a linha "Valor da hora de voo após Nº Reajuste" de
+    maior número de linha (mais recente), em vez de fixar "2°" — se um 3º
+    reajuste entrar na planilha, pega ele sozinho."""
+    try:
+        indicadores, *_ = carregar_reajuste()
+    except Exception:
+        return None
+    if indicadores.empty:
+        return None
+    candidatos = indicadores[
+        indicadores["indicador"].str.contains("Valor da hora de voo após", na=False)
+    ]
+    if candidatos.empty:
+        return None
+    return float(candidatos.sort_values("linha").iloc[-1]["valor"])
+
+
 def _computo_mensal(mes_escolhido):
     st.subheader(f"Cômputo Mensal — {_formatar_mes(mes_escolhido)}")
     st.caption(
@@ -718,6 +739,50 @@ def _computo_mensal(mes_escolhido):
                 "data_inicio": "Desde (relatório anterior)", "data_fim": "Até (este relatório)", "horas": "Horas voadas",
             })
             st.dataframe(tabela, width="stretch", hide_index=True)
+
+    # Valor recebido (Módulo I = horas de voo) + projeção do mês — pedido
+    # do Wallace, 2026-08-20: "coloca o valor que a empresa ta recebendo
+    # multiplicando pela hora de voo e a projecao mantendo a media e o
+    # tanto de aeronave montada". Valor da hora de voo = R$ 1.699,33 (após
+    # o último reajuste, ver _valor_hora_voo_atual). Projeção = média
+    # diária de horas já voadas × dias do mês inteiro — assume que o ritmo
+    # de voo e a quantidade de aeronaves montadas se mantêm como estão até
+    # o fim do mês (não é garantido, é só uma estimativa).
+    valor_hora_voo = _valor_hora_voo_atual()
+    dias_decorridos = resumo["ultimo_dia_calculado"]
+    dias_mes = resumo.get("ultimo_dia_mes", dias_decorridos)
+    media_diaria_horas = (
+        horas_no_mes / dias_decorridos if horas_no_mes is not None and dias_decorridos else None
+    )
+    horas_projetadas_mes = media_diaria_horas * dias_mes if media_diaria_horas is not None else None
+    valor_recebido = (
+        horas_no_mes * valor_hora_voo if horas_no_mes is not None and valor_hora_voo is not None else None
+    )
+    valor_projetado = (
+        horas_projetadas_mes * valor_hora_voo
+        if horas_projetadas_mes is not None and valor_hora_voo is not None
+        else None
+    )
+
+    st.markdown("##### 💰 Valor recebido (Módulo I — hora de voo) e projeção do mês")
+    st.caption(
+        f"Valor da hora de voo: {formatar_moeda(valor_hora_voo)} (após o último reajuste). "
+        "Projeção assume que a média diária de horas voadas e a quantidade de aeronaves montadas "
+        "se mantêm como estão até o fim do mês — não é garantido, é só uma estimativa."
+    )
+    # "Aeronaves montadas hoje" não vem pronto no resumo — conta na própria
+    # matriz, no último dia já calculado.
+    dia_hoje_matriz = df_matriz[df_matriz["dia"] == dias_decorridos]
+    montadas_hoje = int(dia_hoje_matriz["montada"].sum()) if not dia_hoje_matriz.empty else None
+
+    cv1, cv2, cv3, cv4 = st.columns(4)
+    cv1.metric("Valor recebido até agora", formatar_moeda(valor_recebido))
+    cv2.metric("Horas projetadas pro mês", f"{horas_projetadas_mes:.1f}h".replace(".", ",") if horas_projetadas_mes is not None else "—")
+    cv3.metric("Valor projetado pro mês", formatar_moeda(valor_projetado))
+    cv4.metric(
+        "Aeronaves montadas (hoje)",
+        f"{montadas_hoje} de {len(resumo['aeronaves_pontuadas'])}" if montadas_hoje is not None else "—",
+    )
 
     if resumo["inconsistencias"]:
         with st.expander(f"⚠️ {len(resumo['inconsistencias'])} inconsistência(s) — revisar manualmente", expanded=True):

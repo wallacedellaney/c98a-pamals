@@ -148,6 +148,32 @@ só um extrato do que foi lançado em um dia até o outro" — célula em
 branco não é 0 horas voadas, só que o lançamento ainda não chegou/atrasou
 (caption explica isso na tela).
 
+## Valor recebido e projeção do mês (2026-08-20)
+
+Pedido do Wallace: "coloca o valor que a empresa ta recebendo
+multiplicando pela hora de voo e a projecao mantendo a media e o tanto de
+aeronave montada". Nova seção **"💰 Valor recebido (Módulo I — hora de
+voo) e projeção do mês"**, logo abaixo do expander de horas por
+intervalo:
+
+- **Valor recebido até agora** = horas voadas no mês (já calculado pro
+  card "Horas voadas no mês") × valor da hora de voo.
+- **Valor da hora de voo**: pego dinamicamente do Reajuste — linha "Valor
+  da hora de voo após Nº Reajuste" de maior número (mais recente,
+  `_valor_hora_voo_atual()`), hoje R$ 1.699,33 (após o 2° Reajuste). Não
+  fixamos "2°" no código pra não ficar desatualizado se entrar um 3°
+  reajuste.
+- **Horas projetadas pro mês** = (horas voadas até agora / dias já
+  decorridos) × dias totais do mês — método confirmado pelo Wallace
+  ("média diária de horas × dias do mês").
+- **Valor projetado pro mês** = horas projetadas × valor da hora de voo.
+- **Aeronaves montadas (hoje)** = contagem direta na matriz, no último dia
+  já calculado (não vem pronto no `resumo`).
+
+A projeção assume que o ritmo de voo e a quantidade de aeronaves montadas
+se mantêm como estão até o fim do mês — é só uma estimativa, não uma
+garantia (caption explica isso na tela).
+
 **Bug de exibição corrigido no processo** — o Streamlit (1.58.0) estava
 ignorando o `na_rep`/`.format()` do Styler ao renderizar `st.dataframe` e
 mostrando o texto literal `"None"` em células vazias (NaN) em vez de
