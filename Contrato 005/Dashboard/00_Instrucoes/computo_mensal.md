@@ -135,6 +135,30 @@ VEE ONE) — se a leitura falhar, o card mostra "—" em vez de derrubar a
 página. Reinício do acumulado anual (virada de ano) resultaria em um delta
 negativo — esse intervalo fica de fora do total, não inventamos um valor.
 
+**Também na matriz aeronave x dia, em cima do número do dia (2026-08-20)**
+— pedido do Wallace: "quero por dia tb ali naquela pagina msm ... em cima
+do numero do dia da tabela, final de semana nao vai ter, segunda ou
+feriado vai ser o acumulado daqueles dias q n teve contabilizacao". Nova
+linha **"Horas voadas (prévia)"** logo abaixo do cabeçalho de dias — mesmo
+`horas_intervalos` já calculado pro card, cada intervalo atribuído ao dia
+em que o relatório chegou (fim de semana/dia sem relatório fica em
+branco). Rotulado **"(prévia)"** a pedido do Wallace: "escreve horas
+previas, pq o pessoal as vezes demora lançar não significa hora real ...
+só um extrato do que foi lançado em um dia até o outro" — célula em
+branco não é 0 horas voadas, só que o lançamento ainda não chegou/atrasou
+(caption explica isso na tela).
+
+**Bug de exibição corrigido no processo** — o Streamlit (1.58.0) estava
+ignorando o `na_rep`/`.format()` do Styler ao renderizar `st.dataframe` e
+mostrando o texto literal `"None"` em células vazias (NaN) em vez de
+branco. Isso já acontecia silenciosamente antes nas linhas "% Montadas" e
+aeronaves fora do contrato, só ficou visível ao criar a linha de horas.
+Corrigido formatando os valores pra **texto vazio `""` direto no próprio
+DataFrame** (`pivot_texto`, gerado a partir do `pivot` numérico via
+`_formatar_valor`) antes de estilizar — sem NaN nenhum sobrando pro
+Streamlit reinterpretar. A cor de cada célula (`_cor_linha`) continua
+lendo o `pivot` numérico original, só o texto exibido mudou.
+
 ## Limitações conhecidas
 
 - **A planilha "Pré RMA" não é buscada automaticamente** — só o `historico_completo_emergencias.xlsx` que alimenta o cálculo.

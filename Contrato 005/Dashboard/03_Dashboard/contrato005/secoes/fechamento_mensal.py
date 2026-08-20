@@ -763,7 +763,10 @@ def _computo_mensal(mes_escolhido):
     st.markdown("##### Matriz aeronave x dia (1 = montada, 0 = desmontada) — mês inteiro, sáb/dom marcados em cinza")
     st.caption(
         "Clique numa célula pra ver o motivo da negativação (ou confirmar que ficou montada). "
-        "Aeronaves fora do contrato aparecem em baixo, sem pontuação (linhas em branco)."
+        "Aeronaves fora do contrato aparecem em baixo, sem pontuação (linhas em branco). "
+        "A linha \"Horas voadas (prévia)\", no topo, é só um extrato do que foi lançado na "
+        "Disponibilidade Diária entre um relatório e outro — célula em branco não significa 0 "
+        "horas voadas, só que o lançamento daquele intervalo ainda não chegou/atrasou."
     )
     pivot = df_matriz.pivot(index="matricula", columns="dia", values="montada")
 
@@ -789,13 +792,58 @@ def _computo_mensal(mes_escolhido):
     for m in aeronaves_fora:
         pivot.loc[m] = pd.Series(float("nan"), index=pivot.columns, dtype="float64")
 
+    # Horas voadas por dia, em cima do número do dia — pedido do Wallace,
+    # 2026-08-20: "quero por dia tb ali naquela pagina msm ... em cima do
+    # numero do dia da tabela, final de semana nao vai ter, segunda ou
+    # feriado vai ser o acumulado daqueles dias q n teve contabilizacao".
+    # Reaproveita `horas_intervalos` (já calculado lá em cima pro card) —
+    # cada intervalo (relatório atual − relatório anterior) é atribuído ao
+    # DIA em que o relatório chegou (data_fim); dias sem relatório (fim de
+    # semana, ou um dia útil que não gerou mensagem) ficam em branco —
+    # nunca inventamos um valor "por dia" que a fonte não deu.
+    # Rótulo "(prévia)" — Wallace: "escreve horas previas, pq o pessoal as
+    # vezes demora lançar não significa hora real ... só um extrato do que
+    # foi lançado em um dia até o outro". Ou seja: célula em branco NÃO
+    # quer dizer 0 horas voadas — só que o lançamento daquele intervalo
+    # ainda não chegou/foi lançado com atraso.
+    linha_horas = pd.Series(float("nan"), index=pivot.columns, dtype="float64")
+    if not horas_intervalos.empty:
+        for _, intervalo in horas_intervalos.iterrows():
+            dia_fim = intervalo["data_fim"]
+            if dia_fim.month == mes_escolhido.month and dia_fim.year == mes_escolhido.year:
+                linha_horas[dia_fim.day] = intervalo["horas"]
+    pivot = pd.concat([pd.DataFrame([linha_horas], index=["Horas voadas (prévia)"]), pivot])
+
     pivot = pivot.rename(columns=mapa_rotulo)
+
+    # Formata pra TEXTO já no próprio DataFrame (não só no Styler) —
+    # achado ao adicionar a linha "Horas voadas (prévia)" (2026-08-20): o
+    # Streamlit (nessa versão) ignora o na_rep/format do Styler ao
+    # renderizar e mostra o texto literal "None" nas células NaN em vez de
+    # branco — bug mudo que já existia antes nas linhas "% Montadas" e
+    # aeronaves fora do contrato, só ficou visível agora. Pré-formatando o
+    # próprio conteúdo da tabela (string vazia pra NaN) contorna o
+    # problema — o Streamlit não tem NaN nenhum pra reinterpretar.
+    def _formatar_valor(matricula, v):
+        if matricula == "Horas voadas (prévia)":
+            return "" if pd.isna(v) else f"{v:.1f}h"
+        if matricula == "% Montadas":
+            return "" if pd.isna(v) else f"{v:.0f}%"
+        if pd.isna(v):
+            return ""
+        return f"{v:.0f}"
+
+    pivot_num = pivot
+    pivot_texto = pivot_num.apply(lambda row: row.map(lambda v: _formatar_valor(row.name, v)), axis=1)
 
     def _cor_linha(row):
         matricula = row.name
         estilos = []
-        for coluna, v in row.items():
-            if matricula == "% Montadas":
+        for coluna in row.index:
+            v = pivot_num.loc[matricula, coluna]
+            if matricula == "Horas voadas (prévia)":
+                estilos.append(f"font-style: italic; color: {CYAN}; border-bottom: 2px solid {LINE};")
+            elif matricula == "% Montadas":
                 estilos.append("font-weight: 700; border-top: 2px solid " + LINE + ";")
             elif matricula in aeronaves_fora:
                 estilos.append("color: " + STATUS["critical"] + "44;")
@@ -806,8 +854,7 @@ def _computo_mensal(mes_escolhido):
                 estilos.append(f"background-color: {cor}55")
         return estilos
 
-    styler = pivot.style.format(precision=0, na_rep="").apply(_cor_linha, axis=1)
-    styler = styler.format(lambda v: "" if pd.isna(v) else f"{v:.0f}%", subset=pd.IndexSlice[["% Montadas"], :])
+    styler = pivot_texto.style.apply(_cor_linha, axis=1)
 
     # Sem teto de altura (era min(..., 700)) — Wallace: "arruma o fechamento
     # para nao prcisar rolar o mapa de aeronaves montadas, se eu quiser ver
@@ -817,7 +864,7 @@ def _computo_mensal(mes_escolhido):
     # necessário pra mostrar todas as linhas de uma vez, só a página rola.
     altura_tabela = 35 * (len(pivot) + 1) + 3
     colunas_config = {
-        coluna: st.column_config.NumberColumn(width="small") for coluna in pivot.columns
+        coluna: st.column_config.TextColumn(width="small") for coluna in pivot.columns
     }
     evento = st.dataframe(
         styler, width="stretch", height=altura_tabela,
@@ -829,9 +876,9 @@ def _computo_mensal(mes_escolhido):
     if celulas:
         linha_idx, coluna_rotulo = celulas[0]
         matricula_sel = pivot.index[linha_idx]
-        # Linha de % ou aeronave fora do contrato não têm motivo de
-        # negativação — não faz sentido nenhum pra essas linhas.
-        if matricula_sel != "% Montadas" and matricula_sel not in aeronaves_fora:
+        # Linha de % / Horas voadas / aeronave fora do contrato não têm
+        # motivo de negativação — não faz sentido nenhum pra essas linhas.
+        if matricula_sel not in ("% Montadas", "Horas voadas (prévia)") and matricula_sel not in aeronaves_fora:
             dia_sel = int(coluna_rotulo.split()[0])
             valor_sel = pivot.iloc[linha_idx][coluna_rotulo]
             _mostrar_motivo_celula(matricula_sel, dia_sel, valor_sel, df_motivos)
