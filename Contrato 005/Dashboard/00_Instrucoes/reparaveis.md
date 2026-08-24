@@ -666,3 +666,39 @@ Testado ao vivo nos 3 escopos, incluindo os casos extremos já conhecidos
 ("Fechadas" com 0 OS "com a empresa" — donut/ranking/gráfico por local
 seguem degradando pra mensagem amigável, sem erro, com o novo layout
 também).
+
+## Ajustes de layout depois do site publicado (mesmo dia)
+
+Wallace viu o resultado no site publicado (`c98apamals.streamlit.app`,
+print anexo) e achou "muita coisa preta", pediu "os graficos maiores" e
+avisou que topa rolar a tela pro lado ("mesmo que nao caiba tudo na
+pagina eu arredo com o mouse para direita") — prioridade é legibilidade,
+não caber tudo espremido.
+
+**Causa da "faixa de KPI quebrando estranho"**: os rótulos das métricas
+usavam `white-space:nowrap`, forçando cada grupo a ficar bem mais largo
+do que parecia — o grupo "Entregues" (4º) não cabia na mesma linha dos
+outros 3 mesmo em tela grande e quebrava pra uma linha nova sozinho,
+longe dos outros. Trocado por `max-width:8.5rem` com quebra de linha
+normal no rótulo (só o valor grande continua `nowrap`) — os 4 grupos
+cabem numa linha só, de forma mais previsível.
+
+**Causa do "muito preto"**: os gráficos (Plotly com fundo transparente,
+regra 10 do brief de layout) ficavam soltos direto no fundo escuro da
+página, sem nenhum painel/moldura ao redor — pareciam "flutuando no
+vazio". Cada gráfico (2 donuts, TAT por local, Top 10, histórico mensal)
+agora vem dentro de um `st.container(border=True)` — painel de verdade
+com borda, igual o resto do site.
+
+**"TAT médio por local" maior**: tinha 1/3 da largura da tela (dividindo
+espaço com os 2 donuts) — nomes de local compridos ("Em processo interno
+/ não informado pela empresa") empurravam as barras pra um espaço bem
+pequeno à direita, sobrando muito vazio à esquerda. Virou linha própria,
+largura cheia, com `automargin=True` no eixo Y (Plotly calcula a margem
+certa pro rótulo mais comprido sozinho, sem chute fixo) e barras mais
+altas (32px por linha, era 24px).
+
+Testado ao vivo de novo depois do ajuste — os 4 grupos de KPI numa linha
+só, painéis com borda visível em todos os gráficos/tabelas, "TAT médio
+por local" em largura cheia com rótulos completos e legíveis.
+também).

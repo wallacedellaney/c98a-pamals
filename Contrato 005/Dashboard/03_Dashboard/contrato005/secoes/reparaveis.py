@@ -308,14 +308,21 @@ def _linha_kpis_html(grupos):
     outro) por uma faixa só, mais densa — mesmos números/cálculos de
     sempre, só a apresentação muda. `grupos`: lista de (titulo_do_grupo,
     [(label, valor, cor_ou_None, icone_ou_None), ...])."""
+    # 2026-08-24 (ajuste após ver no site publicado): label sem quebra
+    # (`white-space:nowrap`) forçava cada grupo a ficar bem mais largo do
+    # que cabia, mesmo em tela grande — o grupo "Entregues" (4º) acabava
+    # "sobrando" e quebrando pra uma linha nova sozinho, longe dos outros
+    # 3. Trocado por `max-width` com quebra de linha normal — cada
+    # métrica ocupa uma largura previsível (~8.5rem), o rótulo quebra
+    # embaixo se precisar, a linha toda fica mais compacta e previsível.
     blocos = []
     for i, (titulo_grupo, itens) in enumerate(grupos):
         campos = "".join(
-            f'<div style="margin-right:1.7rem;">'
+            f'<div style="margin-right:1.4rem;max-width:8.5rem;">'
             f'<div style="font-size:.66rem;color:{SECONDARY};text-transform:uppercase;'
-            f'letter-spacing:.05em;margin-bottom:.2rem;white-space:nowrap;">{label}</div>'
-            f'<div style="font-size:1.55rem;font-weight:700;color:{cor or INK};line-height:1.15;">'
-            f'{(icone + " ") if icone else ""}{valor}</div>'
+            f'letter-spacing:.05em;margin-bottom:.2rem;line-height:1.25;">{label}</div>'
+            f'<div style="font-size:1.55rem;font-weight:700;color:{cor or INK};line-height:1.15;'
+            f'white-space:nowrap;">{(icone + " ") if icone else ""}{valor}</div>'
             f'</div>'
             for label, valor, cor, icone in itens
         )
@@ -557,10 +564,21 @@ def _secao_estatisticas_tat(df):
     # Donuts + TAT por local direto na tela (não mais dentro de expander)
     # — pedido do Wallace via imagem de referência: "reintroduzir dois
     # gráficos lado a lado... posição dos gráficos" logo abaixo dos KPIs.
-    _ALTURA_DONUT = 240
+    #
+    # Ajuste 2026-08-24 (depois de ver no site publicado, feedback do
+    # Wallace: "tem muita coisa preta, os graficos maiores, mesmo que nao
+    # caiba tudo na pagina eu arredo com o mouse para direita"): 2 mudanças —
+    # (1) cada gráfico agora vem dentro de um `st.container(border=True)`,
+    # um painel de verdade com borda/fundo, não "flutuando" solto no fundo
+    # escuro da página (que é o que parecia "muito preto"); (2) "TAT médio
+    # por local" (o mais importante, com os nomes de local mais longos)
+    # ganhou linha própria, largura cheia, em vez de dividir 1/3 da tela
+    # com os 2 donuts — o Wallace topa rolar a tela se precisar, prioridade
+    # é o gráfico ficar legível/grande, não caber tudo espremido.
+    _ALTURA_DONUT = 260
     _LEGENDA_DONUT = dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5)
-    g1, g2, g3 = st.columns([1, 1, 1.3])
-    with g1:
+    g1, g2 = st.columns(2)
+    with g1, st.container(border=True):
         st.caption("Com empresa x entregue")
         contagem_grupo = escopo_df["grupo"].value_counts().reset_index()
         contagem_grupo.columns = ["grupo", "quantidade"]
@@ -569,12 +587,12 @@ def _secao_estatisticas_tat(df):
             color="grupo",
             color_discrete_map={"Com a empresa e terceirizados": AMBER, "Entregue (falta burocracia)": STATUS["good"]},
         )
-        fig_grupo.update_traces(textinfo="value+percent", textfont_size=11)
+        fig_grupo.update_traces(textinfo="value+percent", textfont_size=12)
         fig_grupo.update_layout(legend=_LEGENDA_DONUT)
         layout_grafico(fig_grupo, altura=_ALTURA_DONUT)
         st.plotly_chart(fig_grupo, width="stretch", key="rep_donut_grupo")
 
-    with g2:
+    with g2, st.container(border=True):
         st.caption(f"Dentro x fora do prazo (> {PRAZO_CONTRATUAL_TAT_DIAS}d)")
         contagem_prazo = pd.DataFrame({
             "situacao": ["Dentro do prazo", "Fora do prazo"],
@@ -585,12 +603,12 @@ def _secao_estatisticas_tat(df):
             color="situacao",
             color_discrete_map={"Dentro do prazo": STATUS["good"], "Fora do prazo": STATUS["critical"]},
         )
-        fig_prazo.update_traces(textinfo="value+percent", textfont_size=11)
+        fig_prazo.update_traces(textinfo="value+percent", textfont_size=12)
         fig_prazo.update_layout(legend=_LEGENDA_DONUT)
         layout_grafico(fig_prazo, altura=_ALTURA_DONUT)
         st.plotly_chart(fig_prazo, width="stretch", key="rep_donut_prazo")
 
-    with g3:
+    with st.container(border=True):
         st.caption("TAT médio por local — clique numa barra pra filtrar a Tabela/Consulta")
         media_local = (
             escopo_df.dropna(subset=["tat_siloms"])
@@ -619,7 +637,7 @@ def _secao_estatisticas_tat(df):
             fig_local = go.Figure(go.Bar(
                 x=media_local["TAT médio (dias)"], y=media_local["Onde se encontra"],
                 orientation="h", marker_color=cores_barras,
-                text=media_local["TAT médio (dias)"], textposition="outside", textfont_size=10,
+                text=media_local["TAT médio (dias)"], textposition="outside", textfont_size=11,
                 customdata=media_local["Quantidade"],
                 hovertemplate="%{y}<br>TAT médio: %{x} dias<br>Quantidade: %{customdata}<extra></extra>",
             ))
@@ -629,9 +647,17 @@ def _secao_estatisticas_tat(df):
             # não é um problema, é só a referência de onde o prazo vence).
             fig_local.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=AMBER,
                                  annotation_text=f"Limite — {PRAZO_CONTRATUAL_TAT_DIAS}d",
-                                 annotation_font_color=AMBER, annotation_font_size=10)
+                                 annotation_font_color=AMBER, annotation_font_size=11)
             fig_local.update_layout(yaxis_title="", xaxis_title="")
-            layout_grafico(fig_local, altura=max(_ALTURA_DONUT, 24 * len(media_local)))
+            layout_grafico(fig_local, altura=max(300, 32 * len(media_local)))
+            # `automargin` DEPOIS de `layout_grafico()` (que fixa margin.l=10
+            # por padrão pros outros gráficos) — nomes de local como "Em
+            # processo interno / não informado pela empresa" são bem
+            # compridos; sem isso o Plotly cortava o rótulo ou espremia as
+            # barras contra a borda. `automargin` deixa o Plotly calcular a
+            # margem certa pro rótulo mais comprido, sem chute fixo.
+            fig_local.update_yaxes(automargin=True)
+            fig_local.update_layout(margin=dict(l=10, r=40, t=10, b=10))
             evento_bar = st.plotly_chart(
                 fig_local, width="stretch", on_select="rerun", selection_mode="points", key="rep_bar_local_clique",
             )
@@ -650,7 +676,7 @@ def _secao_estatisticas_tat(df):
     # do expander; histórico reaproveita `_dados_historico_mensal`, a
     # mesma função usada na aba "Histórico" — nada duplicado).
     t1, t2 = st.columns([1.1, 1])
-    with t1:
+    with t1, st.container(border=True):
         st.caption(
             "Top 10 OS mais atrasadas — com a empresa/terceirizados, abertas a partir de "
             f"{INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')}"
@@ -685,7 +711,7 @@ def _secao_estatisticas_tat(df):
             )
             st.dataframe(styler_piores, hide_index=True, width="stretch", height=340)
 
-    with t2:
+    with t2, st.container(border=True):
         st.caption("Histórico mensal de aberturas (OS)")
         contagem_hist = _dados_historico_mensal(df).tail(12)
         st.plotly_chart(
