@@ -401,3 +401,109 @@ prazo, calculada como `len(empresa) - len(fora_prazo) - len(dentro_prazo)`
 — a árvore volta a bater exatamente (205 + 0 + 68 = 273 no dia do
 teste). Testado ao vivo abrindo os 3 níveis via JS (equivalente a
 clicar) antes de commitar.
+
+## Recuperação de OS via cruzamento com a RMA da empresa (2026-08-24, mesmo dia)
+
+Wallace, sobre o Fechamento Mensal ("RMA em andamento {MÊS}.xlsx" /
+"Pré RMA", aba **1.10** "Controle de Ordens de Serviço abertas até o mês
+de referência" — controle ACUMULADO da própria empresa, não só do mês):
+"eu vou continuar atualizando e baixando as OS do SILOMS, pega so as
+abertas, quando fecha a gente sabe que fechou pq ela sai de la e fica no
+historico da planilha controle dos reparaveis, mas como nao tinha
+controle antes algumas OS ficaram para tras, cruza os dados e oq tiver
+faltando usa os dados da empresa, para fins de OS totais". Confirmado
+depois: "vamos computar mas sem cobrar, ela nao ta errada" (relativo ao
+TAT, reaproveitado aqui) e principalmente: "tudo vai ta com a empresa se
+estiver mesmo, ai c ela informou a gente clica, todo mes vamos ler as
+planilhas de RMA, vai ser assim agora, vc le as abertas no contreole dos
+repavareis e a da empresa para ver os recibos e onde ta".
+
+**Achado ao investigar** (cruzando `base_reparaveis_tratada.xlsx` com
+`reparaveis_complemento_rma.xlsx`, aba 1.10 de julho/2026): 170 OS que
+a empresa já tinha no controle dela nunca apareceram na nossa planilha
+geral (SILOMS "Divulgação") — 133 já com recibo/data de devolução/
+destino preenchidos (claramente fechadas antes de existir nosso
+controle), e 20 sem esses 3 campos (ainda "abertas" pra empresa). O
+Wallace esclareceu que as 20 também já fecharam de verdade: "essas devem
+ter fehcado, pq eu baixo direto do silomns, aberta vai ser sempre da aba
+divulcao que vc puxa" — ou seja, a Divulgação do SILOMS é a única fonte
+de verdade pra "em aberto"; se uma OS não está lá, não está aberta,
+mesmo que a RMA da empresa ainda não tenha sido atualizada pra refletir
+isso. Por isso TODA OS da aba 1.10 que falta na nossa base entra como
+**fechada** (`em_aberto=False`), sem distinção entre as duas categorias.
+
+**Implementação** (`_mesclar_complemento_rma()`, `reparaveis.py`):
+
+- Além de completar linhas já existentes (comportamento antigo, mantido
+  igual), agora também **cria linhas novas** pra toda OS da aba 1.10 que
+  não bate com nenhuma OS da planilha geral. Campos preenchidos: PN,
+  Nomenclatura, SN (vêm da própria 1.10), Onde se encontra/Recibo/Data de
+  devolução (idem), Condição (`CONDENADO` se a aba 1.9 também marcar).
+  Campos deixados em branco de propósito (não inventa dado): Data
+  início, Situação (ST_OS), TAT SILOMS, TAT empresa, Unidade
+  solicitante — a aba 1.10 não tem "Data Início", e sem ela não dá pra
+  calcular TAT nem saber quando a OS abriu de verdade. `em_aberto=False`
+  sempre (ver acima).
+- **Coluna nova "Origem / cruzamento empresa"** (`origem_registro`):
+  `SILOMS` (só na nossa base, empresa não confirmou nada específico
+  ainda), `✅ SILOMS + confirmada pela empresa` (bateu com a 1.10, trouxe
+  onde está/recibo/devolução), `🆕 Só na empresa (recuperada da RMA)`
+  (linha nova, criada só a partir da 1.10). Filtro próprio "Origem" na
+  aba Tabela/Consulta (multiselect, igual aos outros filtros) — pedido
+  do Wallace de conseguir "clicar" pra ver o que a empresa informou.
+  Precisou também ajustar a regra de exibição padrão da tabela (que
+  antes só mostrava tudo quando "Situação" tinha algo selecionado): OS
+  recuperada nunca tem Situação preenchida, então filtrar por Origem
+  também libera ver as fechadas, senão ficariam escondidas pra sempre.
+- **Caption nova no bloco Volume** (Visão Geral) avisando quantas OS do
+  escopo atual são recuperadas — só aparece quando escopo é "Fechadas"
+  ou "Todas" (no escopo padrão "Abertas no SILOMS" nunca aparece nenhuma
+  recuperada, por definição: `em_aberto=False`).
+- **Nada muda nos cards padrão** ("OS abertas no SILOMS 385" etc.) — a
+  recuperação só aparece quando o escopo é "Fechadas"/"Todas", conforme
+  decisão do Wallace ("somar só no total geral").
+
+**Bug pego e corrigido durante o teste ao vivo**: `TypeError: Invalid
+comparison between dtype=datetime64[ns] and date` ao filtrar a tabela só
+pelas OS recuperadas (todas com `data_inicio` vazia/NaT) — o padrão
+`pd.to_datetime(...).dt.date >= INICIO_COBRANCA_PRAZO` (usado em 3
+lugares do arquivo) quebra quando a coluna filtrada fica 100% NaT (bug
+de dtype do pandas nessa versão: `.dt.date` não converte pra `object`
+nesse caso-limite). Corrigido nos 3 lugares trocando por
+`pd.to_datetime(...) >= pd.Timestamp(INICIO_COBRANCA_PRAZO)` — compara
+Timestamp com Timestamp/NaT diretamente, sem passar por `.dt.date`;
+NaT vira `False` na comparação, que é exatamente o comportamento
+esperado (OS sem data de início nunca "cobra" prazo).
+
+**Segundo bug pego e corrigido**: as primeiras 151 OS recuperadas
+apareceram na tabela com PN/Nomenclatura/SN em branco — `extrair()` (em
+`extrair_reparaveis_rma.py`) já tinha sido atualizado pra capturar esses
+3 campos da aba 1.10 (código pronto desde mais cedo no mesmo dia), mas
+`reparaveis_complemento_rma.xlsx` no disco ainda era de uma rodada
+anterior, gerada pela versão antiga do script (sem essas colunas). Rodei
+`atualizar_do_mes(2026, 7)` de novo (mesmo mês = substitui, não
+duplica) pra regravar o arquivo com o schema atual — confirmado depois
+que as 3 colunas vieram preenchidas pra todas as 151/152 linhas.
+
+**Automação mensal** (pedido do Wallace: "todo mes vamos ler as
+planilhas de RMA, vai ser assim agora") — `extrair_reparaveis_rma.py`
+ganhou `atualizar_do_drive()` (wrapper padrão dos outros extratores,
+sempre usa o mês corrente) e entrou no dict `SCRIPTS` de
+`shared/executar_atualizacao.py`, então passa a rodar sozinho no ciclo
+de 2 em 2h (seg-sex) junto com as outras fontes — idempotente (rodar de
+novo no mesmo mês só substitui as linhas desse mês), então não tem
+problema rodar toda hora mesmo a RMA do mês só mudando quando o Wallace
+sobe um arquivo novo no Drive. Antes só rodava manual (botão "🔄
+Complementar com a RMA em andamento do mês").
+
+**Não implementado ainda / observação do Wallace**: "c tava com a
+Willian e achamos um recibo para SBNT, ta la" (exemplo) — a planilha
+geral (Controle de Reparáveis) tem outras colunas próprias de
+acompanhamento interno (ex.: "Willian", "LEAP") que às vezes têm recibo/
+destino além do que a 1.10 da RMA traz, mas o Wallace avisou que essas
+colunas têm tendência de **parar de ser atualizadas** ("a tendencia é
+nao ter mais informacao interna de onde ta, vai ta sempre terceirizado
+ou nao informado, pq nao vai ser atualizado mais") — por isso não entrei
+a cruzar com elas agora; o cruzamento oficial de "onde está"/recibo
+passa a ser só SILOMS (Divulgação, pra saber o que está aberto) + RMA da
+empresa (aba 1.10, pra saber onde está/recibo/devolução), como pedido.

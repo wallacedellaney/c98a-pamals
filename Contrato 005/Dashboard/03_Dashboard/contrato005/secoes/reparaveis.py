@@ -162,6 +162,60 @@ def _mesclar_complemento_rma(df, complemento):
             df.loc[idx, "tat_calculado"] = True
             fonte = f"{fonte} — TAT calculado" if fonte else "TAT calculado (RMA)"
         df.loc[idx, "fonte"] = fonte
+
+    # "Origem do registro" — marca quem confirmou cada linha, pedido do
+    # Wallace 2026-08-24 (num campo à parte da coluna "Fonte" já existente,
+    # que é mais um texto livre de proveniência do TAT): "aí um campo onde
+    # conseguimos ver se a empresa informou". Toda OS que bateu com a
+    # planilha da empresa nesse laço vira "confirmada pelas duas fontes";
+    # o resto (abaixo) fica "só SILOMS" — ver `os_recuperadas_rma` pras que
+    # são só da empresa.
+    df["origem_registro"] = "SILOMS"
+    os_com_complemento = set(mais_recente.index) & set(df["os"])
+    df.loc[df["os"].isin(os_com_complemento), "origem_registro"] = "✅ SILOMS + confirmada pela empresa"
+
+    # OS recuperadas (2026-08-24) — pedido do Wallace: "eu vou continuar
+    # atualizando e baixando as OS do SILOMS, pega so as abertas, quando
+    # fecha a gente sabe que fechou pq ela sai de la e fica no historico da
+    # planilha controle dos reparaveis, mas como nao tinha controle antes
+    # algumas OS ficaram para tras, cruza os dados e oq tiver faltando usa
+    # os dados da empresa, para fins de OS totais" + confirmado depois:
+    # "tudo vai ta com a empresa se estiver mesmo, ai c ela informou a
+    # gente clica, todo mes vamos ler as planilhas de RMA, vai ser assim
+    # agora". A aba 1.10 da RMA é o controle acumulado da EMPRESA (não só
+    # do mês) — toda OS que está lá mas nunca apareceu na nossa planilha
+    # geral (SILOMS "Divulgação") fechou antes de existirmos controle
+    # próprio e ficou pra trás. Entram como linha nova, marcadas como já
+    # ENTREGUES (a RMA só registra uma OS com data/recibo/destino quando a
+    # empresa já devolveu de verdade) — decisão do Wallace: "somar só no
+    # total geral" (não inventa TAT sem "Data Início", que essa planilha
+    # não tem).
+    ja_temos = set(df["os"])
+    recuperar = mais_recente[~mais_recente.index.isin(ja_temos)]
+    linhas_novas = []
+    for numero_os, linha in recuperar.iterrows():
+        condicao = None
+        if bool(linha.get("condenado", False)):
+            motivo = linha.get("motivo_condenacao")
+            condicao = f"CONDENADO — {motivo}" if motivo else "CONDENADO"
+        data_entrega = (
+            linha["data_devolucao_empresa"] if pd.notna(linha["data_devolucao_empresa"])
+            else (linha["data_devolucao_empresa_texto"] or None)
+        )
+        linhas_novas.append({
+            "os": numero_os, "pn": linha.get("pn"), "cff": None,
+            "nomenclatura": linha.get("nomenclatura"), "sn": linha.get("sn"),
+            "data_inicio": pd.NaT, "unidade_solicitante": None, "situacao": None,
+            "tat_siloms": float("nan"), "tat_empresa": float("nan"),
+            "onde_se_encontra": linha["onde_se_encontra"] or LOCAL_NAO_INFORMADO,
+            "recibo": linha["recibo"], "condicao": condicao, "data_entrega": data_entrega,
+            "sn_trocado_exchange": None, "termo_recebimento": None, "em_aberto": False,
+            "fonte": f"{linha['fonte']} — recuperada (não estava na planilha SILOMS)",
+            "tat_calculado": False,
+            "origem_registro": "🆕 Só na empresa (recuperada da RMA)",
+        })
+    if linhas_novas:
+        df = pd.concat([df, pd.DataFrame(linhas_novas)], ignore_index=True)
     return df
 
 
@@ -364,7 +418,7 @@ def _secao_estatisticas_tat(df):
     # inteira, sem esse corte — só a contagem de violação de prazo usa
     # `empresa_cobravel`.
     empresa_cobravel = empresa[
-        pd.to_datetime(empresa["data_inicio"], errors="coerce").dt.date >= INICIO_COBRANCA_PRAZO
+        pd.to_datetime(empresa["data_inicio"], errors="coerce") >= pd.Timestamp(INICIO_COBRANCA_PRAZO)
     ]
 
     hoje = pd.Timestamp(horario.hoje_br())
@@ -391,6 +445,13 @@ def _secao_estatisticas_tat(df):
     c1, c2 = st.columns(2)
     metrica_html(c1, f"OS — {escopo}", len(escopo_df))
     metrica_html(c2, "Com a empresa e terceirizados", len(empresa))
+    recuperadas_no_escopo = int((escopo_df["origem_registro"] == "🆕 Só na empresa (recuperada da RMA)").sum())
+    if recuperadas_no_escopo:
+        st.caption(
+            f"🆕 Dessas, {recuperadas_no_escopo} são OS que não estavam na nossa planilha geral (fecharam "
+            "antes de existir nosso controle) — recuperadas cruzando com a RMA da empresa, ver coluna "
+            "\"Origem / cruzamento empresa\" na aba Tabela/Consulta."
+        )
 
     titulo_bloco("Prazo contratual")
     c3, c4 = st.columns(2)
@@ -626,7 +687,7 @@ def _secao_tabela(df):
         placeholder="Ex.: fuel control, C662041-0102, 3040265533...",
     )
 
-    col_f0, col_f1, col_f2, col_f3, col_f4 = st.columns(5)
+    col_f0, col_f1, col_f2, col_f3, col_f4, col_f5 = st.columns(6)
     with col_f0:
         pns = st.multiselect("PN", ordenar_unicos(df["pn"]), key="rep_filtro_pns")
     with col_f1:
@@ -640,6 +701,13 @@ def _secao_tabela(df):
         locais = st.multiselect("Onde se encontra", ordenar_unicos(df["onde_se_encontra"]), key="rep_filtro_locais")
     with col_f4:
         unidades = st.multiselect("Unidade solicitante", ordenar_unicos(df["unidade_solicitante"]), key="rep_filtro_unidades")
+    with col_f5:
+        # Filtro novo (2026-08-24) — pedido do Wallace: "todo mes vamos ler
+        # as planilhas de RMA... cruza os dados". Isola as OS que só existem
+        # graças ao cruzamento com a planilha da empresa (não têm Situação
+        # nem Data Início, ficam escondidas do "só em aberto" padrão — ver
+        # `filtrado` abaixo).
+        origens = st.multiselect("Origem", ordenar_unicos(df["origem_registro"]), key="rep_filtro_origens")
 
     so_fora_prazo = st.checkbox(
         f"⚠️ Mostrar só \"fora do prazo contratual\" (> {PRAZO_CONTRATUAL_TAT_DIAS} dias, com a "
@@ -647,9 +715,12 @@ def _secao_tabela(df):
         key="rep_so_fora_prazo",
     )
 
-    # Situação escolhida manualmente manda mais que o padrão "só em aberto" —
-    # assim dá pra escolher "OS concluída" e ver as que já foram fechadas.
-    filtrado = df.copy() if situacoes else df[df["em_aberto"]].copy()
+    # Situação/Origem escolhidas manualmente mandam mais que o padrão "só
+    # em aberto" — assim dá pra escolher "OS concluída" (ou uma origem,
+    # ex.: "🆕 Só na empresa") e ver as que já foram fechadas (as OS
+    # recuperadas da RMA nunca têm Situação preenchida, então ficariam
+    # escondidas pra sempre se o filtro dependesse só de "situacoes").
+    filtrado = df.copy() if (situacoes or origens) else df[df["em_aberto"]].copy()
     if busca:
         termo = busca.strip().lower()
         alvo = (
@@ -669,9 +740,11 @@ def _secao_tabela(df):
         filtrado = filtrado[filtrado["onde_se_encontra"].isin(locais)]
     if unidades:
         filtrado = filtrado[filtrado["unidade_solicitante"].isin(unidades)]
+    if origens:
+        filtrado = filtrado[filtrado["origem_registro"].isin(origens)]
     if so_fora_prazo:
         entregue = filtrado["onde_se_encontra"].isin(LOCAIS_ENTREGUES)
-        cobravel = pd.to_datetime(filtrado["data_inicio"], errors="coerce").dt.date >= INICIO_COBRANCA_PRAZO
+        cobravel = pd.to_datetime(filtrado["data_inicio"], errors="coerce") >= pd.Timestamp(INICIO_COBRANCA_PRAZO)
         filtrado = filtrado[(~entregue) & cobravel & (filtrado["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS)]
 
     filtrado = filtrado.reset_index(drop=True)
@@ -696,15 +769,15 @@ def _secao_tabela(df):
     # cobrar, ela nao ta errada"); pra quem já foi entregue ou abriu antes
     # do corte, fica em branco (não é "sem prazo", é "não cobrado").
     entregue_mask = filtrado["onde_se_encontra"].isin(LOCAIS_ENTREGUES)
-    cobravel_mask = pd.to_datetime(filtrado["data_inicio"], errors="coerce").dt.date >= INICIO_COBRANCA_PRAZO
+    cobravel_mask = pd.to_datetime(filtrado["data_inicio"], errors="coerce") >= pd.Timestamp(INICIO_COBRANCA_PRAZO)
     filtrado["dias_ate_vencer"] = pd.NA
     elegivel = ~entregue_mask & cobravel_mask & filtrado["tat_siloms"].notna()
     filtrado.loc[elegivel, "dias_ate_vencer"] = PRAZO_CONTRATUAL_TAT_DIAS - filtrado.loc[elegivel, "tat_siloms"]
 
     tabela = filtrado[[
         "os", "pn", "cff", "nomenclatura", "sn", "unidade_solicitante", "situacao",
-        "condicao", "onde_se_encontra", "data_inicio", "tat_siloms", "dias_ate_vencer", "tat_empresa",
-        "data_entrega", "recibo", "sn_trocado_exchange", "termo_recebimento", "fonte",
+        "condicao", "onde_se_encontra", "origem_registro", "data_inicio", "tat_siloms", "dias_ate_vencer",
+        "tat_empresa", "data_entrega", "recibo", "sn_trocado_exchange", "termo_recebimento", "fonte",
     ]].copy()
     for coluna in ("data_inicio", "data_entrega"):
         tabela[coluna] = pd.to_datetime(tabela[coluna], errors="coerce").dt.strftime("%d/%m/%Y")
@@ -719,7 +792,8 @@ def _secao_tabela(df):
     tabela = tabela.rename(columns={
         "os": "OS", "pn": "PN", "cff": "CFF", "nomenclatura": "Nomenclatura", "sn": "SN",
         "unidade_solicitante": "Unidade solicitante", "situacao": "Situação", "condicao": "Condição",
-        "onde_se_encontra": "Onde se encontra", "data_inicio": "Data início", "tat_siloms": "TAT SILOMS (dias)",
+        "onde_se_encontra": "Onde se encontra", "origem_registro": "Origem / cruzamento empresa",
+        "data_inicio": "Data início", "tat_siloms": "TAT SILOMS (dias)",
         "dias_ate_vencer": "Dias até vencer o prazo", "tat_empresa": "TAT empresa (dias)",
         "data_entrega": "Data de devolução empresa", "recibo": "Recibo",
         "sn_trocado_exchange": "SN trocado (exchange)", "termo_recebimento": "Termo de recebimento",
@@ -777,6 +851,13 @@ def _secao_tabela(df):
             "vem junto no texto da célula).\n"
             "- **\"Onde se encontra\" / \"Data de devolução empresa\" / \"Recibo\"** — vêm da planilha "
             "geral (Controle de Reparáveis) por padrão.\n"
+            "- **\"Origem / cruzamento empresa\"** — `SILOMS`: só está na nossa planilha geral, a "
+            "empresa ainda não confirmou nada sobre essa OS especificamente. `✅ SILOMS + confirmada "
+            "pela empresa`: está nas duas, e a RMA (aba 1.10) trouxe onde está/recibo/data de devolução "
+            "pra ela. `🆕 Só na empresa (recuperada da RMA)`: **não estava** na nossa planilha geral (a "
+            "OS fechou antes de existir nosso controle próprio, desde 2026-08-24 usamos a RMA da empresa "
+            "pra recuperar essas) — sem \"Data Início\" a empresa não informa, então não calculamos TAT "
+            "pra essas (ficam em branco de propósito, não é 0).\n"
             "- **Coluna \"Fonte\"** — quando mostra \"RMA {Mês}/{Ano} (entregue no mês)\", a aba 1.8 da "
             "RMA confirma que a empresa devolveu esse item NESSE mês; \"RMA {Mês}/{Ano} (histórico)\" é "
             "uma OS mais antiga que a aba 1.10 (controle acumulado) já tinha o dado, mas não é do mês em "

@@ -241,6 +241,7 @@ sob demanda).
 |---|---|
 | Emergências (Contrato 005) | `1OuZK024q1kOkKEf6KN18yu2b33mCHwgZfnwFdpELieA` |
 | Reparáveis (Contrato 005) | `1dy_U2Pu5mw6se_gsGvPnuiErKlUJbHnE743f5fnSQ4o` |
+| Reparáveis — complemento RMA (Contrato 005) | pasta `1PT5b2iqt2KVNmBjf1HDHPwcTLYHUNNjI` ("Fechamentos mensais") → ano → mês — pega "RMA em andamento {MÊS}.xlsx" ou "Pré RMA C-98 {Mês}-26.xlsx", aba 1.10 (+1.9 condenados); automatizada em 2026-08-24, ver `Contrato 005/Dashboard/00_Instrucoes/reparaveis.md` |
 | Pagamentos (Contrato 005) | `1zV_SQKlcXVYeaqCbV0X-PiWnzdzOZPt5esaXp_4k6_o` |
 | RAC (Coordenadoria) | `1o8supQLcHkC1WZZCZDAtuRKGB_VUlQ8qBlYj7racsGQ` |
 | Vencimentos TMOT (Coordenadoria) | `178vQ-lRP52sw30kQArqcsQGXfj2OLblaFCgjIXWFIl8` — compartilhada e automatizada em 2026-07-09 |

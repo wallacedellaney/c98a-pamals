@@ -5,7 +5,7 @@ sozinho, pra o Streamlit Cloud atualizar.
 
 Uso: python3 executar_atualizacao.py <fonte|todos>
 
-"todos" roda as 12 fontes em sequência, uma de cada vez, sincronizando com o
+"todos" roda as 13 fontes em sequência, uma de cada vez, sincronizando com o
 GitHub antes de cada uma — usado pelo agendamento de 2 em 2 horas (seg-sex,
 a pedido do Wallace em 2026-07-09, pra contornar o atraso do agendamento
 gratuito do GitHub: rodando com mais frequência, mesmo que uma vez atrase,
@@ -50,6 +50,13 @@ SCRIPTS = {
     # data global (antes, Reparáveis era só manual — decisão revertida a
     # pedido do Wallace, ver 00_Instrucoes/analise_periodo.md).
     "reparaveis": RAIZ / "Contrato 005" / "Dashboard" / "05_Scripts" / "python" / "extrair_reparaveis.py",
+    # Cruzamento com a "RMA em andamento"/"Pré RMA" do mês corrente (aba
+    # 1.10 — controle de OS da própria empresa) — pedido do Wallace,
+    # 2026-08-24: "todo mes vamos ler as planilhas de RMA, vai ser assim
+    # agora". Antes só rodava manual; idempotente (substitui só as linhas
+    # do mês corrente a cada rodada), então entra no ciclo de 2 em 2h sem
+    # problema. Ver Contrato 005/Dashboard/00_Instrucoes/reparaveis.md.
+    "reparaveis_rma": RAIZ / "Contrato 005" / "Dashboard" / "05_Scripts" / "python" / "extrair_reparaveis_rma.py",
     "devolucoes": RAIZ / "Contrato 005" / "Dashboard" / "05_Scripts" / "python" / "extrair_devolucoes.py",
     # A partir de 2026-07-15: planilha pessoal do Wallace, compartilhada com
     # a conta de serviço ("ja compartilhei a planilha") — ver

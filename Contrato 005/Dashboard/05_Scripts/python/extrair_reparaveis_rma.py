@@ -287,5 +287,27 @@ def main():
     print(resultado)
 
 
+def atualizar_do_drive():
+    """Wrapper no padrão dos outros extratores (`--atualizar-do-drive`, ver
+    `shared/executar_atualizacao.py`) — pedido do Wallace, 2026-08-24: "todo
+    mes vamos ler as planilhas de RMA, vai ser assim agora". Antes só rodava
+    manual (botão "🔄 Complementar com a RMA em andamento do mês" na aba
+    Tabela/Consulta de Reparáveis, ou chamando `atualizar_do_mes()` direto);
+    agora entra no ciclo automático de 2 em 2h (seg-sex) junto com as outras
+    fontes — idempotente (rodar de novo no mesmo mês só substitui as linhas
+    desse mês, ver `atualizar_do_mes`), então não tem problema rodar toda
+    hora mesmo a RMA do mês só mudando quando o Wallace sobe um arquivo
+    novo. Sempre usa o mês corrente (`horario.hoje_br()`) — a pasta certa
+    ("Fechamentos mensais" > ano > mês) é achada sozinha por
+    `gerar_ata_reuniao._localizar_pasta_mes`, sem precisar hardcodar nada
+    aqui quando o mês virar."""
+    hoje = horario.hoje_br()
+    return atualizar_do_mes(hoje.year, hoje.month)
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+    if "--atualizar-do-drive" in sys.argv:
+        atualizar_do_drive()
+    else:
+        main()
