@@ -723,18 +723,29 @@ def _secao_tabela(df):
         # `filtrado` abaixo).
         origens = st.multiselect("Origem", ordenar_unicos(df["origem_registro"]), key="rep_filtro_origens")
 
-    so_fora_prazo = st.checkbox(
-        f"⚠️ Mostrar só \"fora do prazo contratual\" (> {PRAZO_CONTRATUAL_TAT_DIAS} dias, com a "
-        f"empresa/terceirizados, aberta a partir de {INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')})",
-        key="rep_so_fora_prazo",
-    )
+    col_chk1, col_chk2 = st.columns(2)
+    with col_chk1:
+        # Pedido do Wallace, 2026-08-24: "a tabela geral de todas as OS n
+        # tem nao ne, fechadas, abertas, condenad, tudo" — antes só dava
+        # pra ver tudo junto escolhendo valor num filtro (nada óbvio);
+        # agora é um checkbox direto.
+        mostrar_tudo = st.checkbox(
+            "📋 Mostrar todas as OS (abertas + fechadas + condenadas)", key="rep_mostrar_tudo",
+        )
+    with col_chk2:
+        so_fora_prazo = st.checkbox(
+            f"⚠️ Mostrar só \"fora do prazo contratual\" (> {PRAZO_CONTRATUAL_TAT_DIAS} dias, com a "
+            f"empresa/terceirizados, aberta a partir de {INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')})",
+            key="rep_so_fora_prazo",
+        )
 
-    # Situação/Origem escolhidas manualmente mandam mais que o padrão "só
-    # em aberto" — assim dá pra escolher "OS concluída" (ou uma origem,
-    # ex.: "🆕 Só na empresa") e ver as que já foram fechadas (as OS
-    # recuperadas da RMA nunca têm Situação preenchida, então ficariam
-    # escondidas pra sempre se o filtro dependesse só de "situacoes").
-    filtrado = df.copy() if (situacoes or origens) else df[df["em_aberto"]].copy()
+    # Situação/Origem escolhidas manualmente (ou o checkbox "mostrar
+    # tudo") mandam mais que o padrão "só em aberto" — assim dá pra
+    # escolher "OS concluída" (ou uma origem, ex.: "🆕 Só na empresa") e
+    # ver as que já foram fechadas (as OS recuperadas da RMA nunca têm
+    # Situação preenchida, então ficariam escondidas pra sempre se o
+    # filtro dependesse só de "situacoes").
+    filtrado = df.copy() if (mostrar_tudo or situacoes or origens) else df[df["em_aberto"]].copy()
     if busca:
         termo = busca.strip().lower()
         alvo = (

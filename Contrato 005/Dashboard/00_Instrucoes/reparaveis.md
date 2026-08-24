@@ -591,3 +591,18 @@ pode não ter incorporado tudo ainda). As outras 21, mais antigas
 e mesmo assim nunca entraram no controle da empresa, são as que mais
 parecem esquecimento genuíno — não investigado a fundo ainda, fica como
 ponto em aberto se o Wallace quiser conferir com a empresa.
+
+## Checkbox "Mostrar todas as OS" (mesmo dia)
+
+Wallace, na aba Tabela/Consulta: "a tabela geral de todas as OS n tem
+nao ne, fechadas, abertas, condenad, tudo" — reparou que não tinha jeito
+óbvio de ver tudo junto numa tabela só (o padrão só mostra abertas;
+antes só dava pra ver o resto escolhendo algum valor num dos multiselects
+de filtro, o que ninguém ia adivinhar sozinho).
+
+Adicionado checkbox **"📋 Mostrar todas as OS (abertas + fechadas +
+condenadas)"**, ao lado do já existente "só fora do prazo" — quando
+marcado, `filtrado = df.copy()` (mesmo comportamento que já existia ao
+escolher um valor em Situação/Origem, só que agora com 1 clique só, sem
+precisar adivinhar). Testado ao vivo: 691 OS (o total completo) com um
+clique.
