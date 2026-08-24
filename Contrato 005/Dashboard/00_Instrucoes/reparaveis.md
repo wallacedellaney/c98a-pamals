@@ -537,3 +537,57 @@ padrão "Abertas no SILOMS", confirmado ao vivo: 385/273 idênticos antes
 e depois). Testado ao vivo nos 3 escopos, incluindo o caso extremo
 "Fechadas" com 0 "com a empresa" (donuts/ranking/gráfico por local
 degradam pra mensagem amigável, sem erro).
+
+## Segundo bug achado pelo Wallace, mesmo dia — recuperação incompleta (692 x 672)
+
+Wallace reparou que o total do site (672 na época) não batia com o total
+que ele via direto na planilha da empresa (aba 1.10, "tem 601 lá" — depois
+esclarecido que 601 é número de LINHA, não de OS únicas) e pediu pra
+cruzar TODAS as nossas OS com as delas e ver a diferença de verdade
+("tem que cruzar todas nossas os com a deles e ve a diferenca").
+
+Cruzamento direto (openpyxl, sem passar pelo arquivo intermediário):
+**592 OS únicas na empresa** (aba 1.10 de julho/2026, 601 linhas − 2 sem
+"Nº da OS" preenchido − duplicatas) x **520 na nossa Divulgação** (base
+já tinha crescido desde a recuperação original) → **420 em comum**,
+**172 só na empresa**, **100 só na nossa Divulgação**.
+
+**Causa raiz do gap**: das 172 "só na empresa", a recuperação original só
+pegava as que tinham pelo menos um dos 3 campos extras preenchidos
+(devolução/onde/recibo) — 151 delas. As outras **21** (a maioria com
+recibo/onde/data vazios na 1.10) eram silenciosamente ignoradas na
+extração (`extrair_reparaveis_rma.py`), com a suposição de que "OS sem
+nenhum dos 3 campos = ainda em aberto de verdade, normal". Essa
+suposição contradiz a própria regra que o Wallace confirmou antes
+("aberta vai ser sempre da aba divulcao que vc puxa") — se não está na
+Divulgação, não está aberta, com ou sem dado extra na RMA.
+
+**Achado extra durante a investigação**: 2 das 172 (`30402622772` e
+`30402622773`, linhas 462/463 da 1.10) têm **11 dígitos** — todo o resto
+do arquivo usa exatamente 10. Erro de digitação claro na planilha da
+empresa; sem o número certo pra corrigir sozinho, ficam de fora (viram
+inconsistência no log, não uma OS "recuperada" inventada) —
+`OS_MAXIMO_VALIDO` novo em `extrair_reparaveis_rma.py`.
+
+**Correção**: `extrair()` não pula mais OS "vazias" — toda OS com um
+"Nº da OS" válido na 1.10 vira uma linha no complemento (mesmo sem
+devolução/onde/recibo), exceto as com número de dígitos errado. Isso não
+muda nada pras 420 OS que já bateram com a nossa base (a linha "vazia"
+simplesmente não sobrescreve nada, os 3 campos ficam `None`) — só destrava
+a recuperação das 21 que ficavam de fora (19 recuperadas de verdade, 2
+inválidas pro log).
+
+**Resultado, testado ao vivo**: total foi de 672 → **691** (520 + 171
+recuperadas), batendo exatamente com o cruzamento manual (420 + 171 +
+100 = 691). Reparaveis_complemento_rma.xlsx de julho regravado (591 OS
+complementadas, antes 401).
+
+**Sobre as 100 "só na Divulgação"** (Wallace perguntou "a empresa
+esqueceu de lançar?"): checando a data de abertura delas, **79%
+(79 de 100) abriram em julho/agosto/2026** — muito recentes, mais
+provável ser só atraso normal (a 1.10 é um controle mensal da empresa,
+pode não ter incorporado tudo ainda). As outras 21, mais antigas
+(2025-03 a 2026-06), e principalmente as **12 que já estão fechadas**
+e mesmo assim nunca entraram no controle da empresa, são as que mais
+parecem esquecimento genuíno — não investigado a fundo ainda, fica como
+ponto em aberto se o Wallace quiser conferir com a empresa.

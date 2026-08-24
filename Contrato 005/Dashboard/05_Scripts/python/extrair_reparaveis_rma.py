@@ -71,6 +71,15 @@ NORMALIZACAO_OPERADOR = {"PAMALS": "PAMA-LS", "PAMA LS": "PAMA-LS"}
 # mesma coluna da OS quando lido célula a célula).
 OS_MINIMO_VALIDO = 100_000
 
+# Teto — pedido do Wallace, 2026-08-24 ("a empresa tem 592 os e no nosso
+# 672.... nao abriu isso tudo agora", cruzando OS por OS): achados 2 valores
+# com 11 dígitos (`30402622772`/`30402622773`, linhas 462/463 da 1.10 de
+# julho/2026) — claramente um erro de digitação de quem preencheu a
+# planilha (todo o resto do arquivo usa exatamente 10 dígitos). Sem o
+# número certo pra corrigir sozinho, esses 2 ficam de fora (viram
+# inconsistência no log, não uma OS "recuperada" inventada).
+OS_MAXIMO_VALIDO = 9_999_999_999
+
 
 def _valor_texto(v):
     if v is None:
@@ -124,11 +133,14 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
     inconsistencias) — df com colunas: os, mes_referencia, ano_referencia,
     data_devolucao_empresa, data_devolucao_empresa_texto, onde_se_encontra,
     recibo, fonte, entregue_no_mes, condenado, motivo_condenacao,
-    arquivo_fonte. Toda OS com pelo menos um dos 3 campos
-    (devolução/recibo/operador) preenchido na 1.10, OU que aparece na 1.9
-    (condenada), vira uma linha — OS ainda sem nenhum dos 3 e fora da 1.9 é
-    a maioria (ainda em aberto de verdade) e é ignorada silenciosamente,
-    não é inconsistência.
+    arquivo_fonte. **Toda OS com um "Nº da OS" válido na 1.10 vira uma
+    linha** — mesmo sem devolução/recibo/operador preenchido (mudou em
+    2026-08-24, ver comentário mais abaixo; antes uma OS "vazia" era
+    ignorada, assumindo que estava em aberto — suposição errada, porque a
+    Divulgação (SILOMS) é a única fonte de verdade pra "em aberto", não a
+    RMA). OS numeradas de forma inválida (mais de 10 dígitos, típico erro
+    de digitação na planilha da empresa) entram em `inconsistencias`, não
+    viram linha.
 
     `entregue_no_mes` (bool) — pedido do Wallace, 2026-08-12: "oq foi
     entregue no mês são da 1.8, aí vc deixa claro lá tb" — distingue a OS
@@ -138,6 +150,7 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
     reflete isso no texto ("... (entregue no mês)" x "... (histórico)")."""
     wb = openpyxl.load_workbook(io.BytesIO(conteudo_bytes), data_only=True)
     inconsistencias = []
+    os_invalidas = []
 
     if "1.10" not in wb.sheetnames:
         inconsistencias.append(f"{nome_arquivo}: aba 1.10 não encontrada — nada extraído.")
@@ -160,6 +173,9 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
         nos = ws810.cell(row=r, column=7).value
         if not isinstance(nos, (int, float)) or nos < OS_MINIMO_VALIDO:
             continue
+        if nos > OS_MAXIMO_VALIDO:
+            os_invalidas.append((r, nos))
+            continue
         numero_os = int(nos)
 
         data_devolucao_raw = ws810.cell(row=r, column=10).value
@@ -171,9 +187,20 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
         data_devolucao = data_devolucao_raw.date() if hasattr(data_devolucao_raw, "date") else None
         data_devolucao_texto = None if data_devolucao else _valor_texto(data_devolucao_raw)
 
-        if data_devolucao is None and data_devolucao_texto is None and onde is None and recibo is None:
-            continue  # OS ainda em aberto de verdade, nem na própria RMA tem info — normal, maioria dos casos
-
+        # 2026-08-24 — antes, uma OS sem nenhum dos 3 campos extras
+        # (devolução/onde/recibo) era ignorada aqui, assumindo "ainda em
+        # aberto de verdade" — pedido do Wallace, cruzando OS por OS
+        # ("a empresa tem 592 os e no nosso 672"): essa suposição tava
+        # errada — 21 dessas OS "vazias" nem sequer estão na nossa
+        # Divulgação, e como a Divulgação é a ÚNICA fonte de verdade pra
+        # "em aberto" (regra confirmada antes: "aberta vai ser sempre da
+        # aba divulcao que vc puxa"), continuar ignorando essas OS as
+        # deixaria de fora do total pra sempre. Agora TODA OS com número
+        # válido na 1.10 vira uma linha (mesmo sem nenhum dado extra) —
+        # `_mesclar_complemento_rma()` decide o que fazer com ela: se já
+        # existe na nossa base, essa linha "vazia" não sobrescreve nada
+        # (os 3 campos ficam None); se não existe, ainda assim recupera
+        # como OS fechada (só sem onde/recibo/data, que não tem mesmo).
         entregue_no_mes = numero_os in os_entregues_no_mes
         registros[numero_os] = {
             "os": str(numero_os),
@@ -236,6 +263,12 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
             fonte += " — condenado"
         registro["fonte"] = fonte
         linhas.append(registro)
+
+    for r, nos in os_invalidas:
+        inconsistencias.append(
+            f"{nome_arquivo}, linha {r}: \"Nº da OS\" = {int(nos)} tem mais de 10 dígitos "
+            "(provável erro de digitação na planilha da empresa) — ignorada."
+        )
 
     return pd.DataFrame(linhas), inconsistencias
 
