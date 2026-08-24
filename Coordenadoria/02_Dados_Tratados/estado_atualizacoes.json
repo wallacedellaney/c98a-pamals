@@ -3,26 +3,26 @@
     "status": "sem_novidade",
     "last_error": null,
     "remote_modified_time": "2026-08-24T11:30:08.880Z",
-    "local_updated_at": "2026-08-24T18:15:57.613341-03:00",
+    "local_updated_at": "2026-08-24T18:48:04.217665-03:00",
     "record_count": 36
   },
   "rac": {
     "remote_modified_time": "2026-08-24T16:51:19.967Z",
-    "local_updated_at": "2026-08-24T16:36:24.501197-03:00",
+    "local_updated_at": "2026-08-24T18:37:09.353055-03:00",
     "status": "atualizado",
     "record_count": 30,
     "last_error": null
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-08-06T11:35:12.826Z",
-    "local_updated_at": "2026-08-24T16:37:08.081974-03:00",
+    "local_updated_at": "2026-08-24T18:37:41.485489-03:00",
     "status": "atualizado",
     "record_count": 193,
     "last_error": null
   },
   "motores": {
     "remote_modified_time": "2026-08-24T18:47:12.001Z",
-    "local_updated_at": "2026-08-24T16:38:22.168434-03:00",
+    "local_updated_at": "2026-08-24T18:39:16.132070-03:00",
     "status": "atualizado",
     "record_count": 39,
     "last_error": null
