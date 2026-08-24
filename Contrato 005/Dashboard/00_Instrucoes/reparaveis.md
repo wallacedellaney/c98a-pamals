@@ -324,3 +324,22 @@ que tem muita informacao na tela principal tb ne". Dois ajustes na aba
   brief de refinamento. Tudo o mais continua exatamente igual, só
   escondido até alguém clicar. Altura da página caiu de ~4400px pra
   ~2670px na aba Visão Geral (testado ao vivo).
+
+## "Esquema" clicável (2026-08-24, mesmo dia)
+
+Wallace, depois de eu explicar os 4 blocos em texto (com uma "árvore"
+ASCII mostrando como 385 se divide em 112/273, e 273 em 144/129, etc.):
+"gostei desse esquema ai em cima, bora colcoar ele la no layort, indo
+clicando e espandindo". Novo bloco "Como os números se conectam", logo
+depois de "Entregues", sempre visível (não escondido no expander de
+gráficos).
+
+`_arvore_html()` monta um `<details>`/`<summary>` HTML nativo (não
+`st.expander`) — o Streamlit **não deixa aninhar** `st.expander` dentro
+de outro, mas `<details>` aninha de verdade, sem JS nenhum, clique abre/
+fecha sozinho no navegador. 3 níveis: 385 (vem já aberto, é a divisão
+mais importante) → 112 entregue / 273 com a empresa (fechado, clica pra
+abrir) → 144 fora do prazo / 129 dentro do prazo (fechado) → 11 vencem
+este mês (fechado, dentro de "dentro do prazo"). Cada nível usa os
+mesmos números já calculados na seção (nada duplicado/recalculado).
+Testado ao vivo, clicando nível por nível.

@@ -36,7 +36,7 @@ import streamlit as st
 
 from shared import horario
 from contrato005.components import data_global
-from contrato005.components.paleta import AMBER, STATUS, layout_grafico, metrica_html, titulo_bloco
+from contrato005.components.paleta import AMBER, INK, LINE, PANEL, STATUS, layout_grafico, metrica_html, titulo_bloco
 from contrato005.components.utils import ordenar_unicos
 from contrato005.components.exportar import gerar_xlsx_bytes
 
@@ -221,6 +221,38 @@ def _secao_historico_mensal(df):
     st.dataframe(contagem[["Mês", "Aberturas"]], hide_index=True, width="stretch")
 
 
+def _arvore_html(total, entregue, com_empresa, fora_prazo, dentro_prazo, vence_mes):
+    """"Esquema" de como os números do bloco Volume/Prazo se conectam —
+    pedido do Wallace, 2026-08-24, depois de eu explicar a relação entre
+    os cards em texto: "gostei desse esquema ai em cima, bora colcoar ele
+    la no layort, indo clicando e espandindo". HTML nativo com
+    `<details>`/`<summary>` (não `st.expander`) porque o Streamlit não
+    deixa aninhar expander dentro de expander — `<details>` aninha de
+    verdade, sem JS nenhum, clique abre/fecha sozinho no navegador. O
+    nível de cima já vem aberto (a divisão 385 -> 112/273 é a mais
+    importante); os de baixo ficam fechados, revelados "indo clicando"
+    conforme o pedido."""
+    caixa = f"background:{PANEL};border:1px solid {LINE};border-radius:8px;padding:.5rem .8rem;margin:.3rem 0;"
+    resumo = f"cursor:pointer;font-weight:700;color:{INK};"
+    linha = f"padding:.35rem 0 .35rem 1.5rem;color:{INK};font-size:.88rem;"
+    sub = "margin-left:1.1rem;"
+
+    return f"""
+    <details open style="{caixa}">
+      <summary style="{resumo}">📦 {total} OS abertas no SILOMS</summary>
+      <div style="{linha}">🟢 <b>{entregue}</b> — já entregue, só falta fechar a burocracia da OS</div>
+      <details style="{caixa}{sub}">
+        <summary style="{resumo}">🟠 {com_empresa} — com a empresa e terceirizados</summary>
+        <div style="{linha}">🔴 <b style="color:{STATUS['critical']};">{fora_prazo}</b> — fora do prazo contratual (&gt; 110 dias)</div>
+        <details style="{caixa}{sub}">
+          <summary style="{resumo}">🟢 {dentro_prazo} — dentro do prazo</summary>
+          <div style="{linha}">⚠️ <b style="color:{STATUS['critical']};">{vence_mes}</b> desses vencem o prazo <b>este mês</b></div>
+        </details>
+      </details>
+    </details>
+    """
+
+
 def _secao_estatisticas_tat(df):
     st.markdown("##### Estatísticas de TAT")
 
@@ -359,6 +391,18 @@ def _secao_estatisticas_tat(df):
                 "faltar o \"TAT\" na planilha geral pra esses. Ver coluna \"Fonte\" na tabela (\"— TAT "
                 "calculado\")."
             )
+
+    # "Esquema" de como os números acima se conectam — pedido do Wallace,
+    # 2026-08-24: "gostei desse esquema ai em cima, bora colcoar ele la no
+    # layort, indo clicando e espandindo".
+    titulo_bloco("Como os números se conectam")
+    st.markdown(
+        _arvore_html(
+            total=len(escopo_df), entregue=len(escopo_df) - len(empresa), com_empresa=len(empresa),
+            fora_prazo=len(fora_prazo), dentro_prazo=len(dentro_prazo), vence_mes=len(vence_mes),
+        ),
+        unsafe_allow_html=True,
+    )
 
     # Gráficos e detalhamento dentro de um expander — pedido do Wallace,
     # 2026-08-24: "queria que deixasse mais claro, parece que tem muita
