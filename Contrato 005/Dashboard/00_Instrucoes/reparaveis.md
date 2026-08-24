@@ -166,3 +166,65 @@ complementado de "onde_se_encontra" (normalizado de "PAMALS" pra
 "PAMA-LS", mesma grafia da planilha geral). OS que a 1.8 diz que foi
 devolvida mas não tem devolução/recibo/local nem na própria 1.10 (ou nem
 aparece lá) vira inconsistência no log — não inventamos o dado.
+
+## Reorganização da tela (2026-08-24)
+
+Pedido do Wallace: "vamos melhorar o controle de reparaveis, as
+informacoes deles, o layort, as cores os filtros, pensa ai oq podemos
+fazer". Levantei o que existia (cards/gráficos/tabela numa coluna única
+gigante, tudo âmbar mesmo em número ruim, filtro só por valor exato, sem
+exportar) e propus uma lista — confirmado com o Wallace via pergunta:
+reorganizar em abas (recomendado) + ranking das mais atrasadas + coluna
+"dias até vencer" + botão de exportar.
+
+**3 abas** (`render()`) em vez de coluna única: **"📊 Visão Geral"**
+(`_secao_estatisticas_tat` — cards, donuts, ranking, gráfico por local),
+**"📋 Tabela / Consulta"** (`_secao_tabela` — busca, filtros, tabela,
+distribuição por condição, complemento RMA) e **"📅 Histórico"**
+(`_secao_historico_mensal`, sem mudança de conteúdo).
+
+**Cores condicionais** (Wallace: "as cores" + depois, vendo o gráfico:
+"tem um negocio de cor la de onde ta, ta um laranjao") — antes todo card/
+barra usava a cor de marca (âmbar), mesmo em número ruim. Agora:
+`_card_metrica()` (novo helper, HTML customizado — `st.metric` não deixa
+colorir só o valor) usa `STATUS["critical"]` nos cards "Fora do prazo
+contratual" e "Vencem o prazo este mês" quando > 0; o gráfico "TAT médio
+por local" colore cada barra individualmente (`STATUS["critical"]`/
+`STATUS["good"]`, nunca AMBER como status — regra da paleta) conforme
+passa ou não dos 110 dias contratuais. Linha da tabela principal também
+ganhou destaque vermelho sutil quando fora do prazo ou condenado
+(`_cor_linha`, mesma técnica de Styler+DataFrame pré-formatado pra texto
+usada no Cômputo Mensal em 2026-08-20).
+
+**Gráfico "TAT médio por local" ficou clicável** (Wallace: "quero que
+tudo seja clicavel nessa parte") — `st.plotly_chart(..., on_select="rerun",
+selection_mode="points")`; clicar numa barra guarda o local em
+`st.session_state["rep_filtro_local_pendente"]`, que `_secao_tabela()`
+consome logo no início (antes do multiselect "Onde se encontra" ser
+instanciado nesse mesmo rerun) e aplica como filtro na aba "Tabela /
+Consulta" — funciona porque as 3 abas do Streamlit rodam o script inteiro
+sempre (só a exibição é escondida via CSS), não é lazy-load.
+
+**Bug mudo corrigido** (mesmo já achado no Cômputo Mensal, 2026-08-20):
+célula vazia (None/NaN/NaT) na tabela aparecia como o texto literal
+"None" em vez de branco — o Streamlit ignora o `na_rep` do Styler nessa
+versão. `_tabela_para_texto()` agora converte TODAS as colunas pra texto
+antes de estilizar (antes era só uma lista fixa de 7 colunas, "condicao"
+tinha ficado de fora).
+
+**Novidades que não existiam:**
+- Busca por texto livre (nomenclatura/PN/SN/OS), combinável com os
+  multiselects existentes.
+- Atalho "Mostrar só fora do prazo contratual" (checkbox).
+- Ranking das 10 OS mais atrasadas (só "com a empresa/terceirizados"),
+  linha vermelha quando > 110 dias.
+- Coluna "Dias até vencer o prazo" (110 − TAT SILOMS) na tabela principal
+  — só preenchida pra quem ainda está com a empresa/terceirizados (mesma
+  regra do prazo contratual); quem já foi entregue fica em branco.
+- Botão "⬇️ Exportar (XLSX)" da tabela já filtrada
+  (`gerar_xlsx_bytes`, reaproveitado de `components/exportar.py`).
+- Nomes de coluna da tabela principal padronizados (Title Case em tudo,
+  antes misturava `os`/`pn` minúsculo com `ONDE SE ENCONTRA` maiúsculo).
+
+Testado ao vivo no preview: abas, cores, clique-filtra-outra-aba, busca,
+exportar e ranking — todos funcionando.

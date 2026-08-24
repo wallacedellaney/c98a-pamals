@@ -1,16 +1,44 @@
-"""Tela de detalhe — Reparáveis."""
+"""Tela de detalhe — Reparáveis.
+
+**Reorganizada em 2026-08-24** (pedido do Wallace: "vamos melhorar o
+controle de reparaveis, as informacoes deles, o layort, as cores os
+filtros"). Antes era uma coluna única gigante (cards + 3 gráficos +
+filtros + tabela de ~400 linhas + mais 2 seções embaixo) — virou 3 abas
+("📊 Visão Geral", "📋 Tabela / Consulta", "📅 Histórico"), pra quem só quer
+consultar uma OS não precisar rolar por tudo. Mudanças principais:
+
+- Cores condicionais (antes tudo era âmbar, até números ruins como "fora
+  do prazo"): cards e barras do gráfico "TAT médio por local" agora usam
+  STATUS["critical"]/STATUS["good"] conforme o prazo contratual.
+- Gráfico "TAT médio por local" ficou clicável (pedido: "quero que tudo
+  seja clicavel nessa parte") — clicar numa barra já filtra a aba
+  "Tabela / Consulta" por aquele local (via `st.session_state`, ver
+  `_secao_tabela`).
+- Ranking das 10 OS mais atrasadas (não existia — só tinha a média por
+  local, não um raio-x das piores individualmente).
+- Coluna "Dias até vencer o prazo" na tabela (110 − TAT, só pra quem ainda
+  tá com a empresa/terceirizados).
+- Busca por texto livre (nomenclatura/PN/SN/OS) + atalho "só fora do
+  prazo" — antes só dava pra filtrar por valor exato via multiselect.
+- Botão de exportar (XLSX) a tabela já filtrada — não existia.
+- Linha da tabela pintada quando fora do prazo/condenado.
+- Corrigido bug mudo (mesmo already achado no Cômputo Mensal, 2026-08-20):
+  célula vazia aparecia como o texto literal "None" em vez de branco.
+"""
 
 import sys
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 from shared import horario
 from contrato005.components import data_global
-from contrato005.components.paleta import AMBER, CATEGORICA, STATUS, layout_grafico
+from contrato005.components.paleta import AMBER, CATEGORICA, SECONDARY, STATUS, layout_grafico
 from contrato005.components.utils import ordenar_unicos
+from contrato005.components.exportar import gerar_xlsx_bytes
 
 SCRIPTS_PYTHON = Path(__file__).resolve().parents[3] / "05_Scripts" / "python"
 if str(SCRIPTS_PYTHON) not in sys.path:
@@ -122,6 +150,21 @@ def _mesclar_complemento_rma(df, complemento):
     return df
 
 
+def _card_metrica(col, label, valor, cor=None):
+    """Card de métrica com cor customizável — `st.metric` não deixa colorir
+    só o valor, e pedido do Wallace, 2026-08-24 ("as cores"): números ruins
+    (fora do prazo, vence este mês) devem saltar aos olhos, não ficar iguais
+    aos neutros (ex.: total de OS abertas). `cor=None` usa a cor padrão do
+    tema (mesmo efeito visual do `st.metric` de antes)."""
+    cor = cor or "inherit"
+    col.markdown(
+        f'<div style="font-size:.78rem;color:{SECONDARY};text-transform:uppercase;'
+        f'letter-spacing:.03em;margin-bottom:2px;">{label}</div>'
+        f'<div style="font-size:1.85rem;font-weight:700;color:{cor};line-height:1.25;">{valor}</div>',
+        unsafe_allow_html=True,
+    )
+
+
 def _secao_complemento_rma():
     """Botão pra repetir, em qualquer mês futuro, o cruzamento que o Wallace
     pediu manualmente em 2026-08-12 pra julho — sem precisar pedir de novo
@@ -228,12 +271,12 @@ def _secao_estatisticas_tat(df):
         return f"{sub['tat_siloms'].mean():.0f} dias" if sub["tat_siloms"].notna().any() else "—"
 
     c1, c2 = st.columns(2)
-    c1.metric(f"OS — {escopo}", len(escopo_df))
-    c2.metric("Média de TAT geral (mesmo faltando a burocracia)", _media_tat(escopo_df))
+    _card_metrica(c1, f"OS — {escopo}", len(escopo_df))
+    _card_metrica(c2, "Média de TAT geral (mesmo faltando a burocracia)", _media_tat(escopo_df))
 
     c3, c4 = st.columns(2)
-    c3.metric("Com a empresa e terceirizados", len(empresa))
-    c4.metric("Média de TAT — empresa e terceirizados", _media_tat(empresa))
+    _card_metrica(c3, "Com a empresa e terceirizados", len(empresa))
+    _card_metrica(c4, "Média de TAT — empresa e terceirizados", _media_tat(empresa))
 
     # Prazo contratual (dentro/fora, vence este mês) só faz sentido pra quem
     # ainda está com a empresa/terceirizados — item já entregue (só falta
@@ -252,9 +295,18 @@ def _secao_estatisticas_tat(df):
         & (com_data["tat_siloms"] <= PRAZO_CONTRATUAL_TAT_DIAS)
     ]
 
+    # Cores condicionais — pedido do Wallace, 2026-08-24: antes todo card
+    # era âmbar (cor de marca), até números ruins como "fora do prazo".
+    # AMBER nunca é usado como status (regra da paleta) — só good/critical.
     c5, c6 = st.columns(2)
-    c5.metric(f"Fora do prazo contratual (> {PRAZO_CONTRATUAL_TAT_DIAS} dias) — empresa/terceirizados", len(fora_prazo), delta_color="inverse")
-    c6.metric("Vencem o prazo contratual este mês — empresa/terceirizados", len(vence_mes), delta_color="inverse")
+    _card_metrica(
+        c5, f"Fora do prazo contratual (> {PRAZO_CONTRATUAL_TAT_DIAS} dias) — empresa/terceirizados",
+        len(fora_prazo), cor=STATUS["critical"] if len(fora_prazo) else STATUS["good"],
+    )
+    _card_metrica(
+        c6, "Vencem o prazo contratual este mês — empresa/terceirizados",
+        len(vence_mes), cor=STATUS["critical"] if len(vence_mes) else STATUS["good"],
+    )
 
     # TAT real reportado pela própria empresa (coluna "TAT " da fonte, sob
     # "INFORMAÇÕES DA EMPRESA") — disponível a partir de 2026-07-27 (Wallace:
@@ -273,8 +325,8 @@ def _secao_estatisticas_tat(df):
     if not com_tat_empresa.empty:
         calculados = int(com_tat_empresa["tat_calculado"].sum())
         c7, c8 = st.columns(2)
-        c7.metric("Itens com TAT real da empresa (já entregues)", len(com_tat_empresa))
-        c8.metric("Média de TAT real — empresa", f"{com_tat_empresa['tat_empresa'].mean():.0f} dias")
+        _card_metrica(c7, "Itens com TAT real da empresa (já entregues)", len(com_tat_empresa))
+        _card_metrica(c8, "Média de TAT real — empresa", f"{com_tat_empresa['tat_empresa'].mean():.0f} dias")
         if calculados:
             st.caption(
                 f"Dos {len(com_tat_empresa)} acima, {calculados} não vieram reportados pela empresa na "
@@ -312,7 +364,34 @@ def _secao_estatisticas_tat(df):
         layout_grafico(fig_prazo, altura=230)
         st.plotly_chart(fig_prazo, width="stretch")
 
-    st.caption("TAT médio por local ('Onde se encontra')")
+    # Ranking das piores OS — pedido do Wallace, 2026-08-24 ("pensa aí oq
+    # podemos fazer"): a média por local (gráfico abaixo) não mostra um
+    # raio-x das OS individuais mais atrasadas. Só sobre "com a
+    # empresa/terceirizados" (mesmo grupo do prazo contratual).
+    st.caption(f"⏱️ Top 10 OS mais atrasadas (com a empresa/terceirizados, dias em aberto)")
+    piores = (
+        empresa.dropna(subset=["tat_siloms"])
+        .sort_values("tat_siloms", ascending=False)
+        .head(10)[["os", "pn", "nomenclatura", "unidade_solicitante", "onde_se_encontra", "tat_siloms"]]
+        .rename(columns={
+            "os": "OS", "pn": "PN", "nomenclatura": "Nomenclatura", "unidade_solicitante": "Unidade",
+            "onde_se_encontra": "Onde se encontra", "tat_siloms": "TAT (dias)",
+        })
+    )
+    if piores.empty:
+        st.caption("Sem OS com TAT SILOMS preenchido nesse escopo.")
+    else:
+        piores["TAT (dias)"] = piores["TAT (dias)"].round(0).astype(int)
+        styler_piores = piores.style.apply(
+            lambda row: [
+                f"background-color: {STATUS['critical']}33" if row["TAT (dias)"] > PRAZO_CONTRATUAL_TAT_DIAS else ""
+                for _ in row
+            ],
+            axis=1,
+        )
+        st.dataframe(styler_piores, hide_index=True, width="stretch")
+
+    st.caption("TAT médio por local ('Onde se encontra') — clique numa barra pra filtrar a aba \"Tabela / Consulta\" por ela")
     media_local = (
         escopo_df.dropna(subset=["tat_siloms"])
         .groupby("onde_se_encontra")["tat_siloms"]
@@ -327,15 +406,34 @@ def _secao_estatisticas_tat(df):
         st.caption("Sem \"TAT SILOMS\" preenchido nas OS desse escopo — normal em \"Fechadas\".")
     else:
         media_local["TAT médio (dias)"] = media_local["TAT médio (dias)"].round(0).astype(int)
-        fig_local = px.bar(
-            media_local, x="TAT médio (dias)", y="Onde se encontra", orientation="h",
-            color_discrete_sequence=[AMBER],
-        )
+        # Cor condicional por barra — pedido do Wallace, 2026-08-24 ("tem um
+        # negocio de cor la de onde ta, ta um laranjao"): antes toda barra
+        # era âmbar, mesmo passando MUITO dos 110 dias contratuais. Só
+        # good/critical (nunca AMBER como status, regra da paleta).
+        cores_barras = [
+            STATUS["critical"] if v > PRAZO_CONTRATUAL_TAT_DIAS else STATUS["good"]
+            for v in media_local["TAT médio (dias)"]
+        ]
+        fig_local = go.Figure(go.Bar(
+            x=media_local["TAT médio (dias)"], y=media_local["Onde se encontra"],
+            orientation="h", marker_color=cores_barras,
+            customdata=media_local["Quantidade"],
+            hovertemplate="%{y}<br>TAT médio: %{x} dias<br>Quantidade: %{customdata}<extra></extra>",
+        ))
         fig_local.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=STATUS["critical"],
                              annotation_text=f"{PRAZO_CONTRATUAL_TAT_DIAS}d contratual")
         fig_local.update_layout(yaxis_title="", xaxis_title="TAT médio (dias)")
         layout_grafico(fig_local, altura=max(200, 28 * len(media_local)))
-        st.plotly_chart(fig_local, width="stretch")
+        evento_bar = st.plotly_chart(
+            fig_local, width="stretch", on_select="rerun", selection_mode="points", key="rep_bar_local_clique",
+        )
+        pontos = evento_bar.selection.get("points", []) if evento_bar else []
+        locais_clicados = sorted({p["y"] for p in pontos if "y" in p})
+        if locais_clicados:
+            st.session_state["rep_filtro_local_pendente"] = locais_clicados
+            st.success(
+                f"🖱️ Clicado: **{', '.join(locais_clicados)}** — já filtrado na aba \"📋 Tabela / Consulta\"."
+            )
 
         with st.expander("Ver tabela — TAT médio por local"):
             st.dataframe(media_local, hide_index=True, width="stretch")
@@ -343,35 +441,63 @@ def _secao_estatisticas_tat(df):
     st.divider()
 
 
-def render(dados):
-    if data_global.mostrar_snapshot_se_necessario(dados, "reparaveis"):
-        return
+def _tabela_para_texto(tabela):
+    """Converte TODAS as colunas pra string de exibição, com célula vazia
+    virando "" — não só uma lista fixa de colunas como antes. Bug mudo
+    achado em 2026-08-24 (mesmo já corrigido no Cômputo Mensal,
+    2026-08-20): célula vazia (None/NaN/NaT) aparecia como o texto literal
+    "None" na tabela em vez de branco — o Streamlit ignora o na_rep do
+    pandas nessa versão quando a coluna ainda tem valor nulo de verdade."""
+    tabela = tabela.copy()
+    for coluna in tabela.columns:
+        tabela[coluna] = tabela[coluna].astype(str).replace({"None": "", "nan": "", "NaT": "", "<NA>": ""})
+    return tabela
 
-    st.title("Reparáveis")
 
-    df = _mesclar_complemento_rma(dados["reparaveis"], dados.get("reparaveis_complemento_rma"))
-    df["onde_se_encontra"] = df["onde_se_encontra"].fillna(LOCAL_NAO_INFORMADO)
+def _secao_tabela(df):
+    # Consome o clique feito no gráfico "TAT médio por local" (aba "Visão
+    # Geral") — precisa ser ANTES do multiselect "Onde se encontra" ser
+    # instanciado, pra virar o valor inicial dele nesse mesmo rerun.
+    if "rep_filtro_local_pendente" in st.session_state:
+        st.session_state["rep_filtro_locais"] = st.session_state.pop("rep_filtro_local_pendente")
 
-    _secao_estatisticas_tat(df)
+    busca = st.text_input(
+        "🔍 Buscar (nomenclatura, PN, SN ou OS)", key="rep_busca_texto",
+        placeholder="Ex.: fuel control, C662041-0102, 3040265533...",
+    )
 
     col_f0, col_f1, col_f2, col_f3, col_f4 = st.columns(5)
     with col_f0:
-        pns = st.multiselect("PN", ordenar_unicos(df["pn"]))
+        pns = st.multiselect("PN", ordenar_unicos(df["pn"]), key="rep_filtro_pns")
     with col_f1:
         situacoes = st.multiselect(
-            "Situação (ST_OS)", ordenar_unicos(df["situacao"]),
+            "Situação (ST_OS)", ordenar_unicos(df["situacao"]), key="rep_filtro_situacoes",
             help="Por padrão mostra só as OS em aberto. Selecione 'OS concluída' aqui para vê-las também.",
         )
     with col_f2:
-        condicoes = st.multiselect("Condição", ordenar_unicos(df["condicao"]))
+        condicoes = st.multiselect("Condição", ordenar_unicos(df["condicao"]), key="rep_filtro_condicoes")
     with col_f3:
-        locais = st.multiselect("Onde se encontra", ordenar_unicos(df["onde_se_encontra"]))
+        locais = st.multiselect("Onde se encontra", ordenar_unicos(df["onde_se_encontra"]), key="rep_filtro_locais")
     with col_f4:
-        unidades = st.multiselect("Unidade solicitante", ordenar_unicos(df["unidade_solicitante"]))
+        unidades = st.multiselect("Unidade solicitante", ordenar_unicos(df["unidade_solicitante"]), key="rep_filtro_unidades")
+
+    so_fora_prazo = st.checkbox(
+        f"⚠️ Mostrar só \"fora do prazo contratual\" (> {PRAZO_CONTRATUAL_TAT_DIAS} dias, com a empresa/terceirizados)",
+        key="rep_so_fora_prazo",
+    )
 
     # Situação escolhida manualmente manda mais que o padrão "só em aberto" —
     # assim dá pra escolher "OS concluída" e ver as que já foram fechadas.
     filtrado = df.copy() if situacoes else df[df["em_aberto"]].copy()
+    if busca:
+        termo = busca.strip().lower()
+        alvo = (
+            filtrado["nomenclatura"].astype(str).str.lower()
+            + " " + filtrado["pn"].astype(str).str.lower()
+            + " " + filtrado["sn"].astype(str).str.lower()
+            + " " + filtrado["os"].astype(str).str.lower()
+        )
+        filtrado = filtrado[alvo.str.contains(termo, na=False)]
     if pns:
         filtrado = filtrado[filtrado["pn"].isin(pns)]
     if situacoes:
@@ -382,36 +508,83 @@ def render(dados):
         filtrado = filtrado[filtrado["onde_se_encontra"].isin(locais)]
     if unidades:
         filtrado = filtrado[filtrado["unidade_solicitante"].isin(unidades)]
+    if so_fora_prazo:
+        entregue = filtrado["onde_se_encontra"].isin(LOCAIS_ENTREGUES)
+        filtrado = filtrado[(~entregue) & (filtrado["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS)]
 
-    st.metric("OS (após filtro)", len(filtrado))
+    filtrado = filtrado.reset_index(drop=True)
+
+    c_qtd, c_export = st.columns([3, 1])
+    _card_metrica(c_qtd, "OS (após filtro)", len(filtrado))
+    with c_export:
+        st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
+        if not filtrado.empty:
+            st.download_button(
+                "⬇️ Exportar (XLSX)",
+                gerar_xlsx_bytes(filtrado.drop(columns=["tat_calculado"], errors="ignore"), "Reparaveis"),
+                file_name="reparaveis_filtrado.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                width="stretch",
+            )
+
+    # "Dias até vencer o prazo" — pedido do Wallace, 2026-08-24: coluna
+    # nova, não existia (só tinha o TAT bruto). Só faz sentido pra quem
+    # ainda está com a empresa/terceirizados (mesma regra do prazo
+    # contratual); pra quem já foi entregue, fica em branco.
+    entregue_mask = filtrado["onde_se_encontra"].isin(LOCAIS_ENTREGUES)
+    filtrado["dias_ate_vencer"] = pd.NA
+    elegivel = ~entregue_mask & filtrado["tat_siloms"].notna()
+    filtrado.loc[elegivel, "dias_ate_vencer"] = PRAZO_CONTRATUAL_TAT_DIAS - filtrado.loc[elegivel, "tat_siloms"]
 
     tabela = filtrado[[
         "os", "pn", "cff", "nomenclatura", "sn", "unidade_solicitante", "situacao",
-        "condicao", "onde_se_encontra", "data_inicio", "tat_siloms", "tat_empresa",
+        "condicao", "onde_se_encontra", "data_inicio", "tat_siloms", "dias_ate_vencer", "tat_empresa",
         "data_entrega", "recibo", "sn_trocado_exchange", "termo_recebimento", "fonte",
     ]].copy()
-    # Colunas com tipos misturados (data/vazio, número/texto) viram string só
-    # para exibição — evita erro de serialização da tabela, sem alterar o xlsx.
-    for coluna in ("data_inicio", "data_entrega", "cff", "sn", "sn_trocado_exchange", "termo_recebimento", "recibo"):
-        tabela[coluna] = tabela[coluna].astype(str).replace({"None": "", "nan": "", "NaT": ""})
+    for coluna in ("data_inicio", "data_entrega"):
+        tabela[coluna] = pd.to_datetime(tabela[coluna], errors="coerce").dt.strftime("%d/%m/%Y")
+
+    # Guarda os valores numéricos ANTES de virar texto — usado só pra
+    # decidir a cor da linha (`_cor_linha`), a mesma técnica do Cômputo
+    # Mensal (2026-08-20): não dá pra colorir em cima da versão já em texto.
+    tat_numerico = filtrado["tat_siloms"].reset_index(drop=True)
+    condicao_numerica = filtrado["condicao"].reset_index(drop=True)
+
     tabela = tabela.rename(columns={
-        "onde_se_encontra": "ONDE SE ENCONTRA", "data_entrega": "Data de devolução empresa",
-        "recibo": "RECIBO CASO TENHA",
+        "os": "OS", "pn": "PN", "cff": "CFF", "nomenclatura": "Nomenclatura", "sn": "SN",
+        "unidade_solicitante": "Unidade solicitante", "situacao": "Situação", "condicao": "Condição",
+        "onde_se_encontra": "Onde se encontra", "data_inicio": "Data início", "tat_siloms": "TAT SILOMS (dias)",
+        "dias_ate_vencer": "Dias até vencer o prazo", "tat_empresa": "TAT empresa (dias)",
+        "data_entrega": "Data de devolução empresa", "recibo": "Recibo",
+        "sn_trocado_exchange": "SN trocado (exchange)", "termo_recebimento": "Termo de recebimento",
         "fonte": "Fonte (onde/devolução/recibo)",
     })
+    tabela_texto = _tabela_para_texto(tabela)
 
-    st.dataframe(tabela, width="stretch", hide_index=True, height=420)
+    def _cor_linha(row):
+        i = row.name
+        tat = tat_numerico.iloc[i]
+        condenado = isinstance(condicao_numerica.iloc[i], str) and "CONDENADO" in condicao_numerica.iloc[i].upper()
+        if condenado:
+            return [f"background-color: {STATUS['critical']}22"] * len(row)
+        if pd.notna(tat) and tat > PRAZO_CONTRATUAL_TAT_DIAS:
+            return [f"background-color: {STATUS['critical']}18"] * len(row)
+        return [""] * len(row)
+
+    styler = tabela_texto.style.apply(_cor_linha, axis=1)
+    st.dataframe(styler, width="stretch", hide_index=True, height=420)
     st.caption(
+        "🔴 Linha destacada = fora do prazo contratual (> 110 dias, com a empresa/terceirizados) ou condenado. "
         "\"ONDE SE ENCONTRA\", \"Data de devolução empresa\" e \"RECIBO CASO TENHA\" vêm da planilha geral "
         "(Controle de Reparáveis) por padrão. Quando a coluna \"Fonte\" mostra \"RMA {Mês}/{Ano} (entregue no "
         "mês)\", a aba 1.8 da RMA confirma que a empresa devolveu esse item NESSE mês; \"RMA {Mês}/{Ano} "
         "(histórico)\" é uma OS mais antiga que a aba 1.10 (controle acumulado) já tinha o dado, mas não é do "
         "mês em referência; \"— condenado\" no final indica que a aba 1.9 da RMA marca esse item como "
         "condenado (aí a \"Condição\" também é sobrescrita com o motivo); \"— TAT calculado\" indica que o "
-        "\"TAT\" real (na seção \"Estatísticas de TAT\" acima) não veio reportado pela empresa — calculamos "
-        "nós (data de devolução da RMA − data início) porque faltava na planilha geral. Em todos os casos, "
-        "situação/em aberto continuam vindo só da planilha geral (não mudam por isso) — só os campos citados "
-        "são complementados."
+        "\"TAT\" real (na aba \"Visão Geral\") não veio reportado pela empresa — calculamos nós (data de "
+        "devolução da RMA − data início) porque faltava na planilha geral. Em todos os casos, situação/em "
+        "aberto continuam vindo só da planilha geral (não mudam por isso) — só os campos citados são "
+        "complementados."
     )
 
     with st.expander("Distribuição por condição"):
@@ -426,5 +599,23 @@ def render(dados):
     st.divider()
     _secao_complemento_rma()
 
-    st.divider()
-    _secao_historico_mensal(df)
+
+def render(dados):
+    if data_global.mostrar_snapshot_se_necessario(dados, "reparaveis"):
+        return
+
+    st.title("Reparáveis")
+
+    df = _mesclar_complemento_rma(dados["reparaveis"], dados.get("reparaveis_complemento_rma"))
+    df["onde_se_encontra"] = df["onde_se_encontra"].fillna(LOCAL_NAO_INFORMADO)
+
+    aba_geral, aba_tabela, aba_historico = st.tabs(["📊 Visão Geral", "📋 Tabela / Consulta", "📅 Histórico"])
+
+    with aba_geral:
+        _secao_estatisticas_tat(df)
+
+    with aba_tabela:
+        _secao_tabela(df)
+
+    with aba_historico:
+        _secao_historico_mensal(df)
