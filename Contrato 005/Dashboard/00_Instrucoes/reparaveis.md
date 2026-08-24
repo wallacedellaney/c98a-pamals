@@ -606,3 +606,63 @@ marcado, `filtrado = df.copy()` (mesmo comportamento que já existia ao
 escolher um valor em Situação/Origem, só que agora com 1 clique só, sem
 precisar adivinhar). Testado ao vivo: 691 OS (o total completo) com um
 clique.
+
+## Reorganização visual da Visão Geral a partir de imagem de referência (mesmo dia)
+
+Wallace anexou uma imagem (`imagens/ChatGPT Image 24 de ago. de 2026,
+19_33_32.png`) com um prompt de layout bem detalhado: "aplicar o layout
+da imagem no dashboard atual... reorganizar a aba Visão Geral... mas sem
+copiar cegamente valores, textos ou dados que apareçam na imagem... não
+alterar nenhuma regra de negócio". Reorganização só de apresentação —
+**nenhum cálculo, filtro, DataFrame ou regra mudou** nessa rodada, só
+onde/como cada coisa aparece na tela.
+
+**Mudanças em `_secao_estatisticas_tat` (Visão Geral)**:
+
+- Radio de escopo + selos 🟠/🟢 passam a dividir a mesma linha (antes o
+  selo vinha embaixo do radio, ocupando linha própria) — `st.columns([2, 3])`.
+- Os 4 blocos empilhados (Volume / Prazo contratual / TAT / Entregues,
+  cada um com `titulo_bloco()` + `st.columns()` próprio, um embaixo do
+  outro) viraram **uma única faixa horizontal** (`_linha_kpis_html()`,
+  função nova) — divisórias verticais discretas entre grupos, ícone
+  pequeno ao lado de cada valor (📄👤🕐📅📦), mesmos números/cores de
+  sempre. Textos explicativos que antes eram `st.caption()` separados
+  por bloco viraram uma linha só, concatenada com " · ", embaixo da
+  faixa (pedido da imagem: "evitar grandes textos explicativos
+  diretamente na tela").
+- Os 2 donuts + o gráfico "TAT médio por local" **saíram de dentro do
+  expander "Ver gráficos e detalhamento"** (que existia desde mais cedo
+  no mesmo dia) e passam a aparecer direto na tela, lado a lado em 3
+  colunas — pedido explícito da imagem ("reintroduzir dois gráficos
+  lado a lado... posição dos gráficos"). O expander foi removido.
+- "Top 10 OS mais atrasadas" e um gráfico **novo**, "Histórico mensal de
+  aberturas (OS)", ficam lado a lado logo abaixo — o histórico reaproveita
+  a MESMA função já usada na aba "Histórico" da página
+  (`_dados_historico_mensal()`/`_figura_historico_mensal()`, extraídas
+  de dentro de `_secao_historico_mensal()` pra não duplicar a regra —
+  "se precisar criar funções auxiliares, faça isso sem duplicar regras
+  de cálculo", pedido explícito do Wallace no prompt).
+- **"Como os números se conectam" trocou de formato**: era uma árvore
+  `<details>` clicável (pedido de mais cedo no mesmo dia: "gostei desse
+  esquema... indo clicando e espandindo"); virou um **fluxo horizontal**
+  de caixas ligadas por setas (`_fluxo_conexoes_html()`, substitui
+  `_arvore_html()` que foi removida) — decisão deliberada pra seguir a
+  imagem de referência, que mostra esse formato. Mudança adicional:
+  antes esse bloco recalculava em cima de `escopo_df` (mudava com o
+  radio "Abertas no SILOMS/Fechadas/Todas"); agora usa sempre `df`
+  inteiro (todas as OS, abertas E fechadas ao mesmo tempo, os 2 ramos do
+  fluxo) — faz mais sentido pra uma seção que existe pra "explicar como
+  os números se conectam" no todo, não só no recorte escolhido acima.
+  Testado ao vivo: confirmado que esse bloco NÃO muda ao trocar o radio
+  (691/373/286/87/318 sempre, nos 3 escopos).
+
+**Nada mudou**: cálculos de `fora_prazo`/`dentro_prazo`/`vence_mes`/
+`empresa_cobravel`/`com_tat_empresa`/`media_local`/`piores` (ranking),
+filtros, fontes de dados, regras de TAT, critério "com empresa x
+entregue", corte de cobrança em 01/07/2026, exportação, navegação por
+abas, nem o histórico diário (`data_global`). Só a apresentação.
+
+Testado ao vivo nos 3 escopos, incluindo os casos extremos já conhecidos
+("Fechadas" com 0 OS "com a empresa" — donut/ranking/gráfico por local
+seguem degradando pra mensagem amigável, sem erro, com o novo layout
+também).
