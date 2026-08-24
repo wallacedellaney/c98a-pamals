@@ -793,3 +793,32 @@ resolvido na 3ª rodada só com a borda.
 Testado ao vivo nos 3 escopos, incluindo "Fechadas" com dataframe vazio
 (o `row_height` novo não quebra o caminho de "sem OS" — esse caso nem
 chama `st.dataframe`, só mostra uma legenda).
+
+## 5ª rodada — rótulo dos KPIs quebrando no meio da palavra
+
+Wallace mandou print da faixa de KPI publicada e comentou "dificil de
+entender ne kkkk" — os rótulos (ex.: "TAT MÉDIO — EMPRESA/TERCE
+IRIZADOS") estavam quebrando NO MEIO da palavra, não no espaço. Causa:
+o `max-width:8.5rem` da 3ª rodada era curto demais pros rótulos longos
+("Com a empresa e terceirizados", "TAT médio — empresa/terceirizados",
+"Itens c/ TAT real da empresa"), forçando o navegador a cortar palavra
+ao meio pra caber.
+
+**Correção em 2 partes**:
+1. Rótulos encurtados (`_secao_estatisticas_tat`): "Com a empresa e
+   terceirizados" → "Com a empresa", "TAT médio — empresa/
+   terceirizados" → "TAT médio — empresa", "TAT real médio — empresa"
+   → "TAT real — empresa", "Itens c/ TAT real da empresa" → "Itens c/
+   TAT real", título do grupo "TAT (Turn Around Time)" → "TAT (dias)".
+   O texto completo continua no expander "Entenda os critérios dos
+   indicadores" logo acima, nada foi perdido.
+2. CSS (`_linha_kpis_html`): trocado `max-width:8.5rem` (forçava quebra)
+   por `min-width:6.5rem;max-width:11rem` + `white-space:nowrap` no
+   próprio rótulo (com os textos mais curtos, cabe numa linha só; se um
+   rótulo for maior que o esperado no futuro, ele estica a caixa em vez
+   de quebrar feio). Espaçamento entre métricas e grupos reduzido
+   (margin-right 1.6rem→1.2rem, padding do grupo 1.9rem→1.4rem) pra
+   sobrar espaço pros 4 grupos caberem numa linha só (testado ao vivo,
+   media `getBoundingClientRect()`: os 4 grupos somam ~1414px, cabem
+   dentro dos ~1440px de conteúdo numa tela de 1600px de largura — em
+   tela mais estreita ainda pode quebrar, degradação aceitável).

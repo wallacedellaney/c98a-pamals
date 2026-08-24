@@ -330,12 +330,21 @@ def _linha_kpis_html(grupos):
     # grupos (1.5rem → 1.9rem de padding). Continua branco/INK por
     # padrão — só Prazo usa STATUS["good"/"critical"], nunca AMBER como
     # cor de status.
+    # 2026-08-24, 5ª rodada ("dificil de entender ne kkkk" — rótulo
+    # quebrando NO MEIO da palavra, ex.: "TERCE"/"IRIZADOS"): `max-width`
+    # curto de mais forçava isso. Trocado por `min-width` (não limita o
+    # rótulo, só garante uma largura mínima previsível) +
+    # `word-break:normal`/`overflow-wrap:normal` explícitos (só quebra
+    # em espaço, nunca no meio da palavra) — combinado com rótulos mais
+    # curtos (ver `_secao_estatisticas_tat`), a maioria fica numa linha
+    # só agora.
     blocos = []
     for i, (titulo_grupo, itens) in enumerate(grupos):
         campos = "".join(
-            f'<div style="margin-right:1.6rem;max-width:8.5rem;">'
+            f'<div style="margin-right:1.2rem;min-width:6.5rem;max-width:11rem;">'
             f'<div style="font-size:.62rem;color:{SECONDARY};text-transform:uppercase;'
-            f'letter-spacing:.05em;margin-bottom:.25rem;line-height:1.25;">{label}</div>'
+            f'letter-spacing:.05em;margin-bottom:.25rem;line-height:1.25;white-space:nowrap;'
+            f'word-break:normal;overflow-wrap:normal;">{label}</div>'
             f'<div style="font-size:1.85rem;font-weight:700;color:{cor or INK};line-height:1.15;'
             f'white-space:nowrap;">{(icone + " ") if icone else ""}{valor}</div>'
             f'</div>'
@@ -343,7 +352,7 @@ def _linha_kpis_html(grupos):
         )
         borda = f"border-right:1px solid {LINE};" if i < len(grupos) - 1 else ""
         blocos.append(
-            f'<div style="display:flex;flex-direction:column;padding:0 1.9rem;{borda}'
+            f'<div style="display:flex;flex-direction:column;padding:0 1.4rem;{borda}'
             f'{" padding-left:0;" if i == 0 else ""}">'
             f'<div style="font-size:.65rem;color:{AMBER};text-transform:uppercase;'
             f'letter-spacing:.08em;font-weight:600;margin-bottom:.6rem;">{titulo_grupo}</div>'
@@ -540,15 +549,20 @@ def _secao_estatisticas_tat(df):
     # verticais... não criar cards enormes"). Substituiu os blocos
     # empilhados (um `titulo_bloco` embaixo do outro) por uma faixa só —
     # mesmos números, cálculos e cores de sempre, só a apresentação mudou.
+    # Rótulos encurtados — pedido do Wallace, 2026-08-24, 5ª rodada
+    # ("dificil de entender ne kkkk", vendo os rótulos quebrando NO MEIO
+    # da palavra, ex.: "TERCE"/"IRIZADOS" cortado). O texto completo
+    # continua disponível no expander "Entenda os critérios dos
+    # indicadores" logo acima — aqui só o essencial pra escanear rápido.
     recuperadas_no_escopo = int((escopo_df["origem_registro"] == "🆕 Só na empresa (recuperada da RMA)").sum())
     grupos_kpi = [
         ("Volume", [
             (f"OS — {escopo}", len(escopo_df), None, "📄"),
-            ("Com a empresa e terceirizados", len(empresa), None, "👤"),
+            ("Com a empresa", len(empresa), None, "👤"),
         ]),
         ("Prazo contratual", [
             (
-                f"Fora do prazo (> {PRAZO_CONTRATUAL_TAT_DIAS}d)", len(fora_prazo),
+                f"Fora do prazo (>{PRAZO_CONTRATUAL_TAT_DIAS}d)", len(fora_prazo),
                 STATUS["critical"] if len(fora_prazo) else STATUS["good"], "🕐",
             ),
             (
@@ -556,15 +570,15 @@ def _secao_estatisticas_tat(df):
                 STATUS["critical"] if len(vence_mes) else STATUS["good"], "📅",
             ),
         ]),
-        ("TAT (Turn Around Time)", [
+        ("TAT (dias)", [
             ("TAT médio geral", _media_tat(escopo_df), None, None),
-            ("TAT médio — empresa/terceirizados", _media_tat(empresa), None, None),
-        ] + ([("TAT real médio — empresa", f"{com_tat_empresa['tat_empresa'].mean():.0f} dias", None, None)]
+            ("TAT médio — empresa", _media_tat(empresa), None, None),
+        ] + ([("TAT real — empresa", f"{com_tat_empresa['tat_empresa'].mean():.0f} dias", None, None)]
              if not com_tat_empresa.empty else [])),
     ]
     if not com_tat_empresa.empty:
         grupos_kpi.append(("Entregues", [
-            ("Itens c/ TAT real da empresa", len(com_tat_empresa), None, "📦"),
+            ("Itens c/ TAT real", len(com_tat_empresa), None, "📦"),
         ]))
     st.markdown(_linha_kpis_html(grupos_kpi), unsafe_allow_html=True)
 
