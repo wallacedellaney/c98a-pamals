@@ -27,6 +27,7 @@ consultar uma OS não precisar rolar por tudo. Mudanças principais:
 """
 
 import sys
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
@@ -60,6 +61,20 @@ LOCAIS_ENTREGUES = {
 
 # Prazo contratual de TAT (Turn Around Time) — confirmado pelo Wallace em 2026-07-18.
 PRAZO_CONTRATUAL_TAT_DIAS = 110
+
+# Cobrança do prazo contratual só vale a partir de 01/07/2026 (pedido do
+# Wallace, 2026-08-24: "eu estou cobrando TAT a partir de 01/07.2026 a
+# partir da data de inicio, como podemos organizar isso" — depois,
+# confirmando a regra: "vamos computar mas sem cobrar, ela nao ta
+# errada"). Ou seja: **toda** OS continua tendo o TAT calculado e exibido
+# normalmente (nada some da tabela/médias gerais) — só as métricas que
+# representam "cobrança"/violação de prazo (fora do prazo, vence este
+# mês, ranking de atrasadas, filtro "só fora do prazo", coluna "dias até
+# vencer") passam a considerar só OS cuja "Data Início" seja em
+# 01/07/2026 ou depois. OS mais antigas não entram nessas contas — não
+# porque o TAT dela é "zero", mas porque a cobrança formal desse prazo só
+# começou nessa data (a empresa não está errada pelo período anterior).
+INICIO_COBRANCA_PRAZO = date(2026, 7, 1)
 
 # "Onde se encontra" vazio não é "sem dado" — pedido do Wallace em
 # 2026-07-18: "quando tiver vazio, a empresa ainda nao passou, esta em
@@ -221,7 +236,7 @@ def _secao_historico_mensal(df):
     st.dataframe(contagem[["Mês", "Aberturas"]], hide_index=True, width="stretch")
 
 
-def _arvore_html(total, entregue, com_empresa, fora_prazo, dentro_prazo, vence_mes):
+def _arvore_html(total, entregue, com_empresa, fora_prazo, dentro_prazo, vence_mes, sem_cobranca=0):
     """"Esquema" de como os números do bloco Volume/Prazo se conectam —
     pedido do Wallace, 2026-08-24, depois de eu explicar a relação entre
     os cards em texto: "gostei desse esquema ai em cima, bora colcoar ele
@@ -231,11 +246,24 @@ def _arvore_html(total, entregue, com_empresa, fora_prazo, dentro_prazo, vence_m
     verdade, sem JS nenhum, clique abre/fecha sozinho no navegador. O
     nível de cima já vem aberto (a divisão 385 -> 112/273 é a mais
     importante); os de baixo ficam fechados, revelados "indo clicando"
-    conforme o pedido."""
+    conforme o pedido.
+
+    `sem_cobranca` (2026-08-24, corte de cobrança em 01/07/2026 — "vamos
+    computar mas sem cobrar, ela nao ta errada"): sem essa folha, as somas
+    param de bater — {com_empresa} ficou maior que {fora_prazo}+{dentro_prazo}
+    porque só quem abriu a partir do corte entra nessa conta, e a árvore
+    existe justamente pra mostrar "como os números se conectam" (não pode
+    ela mesma ficar com uma soma quebrada)."""
     caixa = f"background:{PANEL};border:1px solid {LINE};border-radius:8px;padding:.5rem .8rem;margin:.3rem 0;"
     resumo = f"cursor:pointer;font-weight:700;color:{INK};"
     linha = f"padding:.35rem 0 .35rem 1.5rem;color:{INK};font-size:.88rem;"
     sub = "margin-left:1.1rem;"
+
+    linha_sem_cobranca = (
+        f'<div style="{linha}">⚪ <b>{sem_cobranca}</b> — abertas antes de {INICIO_COBRANCA_PRAZO.strftime("%d/%m/%Y")}, '
+        f"ainda sem cobrança de prazo (TAT continua calculado normalmente)</div>"
+        if sem_cobranca else ""
+    )
 
     return f"""
     <details open style="{caixa}">
@@ -243,6 +271,7 @@ def _arvore_html(total, entregue, com_empresa, fora_prazo, dentro_prazo, vence_m
       <div style="{linha}">🟢 <b>{entregue}</b> — já entregue, só falta fechar a burocracia da OS</div>
       <details style="{caixa}{sub}">
         <summary style="{resumo}">🟠 {com_empresa} — com a empresa e terceirizados</summary>
+        {linha_sem_cobranca}
         <div style="{linha}">🔴 <b style="color:{STATUS['critical']};">{fora_prazo}</b> — fora do prazo contratual (&gt; 110 dias)</div>
         <details style="{caixa}{sub}">
           <summary style="{resumo}">🟢 {dentro_prazo} — dentro do prazo</summary>
@@ -301,7 +330,11 @@ def _secao_estatisticas_tat(df):
             f"ainda com a empresa). Vazio = \"{LOCAL_NAO_INFORMADO}\".\n\n"
             f"**Prazo contratual** — {PRAZO_CONTRATUAL_TAT_DIAS} dias, só conta pra quem ainda está "
             "\"com a empresa e terceirizados\" (item já entregue não pesa mais contra o prazo, mesmo "
-            "que o TAT dele já passe disso).\n\n"
+            "que o TAT dele já passe disso). **E só pra OS abertas a partir de "
+            f"{INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')}** — a cobrança formal desse prazo começou "
+            "nessa data; uma OS mais antiga continua tendo o TAT calculado e exibido normalmente, só "
+            "não entra nas contas de \"fora do prazo\"/\"vence este mês\"/ranking de atrasadas (a "
+            "empresa não está errada pelo período anterior a essa data).\n\n"
             "**TAT real da empresa** — coluna reportada pela própria VEE ONE (só existe depois que o "
             "item já foi entregue); quando falta esse dado na planilha geral mas temos a data de "
             "devolução pela RMA em andamento, calculamos nós (devolução − início) — marcado como "
@@ -321,11 +354,24 @@ def _secao_estatisticas_tat(df):
     # burocracia) não conta mais contra o prazo. Pedido do Wallace em
     # 2026-07-18: "o prazo dentro e fora do prazo so os que estao com a
     # empresa".
-    hoje = pd.Timestamp(horario.hoje_br())
-    fora_prazo = empresa[empresa["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS]
-    dentro_prazo = empresa[empresa["tat_siloms"] <= PRAZO_CONTRATUAL_TAT_DIAS]
+    #
+    # Cobrança do prazo só entra em vigor a partir de 01/07/2026 (ver
+    # INICIO_COBRANCA_PRAZO) — pedido do Wallace, 2026-08-24: "vamos
+    # computar mas sem cobrar, ela nao ta errada". OS com "Data Início"
+    # sem data (NaT) também não entram na cobrança (não dá pra confirmar
+    # que é elegível, então não cobra — mesma lógica de "não inventar
+    # dado"). O TAT em si (médias, tabela) continua vindo de `empresa`
+    # inteira, sem esse corte — só a contagem de violação de prazo usa
+    # `empresa_cobravel`.
+    empresa_cobravel = empresa[
+        pd.to_datetime(empresa["data_inicio"], errors="coerce").dt.date >= INICIO_COBRANCA_PRAZO
+    ]
 
-    com_data = empresa.dropna(subset=["data_inicio"]).copy()
+    hoje = pd.Timestamp(horario.hoje_br())
+    fora_prazo = empresa_cobravel[empresa_cobravel["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS]
+    dentro_prazo = empresa_cobravel[empresa_cobravel["tat_siloms"] <= PRAZO_CONTRATUAL_TAT_DIAS]
+
+    com_data = empresa_cobravel.dropna(subset=["data_inicio"]).copy()
     com_data["data_limite"] = pd.to_datetime(com_data["data_inicio"]) + pd.Timedelta(days=PRAZO_CONTRATUAL_TAT_DIAS)
     vence_mes = com_data[
         (com_data["data_limite"].dt.year == hoje.year)
@@ -358,6 +404,11 @@ def _secao_estatisticas_tat(df):
     metrica_html(
         c4, "Vencem o prazo este mês — empresa/terceirizados",
         len(vence_mes), cor=STATUS["critical"] if len(vence_mes) else STATUS["good"],
+    )
+    st.caption(
+        f"⚖️ Só conta contra o prazo quem abriu a partir de {INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')} "
+        "— a cobrança do prazo contratual começou nessa data; OS mais antigas continuam com o TAT "
+        "calculado normalmente (vai aparecer na tabela e nas médias), só não pesam como violação de prazo."
     )
 
     titulo_bloco("TAT (Turn Around Time)")
@@ -400,6 +451,7 @@ def _secao_estatisticas_tat(df):
         _arvore_html(
             total=len(escopo_df), entregue=len(escopo_df) - len(empresa), com_empresa=len(empresa),
             fora_prazo=len(fora_prazo), dentro_prazo=len(dentro_prazo), vence_mes=len(vence_mes),
+            sem_cobranca=len(empresa) - len(fora_prazo) - len(dentro_prazo),
         ),
         unsafe_allow_html=True,
     )
@@ -456,9 +508,13 @@ def _secao_estatisticas_tat(df):
         # é o campo mais importante visualmente (pedido do Wallace no brief de
         # refinamento) — vem primeiro, Unidade por último (menor peso).
         titulo_bloco("Top 10 OS mais atrasadas")
-        st.caption("Com a empresa/terceirizados, ordenado por dias em aberto (TAT SILOMS)")
+        st.caption(
+            "Com a empresa/terceirizados, abertas a partir de "
+            f"{INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')} (só quem entra na cobrança do prazo), "
+            "ordenado por dias em aberto (TAT SILOMS)"
+        )
         piores = (
-            empresa.dropna(subset=["tat_siloms"])
+            empresa_cobravel.dropna(subset=["tat_siloms"])
             .sort_values("tat_siloms", ascending=False)
             .head(10)[["tat_siloms", "os", "pn", "nomenclatura", "onde_se_encontra", "unidade_solicitante"]]
             .rename(columns={
@@ -586,7 +642,8 @@ def _secao_tabela(df):
         unidades = st.multiselect("Unidade solicitante", ordenar_unicos(df["unidade_solicitante"]), key="rep_filtro_unidades")
 
     so_fora_prazo = st.checkbox(
-        f"⚠️ Mostrar só \"fora do prazo contratual\" (> {PRAZO_CONTRATUAL_TAT_DIAS} dias, com a empresa/terceirizados)",
+        f"⚠️ Mostrar só \"fora do prazo contratual\" (> {PRAZO_CONTRATUAL_TAT_DIAS} dias, com a "
+        f"empresa/terceirizados, aberta a partir de {INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')})",
         key="rep_so_fora_prazo",
     )
 
@@ -614,7 +671,8 @@ def _secao_tabela(df):
         filtrado = filtrado[filtrado["unidade_solicitante"].isin(unidades)]
     if so_fora_prazo:
         entregue = filtrado["onde_se_encontra"].isin(LOCAIS_ENTREGUES)
-        filtrado = filtrado[(~entregue) & (filtrado["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS)]
+        cobravel = pd.to_datetime(filtrado["data_inicio"], errors="coerce").dt.date >= INICIO_COBRANCA_PRAZO
+        filtrado = filtrado[(~entregue) & cobravel & (filtrado["tat_siloms"] > PRAZO_CONTRATUAL_TAT_DIAS)]
 
     filtrado = filtrado.reset_index(drop=True)
 
@@ -633,11 +691,14 @@ def _secao_tabela(df):
 
     # "Dias até vencer o prazo" — pedido do Wallace, 2026-08-24: coluna
     # nova, não existia (só tinha o TAT bruto). Só faz sentido pra quem
-    # ainda está com a empresa/terceirizados (mesma regra do prazo
-    # contratual); pra quem já foi entregue, fica em branco.
+    # ainda está com a empresa/terceirizados E entrou na cobrança do prazo
+    # (aberta a partir de INICIO_COBRANCA_PRAZO — "vamos computar mas sem
+    # cobrar, ela nao ta errada"); pra quem já foi entregue ou abriu antes
+    # do corte, fica em branco (não é "sem prazo", é "não cobrado").
     entregue_mask = filtrado["onde_se_encontra"].isin(LOCAIS_ENTREGUES)
+    cobravel_mask = pd.to_datetime(filtrado["data_inicio"], errors="coerce").dt.date >= INICIO_COBRANCA_PRAZO
     filtrado["dias_ate_vencer"] = pd.NA
-    elegivel = ~entregue_mask & filtrado["tat_siloms"].notna()
+    elegivel = ~entregue_mask & cobravel_mask & filtrado["tat_siloms"].notna()
     filtrado.loc[elegivel, "dias_ate_vencer"] = PRAZO_CONTRATUAL_TAT_DIAS - filtrado.loc[elegivel, "tat_siloms"]
 
     tabela = filtrado[[
@@ -653,6 +714,7 @@ def _secao_tabela(df):
     # Mensal (2026-08-20): não dá pra colorir em cima da versão já em texto.
     tat_numerico = filtrado["tat_siloms"].reset_index(drop=True)
     condicao_numerica = filtrado["condicao"].reset_index(drop=True)
+    cobravel_numerico = cobravel_mask.reset_index(drop=True)
 
     tabela = tabela.rename(columns={
         "os": "OS", "pn": "PN", "cff": "CFF", "nomenclatura": "Nomenclatura", "sn": "SN",
@@ -677,7 +739,12 @@ def _secao_tabela(df):
         tat = tat_numerico.iloc[i]
         condenado = isinstance(condicao_numerica.iloc[i], str) and "CONDENADO" in condicao_numerica.iloc[i].upper()
         estilos = [""] * len(row)
-        if pd.notna(tat) and tat > PRAZO_CONTRATUAL_TAT_DIAS:
+        # Só pinta de "fora do prazo" quem entrou na cobrança (aberta a
+        # partir de INICIO_COBRANCA_PRAZO) — pedido do Wallace, 2026-08-24:
+        # "vamos computar mas sem cobrar, ela nao ta errada". O TAT
+        # continua aparecendo no número normalmente, só o destaque visual
+        # de "isso é uma violação" que respeita o corte.
+        if pd.notna(tat) and tat > PRAZO_CONTRATUAL_TAT_DIAS and cobravel_numerico.iloc[i]:
             estilos = [f"background-color: {STATUS['critical']}10"] * len(row)
         if condenado:
             estilos[idx_condicao] = f"color: {STATUS['critical']}; font-weight: 700;"
@@ -703,7 +770,9 @@ def _secao_tabela(df):
     with st.expander("ℹ️ Como interpretar esta tabela"):
         st.markdown(
             "- **Linha com fundo vermelho suave** — TAT SILOMS > 110 dias (fora do prazo contratual), "
-            "só pra quem ainda está com a empresa/terceirizados.\n"
+            "só pra quem ainda está com a empresa/terceirizados **e** abriu a partir de "
+            f"{INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')} (data em que a cobrança do prazo começou — "
+            "OS mais antiga tem o TAT normal na coluna, só não fica destacada).\n"
             "- **\"Condição\" em vermelho** — a aba 1.9 da RMA marca esse item como condenado (o motivo "
             "vem junto no texto da célula).\n"
             "- **\"Onde se encontra\" / \"Data de devolução empresa\" / \"Recibo\"** — vêm da planilha "

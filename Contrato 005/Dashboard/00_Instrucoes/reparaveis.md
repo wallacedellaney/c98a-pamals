@@ -343,3 +343,61 @@ abrir) → 144 fora do prazo / 129 dentro do prazo (fechado) → 11 vencem
 este mês (fechado, dentro de "dentro do prazo"). Cada nível usa os
 mesmos números já calculados na seção (nada duplicado/recalculado).
 Testado ao vivo, clicando nível por nível.
+
+## Corte de cobrança do prazo contratual em 01/07/2026 (2026-08-24)
+
+Wallace atualizou a planilha e avisou: "atualizei a planilha, eu estou
+cobrando TAT a partir de 01/07/2026 a partir da data de inicio, como
+podemos organizar isso". Perguntei se isso significava esconder o TAT
+das OS antigas ou só não contar elas como violação — resposta: **"vamos
+computar mas sem cobrar, ela nao ta errada"**. Ou seja: o TAT continua
+sendo calculado e mostrado pra **todas** as OS, sem exceção (tabela,
+médias, "TAT médio por local") — só as métricas de **cobrança**
+(violação de prazo) passam a valer só pra quem abriu a partir dessa
+data.
+
+`INICIO_COBRANCA_PRAZO = date(2026, 7, 1)` — nova constante. Uma OS só
+entra nas contas de cobrança se `data_inicio >= 01/07/2026` (E estiver
+"com a empresa e terceirizados", regra que já existia). OS com
+`data_inicio` vazia (NaT) também não entram — mesma lógica de "não
+inventar dado" usada em outras regras do projeto.
+
+**O que muda** (tudo já revisado ao vivo depois do ajuste da árvore, ver
+abaixo):
+- Cards "Fora do prazo (> 110d)" e "Vencem o prazo este mês" — só contam
+  `empresa_cobravel` (data_inicio ≥ 01/07/2026). Nova legenda abaixo dos
+  cards explicando a regra.
+- Donut "Dentro x fora do prazo" e "Top 10 OS mais atrasadas" (ranking) —
+  mesma base `empresa_cobravel`, caption do ranking atualizada.
+- Checkbox "Só fora do prazo" na Tabela/Consulta — filtro agora exige
+  `data_inicio >= 01/07/2026` também; rótulo do checkbox menciona a data.
+- Coluna nova "Dias até vencer o prazo" na tabela — só preenchida pra
+  quem é elegível (com a empresa + `data_inicio >= 01/07/2026`); pra
+  quem já foi entregue ou abriu antes do corte fica **em branco**
+  (não é "0 dias" nem "sem prazo" — é "não cobrado ainda", diferença
+  importante pra não confundir).
+- Pintura de linha da tabela ("fora do prazo" = fundo vermelho) — só
+  pinta quem é elegível pra cobrança, mesma regra.
+- Expander "Entenda os critérios dos indicadores" e legenda da tabela —
+  texto atualizado explicando o corte.
+
+**Consequência numérica esperada, e por que não é bug**: no dia da
+mudança (24/08/2026), "Fora do prazo" caiu de 144 pra **0**, e "Vencem
+este mês" de 11 pra **0**. Isso é matematicamente inevitável, não um
+erro: nenhuma OS aberta em/após 01/07/2026 pode ter TAT SILOMS > 110
+dias ainda (se abriu em 01/07, só tinha ~54 dias corridos em
+24/08/2026 — a primeira `data_limite` possível é 20/10/2026). Reportei
+esse número pro Wallace antes de finalizar, junto com a checagem de que
+"vencem este mês" também zera pelo mesmo motivo.
+
+**Bug pego e corrigido durante a implementação**: a árvore "Como os
+números se conectam" (ver seção acima) ficou com soma quebrada depois
+do corte — o nó "273 com a empresa" tinha só duas folhas (fora/dentro
+do prazo) que agora somam 68, não 273 (os outros 205 continuam "com a
+empresa" mas não entram mais na conta de cobrança). Corrigido
+adicionando uma folha nova "⚪ N — abertas antes de 01/07/2026, ainda
+sem cobrança de prazo" entre o nó pai e as folhas de fora/dentro do
+prazo, calculada como `len(empresa) - len(fora_prazo) - len(dentro_prazo)`
+— a árvore volta a bater exatamente (205 + 0 + 68 = 273 no dia do
+teste). Testado ao vivo abrindo os 3 níveis via JS (equivalente a
+clicar) antes de commitar.
