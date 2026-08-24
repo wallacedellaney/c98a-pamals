@@ -395,9 +395,23 @@ def _secao_estatisticas_tat(df):
             "\"TAT calculado\" na coluna \"Fonte\" da tabela."
         )
 
-    escopo_df["grupo"] = escopo_df["onde_se_encontra"].isin(LOCAIS_ENTREGUES).map(
-        {True: "Entregue (falta burocracia)", False: "Com a empresa e terceirizados"}
-    )
+    # Bug achado pelo Wallace, 2026-08-24 ("essa situacao ai, c ta fechada
+    # ja ta em algum lugar ne, n ta com a empresa"): "onde_se_encontra" só
+    # é confiável pra item AINDA EM ABERTO — pra OS já fechada (concluída
+    # no SILOMS, ou recuperada via RMA sem esse campo preenchido), esse
+    # valor pode estar vazio/desatualizado (ex.: colunas internas "CLA"/
+    # "LEAP"/"VEE ONE" que o Wallace avisou que tendem a parar de ser
+    # atualizadas) sem que isso signifique que o item "ainda não voltou"
+    # — a OS já foi resolvida, só o campo de localização ficou pra trás.
+    # Toda OS fechada entra em "Entregue" de propósito, não importa o que
+    # tiver em "onde_se_encontra" — por definição ela não pode estar
+    # "com a empresa e terceirizados — ainda não voltou" (rótulo da
+    # legenda) se já está fechada. Achado real: 86 das 276 OS fechadas
+    # (escopo "Fechadas") caíam erradas em "com a empresa" antes desse
+    # ajuste, a maioria (77) só por "onde_se_encontra" vazio.
+    escopo_df["grupo"] = (
+        escopo_df["onde_se_encontra"].isin(LOCAIS_ENTREGUES) | ~escopo_df["em_aberto"]
+    ).map({True: "Entregue (falta burocracia)", False: "Com a empresa e terceirizados"})
     empresa = escopo_df[escopo_df["grupo"] == "Com a empresa e terceirizados"]
 
     def _media_tat(sub):

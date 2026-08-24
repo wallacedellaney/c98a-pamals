@@ -507,3 +507,33 @@ ou nao informado, pq nao vai ser atualizado mais") — por isso não entrei
 a cruzar com elas agora; o cruzamento oficial de "onde está"/recibo
 passa a ser só SILOMS (Divulgação, pra saber o que está aberto) + RMA da
 empresa (aba 1.10, pra saber onde está/recibo/devolução), como pedido.
+
+## Bug achado pelo Wallace, mesmo dia — OS fechada caindo em "com a empresa"
+
+Depois de eu explicar a diferença entre as 124 "OS concluída" (fecham
+direto na Divulgação, sem precisar de RMA) e as 152 recuperadas só via
+RMA, o Wallace reparou no bloco "Fechadas" (radio de escopo) e
+estranhou: "essa situacao ai, c ta fechada ja ta em algum lugar ne, n ta
+com a empresa" — viu "COM A EMPRESA E TERCEIRIZADOS: 59" dentro do
+escopo "Fechadas", o que não faz sentido: se a OS já fechou, ela não
+pode estar "ainda não voltou" (definição da legenda pra esse grupo).
+
+**Causa raiz**: a classificação do grupo ("Com a empresa e
+terceirizados" x "Entregue") olhava só pra "onde_se_encontra" — mas essa
+coluna só é confiável pra item AINDA aberto. Pra OS já fechada (na
+Divulgação ou recuperada via RMA), "onde_se_encontra" pode estar vazio/
+desatualizado (a maioria "Em processo interno / não informado", 4 "CLA",
+2 "LEAP", 2 "VEE ONE" — justamente as colunas internas que o Wallace já
+tinha avisado que tendem a parar de atualizar) sem que isso signifique
+que o item "ainda está com a empresa". Contagem real do dia: **86 das
+276 OS fechadas** caíam erradas nesse grupo antes do ajuste.
+
+**Correção** (`_secao_estatisticas_tat`, `reparaveis.py`): toda OS
+fechada (`em_aberto=False`) agora entra em "Entregue" automaticamente,
+não importa o que tiver em "onde_se_encontra" — por definição uma OS
+fechada não pode estar "aguardando devolução". Só afeta os escopos
+"Fechadas"/"Todas" (`~escopo_df["em_aberto"]` é sempre `False` no escopo
+padrão "Abertas no SILOMS", confirmado ao vivo: 385/273 idênticos antes
+e depois). Testado ao vivo nos 3 escopos, incluindo o caso extremo
+"Fechadas" com 0 "com a empresa" (donuts/ranking/gráfico por local
+degradam pra mensagem amigável, sem erro).
