@@ -701,4 +701,28 @@ altas (32px por linha, era 24px).
 Testado ao vivo de novo depois do ajuste — os 4 grupos de KPI numa linha
 só, painéis com borda visível em todos os gráficos/tabelas, "TAT médio
 por local" em largura cheia com rótulos completos e legíveis.
-também).
+
+## Revertido na hora — "TAT médio por local" volta pra mesma linha dos donuts
+
+A rodada anterior (linha própria pro "TAT médio por local") tornou a
+página MAIS ALTA — o oposto do que o Wallace queria. Feedback imediato:
+"nao ficou bom, vc desceu, queria tudo em uma pagina, mesmo arrendo para
+esquerda" — prioridade real é **não rolar pra baixo**; rolar pro lado
+(horizontal) é aceitável. Reli a frase original ("mesmo que nao caiba
+tudo na pagina eu arredo com o mouse para direita") e reinterpretei
+errado da primeira vez — não era pedido pra dar mais altura ao gráfico,
+era aviso de que ele toleraria rolagem horizontal SE precisasse, não
+autorização pra empilhar mais linhas.
+
+**Correção**: os 3 gráficos (2 donuts + TAT por local) voltam pra
+**1 linha só**, `st.columns([1, 1, 1.6])` — TAT por local com mais
+espaço relativo que os donuts (nomes de local mais compridos), mas na
+mesma linha, não embaixo. Altura da barra também reduzida (24px/linha,
+tinha ido pra 32px) pra caber melhor ao lado dos donuts de 260px. Os
+containers com borda (`st.container(border=True)`) da rodada anterior
+continuam — essa parte do feedback ("muita coisa preta") já tinha sido
+resolvida e não foi o que o Wallace reclamou dessa vez.
+
+Testado ao vivo: página inteira (KPIs + 3 gráficos + Top 10/histórico +
+fluxo "como os números se conectam") cabe em ~3 telas de rolagem, contra
+~4-5 da rodada anterior.

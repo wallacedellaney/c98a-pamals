@@ -565,19 +565,26 @@ def _secao_estatisticas_tat(df):
     # — pedido do Wallace via imagem de referência: "reintroduzir dois
     # gráficos lado a lado... posição dos gráficos" logo abaixo dos KPIs.
     #
-    # Ajuste 2026-08-24 (depois de ver no site publicado, feedback do
-    # Wallace: "tem muita coisa preta, os graficos maiores, mesmo que nao
-    # caiba tudo na pagina eu arredo com o mouse para direita"): 2 mudanças —
-    # (1) cada gráfico agora vem dentro de um `st.container(border=True)`,
-    # um painel de verdade com borda/fundo, não "flutuando" solto no fundo
-    # escuro da página (que é o que parecia "muito preto"); (2) "TAT médio
-    # por local" (o mais importante, com os nomes de local mais longos)
-    # ganhou linha própria, largura cheia, em vez de dividir 1/3 da tela
-    # com os 2 donuts — o Wallace topa rolar a tela se precisar, prioridade
-    # é o gráfico ficar legível/grande, não caber tudo espremido.
+    # Ajuste 2026-08-24, 1ª rodada (depois de ver no site publicado,
+    # feedback do Wallace: "tem muita coisa preta, os graficos maiores"):
+    # cada gráfico ganhou `st.container(border=True)` (painel de verdade,
+    # não "flutuando" no fundo escuro) — isso ficou. "TAT médio por
+    # local" tinha ido pra linha própria, largura cheia — isso foi
+    # **revertido na 2ª rodada** (ver comentário abaixo), o Wallace
+    # achou que empilhar demais foi na direção errada.
+    #
+    # Ajuste 2026-08-24, 2ª rodada: "nao ficou bom, vc desceu, queria
+    # tudo em uma pagina, mesmo arrendo para esquerda" — a linha própria
+    # da rodada 1 tornou a página MAIS alta (rolagem vertical), o
+    # oposto do que "mesmo que nao caiba tudo na pagina eu arredo com o
+    # mouse para direita" pedia (prioridade é NÃO rolar pra baixo,
+    # rolagem horizontal tudo bem). Os 3 gráficos voltam pra 1 linha só
+    # — "TAT médio por local" com mais espaço relativo (1.6 dos 3.6
+    # totais, contra 1 dos 2 donuts) pra caber os nomes de local mais
+    # compridos sem cortar.
     _ALTURA_DONUT = 260
     _LEGENDA_DONUT = dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5)
-    g1, g2 = st.columns(2)
+    g1, g2, g3 = st.columns([1, 1, 1.6])
     with g1, st.container(border=True):
         st.caption("Com empresa x entregue")
         contagem_grupo = escopo_df["grupo"].value_counts().reset_index()
@@ -608,7 +615,7 @@ def _secao_estatisticas_tat(df):
         layout_grafico(fig_prazo, altura=_ALTURA_DONUT)
         st.plotly_chart(fig_prazo, width="stretch", key="rep_donut_prazo")
 
-    with st.container(border=True):
+    with g3, st.container(border=True):
         st.caption("TAT médio por local — clique numa barra pra filtrar a Tabela/Consulta")
         media_local = (
             escopo_df.dropna(subset=["tat_siloms"])
@@ -649,7 +656,7 @@ def _secao_estatisticas_tat(df):
                                  annotation_text=f"Limite — {PRAZO_CONTRATUAL_TAT_DIAS}d",
                                  annotation_font_color=AMBER, annotation_font_size=11)
             fig_local.update_layout(yaxis_title="", xaxis_title="")
-            layout_grafico(fig_local, altura=max(300, 32 * len(media_local)))
+            layout_grafico(fig_local, altura=max(_ALTURA_DONUT, 24 * len(media_local)))
             # `automargin` DEPOIS de `layout_grafico()` (que fixa margin.l=10
             # por padrão pros outros gráficos) — nomes de local como "Em
             # processo interno / não informado pela empresa" são bem
