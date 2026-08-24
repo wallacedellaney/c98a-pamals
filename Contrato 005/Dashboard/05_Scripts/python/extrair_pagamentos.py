@@ -155,7 +155,13 @@ def extrair_bloco(ws, primeira_linha, ultima_linha):
 def extrair_empenhos(wb):
     ws = wb["EMPENHOS"]
     empenhos = {}
-    for row in ws.iter_rows(min_row=4, values_only=True):
+    # min_row=3, não 4: a linha 1 é vazia e a linha 2 só tem uma data solta
+    # na coluna A (parece um "última atualização" mal posicionado) — mas o
+    # primeiro empenho de verdade (2025NE000005) já está na linha 3. Com
+    # min_row=4 esse empenho nunca era lido, e toda referência que o citava
+    # (ex.: JUN/25) sempre virava "não encontrado na aba EMPENHOS" — bug
+    # descoberto em 2026-08-24 (mesma inconsistência aparecia desde julho).
+    for row in ws.iter_rows(min_row=3, values_only=True):
         ne = row[0]
         if not ne:
             continue
