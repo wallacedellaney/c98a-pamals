@@ -245,13 +245,20 @@ def _secao_estatisticas_tat(df):
         st.info(f"Nenhuma OS em \"{escopo}\".")
         return
 
-    # Nota curta na área principal + explicação completa num expander —
-    # pedido do Wallace, 2026-08-24: "mover explicações metodológicas
-    # extensas pra tooltip/popover/expander... na área principal, deixar
-    # somente uma explicação curta". Nada foi apagado, só reorganizado.
-    st.caption(
-        "\"Com a empresa e terceirizados\" = ainda não entregue pelo fornecedor. "
-        "Itens já entregues mas com a burocracia da OS ainda aberta são identificados à parte."
+    # Legenda visual (selos coloridos), não só texto — pedido do Wallace,
+    # 2026-08-24: "queria que deixasse mais claro" (a distinção "com
+    # empresa" x "entregue, falta burocracia" só em texto corrido não
+    # ficava óbvia). As mesmas 2 cores aparecem nos cards de "Prazo" acima,
+    # nos donuts e nas barras abaixo — esse selo é a "legenda mestra" delas.
+    st.markdown(
+        f'<span style="background:{AMBER}22;color:{AMBER};border:1px solid {AMBER}55;'
+        f'border-radius:4px;padding:.15rem .5rem;font-size:.78rem;font-weight:600;">'
+        f'🟠 Com a empresa e terceirizados — ainda não voltou</span>'
+        f'&nbsp;&nbsp;'
+        f'<span style="background:{STATUS["good"]}22;color:{STATUS["good"]};border:1px solid {STATUS["good"]}55;'
+        f'border-radius:4px;padding:.15rem .5rem;font-size:.78rem;font-weight:600;">'
+        f'🟢 Entregue — já voltou, falta só fechar a OS no SILOMS</span>',
+        unsafe_allow_html=True,
     )
     with st.expander("ℹ️ Entenda os critérios dos indicadores"):
         st.markdown(
@@ -353,136 +360,143 @@ def _secao_estatisticas_tat(df):
                 "calculado\")."
             )
 
-    titulo_bloco("Situação física x Prazo contratual")
-    g1, g2 = st.columns(2)
-    # Mesma dimensão/alinhamento pros 2 donuts (pedido do Wallace: "os dois
-    # gráficos devem possuir mesma dimensão e alinhamento") + legenda
-    # embaixo, centralizada e perto do gráfico (não afastada, à direita,
-    # como o padrão do Plotly deixava antes).
-    _ALTURA_DONUT = 260
-    _LEGENDA_DONUT = dict(orientation="h", yanchor="top", y=-0.08, xanchor="center", x=0.5)
-    with g1:
-        st.caption("Com a empresa e terceirizados x Entregue (falta burocracia)")
-        contagem_grupo = escopo_df["grupo"].value_counts().reset_index()
-        contagem_grupo.columns = ["grupo", "quantidade"]
-        fig_grupo = px.pie(
-            contagem_grupo, names="grupo", values="quantidade", hole=0.55,
-            color="grupo",
-            color_discrete_map={"Com a empresa e terceirizados": AMBER, "Entregue (falta burocracia)": STATUS["good"]},
-        )
-        fig_grupo.update_traces(textinfo="value+percent", textfont_size=12)
-        fig_grupo.update_layout(legend=_LEGENDA_DONUT)
-        layout_grafico(fig_grupo, altura=_ALTURA_DONUT)
-        st.plotly_chart(fig_grupo, width="stretch")
-
-    with g2:
-        st.caption(f"Dentro x fora do prazo contratual ({PRAZO_CONTRATUAL_TAT_DIAS} dias) — só empresa/terceirizados")
-        contagem_prazo = pd.DataFrame({
-            "situacao": ["Dentro do prazo", "Fora do prazo"],
-            "quantidade": [len(dentro_prazo), len(fora_prazo)],
-        })
-        fig_prazo = px.pie(
-            contagem_prazo, names="situacao", values="quantidade", hole=0.55,
-            color="situacao",
-            color_discrete_map={"Dentro do prazo": STATUS["good"], "Fora do prazo": STATUS["critical"]},
-        )
-        fig_prazo.update_traces(textinfo="value+percent", textfont_size=12)
-        fig_prazo.update_layout(legend=_LEGENDA_DONUT)
-        layout_grafico(fig_prazo, altura=_ALTURA_DONUT)
-        st.plotly_chart(fig_prazo, width="stretch")
-
-    # Ranking das piores OS — pedido do Wallace, 2026-08-24 ("pensa aí oq
-    # podemos fazer"): a média por local (gráfico abaixo) não mostra um
-    # raio-x das OS individuais mais atrasadas. Só sobre "com a
-    # empresa/terceirizados" (mesmo grupo do prazo contratual). TAT (dias)
-    # é o campo mais importante visualmente (pedido do Wallace no brief de
-    # refinamento) — vem primeiro, Unidade por último (menor peso).
-    titulo_bloco("Top 10 OS mais atrasadas")
-    st.caption("Com a empresa/terceirizados, ordenado por dias em aberto (TAT SILOMS)")
-    piores = (
-        empresa.dropna(subset=["tat_siloms"])
-        .sort_values("tat_siloms", ascending=False)
-        .head(10)[["tat_siloms", "os", "pn", "nomenclatura", "onde_se_encontra", "unidade_solicitante"]]
-        .rename(columns={
-            "tat_siloms": "TAT (dias)", "os": "OS", "pn": "PN", "nomenclatura": "Nomenclatura",
-            "onde_se_encontra": "Onde se encontra", "unidade_solicitante": "Unidade",
-        })
-    )
-    if piores.empty:
-        st.caption("Sem OS com TAT SILOMS preenchido nesse escopo.")
-    else:
-        piores["TAT (dias)"] = piores["TAT (dias)"].round(0).astype(int)
-        # Cor com significado, não decoração (pedido do Wallace): número em
-        # vermelho pra qualquer um fora do prazo (esperado, já que é a lista
-        # das piores); fundo vermelho BEM suave só pro extremo (> 2x o
-        # prazo contratual) — não pinta a linha inteira de vermelho forte
-        # só porque está nessa tabela.
-        limite_extremo = PRAZO_CONTRATUAL_TAT_DIAS * 2
-        styler_piores = (
-            piores.style
-            .map(lambda v: f"color: {STATUS['critical']}; font-weight: 700;", subset=["TAT (dias)"])
-            .apply(
-                lambda row: [f"background-color: {STATUS['critical']}14"] * len(row)
-                if row["TAT (dias)"] > limite_extremo else [""] * len(row),
-                axis=1,
+    # Gráficos e detalhamento dentro de um expander — pedido do Wallace,
+    # 2026-08-24: "queria que deixasse mais claro, parece que tem muita
+    # informacao na tela principal tb ne". Os 4 blocos de números acima
+    # (Volume/Prazo/TAT/Entregues) já respondem o essencial "em poucos
+    # segundos" (pedido original do brief de refinamento); donuts, ranking
+    # e o gráfico por local ficam aqui dentro, sob demanda.
+    with st.expander("📊 Ver gráficos e detalhamento (situação física, ranking, TAT por local)"):
+        titulo_bloco("Situação física x Prazo contratual")
+        g1, g2 = st.columns(2)
+        # Mesma dimensão/alinhamento pros 2 donuts (pedido do Wallace: "os dois
+        # gráficos devem possuir mesma dimensão e alinhamento") + legenda
+        # embaixo, centralizada e perto do gráfico (não afastada, à direita,
+        # como o padrão do Plotly deixava antes).
+        _ALTURA_DONUT = 260
+        _LEGENDA_DONUT = dict(orientation="h", yanchor="top", y=-0.08, xanchor="center", x=0.5)
+        with g1:
+            st.caption("Com a empresa e terceirizados x Entregue (falta burocracia)")
+            contagem_grupo = escopo_df["grupo"].value_counts().reset_index()
+            contagem_grupo.columns = ["grupo", "quantidade"]
+            fig_grupo = px.pie(
+                contagem_grupo, names="grupo", values="quantidade", hole=0.55,
+                color="grupo",
+                color_discrete_map={"Com a empresa e terceirizados": AMBER, "Entregue (falta burocracia)": STATUS["good"]},
             )
-        )
-        st.dataframe(styler_piores, hide_index=True, width="stretch")
+            fig_grupo.update_traces(textinfo="value+percent", textfont_size=12)
+            fig_grupo.update_layout(legend=_LEGENDA_DONUT)
+            layout_grafico(fig_grupo, altura=_ALTURA_DONUT)
+            st.plotly_chart(fig_grupo, width="stretch")
 
-    titulo_bloco("TAT médio por local")
-    st.caption("'Onde se encontra' — clique numa barra pra filtrar a aba \"Tabela / Consulta\" por ela")
-    media_local = (
-        escopo_df.dropna(subset=["tat_siloms"])
-        .groupby("onde_se_encontra")["tat_siloms"]
-        .agg(["mean", "count"])
-        .reset_index()
-        .rename(columns={"onde_se_encontra": "Onde se encontra", "mean": "TAT médio (dias)", "count": "Quantidade"})
-        .sort_values("TAT médio (dias)", ascending=False)
-    )
-    if media_local.empty:
-        # "tat_siloms" (TAT corrente do SILOMS) normalmente só existe pra OS
-        # ainda em aberto — em "Fechadas" costuma vir tudo vazio, não é bug.
-        st.caption("Sem \"TAT SILOMS\" preenchido nas OS desse escopo — normal em \"Fechadas\".")
-    else:
-        media_local["TAT médio (dias)"] = media_local["TAT médio (dias)"].round(0).astype(int)
-        # Cor condicional por barra — pedido do Wallace: "tem um negocio de
-        # cor la de onde ta, ta um laranjao" (antes toda barra era âmbar
-        # vívido, mesmo passando MUITO dos 110 dias — parecia que TODO
-        # local estava crítico). Refinado no brief de design: só quem
-        # passa do prazo fica vermelho (problema real); quem está dentro
-        # fica num âmbar discreto/translúcido (identidade, não alarme).
-        cores_barras = [
-            STATUS["critical"] if v > PRAZO_CONTRATUAL_TAT_DIAS else f"{AMBER}66"
-            for v in media_local["TAT médio (dias)"]
-        ]
-        fig_local = go.Figure(go.Bar(
-            x=media_local["TAT médio (dias)"], y=media_local["Onde se encontra"],
-            orientation="h", marker_color=cores_barras,
-            customdata=media_local["Quantidade"],
-            hovertemplate="%{y}<br>TAT médio: %{x} dias<br>Quantidade: %{customdata}<extra></extra>",
-        ))
-        # Linha do prazo contratual em laranja/âmbar (pedido do Wallace no
-        # brief: "usar laranja/amarelo para essa referência") — antes
-        # estava vermelha, o que confundia com "problema" (a linha em si
-        # não é um problema, é só a referência de onde o prazo vence).
-        fig_local.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=AMBER,
-                             annotation_text=f"Prazo contratual — {PRAZO_CONTRATUAL_TAT_DIAS}d",
-                             annotation_font_color=AMBER)
-        fig_local.update_layout(yaxis_title="", xaxis_title="TAT médio (dias)")
-        layout_grafico(fig_local, altura=max(200, 28 * len(media_local)))
-        evento_bar = st.plotly_chart(
-            fig_local, width="stretch", on_select="rerun", selection_mode="points", key="rep_bar_local_clique",
-        )
-        pontos = evento_bar.selection.get("points", []) if evento_bar else []
-        locais_clicados = sorted({p["y"] for p in pontos if "y" in p})
-        if locais_clicados:
-            st.session_state["rep_filtro_local_pendente"] = locais_clicados
-            st.success(
-                f"🖱️ Clicado: **{', '.join(locais_clicados)}** — já filtrado na aba \"📋 Tabela / Consulta\"."
+        with g2:
+            st.caption(f"Dentro x fora do prazo contratual ({PRAZO_CONTRATUAL_TAT_DIAS} dias) — só empresa/terceirizados")
+            contagem_prazo = pd.DataFrame({
+                "situacao": ["Dentro do prazo", "Fora do prazo"],
+                "quantidade": [len(dentro_prazo), len(fora_prazo)],
+            })
+            fig_prazo = px.pie(
+                contagem_prazo, names="situacao", values="quantidade", hole=0.55,
+                color="situacao",
+                color_discrete_map={"Dentro do prazo": STATUS["good"], "Fora do prazo": STATUS["critical"]},
             )
+            fig_prazo.update_traces(textinfo="value+percent", textfont_size=12)
+            fig_prazo.update_layout(legend=_LEGENDA_DONUT)
+            layout_grafico(fig_prazo, altura=_ALTURA_DONUT)
+            st.plotly_chart(fig_prazo, width="stretch")
 
-        with st.expander("Ver tabela — TAT médio por local"):
-            st.dataframe(media_local, hide_index=True, width="stretch")
+        # Ranking das piores OS — pedido do Wallace, 2026-08-24 ("pensa aí oq
+        # podemos fazer"): a média por local (gráfico abaixo) não mostra um
+        # raio-x das OS individuais mais atrasadas. Só sobre "com a
+        # empresa/terceirizados" (mesmo grupo do prazo contratual). TAT (dias)
+        # é o campo mais importante visualmente (pedido do Wallace no brief de
+        # refinamento) — vem primeiro, Unidade por último (menor peso).
+        titulo_bloco("Top 10 OS mais atrasadas")
+        st.caption("Com a empresa/terceirizados, ordenado por dias em aberto (TAT SILOMS)")
+        piores = (
+            empresa.dropna(subset=["tat_siloms"])
+            .sort_values("tat_siloms", ascending=False)
+            .head(10)[["tat_siloms", "os", "pn", "nomenclatura", "onde_se_encontra", "unidade_solicitante"]]
+            .rename(columns={
+                "tat_siloms": "TAT (dias)", "os": "OS", "pn": "PN", "nomenclatura": "Nomenclatura",
+                "onde_se_encontra": "Onde se encontra", "unidade_solicitante": "Unidade",
+            })
+        )
+        if piores.empty:
+            st.caption("Sem OS com TAT SILOMS preenchido nesse escopo.")
+        else:
+            piores["TAT (dias)"] = piores["TAT (dias)"].round(0).astype(int)
+            # Cor com significado, não decoração (pedido do Wallace): número em
+            # vermelho pra qualquer um fora do prazo (esperado, já que é a lista
+            # das piores); fundo vermelho BEM suave só pro extremo (> 2x o
+            # prazo contratual) — não pinta a linha inteira de vermelho forte
+            # só porque está nessa tabela.
+            limite_extremo = PRAZO_CONTRATUAL_TAT_DIAS * 2
+            styler_piores = (
+                piores.style
+                .map(lambda v: f"color: {STATUS['critical']}; font-weight: 700;", subset=["TAT (dias)"])
+                .apply(
+                    lambda row: [f"background-color: {STATUS['critical']}14"] * len(row)
+                    if row["TAT (dias)"] > limite_extremo else [""] * len(row),
+                    axis=1,
+                )
+            )
+            st.dataframe(styler_piores, hide_index=True, width="stretch")
+
+        titulo_bloco("TAT médio por local")
+        st.caption("'Onde se encontra' — clique numa barra pra filtrar a aba \"Tabela / Consulta\" por ela")
+        media_local = (
+            escopo_df.dropna(subset=["tat_siloms"])
+            .groupby("onde_se_encontra")["tat_siloms"]
+            .agg(["mean", "count"])
+            .reset_index()
+            .rename(columns={"onde_se_encontra": "Onde se encontra", "mean": "TAT médio (dias)", "count": "Quantidade"})
+            .sort_values("TAT médio (dias)", ascending=False)
+        )
+        if media_local.empty:
+            # "tat_siloms" (TAT corrente do SILOMS) normalmente só existe pra OS
+            # ainda em aberto — em "Fechadas" costuma vir tudo vazio, não é bug.
+            st.caption("Sem \"TAT SILOMS\" preenchido nas OS desse escopo — normal em \"Fechadas\".")
+        else:
+            media_local["TAT médio (dias)"] = media_local["TAT médio (dias)"].round(0).astype(int)
+            # Cor condicional por barra — pedido do Wallace: "tem um negocio de
+            # cor la de onde ta, ta um laranjao" (antes toda barra era âmbar
+            # vívido, mesmo passando MUITO dos 110 dias — parecia que TODO
+            # local estava crítico). Refinado no brief de design: só quem
+            # passa do prazo fica vermelho (problema real); quem está dentro
+            # fica num âmbar discreto/translúcido (identidade, não alarme).
+            cores_barras = [
+                STATUS["critical"] if v > PRAZO_CONTRATUAL_TAT_DIAS else f"{AMBER}66"
+                for v in media_local["TAT médio (dias)"]
+            ]
+            fig_local = go.Figure(go.Bar(
+                x=media_local["TAT médio (dias)"], y=media_local["Onde se encontra"],
+                orientation="h", marker_color=cores_barras,
+                customdata=media_local["Quantidade"],
+                hovertemplate="%{y}<br>TAT médio: %{x} dias<br>Quantidade: %{customdata}<extra></extra>",
+            ))
+            # Linha do prazo contratual em laranja/âmbar (pedido do Wallace no
+            # brief: "usar laranja/amarelo para essa referência") — antes
+            # estava vermelha, o que confundia com "problema" (a linha em si
+            # não é um problema, é só a referência de onde o prazo vence).
+            fig_local.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=AMBER,
+                                 annotation_text=f"Prazo contratual — {PRAZO_CONTRATUAL_TAT_DIAS}d",
+                                 annotation_font_color=AMBER)
+            fig_local.update_layout(yaxis_title="", xaxis_title="TAT médio (dias)")
+            layout_grafico(fig_local, altura=max(200, 28 * len(media_local)))
+            evento_bar = st.plotly_chart(
+                fig_local, width="stretch", on_select="rerun", selection_mode="points", key="rep_bar_local_clique",
+            )
+            pontos = evento_bar.selection.get("points", []) if evento_bar else []
+            locais_clicados = sorted({p["y"] for p in pontos if "y" in p})
+            if locais_clicados:
+                st.session_state["rep_filtro_local_pendente"] = locais_clicados
+                st.success(
+                    f"🖱️ Clicado: **{', '.join(locais_clicados)}** — já filtrado na aba \"📋 Tabela / Consulta\"."
+                )
+
+            with st.expander("Ver tabela — TAT médio por local"):
+                st.dataframe(media_local, hide_index=True, width="stretch")
 
     st.divider()
 

@@ -303,3 +303,24 @@ de sempre) — o brief pedia revisão de "todo o dashboard", mas o volume
 de páginas exigiria várias rodadas; Reparáveis serviu de piloto/exemplo
 concreto porque foi literalmente a página usada em todos os exemplos do
 brief.
+
+## Ajuste rápido de clareza (2026-08-24, mesmo dia)
+
+Wallace, depois de eu explicar a diferença "com a empresa" x "entregue
+(falta burocracia)" na conversa: "queria que deixasse mais claro, parece
+que tem muita informacao na tela principal tb ne". Dois ajustes na aba
+"Visão Geral":
+
+- **Legenda visual (selos coloridos)** logo abaixo do rádio de escopo —
+  🟠 "Com a empresa e terceirizados — ainda não voltou" / 🟢 "Entregue —
+  já voltou, falta só fechar a OS no SILOMS". Antes só existia como texto
+  corrido (agora reforçado com cor, igual às cores já usadas nos cards/
+  donuts/barras — funciona como a "legenda mestra" delas).
+- **Donuts + Top 10 mais atrasadas + gráfico "TAT médio por local"**
+  foram pra dentro de um único expander "📊 Ver gráficos e detalhamento",
+  fechado por padrão — a aba "Visão Geral" agora só mostra, de cara, os 4
+  blocos de números (Volume/Prazo/TAT/Entregues) + a legenda, que é
+  exatamente o "entender em poucos segundos" que já era o objetivo do
+  brief de refinamento. Tudo o mais continua exatamente igual, só
+  escondido até alguém clicar. Altura da página caiu de ~4400px pra
+  ~2670px na aba Visão Geral (testado ao vivo).
