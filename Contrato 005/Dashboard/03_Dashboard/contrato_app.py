@@ -18,7 +18,7 @@ import streamlit as st
 from shared import horario
 from contrato005.components import data_global
 from contrato005.components.fontes_dados import secao_fontes_dados
-from contrato005.components.paleta import AMBER, SECONDARY, LINE
+from contrato005.components.paleta import AMBER, SECONDARY, LINE, PANEL
 from contrato005.data.carregar_dados import carregar_tudo
 from contrato005.secoes import (
     visao_geral, reparaveis, emergencias, emergencias_totais,
@@ -133,6 +133,18 @@ def render(ao_voltar=None, paginas_ocultas=(), modo_externo=False):
             padding-top: 0.8rem;
             border-top: 1px solid {LINE};
         }}
+
+        /* Espaçamento consistente (2026-08-24, refinamento visual sitewide
+        — "criar uma distância consistente entre cabeçalho/controles/
+        indicadores/gráficos/tabelas/notas, evitar elementos colados ou
+        vãos grandes"): expander com cara de painel (mesmo fundo/borda dos
+        gráficos), título das seções (`#####`) com um respiro por cima. */
+        [data-testid="stExpander"] {{
+            border: 1px solid {LINE} !important;
+            border-radius: 8px !important;
+            background: {PANEL} !important;
+        }}
+        h5 {{ margin-top: 1.4rem !important; }}
         </style>
 
         <div class="c98-header">

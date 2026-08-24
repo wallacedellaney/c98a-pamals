@@ -36,7 +36,7 @@ import streamlit as st
 
 from shared import horario
 from contrato005.components import data_global
-from contrato005.components.paleta import AMBER, CATEGORICA, SECONDARY, STATUS, layout_grafico
+from contrato005.components.paleta import AMBER, STATUS, layout_grafico, metrica_html, titulo_bloco
 from contrato005.components.utils import ordenar_unicos
 from contrato005.components.exportar import gerar_xlsx_bytes
 
@@ -150,21 +150,6 @@ def _mesclar_complemento_rma(df, complemento):
     return df
 
 
-def _card_metrica(col, label, valor, cor=None):
-    """Card de métrica com cor customizável — `st.metric` não deixa colorir
-    só o valor, e pedido do Wallace, 2026-08-24 ("as cores"): números ruins
-    (fora do prazo, vence este mês) devem saltar aos olhos, não ficar iguais
-    aos neutros (ex.: total de OS abertas). `cor=None` usa a cor padrão do
-    tema (mesmo efeito visual do `st.metric` de antes)."""
-    cor = cor or "inherit"
-    col.markdown(
-        f'<div style="font-size:.78rem;color:{SECONDARY};text-transform:uppercase;'
-        f'letter-spacing:.03em;margin-bottom:2px;">{label}</div>'
-        f'<div style="font-size:1.85rem;font-weight:700;color:{cor};line-height:1.25;">{valor}</div>',
-        unsafe_allow_html=True,
-    )
-
-
 def _secao_complemento_rma():
     """Botão pra repetir, em qualquer mês futuro, o cruzamento que o Wallace
     pediu manualmente em 2026-08-12 pra julho — sem precisar pedir de novo
@@ -222,10 +207,15 @@ def _secao_historico_mensal(df):
     contagem = hist.groupby("mes").size().reset_index(name="Aberturas").sort_values("mes")
     contagem["Mês"] = contagem["mes"].apply(lambda p: f"{MESES_PT[p.month - 1]}/{p.year}")
 
-    fig = px.bar(contagem, x="Mês", y="Aberturas", color_discrete_sequence=[CATEGORICA[0]])
-    fig.update_traces(text=contagem["Aberturas"], textposition="outside")
-    fig.update_layout(xaxis_title="", yaxis_title="Nº de aberturas", showlegend=False)
-    layout_grafico(fig)
+    # Laranja continua (identidade do sistema) — só um pouco mais de
+    # respiro entre as barras/rótulos (pedido do Wallace no brief de
+    # refinamento: "manter as barras laranjas... melhorar largura das
+    # barras, espaçamento, rótulos, eixo X"). O mês de pico se destaca
+    # sozinho por ser o maior valor, sem precisar mudar a cor dele.
+    fig = px.bar(contagem, x="Mês", y="Aberturas", color_discrete_sequence=[AMBER])
+    fig.update_traces(text=contagem["Aberturas"], textposition="outside", textfont_size=11)
+    fig.update_layout(xaxis_title="", yaxis_title="Nº de aberturas", showlegend=False, bargap=0.3)
+    layout_grafico(fig, altura=320)
     st.plotly_chart(fig, width="stretch")
 
     st.dataframe(contagem[["Mês", "Aberturas"]], hide_index=True, width="stretch")
@@ -255,12 +245,29 @@ def _secao_estatisticas_tat(df):
         st.info(f"Nenhuma OS em \"{escopo}\".")
         return
 
+    # Nota curta na área principal + explicação completa num expander —
+    # pedido do Wallace, 2026-08-24: "mover explicações metodológicas
+    # extensas pra tooltip/popover/expander... na área principal, deixar
+    # somente uma explicação curta". Nada foi apagado, só reorganizado.
     st.caption(
-        "\"Com a empresa e terceirizados\" = ainda não entregue pelo fornecedor. Quando \"Onde se "
-        "encontra\" é BABE/BAMN/BABV/BAPV/BABR/BANT/PAMA-LS/BACO/BASM/BACG/EEAR, já foi entregue — "
-        "só falta encerrar a burocracia da OS (\"V1 PAMA-LS\" não conta como entregue, é outra "
-        f"etapa, ainda com a empresa). Vazio = \"{LOCAL_NAO_INFORMADO}\"."
+        "\"Com a empresa e terceirizados\" = ainda não entregue pelo fornecedor. "
+        "Itens já entregues mas com a burocracia da OS ainda aberta são identificados à parte."
     )
+    with st.expander("ℹ️ Entenda os critérios dos indicadores"):
+        st.markdown(
+            "**Com a empresa e terceirizados x Entregue (falta burocracia)** — quando \"Onde se "
+            "encontra\" é BABE/BAMN/BABV/BAPV/BABR/BANT/PAMA-LS/BACO/BASM/BACG/EEAR, o item já foi "
+            "entregue pelo fornecedor — só falta encerrar a burocracia da OS no SILOMS, não é mais "
+            "atraso de reparo de verdade. **\"V1 PAMA-LS\" não conta como entregue** (é outra etapa, "
+            f"ainda com a empresa). Vazio = \"{LOCAL_NAO_INFORMADO}\".\n\n"
+            f"**Prazo contratual** — {PRAZO_CONTRATUAL_TAT_DIAS} dias, só conta pra quem ainda está "
+            "\"com a empresa e terceirizados\" (item já entregue não pesa mais contra o prazo, mesmo "
+            "que o TAT dele já passe disso).\n\n"
+            "**TAT real da empresa** — coluna reportada pela própria VEE ONE (só existe depois que o "
+            "item já foi entregue); quando falta esse dado na planilha geral mas temos a data de "
+            "devolução pela RMA em andamento, calculamos nós (devolução − início) — marcado como "
+            "\"TAT calculado\" na coluna \"Fonte\" da tabela."
+        )
 
     escopo_df["grupo"] = escopo_df["onde_se_encontra"].isin(LOCAIS_ENTREGUES).map(
         {True: "Entregue (falta burocracia)", False: "Com a empresa e terceirizados"}
@@ -269,14 +276,6 @@ def _secao_estatisticas_tat(df):
 
     def _media_tat(sub):
         return f"{sub['tat_siloms'].mean():.0f} dias" if sub["tat_siloms"].notna().any() else "—"
-
-    c1, c2 = st.columns(2)
-    _card_metrica(c1, f"OS — {escopo}", len(escopo_df))
-    _card_metrica(c2, "Média de TAT geral (mesmo faltando a burocracia)", _media_tat(escopo_df))
-
-    c3, c4 = st.columns(2)
-    _card_metrica(c3, "Com a empresa e terceirizados", len(empresa))
-    _card_metrica(c4, "Média de TAT — empresa e terceirizados", _media_tat(empresa))
 
     # Prazo contratual (dentro/fora, vence este mês) só faz sentido pra quem
     # ainda está com a empresa/terceirizados — item já entregue (só falta
@@ -295,18 +294,39 @@ def _secao_estatisticas_tat(df):
         & (com_data["tat_siloms"] <= PRAZO_CONTRATUAL_TAT_DIAS)
     ]
 
-    # Cores condicionais — pedido do Wallace, 2026-08-24: antes todo card
-    # era âmbar (cor de marca), até números ruins como "fora do prazo".
-    # AMBER nunca é usado como status (regra da paleta) — só good/critical.
-    c5, c6 = st.columns(2)
-    _card_metrica(
-        c5, f"Fora do prazo contratual (> {PRAZO_CONTRATUAL_TAT_DIAS} dias) — empresa/terceirizados",
+    com_tat_empresa = escopo_df[escopo_df["tat_empresa"].notna()]
+    calculados = int(com_tat_empresa["tat_calculado"].sum()) if not com_tat_empresa.empty else 0
+
+    # 4 blocos visualmente agrupados (Volume/Prazo/TAT/Entregues) — pedido
+    # do Wallace, 2026-08-24: "permitir que alguém olhe o dashboard por
+    # poucos segundos e entenda: quantas OS existem, quantas com empresa,
+    # quantas atrasadas, qual o TAT, quantas já entregues". Antes era uma
+    # sequência solta de 8 cards do mesmo peso, um atrás do outro.
+    titulo_bloco("Volume")
+    c1, c2 = st.columns(2)
+    metrica_html(c1, f"OS — {escopo}", len(escopo_df))
+    metrica_html(c2, "Com a empresa e terceirizados", len(empresa))
+
+    titulo_bloco("Prazo contratual")
+    c3, c4 = st.columns(2)
+    # Cores condicionais — pedido do Wallace: antes todo card era âmbar
+    # (cor de marca), até números ruins como "fora do prazo". AMBER nunca
+    # é usado como status (regra da paleta) — só good/critical.
+    metrica_html(
+        c3, f"Fora do prazo (> {PRAZO_CONTRATUAL_TAT_DIAS}d) — empresa/terceirizados",
         len(fora_prazo), cor=STATUS["critical"] if len(fora_prazo) else STATUS["good"],
     )
-    _card_metrica(
-        c6, "Vencem o prazo contratual este mês — empresa/terceirizados",
+    metrica_html(
+        c4, "Vencem o prazo este mês — empresa/terceirizados",
         len(vence_mes), cor=STATUS["critical"] if len(vence_mes) else STATUS["good"],
     )
+
+    titulo_bloco("TAT (Turn Around Time)")
+    c5, c6, c7 = st.columns(3)
+    metrica_html(c5, "TAT médio geral", _media_tat(escopo_df), tamanho="1.6rem")
+    metrica_html(c6, "TAT médio — empresa/terceirizados", _media_tat(empresa), tamanho="1.6rem")
+    if not com_tat_empresa.empty:
+        metrica_html(c7, "TAT real médio — empresa", f"{com_tat_empresa['tat_empresa'].mean():.0f} dias", tamanho="1.6rem")
 
     # TAT real reportado pela própria empresa (coluna "TAT " da fonte, sob
     # "INFORMAÇÕES DA EMPRESA") — disponível a partir de 2026-07-27 (Wallace:
@@ -321,12 +341,10 @@ def _secao_estatisticas_tat(df):
     # geral mas a RMA (que cobre mais OS, "desde o início") tem a data de
     # devolução, `_mesclar_complemento_rma` já calculou
     # `data_devolução − data_início` e marcou `tat_calculado=True`.
-    com_tat_empresa = escopo_df[escopo_df["tat_empresa"].notna()]
     if not com_tat_empresa.empty:
-        calculados = int(com_tat_empresa["tat_calculado"].sum())
-        c7, c8 = st.columns(2)
-        _card_metrica(c7, "Itens com TAT real da empresa (já entregues)", len(com_tat_empresa))
-        _card_metrica(c8, "Média de TAT real — empresa", f"{com_tat_empresa['tat_empresa'].mean():.0f} dias")
+        titulo_bloco("Entregues")
+        c8, _ = st.columns(2)
+        metrica_html(c8, "Itens com TAT real da empresa (já entregues)", len(com_tat_empresa))
         if calculados:
             st.caption(
                 f"Dos {len(com_tat_empresa)} acima, {calculados} não vieram reportados pela empresa na "
@@ -335,7 +353,14 @@ def _secao_estatisticas_tat(df):
                 "calculado\")."
             )
 
+    titulo_bloco("Situação física x Prazo contratual")
     g1, g2 = st.columns(2)
+    # Mesma dimensão/alinhamento pros 2 donuts (pedido do Wallace: "os dois
+    # gráficos devem possuir mesma dimensão e alinhamento") + legenda
+    # embaixo, centralizada e perto do gráfico (não afastada, à direita,
+    # como o padrão do Plotly deixava antes).
+    _ALTURA_DONUT = 260
+    _LEGENDA_DONUT = dict(orientation="h", yanchor="top", y=-0.08, xanchor="center", x=0.5)
     with g1:
         st.caption("Com a empresa e terceirizados x Entregue (falta burocracia)")
         contagem_grupo = escopo_df["grupo"].value_counts().reset_index()
@@ -346,7 +371,8 @@ def _secao_estatisticas_tat(df):
             color_discrete_map={"Com a empresa e terceirizados": AMBER, "Entregue (falta burocracia)": STATUS["good"]},
         )
         fig_grupo.update_traces(textinfo="value+percent", textfont_size=12)
-        layout_grafico(fig_grupo, altura=230)
+        fig_grupo.update_layout(legend=_LEGENDA_DONUT)
+        layout_grafico(fig_grupo, altura=_ALTURA_DONUT)
         st.plotly_chart(fig_grupo, width="stretch")
 
     with g2:
@@ -361,37 +387,50 @@ def _secao_estatisticas_tat(df):
             color_discrete_map={"Dentro do prazo": STATUS["good"], "Fora do prazo": STATUS["critical"]},
         )
         fig_prazo.update_traces(textinfo="value+percent", textfont_size=12)
-        layout_grafico(fig_prazo, altura=230)
+        fig_prazo.update_layout(legend=_LEGENDA_DONUT)
+        layout_grafico(fig_prazo, altura=_ALTURA_DONUT)
         st.plotly_chart(fig_prazo, width="stretch")
 
     # Ranking das piores OS — pedido do Wallace, 2026-08-24 ("pensa aí oq
     # podemos fazer"): a média por local (gráfico abaixo) não mostra um
     # raio-x das OS individuais mais atrasadas. Só sobre "com a
-    # empresa/terceirizados" (mesmo grupo do prazo contratual).
-    st.caption(f"⏱️ Top 10 OS mais atrasadas (com a empresa/terceirizados, dias em aberto)")
+    # empresa/terceirizados" (mesmo grupo do prazo contratual). TAT (dias)
+    # é o campo mais importante visualmente (pedido do Wallace no brief de
+    # refinamento) — vem primeiro, Unidade por último (menor peso).
+    titulo_bloco("Top 10 OS mais atrasadas")
+    st.caption("Com a empresa/terceirizados, ordenado por dias em aberto (TAT SILOMS)")
     piores = (
         empresa.dropna(subset=["tat_siloms"])
         .sort_values("tat_siloms", ascending=False)
-        .head(10)[["os", "pn", "nomenclatura", "unidade_solicitante", "onde_se_encontra", "tat_siloms"]]
+        .head(10)[["tat_siloms", "os", "pn", "nomenclatura", "onde_se_encontra", "unidade_solicitante"]]
         .rename(columns={
-            "os": "OS", "pn": "PN", "nomenclatura": "Nomenclatura", "unidade_solicitante": "Unidade",
-            "onde_se_encontra": "Onde se encontra", "tat_siloms": "TAT (dias)",
+            "tat_siloms": "TAT (dias)", "os": "OS", "pn": "PN", "nomenclatura": "Nomenclatura",
+            "onde_se_encontra": "Onde se encontra", "unidade_solicitante": "Unidade",
         })
     )
     if piores.empty:
         st.caption("Sem OS com TAT SILOMS preenchido nesse escopo.")
     else:
         piores["TAT (dias)"] = piores["TAT (dias)"].round(0).astype(int)
-        styler_piores = piores.style.apply(
-            lambda row: [
-                f"background-color: {STATUS['critical']}33" if row["TAT (dias)"] > PRAZO_CONTRATUAL_TAT_DIAS else ""
-                for _ in row
-            ],
-            axis=1,
+        # Cor com significado, não decoração (pedido do Wallace): número em
+        # vermelho pra qualquer um fora do prazo (esperado, já que é a lista
+        # das piores); fundo vermelho BEM suave só pro extremo (> 2x o
+        # prazo contratual) — não pinta a linha inteira de vermelho forte
+        # só porque está nessa tabela.
+        limite_extremo = PRAZO_CONTRATUAL_TAT_DIAS * 2
+        styler_piores = (
+            piores.style
+            .map(lambda v: f"color: {STATUS['critical']}; font-weight: 700;", subset=["TAT (dias)"])
+            .apply(
+                lambda row: [f"background-color: {STATUS['critical']}14"] * len(row)
+                if row["TAT (dias)"] > limite_extremo else [""] * len(row),
+                axis=1,
+            )
         )
         st.dataframe(styler_piores, hide_index=True, width="stretch")
 
-    st.caption("TAT médio por local ('Onde se encontra') — clique numa barra pra filtrar a aba \"Tabela / Consulta\" por ela")
+    titulo_bloco("TAT médio por local")
+    st.caption("'Onde se encontra' — clique numa barra pra filtrar a aba \"Tabela / Consulta\" por ela")
     media_local = (
         escopo_df.dropna(subset=["tat_siloms"])
         .groupby("onde_se_encontra")["tat_siloms"]
@@ -406,12 +445,14 @@ def _secao_estatisticas_tat(df):
         st.caption("Sem \"TAT SILOMS\" preenchido nas OS desse escopo — normal em \"Fechadas\".")
     else:
         media_local["TAT médio (dias)"] = media_local["TAT médio (dias)"].round(0).astype(int)
-        # Cor condicional por barra — pedido do Wallace, 2026-08-24 ("tem um
-        # negocio de cor la de onde ta, ta um laranjao"): antes toda barra
-        # era âmbar, mesmo passando MUITO dos 110 dias contratuais. Só
-        # good/critical (nunca AMBER como status, regra da paleta).
+        # Cor condicional por barra — pedido do Wallace: "tem um negocio de
+        # cor la de onde ta, ta um laranjao" (antes toda barra era âmbar
+        # vívido, mesmo passando MUITO dos 110 dias — parecia que TODO
+        # local estava crítico). Refinado no brief de design: só quem
+        # passa do prazo fica vermelho (problema real); quem está dentro
+        # fica num âmbar discreto/translúcido (identidade, não alarme).
         cores_barras = [
-            STATUS["critical"] if v > PRAZO_CONTRATUAL_TAT_DIAS else STATUS["good"]
+            STATUS["critical"] if v > PRAZO_CONTRATUAL_TAT_DIAS else f"{AMBER}66"
             for v in media_local["TAT médio (dias)"]
         ]
         fig_local = go.Figure(go.Bar(
@@ -420,8 +461,13 @@ def _secao_estatisticas_tat(df):
             customdata=media_local["Quantidade"],
             hovertemplate="%{y}<br>TAT médio: %{x} dias<br>Quantidade: %{customdata}<extra></extra>",
         ))
-        fig_local.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=STATUS["critical"],
-                             annotation_text=f"{PRAZO_CONTRATUAL_TAT_DIAS}d contratual")
+        # Linha do prazo contratual em laranja/âmbar (pedido do Wallace no
+        # brief: "usar laranja/amarelo para essa referência") — antes
+        # estava vermelha, o que confundia com "problema" (a linha em si
+        # não é um problema, é só a referência de onde o prazo vence).
+        fig_local.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=AMBER,
+                             annotation_text=f"Prazo contratual — {PRAZO_CONTRATUAL_TAT_DIAS}d",
+                             annotation_font_color=AMBER)
         fig_local.update_layout(yaxis_title="", xaxis_title="TAT médio (dias)")
         layout_grafico(fig_local, altura=max(200, 28 * len(media_local)))
         evento_bar = st.plotly_chart(
@@ -515,7 +561,7 @@ def _secao_tabela(df):
     filtrado = filtrado.reset_index(drop=True)
 
     c_qtd, c_export = st.columns([3, 1])
-    _card_metrica(c_qtd, "OS (após filtro)", len(filtrado))
+    metrica_html(c_qtd, "OS (após filtro)", len(filtrado))
     with c_export:
         st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
         if not filtrado.empty:
@@ -561,39 +607,69 @@ def _secao_tabela(df):
     })
     tabela_texto = _tabela_para_texto(tabela)
 
+    # Cor com significado, não decoração (pedido do Wallace no brief de
+    # refinamento) — "fora do prazo" pinta a linha inteira num vermelho MUITO
+    # suave (só sinaliza, não grita); "condenado" é um destaque DIFERENTE
+    # (só a célula "Condição", texto vermelho forte) — antes os 2 casos
+    # usavam o mesmo tom, misturando 2 significados diferentes numa cor só.
+    idx_condicao = list(tabela_texto.columns).index("Condição")
+
     def _cor_linha(row):
         i = row.name
         tat = tat_numerico.iloc[i]
         condenado = isinstance(condicao_numerica.iloc[i], str) and "CONDENADO" in condicao_numerica.iloc[i].upper()
-        if condenado:
-            return [f"background-color: {STATUS['critical']}22"] * len(row)
+        estilos = [""] * len(row)
         if pd.notna(tat) and tat > PRAZO_CONTRATUAL_TAT_DIAS:
-            return [f"background-color: {STATUS['critical']}18"] * len(row)
-        return [""] * len(row)
+            estilos = [f"background-color: {STATUS['critical']}10"] * len(row)
+        if condenado:
+            estilos[idx_condicao] = f"color: {STATUS['critical']}; font-weight: 700;"
+        return estilos
 
     styler = tabela_texto.style.apply(_cor_linha, axis=1)
-    st.dataframe(styler, width="stretch", hide_index=True, height=420)
-    st.caption(
-        "🔴 Linha destacada = fora do prazo contratual (> 110 dias, com a empresa/terceirizados) ou condenado. "
-        "\"ONDE SE ENCONTRA\", \"Data de devolução empresa\" e \"RECIBO CASO TENHA\" vêm da planilha geral "
-        "(Controle de Reparáveis) por padrão. Quando a coluna \"Fonte\" mostra \"RMA {Mês}/{Ano} (entregue no "
-        "mês)\", a aba 1.8 da RMA confirma que a empresa devolveu esse item NESSE mês; \"RMA {Mês}/{Ano} "
-        "(histórico)\" é uma OS mais antiga que a aba 1.10 (controle acumulado) já tinha o dado, mas não é do "
-        "mês em referência; \"— condenado\" no final indica que a aba 1.9 da RMA marca esse item como "
-        "condenado (aí a \"Condição\" também é sobrescrita com o motivo); \"— TAT calculado\" indica que o "
-        "\"TAT\" real (na aba \"Visão Geral\") não veio reportado pela empresa — calculamos nós (data de "
-        "devolução da RMA − data início) porque faltava na planilha geral. Em todos os casos, situação/em "
-        "aberto continuam vindo só da planilha geral (não mudam por isso) — só os campos citados são "
-        "complementados."
-    )
+    # OS/PN/Nomenclatura fixas na rolagem horizontal (pedido do Wallace:
+    # "congelar, se possível: OS; PN; nomenclatura") — Streamlit 1.58
+    # suporta `pinned` no column_config; seguro aqui porque `tabela_texto`
+    # já não tem NaN nenhum sobrando (ver `_tabela_para_texto`) — declarar
+    # column_config com NaN de verdade foi o que causou o bug do "None"
+    # (ver Cômputo Mensal, 2026-08-20).
+    colunas_fixas = {
+        c: st.column_config.Column(pinned=True) for c in ("OS", "PN", "Nomenclatura") if c in tabela_texto.columns
+    }
+    st.dataframe(styler, width="stretch", hide_index=True, height=420, column_config=colunas_fixas)
 
-    with st.expander("Distribuição por condição"):
+    # Legenda condensada num expander (pedido do Wallace: "o texto atual
+    # possui muitas informações importantes, porém ocupa bastante espaço...
+    # transformar em 'ℹ️ Como interpretar esta tabela' dentro de um
+    # expander, organizado em tópicos") — nada foi removido, só reorganizado.
+    st.caption("🔴 Linha = fora do prazo contratual · Condição em vermelho = condenado")
+    with st.expander("ℹ️ Como interpretar esta tabela"):
+        st.markdown(
+            "- **Linha com fundo vermelho suave** — TAT SILOMS > 110 dias (fora do prazo contratual), "
+            "só pra quem ainda está com a empresa/terceirizados.\n"
+            "- **\"Condição\" em vermelho** — a aba 1.9 da RMA marca esse item como condenado (o motivo "
+            "vem junto no texto da célula).\n"
+            "- **\"Onde se encontra\" / \"Data de devolução empresa\" / \"Recibo\"** — vêm da planilha "
+            "geral (Controle de Reparáveis) por padrão.\n"
+            "- **Coluna \"Fonte\"** — quando mostra \"RMA {Mês}/{Ano} (entregue no mês)\", a aba 1.8 da "
+            "RMA confirma que a empresa devolveu esse item NESSE mês; \"RMA {Mês}/{Ano} (histórico)\" é "
+            "uma OS mais antiga que a aba 1.10 (controle acumulado) já tinha o dado, mas não é do mês em "
+            "referência.\n"
+            "- **\"— TAT calculado\"** (no final da \"Fonte\") — o TAT real (aba \"Visão Geral\") não veio "
+            "reportado pela empresa; calculamos nós (data de devolução da RMA − data início) porque "
+            "faltava na planilha geral.\n\n"
+            "Em todos os casos, situação/em aberto continuam vindo só da planilha geral (não mudam por "
+            "isso) — só os campos citados acima são complementados pela RMA."
+        )
+
+    with st.expander("📊 Distribuição por condição"):
         contagem = filtrado["condicao"].value_counts().reset_index()
         contagem.columns = ["condicao", "quantidade"]
+        contagem = contagem.sort_values("quantidade", ascending=True)
         fig = px.bar(contagem, x="quantidade", y="condicao", orientation="h",
-                     color_discrete_sequence=[CATEGORICA[0]])
+                     color_discrete_sequence=[AMBER])
+        fig.update_traces(text=contagem["quantidade"], textposition="outside")
         fig.update_layout(yaxis_title="", xaxis_title="Quantidade", showlegend=False)
-        layout_grafico(fig)
+        layout_grafico(fig, altura=max(200, 26 * len(contagem)))
         st.plotly_chart(fig, width="stretch")
 
     st.divider()

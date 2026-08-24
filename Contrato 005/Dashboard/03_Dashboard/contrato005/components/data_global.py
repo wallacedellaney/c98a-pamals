@@ -87,20 +87,31 @@ def render_seletor_global(dados):
     if st.session_state.get("data_global") not in datas:
         st.session_state["data_global"] = datas[-1]
 
-    col_slider, col_info = st.columns([3, 1])
-    with col_slider:
-        escolhida = st.select_slider(
-            "📅 Controle de data global — arraste pra ver o sistema em qualquer dia",
-            options=datas, value=st.session_state["data_global"],
-            format_func=lambda d: d.strftime("%d/%m/%Y"), key="data_global_slider",
-        )
-    st.session_state["data_global"] = escolhida
-    with col_info:
+    # Hierarquia mais clara (2026-08-24, refinamento visual): "o usuário
+    # deve entender rapidamente 'Data analisada: DD/MM/AAAA' e, abaixo,
+    # 'Mostrando dados mais recentes'" — antes só tinha o rótulo comprido
+    # do slider em cima e a nota pequena do lado. O slider em si (que
+    # PRECISA continuar visível/laranja pra função de arrastar) não deve
+    # "competir visualmente" com os indicadores das páginas — por isso fica
+    # discreto (rótulo pequeno, sem título grande em cima dele).
+    from contrato005.components.paleta import metrica_html
+    escolhida_atual = st.session_state["data_global"]
+    col_data, col_nota = st.columns([1, 3])
+    metrica_html(col_data, "Data analisada", escolhida_atual.strftime("%d/%m/%Y"), tamanho="1.4rem")
+    with col_nota:
         st.write("")
-        if escolhida == datas[-1]:
-            st.caption("Mostrando dados **atuais** (mais recentes).")
+        if escolhida_atual == datas[-1]:
+            st.caption("📅 Mostrando dados **atuais** (mais recentes) — arraste abaixo pra ver outro dia.")
         else:
-            st.caption(f"Visão histórica de **{escolhida.strftime('%d/%m/%Y')}**.")
+            st.caption(f"📅 Visão **histórica** de {escolhida_atual.strftime('%d/%m/%Y')} — arraste abaixo pra mudar.")
+
+    escolhida = st.select_slider(
+        "Arraste pra ver o sistema em qualquer dia",
+        options=datas, value=st.session_state["data_global"],
+        format_func=lambda d: d.strftime("%d/%m/%Y"), key="data_global_slider",
+        label_visibility="collapsed",
+    )
+    st.session_state["data_global"] = escolhida
     return escolhida
 
 

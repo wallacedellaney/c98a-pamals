@@ -228,3 +228,78 @@ tinha ficado de fora).
 
 Testado ao vivo no preview: abas, cores, clique-filtra-outra-aba, busca,
 exportar e ranking — todos funcionando.
+
+## Refinamento visual — brief completo de 20 itens (2026-08-24)
+
+Wallace mandou um brief de design completo ("Refinamento visual e
+organização do dashboard C-98") pedindo pra manter TODA a identidade
+atual (dark mode, laranja, fonte, abas, dados, cálculos) e só melhorar
+hierarquia/organização/cores semânticas — "quero a sensação de: é
+exatamente o mesmo dashboard, mas agora foi revisado por um bom designer
+de produto". Dado o tamanho do brief (20 seções, cobrindo o dashboard
+inteiro), apliquei em 2 frentes:
+
+**1. Compartilhado/global** (`contrato005/components/paleta.py`,
+`contrato_app.py`, `contrato005/components/data_global.py`) — propaga
+pra TODAS as páginas do Contrato 005 automaticamente:
+- `paleta.py` ganhou `ESPACO` (tokens de espaçamento), `metrica_html()`
+  (card de métrica em HTML puro com cor semântica — necessário porque o
+  CSS global força `[data-testid="stMetricValue"]` pra AMBER com
+  `!important`, então um `st.metric()` normal não pode ficar vermelho/
+  verde) e `titulo_bloco()` (cabeçalho pequeno pra agrupar métricas
+  relacionadas).
+- `contrato_app.py`: expanders ganharam cara de painel (fundo/borda
+  consistentes com os gráficos).
+- `data_global.py`: hierarquia mais clara no controle de data — "DATA
+  ANALISADA" grande em cima, nota pequena embaixo, slider sem rótulo
+  grande (não compete mais com os indicadores da página).
+
+**2. Reparáveis** (`reparaveis.py`) — página piloto, já reorganizada em
+abas em 2026-08-24 (ver seção acima); recebeu o refinamento completo do
+brief:
+- **Blocos visuais** (Volume/Prazo contratual/TAT/Entregues) — cada um
+  com `titulo_bloco()`, em vez da sequência solta de 8 cards do mesmo
+  peso.
+- **Textos metodológicos** movidos pra dentro do expander "ℹ️ Entenda os
+  critérios dos indicadores" — a área principal só tem 1 frase curta.
+- **Donuts** com mesma altura (260px) e legenda embaixo/centralizada (não
+  mais afastada à direita, padrão do Plotly).
+- **Ranking "Top 10 mais atrasadas"**: reordenado (TAT primeiro, Unidade
+  por último — menor peso visual); número do TAT em vermelho negrito;
+  fundo vermelho SÓ pro extremo (> 2x o prazo contratual, 220 dias) — não
+  a linha inteira só por estar no ranking.
+- **Gráfico "TAT médio por local"**: corrigido — antes toda barra era
+  vermelha/verde, mesmo sem passar do prazo; agora só quem passa de 110
+  dias fica vermelho (`STATUS["critical"]`), quem está dentro fica num
+  âmbar translúcido (`AMBER + "66"`, identidade discreta, não alarme).
+  **Linha vertical dos 110 dias também corrigida** — estava vermelha
+  (parecia problema), agora é âmbar (é só a referência do prazo).
+- **Tabela principal**: OS/PN/Nomenclatura fixas na rolagem horizontal
+  (`column_config` com `pinned=True`, suportado nativo pelo Streamlit
+  1.58 — só funciona com segurança porque `_tabela_para_texto()` já
+  limpa todo NaN antes); linha "fora do prazo" com fundo vermelho BEM
+  suave (10% opacidade, era mais forte); "condenado" virou um destaque
+  DIFERENTE (só a célula "Condição" em vermelho negrito, não a linha
+  inteira — antes usava o mesmo tom do "fora do prazo", misturando 2
+  significados numa cor só).
+- **Legenda da tabela** virou expander "ℹ️ Como interpretar esta tabela",
+  organizado em tópicos (antes era um parágrafo corrido comprido).
+- **Distribuição por condição**: virou expander, ordenado crescente
+  (maior no topo do gráfico horizontal), com rótulo de valor em cada
+  barra.
+- **Histórico mensal**: gráfico mais alto (320px, era ~200px), mais
+  espaço entre barras (`bargap=0.3`) — mesma cor laranja de sempre.
+
+Testado ao vivo no preview: os 4 blocos, expanders, donuts alinhados,
+ranking colorido corretamente, barras condicionais, linha do prazo
+âmbar, tabela com coluna fixa, legendas em expander e histórico — tudo
+funcionando, print por print.
+
+**Não aplicado ainda** (fora do escopo desta rodada, mesmo padrão fica
+pronto pra reaproveitar): Emergências Abertas/Totais, Fechamento Mensal,
+Empréstimos, Pagamentos, Reajuste, e as áreas Coordenadoria/Projetos
+(cada uma com seu próprio `paleta.py`, sem import cruzado, mesmo motivo
+de sempre) — o brief pedia revisão de "todo o dashboard", mas o volume
+de páginas exigiria várias rodadas; Reparáveis serviu de piloto/exemplo
+concreto porque foi literalmente a página usada em todos os exemplos do
+brief.
