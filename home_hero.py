@@ -9,11 +9,21 @@ app Streamlit.
 
 ## Sobre a foto e a rotação 360°
 
-A imagem (`imagens/hero_hangar.jpg`, recortada de
-`imagens/ChatGPT Image 9 de jul. de 2026, 22_53_20.png`) é uma foto/render
-ÚNICA, com o avião e o hangar já "assados" juntos no mesmo plano — não é um
-recorte isolado do avião com fundo transparente. Isso muda o que é
+A imagem (`imagens/hero_hangar.jpg`) é uma foto/render ÚNICA, com o avião,
+o hangar e o próprio texto do título já "assados" juntos no mesmo plano —
+não é um recorte isolado do avião com fundo transparente, nem o título é
+desenhado por CSS por cima (é tudo a mesma imagem). Isso muda o que é
 tecnicamente honesto fazer:
+
+**Atualização de 2026-08-24** — trocada de novo, a pedido do Wallace
+("coloquei uma imagem hoje no imagens para atualizar a capa, tinhas umas
+setas la nada haver"): a versão anterior (recortada de `ChatGPT Image 9 de
+jul. de 2026, 22_53_20.png`) tinha 2 setinhas de navegação (◂ ▸) coladas
+nas bordas esquerda/direita, sem função nenhuma no site — sobra visual de
+algum mockup de carrossel. A versão atual vem de `imagens/ChatGPT Image 24
+de ago. de 2026, 13_30_59.png` (recorte da faixa central, y=95 a y=530 de
+uma imagem 1672×941 que também tinha barra de navegação e os 3 cards —
+cortados fora), sem as setinhas.
 
 - **Girar só o avião em 3D de verdade não é possível** sem separar o avião
   do fundo (precisaria de uma versão com fundo transparente/recorte, que
