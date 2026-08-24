@@ -283,9 +283,17 @@ def _figura_historico_mensal(contagem, altura=320):
     # refinamento: "manter as barras laranjas... melhorar largura das
     # barras, espaçamento, rótulos, eixo X"). O mês de pico se destaca
     # sozinho por ser o maior valor, sem precisar mudar a cor dele.
+    #
+    # 2026-08-24, 3ª rodada ("aumentar espessura das barras/valores/
+    # rótulos... reduzir a inclinação exagerada dos meses"): `bargap`
+    # menor = barra mais grossa (0.3 → 0.2), texto maior (11 → 13),
+    # rótulo do mês com inclinação mais suave (`tickangle`, Plotly deixava
+    # rodar quase 90° sozinho por padrão quando não cabia — fixado em -35°,
+    # "mais horizontal ou levemente inclinado").
     fig = px.bar(contagem, x="Mês", y="Aberturas", color_discrete_sequence=[AMBER])
-    fig.update_traces(text=contagem["Aberturas"], textposition="outside", textfont_size=11)
-    fig.update_layout(xaxis_title="", yaxis_title="Nº de aberturas", showlegend=False, bargap=0.3)
+    fig.update_traces(text=contagem["Aberturas"], textposition="outside", textfont_size=13)
+    fig.update_layout(xaxis_title="", yaxis_title="Nº de aberturas", showlegend=False, bargap=0.2)
+    fig.update_xaxes(tickangle=-35, tickfont=dict(size=11))
     layout_grafico(fig, altura=altura)
     return fig
 
@@ -315,27 +323,34 @@ def _linha_kpis_html(grupos):
     # 3. Trocado por `max-width` com quebra de linha normal — cada
     # métrica ocupa uma largura previsível (~8.5rem), o rótulo quebra
     # embaixo se precisar, a linha toda fica mais compacta e previsível.
+    # 2026-08-24, 3ª rodada de ajuste ("melhorar os KPIs... aumentar
+    # numeros/espacamento interno/separacao entre grupos, diminuir
+    # textos secundarios"): valor principal maior (1.55rem → 1.85rem),
+    # rótulo secundário menor (.66rem → .62rem), mais respiro entre
+    # grupos (1.5rem → 1.9rem de padding). Continua branco/INK por
+    # padrão — só Prazo usa STATUS["good"/"critical"], nunca AMBER como
+    # cor de status.
     blocos = []
     for i, (titulo_grupo, itens) in enumerate(grupos):
         campos = "".join(
-            f'<div style="margin-right:1.4rem;max-width:8.5rem;">'
-            f'<div style="font-size:.66rem;color:{SECONDARY};text-transform:uppercase;'
-            f'letter-spacing:.05em;margin-bottom:.2rem;line-height:1.25;">{label}</div>'
-            f'<div style="font-size:1.55rem;font-weight:700;color:{cor or INK};line-height:1.15;'
+            f'<div style="margin-right:1.6rem;max-width:8.5rem;">'
+            f'<div style="font-size:.62rem;color:{SECONDARY};text-transform:uppercase;'
+            f'letter-spacing:.05em;margin-bottom:.25rem;line-height:1.25;">{label}</div>'
+            f'<div style="font-size:1.85rem;font-weight:700;color:{cor or INK};line-height:1.15;'
             f'white-space:nowrap;">{(icone + " ") if icone else ""}{valor}</div>'
             f'</div>'
             for label, valor, cor, icone in itens
         )
         borda = f"border-right:1px solid {LINE};" if i < len(grupos) - 1 else ""
         blocos.append(
-            f'<div style="display:flex;flex-direction:column;padding:0 1.5rem;{borda}'
+            f'<div style="display:flex;flex-direction:column;padding:0 1.9rem;{borda}'
             f'{" padding-left:0;" if i == 0 else ""}">'
             f'<div style="font-size:.65rem;color:{AMBER};text-transform:uppercase;'
             f'letter-spacing:.08em;font-weight:600;margin-bottom:.6rem;">{titulo_grupo}</div>'
             f'<div style="display:flex;flex-wrap:wrap;">{campos}</div>'
             f'</div>'
         )
-    return f'<div style="display:flex;flex-wrap:wrap;align-items:flex-start;padding:.6rem 0 1rem 0;">{"".join(blocos)}</div>'
+    return f'<div style="display:flex;flex-wrap:wrap;align-items:flex-start;padding:.4rem 0 .6rem 0;">{"".join(blocos)}</div>'
 
 
 def _fluxo_conexoes_html(total, abertas, fechadas, com_empresa, entregue):
@@ -348,19 +363,29 @@ def _fluxo_conexoes_html(total, abertas, fechadas, com_empresa, entregue):
     (recebe `df` inteiro do chamador, não `escopo_df`) — o objetivo é
     explicar como o universo INTEIRO se conecta, não só o recorte do
     radio "Abertas no SILOMS/Fechadas/Todas" escolhido acima na tela."""
+    # 2026-08-24, 3ª rodada ("melhorar alinhamento/largura/altura/
+    # espaçamento/setas/bordas/tamanho dos números... cards mais
+    # homogêneos"): caixa maior e com altura mínima igual pra todas
+    # (`min-height`, antes cada uma tinha a altura que o conteúdo dela
+    # pedisse — a com `sub` ficava mais alta que "OS totais"/"OS
+    # fechadas", que não têm). Cores continuam as mesmas de sempre:
+    # laranja só em "com empresa" (identidade), verde só em "entregue"
+    # (positivo), branco/cinza (LINE, sem cor especial) pros totais/
+    # fechadas — nenhuma regra de cor mudou, só o tamanho.
     def _caixa(icone, valor, label, sub=None, cor=None):
-        sub_html = f'<div style="font-size:.68rem;color:{SECONDARY};margin-top:.2rem;">{sub}</div>' if sub else ""
+        sub_html = f'<div style="font-size:.72rem;color:{SECONDARY};margin-top:.25rem;">{sub}</div>' if sub else ""
         return (
-            f'<div style="background:{PANEL};border:1px solid {cor or LINE};border-radius:8px;'
-            f'padding:.8rem 1.1rem;min-width:9.5rem;display:flex;flex-direction:column;gap:.15rem;">'
-            f'<div style="font-size:1.2rem;">{icone}</div>'
-            f'<div style="font-size:1.5rem;font-weight:700;color:{INK};">{valor}</div>'
-            f'<div style="font-size:.72rem;color:{SECONDARY};">{label}</div>'
+            f'<div style="background:{PANEL};border:1px solid {cor or LINE};border-radius:10px;'
+            f'padding:1.1rem 1.4rem;min-width:10.5rem;min-height:7.2rem;display:flex;'
+            f'flex-direction:column;justify-content:center;gap:.2rem;">'
+            f'<div style="font-size:1.4rem;">{icone}</div>'
+            f'<div style="font-size:1.9rem;font-weight:700;color:{INK};line-height:1.1;">{valor}</div>'
+            f'<div style="font-size:.76rem;color:{SECONDARY};">{label}</div>'
             f'{sub_html}'
             f'</div>'
         )
 
-    seta = f'<div style="align-self:center;color:{SECONDARY};font-size:1.3rem;padding:0 .2rem;">→</div>'
+    seta = f'<div style="align-self:center;color:{SECONDARY};font-size:1.6rem;padding:0 .35rem;">→</div>'
     pct_abertas = f"{abertas / total * 100:.1f}%" if total else "—"
     pct_fechadas = f"{fechadas / total * 100:.1f}%" if total else "—"
     pct_empresa = f"{com_empresa / abertas * 100:.1f}% das abertas" if abertas else "—"
@@ -374,13 +399,14 @@ def _fluxo_conexoes_html(total, abertas, fechadas, com_empresa, entregue):
         _caixa("🟠", com_empresa, "Com a empresa e terceirizados", pct_empresa, cor=AMBER),
         seta,
         _caixa("🟢", entregue, "Entregue — falta só fechar no SILOMS", pct_entregue, cor=STATUS["good"]),
-        f'<div style="align-self:center;border-left:1px dashed {LINE};height:2.6rem;margin:0 .7rem;"></div>',
+        f'<div style="align-self:center;border-left:1px dashed {LINE};height:3rem;margin:0 .8rem;"></div>',
         _caixa("🗂️", fechadas, "OS fechadas", pct_fechadas),
-        f'<div style="align-self:center;background:{PANEL};border:1px solid {LINE};border-radius:8px;'
-        f'padding:.6rem 1rem;font-size:.72rem;color:{SECONDARY};max-width:13rem;">ℹ️ Percentuais calculados '
-        f'sobre o total de OS abertas (exceto "OS totais"/"OS fechadas", que são sobre o total geral).</div>',
+        f'<div style="align-self:center;background:{PANEL};border:1px solid {LINE};border-radius:10px;'
+        f'padding:.8rem 1.1rem;font-size:.74rem;color:{SECONDARY};max-width:13.5rem;min-height:7.2rem;'
+        f'display:flex;align-items:center;">ℹ️ Percentuais calculados sobre o total de OS abertas (exceto '
+        f'"OS totais"/"OS fechadas", que são sobre o total geral).</div>',
     ]
-    return f'<div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:.6rem;padding:.5rem 0;">{"".join(partes)}</div>'
+    return f'<div style="display:flex;flex-wrap:wrap;align-items:stretch;gap:.7rem;padding:.5rem 0;">{"".join(partes)}</div>'
 
 
 def _secao_estatisticas_tat(df):
@@ -542,24 +568,35 @@ def _secao_estatisticas_tat(df):
         ]))
     st.markdown(_linha_kpis_html(grupos_kpi), unsafe_allow_html=True)
 
-    # Textos explicativos/metodológicos ficam pequenos, embaixo da faixa
-    # (pedido da imagem de referência: "evitar grandes textos explicativos
-    # diretamente na tela") — mesmo conteúdo de antes, só reagrupado.
-    legendas = [
-        f"⚖️ Só conta contra o prazo quem abriu a partir de {INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')} "
-        "— OS mais antigas continuam com o TAT calculado normalmente, só não pesam como violação de prazo."
+    # Texto curto de 1 linha (era um parágrafo grande) + expander pro
+    # resto — pedido do Wallace, 2026-08-24, 2ª rodada de layout: "a
+    # frase longa abaixo dos KPIs ainda ocupa muito espaço horizontal...
+    # transformar em uma frase curta... mover o restante para um
+    # expander 'Entenda a regra contratual'... libera espaço pros
+    # gráficos subirem". Mesmo conteúdo de sempre, só reorganizado —
+    # nada foi removido, só escondido até alguém clicar.
+    st.caption(
+        f"⚖️ Regra contratual: prazo de {PRAZO_CONTRATUAL_TAT_DIAS} dias aplicável às OS abertas a "
+        f"partir de {INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')}."
+    )
+    detalhes_regra = [
+        f"OS abertas antes de {INICIO_COBRANCA_PRAZO.strftime('%d/%m/%Y')} continuam com o TAT calculado "
+        "e exibido normalmente (tabela, médias) — só não pesam como violação de prazo (fora do prazo/"
+        "vence este mês/ranking/coluna \"dias até vencer\")."
     ]
     if recuperadas_no_escopo:
-        legendas.append(
+        detalhes_regra.append(
             f"🆕 {recuperadas_no_escopo} OS desse escopo não estavam na nossa planilha geral (fecharam antes "
             "de existir nosso controle) — recuperadas cruzando com a RMA da empresa."
         )
     if calculados:
-        legendas.append(
+        detalhes_regra.append(
             f"Dos {len(com_tat_empresa)} itens com TAT real, {calculados} foram calculados por nós "
             "(devolução da RMA − início), não reportados pela empresa — ver coluna \"Fonte\" na tabela."
         )
-    st.caption(" · ".join(legendas))
+    with st.expander("Entenda a regra contratual"):
+        for texto in detalhes_regra:
+            st.caption(texto)
 
     # Donuts + TAT por local direto na tela (não mais dentro de expander)
     # — pedido do Wallace via imagem de referência: "reintroduzir dois
@@ -582,21 +619,27 @@ def _secao_estatisticas_tat(df):
     # — "TAT médio por local" com mais espaço relativo (1.6 dos 3.6
     # totais, contra 1 dos 2 donuts) pra caber os nomes de local mais
     # compridos sem cortar.
-    _ALTURA_DONUT = 260
-    _LEGENDA_DONUT = dict(orientation="h", yanchor="top", y=-0.1, xanchor="center", x=0.5)
-    g1, g2, g3 = st.columns([1, 1, 1.6])
+    # 2026-08-24, 3ª rodada ("aumentar bastante os donuts... 65-75% da
+    # altura útil... TAT por local um dos principais gráficos"): altura
+    # 260 → 320, furo 0.55 → 0.5 (donut mais "cheio"), texto/legenda
+    # maiores. Proporção da linha ~28/28/44 (pedido do Wallace), aqui
+    # como st.columns([28, 28, 44]).
+    _ALTURA_DONUT = 320
+    _LEGENDA_DONUT = dict(orientation="h", yanchor="top", y=-0.08, xanchor="center", x=0.5, font=dict(size=12))
+    g1, g2, g3 = st.columns([28, 28, 44])
     with g1, st.container(border=True):
         st.caption("Com empresa x entregue")
         contagem_grupo = escopo_df["grupo"].value_counts().reset_index()
         contagem_grupo.columns = ["grupo", "quantidade"]
         fig_grupo = px.pie(
-            contagem_grupo, names="grupo", values="quantidade", hole=0.55,
+            contagem_grupo, names="grupo", values="quantidade", hole=0.5,
             color="grupo",
             color_discrete_map={"Com a empresa e terceirizados": AMBER, "Entregue (falta burocracia)": STATUS["good"]},
         )
-        fig_grupo.update_traces(textinfo="value+percent", textfont_size=12)
+        fig_grupo.update_traces(textinfo="value+percent", textfont_size=14)
         fig_grupo.update_layout(legend=_LEGENDA_DONUT)
         layout_grafico(fig_grupo, altura=_ALTURA_DONUT)
+        fig_grupo.update_layout(margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig_grupo, width="stretch", key="rep_donut_grupo")
 
     with g2, st.container(border=True):
@@ -606,13 +649,14 @@ def _secao_estatisticas_tat(df):
             "quantidade": [len(dentro_prazo), len(fora_prazo)],
         })
         fig_prazo = px.pie(
-            contagem_prazo, names="situacao", values="quantidade", hole=0.55,
+            contagem_prazo, names="situacao", values="quantidade", hole=0.5,
             color="situacao",
             color_discrete_map={"Dentro do prazo": STATUS["good"], "Fora do prazo": STATUS["critical"]},
         )
-        fig_prazo.update_traces(textinfo="value+percent", textfont_size=12)
+        fig_prazo.update_traces(textinfo="value+percent", textfont_size=14)
         fig_prazo.update_layout(legend=_LEGENDA_DONUT)
         layout_grafico(fig_prazo, altura=_ALTURA_DONUT)
+        fig_prazo.update_layout(margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig_prazo, width="stretch", key="rep_donut_prazo")
 
     with g3, st.container(border=True):
@@ -637,14 +681,23 @@ def _secao_estatisticas_tat(df):
             # local estava crítico). Refinado no brief de design: só quem
             # passa do prazo fica vermelho (problema real); quem está dentro
             # fica num âmbar discreto/translúcido (identidade, não alarme).
+            #
+            # 2026-08-24, 3ª rodada ("hoje praticamente todas as barras
+            # estao vermelhas... isso deixa o grafico pesado... vermelho so
+            # como alerta"): o laranja `{AMBER}66` (40% opacidade) ficava
+            # visualmente MUITO fraco perto do vermelho sólido — mesmo
+            # tendo poucos locais fora do prazo, o gráfico "parecia" quase
+            # todo vermelho por contraste. Trocado pro AMBER sólido (mesma
+            # regra de sempre: > limite = vermelho, senão laranja — só a
+            # opacidade mudou, a REGRA não).
             cores_barras = [
-                STATUS["critical"] if v > PRAZO_CONTRATUAL_TAT_DIAS else f"{AMBER}66"
+                STATUS["critical"] if v > PRAZO_CONTRATUAL_TAT_DIAS else AMBER
                 for v in media_local["TAT médio (dias)"]
             ]
             fig_local = go.Figure(go.Bar(
                 x=media_local["TAT médio (dias)"], y=media_local["Onde se encontra"],
                 orientation="h", marker_color=cores_barras,
-                text=media_local["TAT médio (dias)"], textposition="outside", textfont_size=11,
+                text=media_local["TAT médio (dias)"], textposition="outside", textfont_size=13,
                 customdata=media_local["Quantidade"],
                 hovertemplate="%{y}<br>TAT médio: %{x} dias<br>Quantidade: %{customdata}<extra></extra>",
             ))
@@ -654,9 +707,13 @@ def _secao_estatisticas_tat(df):
             # não é um problema, é só a referência de onde o prazo vence).
             fig_local.add_vline(x=PRAZO_CONTRATUAL_TAT_DIAS, line_dash="dash", line_color=AMBER,
                                  annotation_text=f"Limite — {PRAZO_CONTRATUAL_TAT_DIAS}d",
-                                 annotation_font_color=AMBER, annotation_font_size=11)
-            fig_local.update_layout(yaxis_title="", xaxis_title="")
-            layout_grafico(fig_local, altura=max(_ALTURA_DONUT, 24 * len(media_local)))
+                                 annotation_font_color=AMBER, annotation_font_size=12)
+            fig_local.update_layout(yaxis_title="", xaxis_title="", bargap=0.18)
+            fig_local.update_yaxes(tickfont=dict(size=12))
+            # Altura maior (26px/linha, era 24) e piso mais alto (360, era
+            # igual ao donut de 260) — pedido: "gráfico deve ser um dos
+            # principais da tela".
+            layout_grafico(fig_local, altura=max(360, 26 * len(media_local)))
             # `automargin` DEPOIS de `layout_grafico()` (que fixa margin.l=10
             # por padrão pros outros gráficos) — nomes de local como "Em
             # processo interno / não informado pela empresa" são bem
@@ -716,13 +773,18 @@ def _secao_estatisticas_tat(df):
                     axis=1,
                 )
             )
-            st.dataframe(styler_piores, hide_index=True, width="stretch", height=340)
+            # Altura maior + linhas mais altas (`row_height`, 2026-08-24, 3ª
+            # rodada: "aumentar a altura do container... nao deixar a
+            # tabela espremida") — 10 linhas + cabeçalho cabem confortável
+            # em ~420px com row_height=36 (era height=340 sem row_height,
+            # ficava com as 10 linhas espremidas).
+            st.dataframe(styler_piores, hide_index=True, width="stretch", height=420, row_height=36)
 
     with t2, st.container(border=True):
         st.caption("Histórico mensal de aberturas (OS)")
         contagem_hist = _dados_historico_mensal(df).tail(12)
         st.plotly_chart(
-            _figura_historico_mensal(contagem_hist, altura=340), width="stretch",
+            _figura_historico_mensal(contagem_hist, altura=420), width="stretch",
             key="rep_hist_mensal_compacto",
         )
 

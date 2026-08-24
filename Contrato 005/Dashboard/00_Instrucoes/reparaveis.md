@@ -726,3 +726,70 @@ resolvida e não foi o que o Wallace reclamou dessa vez.
 Testado ao vivo: página inteira (KPIs + 3 gráficos + Top 10/histórico +
 fluxo "como os números se conectam") cabe em ~3 telas de rolagem, contra
 ~4-5 da rodada anterior.
+
+## 4ª rodada de ajuste visual — "aumentar gráficos, subir conteúdo, melhorar proporções" (mesmo dia)
+
+Prompt novo do Wallace, 15 itens numerados, todos de apresentação
+("não alterar lógica, dados, cálculos ou filtros"). Aplicado:
+
+- **Texto explicativo curto** (item 10): a frase grande vira uma linha
+  só (`⚖️ Regra contratual: prazo de 110 dias aplicável às OS abertas a
+  partir de 01/07/2026.`) + expander novo **"Entenda a regra
+  contratual"** com o resto do conteúdo (nada removido, só escondido).
+- **KPIs maiores** (item 9): valor principal 1.55rem → 1.85rem, rótulo
+  secundário .66rem → .62rem, mais espaço entre grupos (1.5rem → 1.9rem).
+  Cores continuam as mesmas de sempre (branco/INK padrão, STATUS good/
+  critical só em Prazo, nunca AMBER como status).
+- **Donuts maiores** (item 2): altura 260 → 320, furo 0.55 → 0.5,
+  texto/legenda maiores (12→14, com `font` explícito na legenda).
+- **TAT por local maior + cor corrigida** (itens 3 e 4): altura mínima
+  260 → 360, 26px/linha (era 24), barras mais grossas (`bargap` 
+  padrão → 0.18), texto/rótulo maiores (11→13, tickfont 12). A cor
+  "dentro do prazo" trocou de `{AMBER}66` (40% opacidade, ficava pálida
+  perto do vermelho sólido, dando impressão de "quase tudo vermelho"
+  mesmo quando não era) pro AMBER sólido — mesma regra de sempre
+  (> 110d = vermelho), só a opacidade mudou. **Checado nos dados reais**:
+  hoje (24/08/2026) NENHUM local tem média ≤ 110 dias (WILLIAM, o
+  melhor, já está em 139) — o gráfico aparece todo vermelho porque É
+  mesmo assim na realidade, não por bug de cor; reportado ao Wallace.
+- **Proporção da linha de gráficos** (item 11): `st.columns([1, 1,
+  1.6])` → `st.columns([28, 28, 44])` (pedido explícito do Wallace),
+  na prática quase a mesma proporção de antes.
+- **Tabela Top 10 maior** (item 5): `height=340` sem `row_height` →
+  `height=420, row_height=36` (Streamlit 1.58 tem esse parâmetro) — as
+  10 linhas cabem confortáveis, sem espremer. Fonte/contraste de
+  cabeçalho não são controláveis via `st.dataframe` (renderiza num grid
+  canvas — glide-data-grid — que ignora `font-size` do Styler pandas,
+  só respeita `color`/`background-color`; documentado aqui pra não
+  tentar de novo à toa numa próxima rodada).
+- **Histórico mensal maior** (item 6): altura 340 → 420 (só na Visão
+  Geral; a aba "Histórico" cheia continua com o padrão de 320, ela já
+  tinha espaço de sobra), barras mais grossas (`bargap` 0.3 → 0.2),
+  texto maior (11→13), rótulo do mês com `tickangle=-35` fixo (Plotly
+  deixava rodar quase 90° sozinho) — mudança em
+  `_figura_historico_mensal()` (compartilhada com a aba "Histórico",
+  sem duplicar).
+- **"Como os números se conectam" mais homogêneo** (item 14): caixas
+  com `min-height` igual (7.2rem) pra todas ficarem do mesmo tamanho
+  (antes as com "sub" — percentual — ficavam mais altas que "OS
+  totais"/"OS fechadas", que não têm), números maiores (1.5rem →
+  1.9rem), seta maior, borda 8px → 10px. Cores continuam as mesmas:
+  laranja só em "com empresa" (identidade), verde só em "entregue"
+  (positivo), sem cor especial (LINE/branco) em totais/fechadas.
+
+**Itens 7/8 (arredondar containers, fundo diferenciado) — parcialmente
+não aplicáveis**: inspecionado ao vivo via DOM (`getComputedStyle`) —
+`st.container(border=True)` no Streamlit 1.58 já usa
+`border-radius: 8px` nativo (dentro do range pedido, 8-12px) e não tem
+nenhum `data-testid` específico tipo "BorderWrapper" pra diferenciar de
+um container comum sem borda — só um hash de classe emotion
+(`st-emotion-cache-xxxxx`) que muda entre builds/versões do Streamlit,
+não é seguro pra CSS fixo (quebraria num próximo `pip install --upgrade
+streamlit` sem aviso nenhum). Optado por **não** injetar CSS frágil
+pra mudar cor de fundo desses containers — o border-radius nativo já
+atende o pedido, e o contraste "muita coisa preta" já tinha sido
+resolvido na 3ª rodada só com a borda.
+
+Testado ao vivo nos 3 escopos, incluindo "Fechadas" com dataframe vazio
+(o `row_height` novo não quebra o caminho de "sem OS" — esse caso nem
+chama `st.dataframe`, só mostra uma legenda).
