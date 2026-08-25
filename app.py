@@ -127,17 +127,27 @@ def _aplicar_css_home():
 
         .topbar {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
+            row-gap: 10px;
             margin-bottom: 20px;
             padding: 12px 18px;
             background: rgba(20,25,35,0.55);
             border: 1px solid rgba(244,166,42,0.16);
             border-radius: 14px;
+            /* 2026-08-25 — Wallace: "tem uma barra de descer na tela
+            inicial, nada haver". Sem `flex-wrap`, essa faixa (nome +
+            selo "Ambiente Streamlit" + texto + "Online") não cabia em
+            tela estreita (celular) e empurrava a PÁGINA INTEIRA mais
+            larga que a viewport, criando uma barra de rolagem horizontal
+            estranha só por causa dessa faixa. Agora quebra em 2 linhas
+            quando não cabe, sem estourar a largura de nada. */
         }
 
         .brand-left {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 10px;
             font-size: 16px;
@@ -164,7 +174,7 @@ def _aplicar_css_home():
             margin-left: 10px;
         }
 
-        .top-right { display: flex; align-items: center; gap: 14px; color: #A6B2C1; font-size: 13px; }
+        .top-right { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; color: #A6B2C1; font-size: 13px; }
 
         .top-online {
             display: inline-flex; align-items: center; gap: 6px;
