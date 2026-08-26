@@ -13123,3 +13123,5 @@ data_snapshot,numero_ordem,part_number,categoria,destino,anv,status,quantidade
 2026-08-26,366,C662504-0101,R,BABR,2720,Pendente,1.0
 2026-08-26,367,S1232-505,C,BABR,2721,Pendente,1.0
 2026-08-26,368,2641010-3,T,BANT,2729,Pendente,1.0
+2026-08-26,369,C662504-0101,T,BABR,2709,Pendente,1.0
+2026-08-26,370,4626,C,BABE,2731,Pendente,1.0
