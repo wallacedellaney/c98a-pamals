@@ -251,6 +251,16 @@ def _distribuicao_situacao(aer):
     )
 
 
+def _texto_ou_traco(valor):
+    """Uma célula de texto vazia ("nenhuma aeronave entra essa semana") vira
+    NaN depois do roundtrip pelo Excel — `valor or "—"` não pega esse caso
+    porque NaN é "truthy" em Python (`nan or "—"` retorna nan, não "—"),
+    e o f-string acaba imprimindo a string "nan" na tela."""
+    if not isinstance(valor, str) or not valor:
+        return "—"
+    return valor
+
+
 def _previsoes(rel):
     st.markdown("##### Previsão semanal")
     disp_hoje = int(rel["disponiveis_hoje"])
@@ -262,7 +272,7 @@ def _previsoes(rel):
         f'<div class="disp-alerta-card">'
         f'<div style="font-size:1.1rem;"><strong>{disp_hoje} → {disp_semana}</strong> disponíveis '
         f'<span style="color:{SECONDARY};">({"+" if disp_semana >= disp_hoje else ""}{disp_semana - disp_hoje})</span></div>'
-        f'<div style="color:{SECONDARY};font-size:0.85rem;margin-top:0.2rem;">Entram: {rel["previsao_semana_disponiveis_novas"] or "—"}</div>'
+        f'<div style="color:{SECONDARY};font-size:0.85rem;margin-top:0.2rem;">Entram: {_texto_ou_traco(rel["previsao_semana_disponiveis_novas"])}</div>'
         f'</div>',
         unsafe_allow_html=True,
     )
@@ -271,7 +281,7 @@ def _previsoes(rel):
         f'<div class="disp-alerta-card">'
         f'<div style="font-size:1.1rem;"><strong>{mont_hoje} → {mont_semana}</strong> montadas '
         f'<span style="color:{SECONDARY};">({"+" if mont_semana >= mont_hoje else ""}{mont_semana - mont_hoje})</span></div>'
-        f'<div style="color:{SECONDARY};font-size:0.85rem;margin-top:0.2rem;">Entram: {rel["previsao_semana_montadas_novas"] or "—"}</div>'
+        f'<div style="color:{SECONDARY};font-size:0.85rem;margin-top:0.2rem;">Entram: {_texto_ou_traco(rel["previsao_semana_montadas_novas"])}</div>'
         f'</div>',
         unsafe_allow_html=True,
     )
