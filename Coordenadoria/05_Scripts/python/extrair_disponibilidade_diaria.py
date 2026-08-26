@@ -4,7 +4,9 @@ salvo em .txt) de 01_Bases_Originais/Disponibilidade_Diaria/ e gera
 
 Formato de origem (ver 00_Instrucoes/disponibilidade_diaria.md):
 * Título: "*C-98 - DD/MM/AAAA*"
-* Resumo: "XX D / XX M" seguido de "(XX DI / XX DO / XX II / XX IN / XX ITR / XX IS / XX IP)"
+* Resumo: "XX D / XX M" seguido de "(XX DI / XX DO / XX II / XX IN / XX ITR / [XX IT /] XX IS / XX IP)"
+  — o grupo "IT" (indisponível por instrumentação) é opcional: só passou a
+  aparecer nos relatórios a partir de 2026-08-25.
 * "*Previsão até o final do dia: XX D / XX M*"
 * "*Previsão de disponibilidade semanal*" com blocos "*Disponíveis:* XX" e
   "*Montadas:* XX", cada um seguido de uma linha "- matricula, matricula, ..."
@@ -41,7 +43,8 @@ RE_NOME_DOC = re.compile(r"Disponibilidade\s+(\d{2})/(\d{2})")
 RE_TITULO = re.compile(r"^\*C-98\s*-\s*(\d{2}/\d{2}/\d{4})\*$")
 RE_RESUMO_DM = re.compile(r"^(\d+)\s*D\s*/\s*(\d+)\s*M$")
 RE_CODIGOS = re.compile(
-    r"^\((\d+)\s*DI\s*/\s*(\d+)\s*DO\s*/\s*(\d+)\s*II\s*/\s*(\d+)\s*IN\s*/\s*(\d+)\s*ITR\s*/\s*(\d+)\s*IS\s*/\s*(\d+)\s*IP\)$"
+    r"^\((\d+)\s*DI\s*/\s*(\d+)\s*DO\s*/\s*(\d+)\s*II\s*/\s*(\d+)\s*IN\s*/\s*(\d+)\s*ITR\s*/\s*"
+    r"(?:(\d+)\s*IT\s*/\s*)?(\d+)\s*IS\s*/\s*(\d+)\s*IP\)$"
 )
 RE_PREVISAO_FIM_DIA = re.compile(r"^\*Previsão até o final do dia:\s*(\d+)\s*D\s*/\s*(\d+)\s*M\*$")
 RE_DISPONIVEIS_SEMANA = re.compile(r"^\*Disponíveis:\*\s*(\d+)$")
@@ -122,9 +125,19 @@ def parse_relatorio(caminho):
 
         m = RE_CODIGOS.match(linha)
         if m:
-            resumo["di"], resumo["do_"], resumo["ii"], resumo["in_"], resumo["itr"], resumo["is_"], resumo["ip"] = (
-                int(x) for x in m.groups()
-            )
+            di, do_, ii, in_, itr, it, is_, ip = m.groups()
+            resumo["di"] = int(di)
+            resumo["do_"] = int(do_)
+            resumo["ii"] = int(ii)
+            resumo["in_"] = int(in_)
+            resumo["itr"] = int(itr)
+            # "IT" (indisponível por instrumentação, atividade do IPEV) é um
+            # código novo, só apareceu pela 1ª vez em 2026-08-25 — antes disso
+            # o resumo nunca trazia esse grupo, por isso é opcional na regex
+            # e cai em 0 quando ausente (ver 00_Instrucoes/disponibilidade_diaria.md).
+            resumo["it"] = int(it) if it is not None else 0
+            resumo["is_"] = int(is_)
+            resumo["ip"] = int(ip)
             i += 1
             continue
 
@@ -232,7 +245,7 @@ def extrair():
     # quantidade de aeronaves listadas naquele relatório — checagem de
     # consistência (ver secao 31 do briefing).
     for _, rel in df_relatorios.iterrows():
-        soma_codigos = rel[["di", "do_", "ii", "in_", "itr", "is_", "ip"]].sum()
+        soma_codigos = rel[["di", "do_", "ii", "in_", "itr", "it", "is_", "ip"]].sum()
         qtd_listada = len(df_aeronaves[df_aeronaves["data_referencia"] == rel["data_referencia"]])
         if soma_codigos != qtd_listada:
             inconsistencias.append(

@@ -21,8 +21,8 @@ from coordenadoria.components.paleta import (
 )
 from coordenadoria.utils import atualizar_dados_disponibilidade, DISPONIBILIDADE_PASTA_URL
 
-ORDEM_SITUACAO = ["DI", "DO", "II", "IN", "ITR", "IS", "IP"]
-COLUNAS_SITUACAO_RESUMO = ["di", "do_", "ii", "in_", "itr", "is_", "ip"]
+ORDEM_SITUACAO = ["DI", "DO", "II", "IN", "ITR", "IT", "IS", "IP"]
+COLUNAS_SITUACAO_RESUMO = ["di", "do_", "ii", "in_", "itr", "it", "is_", "ip"]
 
 # Pasta do Cômputo Mensal (Contrato 005) — pedido do Wallace, 2026-08-14:
 # jogar as linhas "contratual" e "real VEE ONE" (calculadas lá, ver
@@ -226,8 +226,9 @@ def _cards_indicadores(rel):
     _card_indicador(l2[2], f"{pct_esforco:.2f}%".replace(".", ","), "Esforço aéreo realizado",
                      f"{rel['esforco_anual_realizado']} de {rel['esforco_anual_previsto']}",
                      AMBER, barra_pct=pct_esforco, barra_cor=AMBER)
-    total_pendentes = int(rel["ii"]) + int(rel["in_"]) + int(rel["itr"]) + int(rel["is_"]) + int(rel["ip"])
-    _card_indicador(l2[3], total_pendentes, "Aeronaves indisponíveis", "II + IN + ITR + IS + IP",
+    total_pendentes = (int(rel["ii"]) + int(rel["in_"]) + int(rel["itr"]) + int(rel.get("it", 0) or 0)
+                       + int(rel["is_"]) + int(rel["ip"]))
+    _card_indicador(l2[3], total_pendentes, "Aeronaves indisponíveis", "II + IN + ITR + IT + IS + IP",
                      STATUS["critical"] if total_pendentes else STATUS["good"])
 
 
@@ -481,7 +482,8 @@ def _tabela_semana(relatorios, datas):
         rel = relatorios[relatorios["data_referencia"].dt.date == dia].iloc[0]
         d, m = int(rel["disponiveis_hoje"]), int(rel["montadas_hoje"])
         pct = round(100 * d / m) if m else 0
-        indisponiveis = int(rel["ii"]) + int(rel["in_"]) + int(rel["itr"]) + int(rel["is_"]) + int(rel["ip"])
+        indisponiveis = (int(rel["ii"]) + int(rel["in_"]) + int(rel["itr"]) + int(rel.get("it", 0) or 0)
+                          + int(rel["is_"]) + int(rel["ip"]))
         linhas.append({"Dia": nome, "Data": dia.strftime("%d/%m"), "D": str(d), "M": str(m),
                         "% disponibilidade": f"{pct}%", "Indisponíveis": str(indisponiveis)})
 

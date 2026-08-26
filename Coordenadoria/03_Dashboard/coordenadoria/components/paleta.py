@@ -68,6 +68,7 @@ COR_SITUACAO = {
     "II": AMBER,
     "IN": STATUS["critical"],
     "ITR": SECONDARY,
+    "IT": CATEGORICA[4],  # laranja — só apareceu nos relatórios a partir de 2026-08-25
     "IS": CATEGORICA[2],  # roxo
     "IP": "#5a4632",
 }
@@ -78,9 +79,10 @@ NOME_SITUACAO = {
     "II": "Manutenção programada",
     "IN": "Manutenção não programada",
     "ITR": "Aguardando transporte",
+    "IT": "Indisponível por instrumentação (IPEV)",
     "IS": "Aguardando suprimento",
     "IP": "Indisponibilidade prolongada",
 }
 
-ICONE_SITUACAO = {"DI": "✅", "DO": "🟡", "II": "🔧", "IN": "⚠️", "ITR": "🚚", "IS": "📦", "IP": "⛔"}
-COR_MD_SITUACAO = {"DI": "green", "DO": "green", "II": "orange", "IN": "red", "ITR": "gray", "IS": "violet", "IP": "red"}
+ICONE_SITUACAO = {"DI": "✅", "DO": "🟡", "II": "🔧", "IN": "⚠️", "ITR": "🚚", "IT": "🎛️", "IS": "📦", "IP": "⛔"}
+COR_MD_SITUACAO = {"DI": "green", "DO": "green", "II": "orange", "IN": "red", "ITR": "gray", "IT": "blue", "IS": "violet", "IP": "red"}
