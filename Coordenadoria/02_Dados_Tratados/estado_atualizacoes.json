@@ -23,8 +23,8 @@
   "motores": {
     "remote_modified_time": "2026-08-26T16:29:43.604Z",
     "local_updated_at": "2026-08-26T21:40:40.417622-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 39,
-    "last_error": null
+    "last_error": "'Worksheet OS does not exist.'"
   }
 }
