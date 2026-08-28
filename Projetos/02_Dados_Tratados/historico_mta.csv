@@ -3233,8 +3233,8 @@ data_snapshot,linha,situacao_consolidada,aprovado,tramite,valor,executora,pacote
 2026-08-27,64780,Sem informação,SIM,PROCESSADO,3306000.0,CABW,RAP,SOB DEMANDA,SIM
 2026-08-28,10300,"Aprovado, aguardando atendimento",SIM,,135000.0,CABW,A,REQUISIÇÃO,Não
 2026-08-28,10760,"Aprovado, aguardando atendimento",SIM,,400000.0,FMS,A,REQUISIÇÃO,SIM
-2026-08-28,10780,"Aprovado, aguardando atendimento",SIM,,430000.0,CABW,A,REQUISIÇÃO,SIM
-2026-08-28,10800,"Aprovado, aguardando atendimento",SIM,,425000.0,CABW,A,REQUISIÇÃO,SIM
+2026-08-28,10780,Sem informação,SIM,CANCELADO,,CABW,A,REQUISIÇÃO,SIM
+2026-08-28,10800,"Aprovado, aguardando atendimento",SIM,,384180.0,CABW,A,REQUISIÇÃO,SIM
 2026-08-28,11680,"Aprovado, aguardando atendimento",SIM,,563000.0,CABW,A,REQUISIÇÃO,SIM
 2026-08-28,11700,Atendido,SIM,ATENDIDO,3799999.6,CELOG,A,SOB DEMANDA,SIM
 2026-08-28,11720,"Aprovado, aguardando atendimento",SIM,,430000.0,CABW,A,REQUISIÇÃO,SIM
@@ -3316,3 +3316,4 @@ data_snapshot,linha,situacao_consolidada,aprovado,tramite,valor,executora,pacote
 2026-08-28,64340,"Aprovado, aguardando atendimento",SIM,,4394700.0,CABW,C,SOB DEMANDA,SIM
 2026-08-28,64760,Sem informação,SIM,PROCESSADO,3306000.0,CABW,RAP,SOB DEMANDA,SIM
 2026-08-28,64780,Sem informação,SIM,PROCESSADO,3306000.0,CABW,RAP,SOB DEMANDA,SIM
+2026-08-28,64840,"Aprovado, aguardando atendimento",SIM,,470820.0,CABW,A,CONTRATO,SIM
