@@ -25,6 +25,6 @@
     "local_updated_at": "2026-08-26T21:40:40.417622-03:00",
     "status": "erro",
     "record_count": 39,
-    "last_error": "'Worksheet OS does not exist.'"
+    "last_error": "The read operation timed out"
   }
 }
