@@ -742,17 +742,22 @@ def _construir_slide_atrasos_situacao(slide, abertas, largura_total):
                              topo + Emu(460000), Emu(300000), Pt(10), 300000)
 
 
-def _construir_slide_atrasos_entregas(slide, concluidas_mes, resumo, largura_total, n_amostra=10):
+def _construir_slide_atrasos_entregas(slide, resumo, largura_total):
     """Slide "Atrasos — Entregas no mês" — resumo + rosca (No prazo/
-    Atrasado) + amostra, mesma seção "Entregas no mês de referência" do
-    site. Formato do resumo pedido pelo Wallace em 2026-07-10 (ver
-    00_Instrucoes/atrasos.md). Alturas fixas e conferidas pra caber tudo
-    (ver bug parecido — gráfico sobrepondo tabela — corrigido nos slides de
-    Reparáveis, 2026-07-12)."""
+    Atrasado), mesma seção "Entregas no mês de referência" do site. Formato
+    do resumo pedido pelo Wallace em 2026-07-10 (ver 00_Instrucoes/atrasos.md).
+    Alturas fixas e conferidas pra caber tudo (ver bug parecido — gráfico
+    sobrepondo tabela — corrigido nos slides de Reparáveis, 2026-07-12).
+
+    2026-09-01: não desenha mais uma amostra de 10 linhas aqui — o Wallace
+    pediu a relação COMPLETA das entregas do mês ("tem toda relação de
+    itens entregues no mes"). A lista inteira agora entra em lâminas
+    paginadas logo depois desta (`_construir_paginas_tabela`, mesmo padrão
+    já usado pra Empréstimos/Reparáveis desde 2026-07-12: "se não couber a
+    gente divide o slide"), chamada em `gerar_apresentacao()`."""
     ALTURA_RESUMO = Emu(300000)
     ALTURA_LEGENDA = Emu(320000)
     ALTURA_GRAFICO = Emu(2200000)
-    ALTURA_LINHA_TABELA = Emu(220000)
     GAP = Emu(150000)
 
     topo = _titulo_slide(slide, "Atrasos — Entregas no Mês de Referência", largura_total, topo=Emu(150000), tamanho=Pt(20))
@@ -778,18 +783,13 @@ def _construir_slide_atrasos_entregas(slide, concluidas_mes, resumo, largura_tot
         Emu(300000), top_grafico + ALTURA_LEGENDA, Emu(3200000), ALTURA_GRAFICO,
     )
 
-    top_tabela = top_grafico
-    amostra = concluidas_mes.head(n_amostra)
-    _construir_tabela_dados(
-        slide, amostra, COLUNAS_ATRASOS_ENTREGAS, largura_total,
-        top_tabela, Emu(3200000) + Emu(400000), Pt(9), int(ALTURA_LINHA_TABELA),
-    )
-
 
 def _construir_slide_pagamentos(slide, df, contrato, largura_total):
     """Slide de Pagamentos — pedido do Wallace em 2026-07-12 ("os pagamentos
-    vc pega no nosso drive"): sai a imagem da referência, entra a tabela
-    nativa (29 notas fiscais, cabem numa lâmina só) + o resumo do contrato."""
+    vc pega no nosso drive"): sai a imagem da referência, entra o resumo do
+    contrato (a tabela nativa entra em lâminas paginadas logo depois,
+    ver `gerar_apresentacao()` — pedido do Wallace em 2026-09-01, "os
+    pagamentos tb dividido", já não cabia mais numa lâmina só)."""
     _remover_imagens(slide)
     for shape in list(slide.shapes):
         if shape.has_text_frame:
@@ -806,8 +806,6 @@ def _construir_slide_pagamentos(slide, df, contrato, largura_total):
     run.font.size = Pt(12)
     run.font.bold = True
     run.font.color.rgb = COR_AMBER
-
-    _construir_tabela_dados(slide, df, COLUNAS_PAGAMENTO, largura_total, topo + Emu(460000), Emu(300000), Pt(9), 190000)
 
 
 def _paginar(df, linhas_primeira, linhas_seguintes):
@@ -993,6 +991,17 @@ def gerar_apresentacao(ano, mes, caminho_saida, caminho_referencia=None):
     slide_estatisticas_emprestimos = _slide_em_branco(prs, indice_pagamentos_atual)
     _construir_slide_emprestimos_estatisticas(slide_estatisticas_emprestimos, df_emprestimos_mes, f"Empréstimos — Estatísticas ({mes_nome})", largura_total)
 
+    # 2026-09-01, pedido do Wallace ("os pagamentos tb dividido"): a tabela
+    # de pagamentos não cabe mais numa lâmina só — reaproveita o mesmo
+    # paginador dos Empréstimos/Reparáveis. Reconsulta o índice atual de
+    # elemento_pagamentos porque a inserção logo acima (estatísticas de
+    # empréstimos) empurrou ele pra frente.
+    indice_pagamentos_novo = list(xml_slides).index(elemento_pagamentos)
+    _construir_paginas_tabela(
+        prs, indice_pagamentos_novo + 1, df_pagamentos, COLUNAS_PAGAMENTO,
+        "Pagamentos", largura_total, Pt(9), 190000,
+    )
+
     indice_emprestimos_atual = list(xml_slides).index(elemento_emprestimos)
     ultimo_indice_lista_emprestimos = _construir_paginas_tabela(
         prs, indice_emprestimos_atual - 1, df_emprestimos_mes, COLUNAS_EMPRESTIMO,
@@ -1014,7 +1023,15 @@ def gerar_apresentacao(ano, mes, caminho_saida, caminho_referencia=None):
     # (indice_dashboard_atrasos_atual - 1) + 1 = indice_dashboard_atrasos_atual —
     # inserir o próximo logo depois dele, sem precisar relocalizar via objeto.
     slide_atrasos_entregas = _slide_em_branco(prs, indice_dashboard_atrasos_atual)
-    _construir_slide_atrasos_entregas(slide_atrasos_entregas, atrasos_concluidas_mes, atrasos_resumo, largura_total)
+    _construir_slide_atrasos_entregas(slide_atrasos_entregas, atrasos_resumo, largura_total)
+
+    # 2026-09-01, pedido do Wallace ("tem toda relação de itens entregues no
+    # mes, sem desconfigurar"): lista completa (não só amostra de 10) em
+    # lâminas paginadas, mesmo paginador dos Empréstimos/Reparáveis/Pagamentos.
+    _construir_paginas_tabela(
+        prs, indice_dashboard_atrasos_atual + 1, atrasos_concluidas_mes, COLUNAS_ATRASOS_ENTREGAS,
+        "Atrasos — Entregas no Mês de Referência", largura_total, Pt(9), 220000,
+    )
 
     elementos_remover = (
         [elemento_emprestimos, elemento_dashboard_emprestimos, elemento_reparaveis_todas,
