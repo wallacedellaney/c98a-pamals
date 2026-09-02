@@ -21,10 +21,10 @@
     "last_error": null
   },
   "motores": {
-    "remote_modified_time": "2026-08-26T16:29:43.604Z",
-    "local_updated_at": "2026-08-26T21:40:40.417622-03:00",
-    "status": "erro",
+    "remote_modified_time": "2026-08-27T17:07:39.588Z",
+    "local_updated_at": "2026-09-02T12:06:09.852858-03:00",
+    "status": "atualizado",
     "record_count": 39,
-    "last_error": "'Worksheet OS does not exist.'"
+    "last_error": null
   }
 }
