@@ -10,13 +10,17 @@ demais são cenário/simulação, rascunho ou instrução, não dado):
   cada motor vai bater TBO/HSI, com o comentário/nota da célula (quando
   existir) trazido junto — pedido do Wallace: "ja vi que tem comentarios
   dentro da caixas de tbo, hsi. vamos usar essas informacoes tb".
-- **OS** — ordens de serviço de motor em andamento.
 
-Gera 02_Dados_Tratados/base_motores_tratada.xlsx (4 abas: Situacao/Diagonal/
-OS/Helice). Ver 00_Instrucoes/motores.md — inclui as decisões de nomeação
+Gera 02_Dados_Tratados/base_motores_tratada.xlsx (3 abas: Situacao/Diagonal/
+Helice). Ver 00_Instrucoes/motores.md — inclui as decisões de nomeação
 das colunas ambíguas (3 colunas "DATA" repetidas com nomes diferentes na
 planilha original de SILOMS/Helice — significado exato não confirmado com
 o Wallace, nomeadas data_1/data_2 defensivamente).
+
+2026-09-02: aba "OS" (ordens de serviço de motor em andamento) removida —
+a fonte parou de ter essa aba (`Worksheet OS does not exist`, erro
+recorrente desde 2026-08-26) e o Wallace confirmou que pode tirar de vez,
+não só parar de dar erro (extração + aba "Ordens de Serviço" do site).
 
 Fonte é uma planilha PESSOAL do Wallace (dono fred_o_m@hotmail.com),
 compartilhada com a conta de serviço em 2026-07-15 — entrou na automação
@@ -71,18 +75,6 @@ COL_HELICE = {
     "numero_doc": 19, "data_doc": 20, "motivo": 21,
 }
 LINHA_INICIO_HELICE = 3
-
-COL_OS = {
-    "os": 3, "os_origem": 4, "tipo": 5, "status": 6, "data_status": 7,
-    "projeto": 8, "data_recebimento": 9, "pn": 10, "cff": 11, "nomenclatura": 12,
-    "sn": 13, "matricula": 14, "lote": 15, "item_nao_listado": 16, "solicitante": 17,
-    "quantidade": 18, "data_inicio_prev": 19, "data_fim_prev": 20,
-    "data_inicio_real": 21, "data_fim_real": 22, "prioridade": 23, "emergencia": 24,
-    "unidade_exec": 25, "setor_exec": 26, "solicitacao": 27, "unidade_solic": 28,
-    "setor_solic": 29, "pessoa_solicitante": 30, "comentarios": 31,
-}
-LINHA_INICIO_OS = 4
-CAMPOS_DATA_OS = {"data_status", "data_recebimento", "data_inicio_prev", "data_fim_prev", "data_inicio_real", "data_fim_real"}
 
 MESES_ABREV_FONTE = ["JAN", "FEV", "MAR", "ABR", "MAIO", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"]
 COL_DIAGONAL_META = {"serial": 0, "anv": 1, "tso": 2, "hr_disp": 3, "voo_mensal": 4, "hr_fim_ano_anv": 5, "mes_disp": 6}
@@ -155,30 +147,6 @@ def _extrair_situacao_generico(ws, colunas, linha_inicio):
                 registro[campo] = _texto(valor)
         linhas.append(registro)
     return pd.DataFrame(linhas, columns=list(colunas.keys()))
-
-
-def _extrair_os(wb, inconsistencias):
-    ws = wb["OS"]
-    linhas = []
-    ignoradas = 0
-    for row in ws.iter_rows(min_row=LINHA_INICIO_OS, values_only=True):
-        valor_os = row[COL_OS["os"]] if COL_OS["os"] < len(row) else None
-        if valor_os in (None, ""):
-            continue
-        if not isinstance(valor_os, (int, float)):
-            ignoradas += 1  # repetição de cabeçalho/sub-tabela por unidade executante — estrutural, não inconsistência
-            continue
-        registro = {}
-        for campo, idx in COL_OS.items():
-            valor = row[idx] if idx < len(row) else None
-            if campo in CAMPOS_DATA_OS:
-                registro[campo] = _data(valor)
-            elif campo in CAMPOS_ID:
-                registro[campo] = _texto_id(valor)
-            else:
-                registro[campo] = _texto(valor)
-        linhas.append(registro)
-    return pd.DataFrame(linhas, columns=list(COL_OS.keys()))
 
 
 def _numero_ou_none(valor):
@@ -309,13 +277,12 @@ def extrair(df_financeiro=None):
     wb = openpyxl.load_workbook(ARQUIVO_FONTE, data_only=True)
     df_situacao = _extrair_situacao_generico(wb["SILOMS"], COL_SITUACAO, LINHA_INICIO_SITUACAO)
     df_helice = _extrair_situacao_generico(wb["hélice"], COL_HELICE, LINHA_INICIO_HELICE)
-    df_os = _extrair_os(wb, inconsistencias)
     df_diagonal = _extrair_diagonal(wb, inconsistencias)
     df_diagonal_meta = _extrair_diagonal_metadados(wb)
     if df_financeiro is None:
         df_financeiro = _financeiro_existente()
     return {
-        "situacao": df_situacao, "diagonal": df_diagonal, "os": df_os, "helice": df_helice,
+        "situacao": df_situacao, "diagonal": df_diagonal, "helice": df_helice,
         "diagonal_meta": df_diagonal_meta, "financeiro": df_financeiro,
     }, inconsistencias
 
@@ -369,7 +336,6 @@ def main(df_financeiro=None):
         with pd.ExcelWriter(tmp) as writer:
             dados["situacao"].to_excel(writer, index=False, sheet_name="Situacao")
             dados["diagonal"].to_excel(writer, index=False, sheet_name="Diagonal")
-            dados["os"].to_excel(writer, index=False, sheet_name="OS")
             dados["helice"].to_excel(writer, index=False, sheet_name="Helice")
             dados["diagonal_meta"].to_excel(writer, index=False, sheet_name="DiagonalMeta")
             dados["financeiro"].to_excel(writer, index=False, sheet_name="Financeiro")

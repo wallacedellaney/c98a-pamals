@@ -60,7 +60,7 @@ FONTES = [
         "_chave": "diagonal_atualizado_em",
     },
     {
-        "Informação": "Motores (situação, TBO/HSI, OS, hélice)",
+        "Informação": "Motores (situação, TBO/HSI, hélice)",
         "De onde vem": 'Planilha pessoal "MOTORES C-98" (Google Sheets, Drive do Wallace)',
         "Como é atualizado": "Busca automática no Drive + reprocessa",
         "Frequência": "A cada 2h, seg-sex 8h-20h",

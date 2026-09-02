@@ -1,15 +1,17 @@
 """Página Motores — visão executiva de motores (SILOMS) e hélices, projeção
-de vencimento de TBO/HSI (Diagonal Nova, com os comentários das células) e
-ordens de serviço em andamento (OS). Fonte: planilha pessoal do Wallace
-"MOTORES C-98" (Google Drive) — ver 00_Instrucoes/motores.md.
+de vencimento de TBO/HSI (Diagonal Nova, com os comentários das células).
+Fonte: planilha pessoal do Wallace "MOTORES C-98" (Google Drive) — ver
+00_Instrucoes/motores.md.
 
 Redesenho executivo em 2026-07-14 (pedido do Wallace, spec detalhada):
-4 subabas (Visão Geral / Diagonal TBO/HSI / Ordens de Serviço / Hélices),
-cabeçalho enxuto, faixas de risco por cor (Vencido/Atenção/Normal a partir
-de % TBO voada), tabelas completas em expansível, filtros numa linha só.
-"Previsão" (perdas TBO/HSI/PNP, produção) ficou de fora por pedido do
-Wallace — precisa de outras abas da planilha (cenário/produção) ainda não
-extraídas.
+subabas (Visão Geral / Diagonal TBO/HSI / Hélices), cabeçalho enxuto,
+faixas de risco por cor (Vencido/Atenção/Normal a partir de % TBO voada),
+tabelas completas em expansível, filtros numa linha só. "Previsão" (perdas
+TBO/HSI/PNP, produção) ficou de fora por pedido do Wallace — precisa de
+outras abas da planilha (cenário/produção) ainda não extraídas.
+
+2026-09-02: aba "Ordens de Serviço" removida — a fonte parou de ter a aba
+"OS" (erro recorrente desde 2026-08-26), Wallace confirmou remover de vez.
 """
 
 import re
@@ -32,11 +34,6 @@ COR_CONDICAO = {
     "RECOLH": CYAN, "REMOV": SECONDARY,
 }
 
-# INT/REC/SOL — tradução do código de status da OS (melhor interpretação a
-# partir do vocabulário SILOMS; não confirmado literalmente com o Wallace,
-# ver 00_Instrucoes/motores.md).
-NOMES_STATUS_OS = {"INT": "Internado (em conserto)", "REC": "Recebida", "SOL": "Solicitada"}
-
 NOMES_SITUACAO = {
     "om": "OM", "pn": "PN", "sn": "SN", "fabricante": "Fabricante",
     "parcial_tso": "TSO", "totais_tsn": "TSN",
@@ -47,21 +44,6 @@ NOMES_SITUACAO = {
 }
 COLUNAS_SITUACAO_PRINCIPAIS = ["sn", "matricula", "om", "faixa_risco", "pct_tbo_voada", "condicao", "tbo", "motivo"]
 COLUNAS_SITUACAO_DETALHE = ["pn", "fabricante", "tipo", "controle", "parcial_tso", "totais_tsn", "numero_doc", "data_doc"]
-
-NOMES_OS = {
-    "os": "OS", "status_legivel": "Status", "tipo": "Tipo", "sn": "SN", "matricula": "Matrícula",
-    "nomenclatura": "Nomenclatura", "data_status": "Data Status", "data_inicio_real": "Início Real",
-    "data_fim_prev": "Fim Previsto", "prioridade": "Prioridade", "unidade_exec": "Unidade Exec.",
-    "solicitante": "Solicitante", "atrasada": "Atrasada?",
-    "os_origem": "OS Origem", "cff": "CFF", "data_recebimento": "Recebimento",
-    "data_inicio_prev": "Início Previsto", "data_fim_real": "Fim Real", "setor_exec": "Setor Exec.",
-    "unidade_solic": "Unidade Solic.", "setor_solic": "Setor Solic.",
-    "pessoa_solicitante": "Pessoa Solicitante", "comentarios": "Comentários",
-}
-COLUNAS_OS_PRINCIPAIS = ["os", "status_legivel", "sn", "matricula", "nomenclatura", "data_status", "data_fim_prev", "atrasada", "unidade_exec"]
-COLUNAS_OS_DETALHE = ["tipo", "os_origem", "cff", "prioridade", "data_recebimento", "data_inicio_prev",
-                       "data_inicio_real", "data_fim_real", "setor_exec", "solicitante", "unidade_solic",
-                       "setor_solic", "pessoa_solicitante", "comentarios"]
 
 
 def _faixa_risco(pct):
@@ -188,7 +170,7 @@ def _card_indicador(col, icone, valor, label, sub, cor):
 
 def render(dados):
     st.title("Motores")
-    st.caption('Fonte: planilha pessoal "MOTORES C-98" (Drive do Wallace) — SILOMS, Diagonal Nova, OS, Hélice.')
+    st.caption('Fonte: planilha pessoal "MOTORES C-98" (Drive do Wallace) — SILOMS, Diagonal Nova, Hélice.')
 
     col1, col2 = st.columns([4, 1])
     with col1:
@@ -207,8 +189,8 @@ def render(dados):
         return
     situacao = situacao.assign(faixa_risco=situacao["pct_tbo_voada"].apply(_faixa_risco))
 
-    aba_geral, aba_diagonal, aba_os, aba_helice = st.tabs(
-        ["Visão Geral", "Diagonal TBO/HSI", "Ordens de Serviço", "Hélices"]
+    aba_geral, aba_diagonal, aba_helice = st.tabs(
+        ["Visão Geral", "Diagonal TBO/HSI", "Hélices"]
     )
     with aba_geral:
         _aba_visao_geral(situacao, "motor", "motores_sit", historico=dados.get("motores_historico_situacao"))
@@ -218,8 +200,6 @@ def render(dados):
             historico=dados.get("motores_historico_diagonal"),
             financeiro=dados.get("motores_financeiro"),
         )
-    with aba_os:
-        _aba_os(dados.get("motores_os"))
     with aba_helice:
         helice = dados.get("motores_helice")
         if helice is None or helice.empty:
@@ -537,80 +517,3 @@ def _aba_diagonal(df, situacao, historico=None, financeiro=None):
                 },
                 titulo="",
             )
-
-
-def _aba_os(df):
-    if df is None or df.empty:
-        st.info("Sem ordens de serviço em andamento carregadas.")
-        return
-
-    df = df.assign(status_legivel=df["status"].map(NOMES_STATUS_OS).fillna(df["status"]))
-    hoje = pd.Timestamp(horario.hoje_br())
-    df["atrasada"] = (df["data_fim_prev"].notna() & (df["data_fim_prev"] < hoje) & df["data_fim_real"].isna()).map({True: "Sim", False: "Não"})
-    df["dias_no_status"] = (hoje - df["data_status"]).dt.days
-
-    por_status = df["status"].value_counts()
-    atrasadas = int((df["atrasada"] == "Sim").sum())
-
-    l1 = st.columns(5)
-    _card_indicador(l1[0], "📋", len(df), "OS em andamento", "total", INK)
-    _card_indicador(l1[1], "🏭", int(por_status.get("INT", 0)), "Internadas", "em conserto", AMBER)
-    _card_indicador(l1[2], "📥", int(por_status.get("REC", 0)), "Recebidas", "aguardando/recebidas", CYAN)
-    _card_indicador(l1[3], "🔴", atrasadas, "Atrasadas", "passou do fim previsto",
-                     STATUS["critical"] if atrasadas else STATUS["good"])
-    _card_indicador(l1[4], "🔩", df["sn"].nunique(), "Motores envolvidos", "SNs distintos", SECONDARY)
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.caption("Distribuição por Status (tempo médio no status, em dias)")
-        resumo = df.groupby("status_legivel").agg(quantidade=("os", "count"), dias_medio=("dias_no_status", "mean")).reset_index()
-        fig = px.bar(resumo.sort_values("quantidade"), x="quantidade", y="status_legivel", orientation="h",
-                     color_discrete_sequence=[AMBER])
-        fig.update_traces(
-            text=[f"{q} · média {d:.0f}d" for q, d in zip(resumo.sort_values("quantidade")["quantidade"], resumo.sort_values("quantidade")["dias_medio"])],
-            textposition="outside", cliponaxis=False,
-        )
-        fig.update_layout(xaxis_title="", yaxis_title="")
-        layout_grafico(fig, altura=230)
-        st.plotly_chart(fig, width="stretch", key="motores_os_status")
-
-    with col2:
-        st.caption("Distribuição por Unidade executante")
-        contagem = df["unidade_exec"].fillna("Não informado").value_counts().reset_index()
-        contagem.columns = ["unidade", "quantidade"]
-        fig = px.bar(contagem.sort_values("quantidade"), x="quantidade", y="unidade", orientation="h",
-                     color_discrete_sequence=[CYAN])
-        fig.update_traces(text=contagem.sort_values("quantidade")["quantidade"], textposition="outside", cliponaxis=False)
-        fig.update_layout(xaxis_title="", yaxis_title="")
-        layout_grafico(fig, altura=230)
-        st.plotly_chart(fig, width="stretch", key="motores_os_unidade")
-
-    st.markdown("##### Filtros")
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        status_f = st.multiselect("Status", sorted(df["status_legivel"].dropna().unique()), key="motores_os_f_status")
-    with c2:
-        unidade_f = st.multiselect("Unidade executante", sorted(df["unidade_exec"].dropna().unique(), key=str), key="motores_os_f_unidade")
-    with c3:
-        so_atrasadas = st.checkbox("Só atrasadas", key="motores_os_f_atrasada")
-
-    filtrado = df.copy()
-    if status_f:
-        filtrado = filtrado[filtrado["status_legivel"].isin(status_f)]
-    if unidade_f:
-        filtrado = filtrado[filtrado["unidade_exec"].isin(unidade_f)]
-    if so_atrasadas:
-        filtrado = filtrado[filtrado["atrasada"] == "Sim"]
-    st.caption(f"Exibindo {len(filtrado)} de {len(df)} ordens de serviço")
-
-    st.markdown("##### Tabela")
-    tabela = _preparar_tabela(filtrado, colunas_data=[
-        "data_status", "data_recebimento", "data_inicio_prev", "data_fim_prev", "data_inicio_real", "data_fim_real",
-    ])
-    colunas_ordem = [c for c in COLUNAS_OS_PRINCIPAIS + COLUNAS_OS_DETALHE if c in tabela.columns]
-    tabela = tabela[colunas_ordem].rename(columns=NOMES_OS)
-    tabela = filtro_colunas(tabela, key_prefix="motores_os")
-    st.caption(f"{len(tabela)} linha(s) após os filtros por coluna.")
-    st.dataframe(tabela, hide_index=True, width="stretch", height=340)
-    csv = tabela.to_csv(index=False).encode("utf-8")
-    st.download_button("⬇️ Exportar (CSV)", csv, file_name="motores_os.csv", mime="text/csv", key="motores_os_csv")

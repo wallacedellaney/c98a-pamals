@@ -81,12 +81,15 @@ def carregar_diagonal_manutencao():
 
 
 def carregar_motores():
-    """Situação de motores (SILOMS), projeção TBO/HSI (Diagonal Nova), OS e
+    """Situação de motores (SILOMS), projeção TBO/HSI (Diagonal Nova) e
     hélices — planilha pessoal "MOTORES C-98" (Drive do Wallace). Ver
-    00_Instrucoes/motores.md."""
+    00_Instrucoes/motores.md.
+
+    2026-09-02: aba "OS" removida (fonte parou de ter essa aba, ver
+    extrair_motores.py)."""
     caminho = DADOS_TRATADOS / "base_motores_tratada.xlsx"
     if not caminho.exists():
-        return None, None, None, None, None, None, None
+        return None, None, None, None, None, None
     mtime = caminho.stat().st_mtime
     # dtype=str nos campos identificadores — sem isso, o pandas relê "2702"
     # do Excel como número (openpyxl/Excel não guarda "isso é texto" pra
@@ -95,17 +98,14 @@ def carregar_motores():
     dtype_id = {"pn": str, "sn": str, "matricula": str, "numero_doc": str, "recolhimento": str}
     situacao = _ler_excel(str(caminho), mtime, sheet_name="Situacao", dtype=dtype_id)
     diagonal = _ler_excel(str(caminho), mtime, sheet_name="Diagonal", dtype={"serial": str})
-    os_df = _ler_excel(str(caminho), mtime, sheet_name="OS", dtype={
-        **dtype_id, "solicitacao": str, "emergencia": str, "cff": str, "os_origem": str,
-    })
     helice = _ler_excel(str(caminho), mtime, sheet_name="Helice", dtype=dtype_id)
     diagonal_meta = _ler_excel(str(caminho), mtime, sheet_name="DiagonalMeta", dtype={"serial": str})
     financeiro = _ler_excel(str(caminho), mtime, sheet_name="Financeiro")
-    for df in (situacao, diagonal, os_df, helice):
+    for df in (situacao, diagonal, helice):
         for coluna in df.columns:
             if coluna.startswith("data_") or coluna == "data_status" or coluna.endswith("_prev") or coluna.endswith("_real"):
                 df[coluna] = pd.to_datetime(df[coluna], errors="coerce")
-    return situacao, diagonal, os_df, helice, diagonal_meta, financeiro, mtime
+    return situacao, diagonal, helice, diagonal_meta, financeiro, mtime
 
 
 def carregar_historico_motores_situacao():
@@ -139,7 +139,7 @@ def carregar_tudo():
     tmot, mtime_venc = carregar_vencimentos()
     venc_operadores, mtime_venc_op = carregar_vencimentos_operadores()
     diagonal, mtime_diagonal = carregar_diagonal_manutencao()
-    motores_situacao, motores_diagonal, motores_os, motores_helice, motores_diagonal_meta, motores_financeiro, mtime_motores = carregar_motores()
+    motores_situacao, motores_diagonal, motores_helice, motores_diagonal_meta, motores_financeiro, mtime_motores = carregar_motores()
     return {
         "rac_aeronaves": aeronaves,
         "rac_pendencias": pendencias,
@@ -156,7 +156,6 @@ def carregar_tudo():
         "diagonal_atualizado_em": mtime_diagonal,
         "motores_situacao": motores_situacao,
         "motores_diagonal": motores_diagonal,
-        "motores_os": motores_os,
         "motores_helice": motores_helice,
         "motores_diagonal_meta": motores_diagonal_meta,
         "motores_financeiro": motores_financeiro,
