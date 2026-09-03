@@ -49,7 +49,9 @@ from projetos.components.paleta import (
     cabecalho_pagina, cartao_indicador, grade_indicadores, layout_grafico, moeda_compacta, moeda_completa,
 )
 from projetos.regras.mta_regras import (
-    ORDEM_GRUPO_ESTRATEGICO, esta_disponivel, esta_utilizado, grupo_estrategico, normalizar, tem_providencia_tgco,
+    CORES_STATUS_RECURSO, NAO_CLASSIFICADO, ORDEM_GRUPO_ESTRATEGICO,
+    STATUS_ATENDIDO, STATUS_DISPONIVEL, STATUS_NAO_APROVADO,
+    normalizar, prepare_mta_data, validar_fechamento,
 )
 
 MESES_ABREV = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
@@ -58,12 +60,12 @@ MESES_ABREV = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "O
 # Wallace, 2026-09-03) — as demais continuam acessíveis pelo seletor
 # "+ Mais colunas" acima da grade (ver `_tabela_operacional`).
 COLUNAS_TABELA_PADRAO = [
-    "linha", "aprovado", "tramite", "preenchimento_tgco", "mes_previsto",
-    "categoria", "subcategoria", "grupo_estrategico", "atividade", "tarefa",
-    "valor", "executora", "nd", "pacote", "para_contrato", "para_motores",
+    "linha", "STATUS_RECURSO", "situacao_consolidada", "aprovado", "tramite", "data_pedido",
+    "preenchimento_tgco", "mes_previsto", "categoria", "subcategoria", "grupo_estrategico",
+    "atividade", "tarefa", "valor", "executora", "nd", "pacote", "para_contrato", "para_motores",
 ]
 COLUNAS_TABELA_EXTRA = [
-    "situacao_consolidada", "data_pedido", "digito", "rodada", "acao",
+    "digito", "rodada", "acao",
     "projeto_coordenador", "projeto_atividade", "observacao_coordenador", "impactos_nao_atendimento",
 ]
 NOMES_COLUNAS = {
@@ -73,7 +75,7 @@ NOMES_COLUNAS = {
     "atividade": "Atividade", "tarefa": "Tarefa", "valor": "Valor", "executora": "Executora",
     "nd": "ND", "pacote": "Pacote", "para_contrato": "Para Contrato", "para_motores": "Para Motores",
     "mes_previsto": "Mês planejamento atual", "categoria": "Categoria", "subcategoria": "Subcategoria",
-    "grupo_estrategico": "Grupo estratégico", "acao": "Ação",
+    "grupo_estrategico": "Grupo estratégico", "acao": "Ação", "STATUS_RECURSO": "Status do recurso",
     "projeto_coordenador": "Projeto (bloco coordenador)", "projeto_atividade": "Projeto (bloco atividade)",
     "observacao_coordenador": "Observação do coordenador", "impactos_nao_atendimento": "Impactos do não atendimento",
 }
@@ -118,20 +120,21 @@ def _atualizar():
 
 
 def _preparar(df):
-    """Acrescenta as colunas calculadas de disponibilidade financeira —
-    uma vez só, no topo do render, reaproveitadas em todas as seções.
-    Nunca sobrescreve `situacao_consolidada` (essa continua vindo pronta
-    do extrator, ver mta_regras.py::situacao_consolidada)."""
-    trabalho = df.copy()
-    trabalho["utilizado"] = trabalho["tramite"].apply(esta_utilizado)
-    trabalho["disponivel"] = trabalho.apply(lambda r: esta_disponivel(r["aprovado"], r["tramite"]), axis=1)
-    trabalho["com_tgco"] = trabalho["disponivel"] & trabalho["preenchimento_tgco"].apply(tem_providencia_tgco)
-    trabalho["livre"] = trabalho["disponivel"] & ~trabalho["com_tgco"]
-    trabalho["grupo_estrategico"] = trabalho.apply(
-        lambda r: grupo_estrategico(r["atividade"], r["tarefa"], r["para_motores"]), axis=1
+    """Chama a preparação central (`mta_regras.prepare_mta_data`) e mantém
+    apelidos em minúsculo das colunas derivadas — as seções antigas desta
+    página (tabela, gráficos secundários, Contrato 005) já usam esses
+    nomes, então nada precisou ser reescrito quando o eixo da página virou
+    ATENDIDO x DISPONÍVEL (2026-09-03)."""
+    trabalho = prepare_mta_data(df)
+    trabalho["utilizado"] = trabalho["ATENDIDO_BOOL"]
+    trabalho["disponivel"] = trabalho["DISPONIVEL_BOOL"]
+    trabalho["com_tgco"] = trabalho["disponivel"] & trabalho["preenchimento_tgco"].apply(
+        lambda v: normalizar(v) is not None
     )
-    trabalho["categoria"] = trabalho["para_contrato"]
-    trabalho["subcategoria"] = trabalho["pacote"]
+    trabalho["livre"] = trabalho["disponivel"] & ~trabalho["com_tgco"]
+    trabalho["grupo_estrategico"] = trabalho["GRUPO_ESTRATEGICO"]
+    trabalho["categoria"] = trabalho["CATEGORIA"]
+    trabalho["subcategoria"] = trabalho["SUBCATEGORIA"]
     return trabalho
 
 
@@ -183,40 +186,113 @@ def _filtros(df):
 
 
 def _disponibilidade_financeira(df):
-    """Primeira linha de cards — as 5 perguntas gerenciais, nessa ordem
-    (pedido do Wallace, 2026-09-03). Valida em tela a igualdade
-    Disponível geral = Com providência TGCO + Disponível livre (nunca
-    deveria dar errado, é a mesma regra aplicada 2x — serve de alarme se
-    alguém mudar `esta_disponivel`/`tem_providencia_tgco` sem manter a
-    consistência)."""
+    """Primeira área — ATENDIDO x DISPONÍVEL (eixo central da página,
+    Wallace 2026-09-03). Aprovado operacional = Atendido + Disponível;
+    cancelado/bloqueado/sem aprovado saem como EXCEÇÃO, nunca somem
+    silenciosamente (item 7 do prompt)."""
     st.markdown('<div class="pj-titulo-secao">Disponibilidade financeira</div>', unsafe_allow_html=True)
 
-    aprovadas = df[df["aprovado"].apply(normalizar) == "SIM"]
-    utilizadas = df[df["utilizado"]]
-    disponiveis = df[df["disponivel"]]
-    com_tgco = df[df["com_tgco"]]
-    livres = df[df["livre"]]
+    v = validar_fechamento(df)
+    nao_aprovado = df[df["STATUS_RECURSO"] == STATUS_NAO_APROVADO]
+    v_nao_aprovado = nao_aprovado["VALOR_NUMERICO"].sum(skipna=True)
+    operacional = v["valor_aprovado_operacional"]
+    pct_atendido = (100 * v["valor_atendido"] / operacional) if operacional else 0
+    pct_disponivel = (100 * v["valor_disponivel"] / operacional) if operacional else 0
 
-    v_aprovado = aprovadas["valor"].sum(skipna=True)
-    v_utilizado = utilizadas["valor"].sum(skipna=True)
-    v_disponivel = disponiveis["valor"].sum(skipna=True)
-    v_tgco = com_tgco["valor"].sum(skipna=True)
-    v_livre = livres["valor"].sum(skipna=True)
+    cards = [
+        cartao_indicador("Total aprovado", moeda_compacta(operacional),
+                          f"{v['qtd_atendido'] + v['qtd_disponivel']} linha(s) · operacional (atendido + disponível)", "primary"),
+        cartao_indicador("🟢 Atendido", moeda_compacta(v["valor_atendido"]),
+                          f"{v['qtd_atendido']} linha(s) · {pct_atendido:.1f}% do aprovado", "good"),
+        cartao_indicador("🔵 Disponível", moeda_compacta(v["valor_disponivel"]),
+                          f"{v['qtd_disponivel']} linha(s) · {pct_disponivel:.1f}% do aprovado", "info"),
+        cartao_indicador("% atendido", f"{pct_atendido:.1f}%", "Atendido ÷ aprovado operacional", "primary"),
+        cartao_indicador("🔴 Não aprovado", moeda_compacta(v_nao_aprovado),
+                          f"{len(nao_aprovado)} linha(s) · fora do recurso disponível", "critical"),
+    ]
+    if v["qtd_excecoes"]:
+        cards.append(cartao_indicador(
+            "🟠 Exceções", moeda_compacta(v["valor_excecoes"]),
+            f"{v['qtd_excecoes']} linha(s) aprovadas mas canceladas/bloqueadas", "warning"))
+    grade_indicadores(cards)
 
-    if round(v_tgco + v_livre, 2) != round(v_disponivel, 2):
-        st.error(
-            f"⚠️ Inconsistência interna: Com TGCO ({moeda_completa(v_tgco)}) + Livre "
-            f"({moeda_completa(v_livre)}) ≠ Disponível geral ({moeda_completa(v_disponivel)}). "
-            "Avisa o Claude — não devia acontecer, é a mesma regra aplicada 2x."
-        )
+    st.caption(
+        f"Aprovado bruto (tudo com Aprovado = SIM): {moeda_completa(v['valor_aprovado_bruto'])} · "
+        f"{v['qtd_aprovado_bruto']} linha(s). A diferença pro operacional são as exceções "
+        "(canceladas/bloqueadas), listadas abaixo."
+    )
+    if not v["fecha"]:
+        st.error("⚠️ Atendido + Disponível + Exceções ≠ Aprovado bruto — avisa o Claude, a regra saiu do lugar.")
+    if v["qtd_excecoes"]:
+        with st.expander(f"🟠 Ver as {v['qtd_excecoes']} exceção(ões) (aprovado, mas cancelado/bloqueado)"):
+            st.dataframe(
+                v["excecoes"][["linha", "atividade", "tarefa", "tramite", "VALOR_NUMERICO"]].rename(
+                    columns={"linha": "Linha", "atividade": "Atividade", "tarefa": "Tarefa",
+                             "tramite": "Trâmite", "VALOR_NUMERICO": "Valor"}),
+                hide_index=True, width="stretch",
+            )
 
-    grade_indicadores([
-        cartao_indicador("Aprovado", moeda_compacta(v_aprovado), f"{len(aprovadas)} linha(s) · {moeda_completa(v_aprovado)}", "primary"),
-        cartao_indicador("Já utilizado", moeda_compacta(v_utilizado), f"{len(utilizadas)} linha(s) · Atendido ou Processado", "good"),
-        cartao_indicador("Disponível geral", moeda_compacta(v_disponivel), f"{len(disponiveis)} linha(s) · Aprovado, Trâmite vazio", "info"),
-        cartao_indicador("→ com providência TGCO", moeda_compacta(v_tgco), f"{len(com_tgco)} linha(s) · já tem próximo passo definido", "warning"),
-        cartao_indicador("→ livre", moeda_compacta(v_livre), f"{len(livres)} linha(s) · sem nenhuma providência ainda", "neutro"),
-    ])
+
+def _atendido_x_disponivel(df):
+    """Visão geral + por categoria, lado a lado — 🟢 atendido x 🔵 disponível
+    (gráfico que o Wallace pediu de volta: "aquele gráfico em colunas do que
+    foi pago para coisa de contrato, coisa de motor")."""
+    st.markdown('<div class="pj-titulo-secao">Atendido x Disponível</div>', unsafe_allow_html=True)
+
+    base = df[df["STATUS_RECURSO"].isin([STATUS_ATENDIDO, STATUS_DISPONIVEL])].copy()
+    if base.empty:
+        st.info("Nada aprovado no filtro atual.")
+        return
+
+    cor_status = {STATUS_ATENDIDO: STATUS["good"], STATUS_DISPONIVEL: STATUS["info"]}
+
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.caption("Composição do aprovado operacional")
+        comp = base.groupby("STATUS_RECURSO")["VALOR_NUMERICO"].sum(min_count=1).reset_index()
+        fig = px.pie(comp, names="STATUS_RECURSO", values="VALOR_NUMERICO", hole=0.58,
+                     color="STATUS_RECURSO", color_discrete_map=cor_status)
+        fig.update_traces(textinfo="percent", textfont_size=14,
+                           hovertemplate="%{label}: %{customdata[0]}<extra></extra>",
+                           customdata=[[moeda_completa(x)] for x in comp["VALOR_NUMERICO"]])
+        layout_grafico(fig, altura=330)
+        st.plotly_chart(fig, width="stretch")
+
+    with col2:
+        st.caption("Por categoria — quanto já foi atendido e quanto ainda está disponível")
+        agrup = base.groupby(["CATEGORIA", "STATUS_RECURSO"])["VALOR_NUMERICO"].sum(min_count=1).reset_index()
+        totais = agrup.groupby("CATEGORIA")["VALOR_NUMERICO"].sum().sort_values()
+        agrup["rotulo"] = agrup["VALOR_NUMERICO"].apply(moeda_compacta)
+        fig = px.bar(agrup, x="VALOR_NUMERICO", y="CATEGORIA", color="STATUS_RECURSO", orientation="h",
+                     barmode="stack", text="rotulo", color_discrete_map=cor_status,
+                     category_orders={"CATEGORIA": list(totais.index),
+                                      "STATUS_RECURSO": [STATUS_ATENDIDO, STATUS_DISPONIVEL]})
+        fig.update_traces(textposition="inside", insidetextanchor="middle")
+        fig.update_layout(xaxis_title="", yaxis_title="", legend_title="")
+        layout_grafico(fig, altura=max(330, 42 * len(totais)))
+        st.plotly_chart(fig, width="stretch")
+
+    tabela = base.pivot_table(index="CATEGORIA", columns="STATUS_RECURSO", values="VALOR_NUMERICO",
+                               aggfunc="sum", fill_value=0).reset_index()
+    for coluna in (STATUS_ATENDIDO, STATUS_DISPONIVEL):
+        if coluna not in tabela.columns:
+            tabela[coluna] = 0.0
+    tabela["Total"] = tabela[STATUS_ATENDIDO] + tabela[STATUS_DISPONIVEL]
+    tabela["% atendido"] = (100 * tabela[STATUS_ATENDIDO] / tabela["Total"]).round(0).fillna(0).astype(int).astype(str) + "%"
+    tabela = tabela.sort_values("Total", ascending=False)
+    exibir = tabela.copy()
+    for coluna in (STATUS_ATENDIDO, STATUS_DISPONIVEL, "Total"):
+        exibir[coluna] = exibir[coluna].apply(moeda_completa)
+    st.dataframe(
+        exibir.rename(columns={"CATEGORIA": "Categoria", STATUS_ATENDIDO: "Atendido",
+                                STATUS_DISPONIVEL: "Disponível"}),
+        hide_index=True, width="stretch",
+    )
+    st.caption(
+        "Categoria e Grupo estratégico são visões DIFERENTES e se sobrepõem (uma Requisição de "
+        "Serviço pode ser de Motores) — por isso nunca somar as duas juntas. O total geral sai "
+        "sempre dos registros únicos da base."
+    )
 
 
 def _disponivel_por_destinacao(df):
@@ -249,9 +325,14 @@ def _disponivel_por_destinacao(df):
     resumo["_ordem"] = resumo["Destinação"].map(ordem).fillna(999)
     resumo = resumo.sort_values("_ordem").drop(columns="_ordem")
 
+    total_disp = resumo["Disponível"].sum()
+    resumo["% do disponível"] = (100 * resumo["Disponível"] / total_disp).round(1) if total_disp else 0.0
+
     tabela_fmt = resumo.copy()
     for col in ("Disponível", "Com TGCO", "Livre"):
         tabela_fmt[col] = tabela_fmt[col].apply(moeda_completa)
+    tabela_fmt["% do disponível"] = tabela_fmt["% do disponível"].apply(lambda v: f"{v:.1f}%")
+    tabela_fmt["Linhas"] = tabela_fmt["Linhas"].astype(int)
 
     evento = st.dataframe(
         tabela_fmt, hide_index=True, width="stretch",
@@ -316,9 +397,14 @@ def _tabela_operacional(df):
         "function(params){ if (params.value == null) { return ''; } "
         "return 'R$ ' + params.value.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }"
     )
+    # NaT/None/"NaT" viram vazio, e data inválida devolve o texto original em
+    # vez de "Invalid Date" (bug visto no teste de 2026-09-03: coluna "Data do
+    # pedido" aparecia como "Invalid" nas linhas sem data).
     formatador_data = JsCode(
-        "function(params){ if (!params.value) { return ''; } "
-        "var d = new Date(params.value); "
+        "function(params){ var v = params.value; "
+        "if (v === null || v === undefined || v === '' || v === 'NaT' || v === 'None') { return ''; } "
+        "var d = new Date(v); "
+        "if (isNaN(d.getTime())) { return String(v); } "
         "return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric'}); }"
     )
     filtro_texto_com_vazio = {
@@ -328,7 +414,14 @@ def _tabela_operacional(df):
     }
 
     gb = GridOptionsBuilder.from_dataframe(tabela)
-    gb.configure_default_column(resizable=True, sortable=True, filter=True, floatingFilter=True, editable=False)
+    # Larguras generosas de propósito — Wallace, 2026-09-03: "NÃO tentar
+    # espremer todas as colunas na largura da tela, quero poder navegar
+    # horizontalmente como Excel". Por isso `suppressSizeToFit` + nenhum
+    # auto-size global: a grade fica mais larga que a tela e ganha scroll H.
+    gb.configure_default_column(
+        resizable=True, sortable=True, filter=True, floatingFilter=True, editable=False,
+        width=180, minWidth=110, suppressSizeToFit=True, wrapHeaderText=True, autoHeaderHeight=True,
+    )
     gb.configure_selection("multiple", use_checkbox=True, header_checkbox=True)
     gb.configure_pagination(enabled=False)
     gb.configure_grid_options(domLayout="normal", suppressColumnVirtualisation=True)
@@ -336,13 +429,20 @@ def _tabela_operacional(df):
     for coluna in tabela.columns:
         if coluna == "Valor":
             gb.configure_column(coluna, type=["numericColumn"], filter="agNumberColumnFilter",
-                                 valueFormatter=formatador_moeda, pinned="right", width=160)
+                                 valueFormatter=formatador_moeda, pinned="right", width=170)
         elif coluna in ("Mês planejamento atual", "Data do pedido"):
-            gb.configure_column(coluna, valueFormatter=formatador_data, filter="agDateColumnFilter", width=160)
+            gb.configure_column(coluna, valueFormatter=formatador_data, filter="agDateColumnFilter", width=170)
         elif coluna == "Linha":
-            gb.configure_column(coluna, pinned="left", width=110, **filtro_texto_com_vazio)
+            gb.configure_column(coluna, pinned="left", width=120, **filtro_texto_com_vazio)
         else:
-            gb.configure_column(coluna, **filtro_texto_com_vazio, width=170)
+            largura = 320 if coluna in ("Atividade", "Tarefa", "Situação consolidada") else 190
+            gb.configure_column(coluna, **filtro_texto_com_vazio, width=largura)
+
+    # Datas viram texto ISO (ou vazio) antes de entrar na grade — Timestamp/NaT
+    # do pandas chega como objeto e o JS não consegue converter.
+    for coluna in tabela.columns:
+        if pd.api.types.is_datetime64_any_dtype(tabela[coluna]):
+            tabela[coluna] = tabela[coluna].dt.strftime("%Y-%m-%d").where(tabela[coluna].notna(), "")
 
     grid_options = gb.build()
 
@@ -352,7 +452,7 @@ def _tabela_operacional(df):
         data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
         update_mode=GridUpdateMode.MODEL_CHANGED | GridUpdateMode.SELECTION_CHANGED,
         allow_unsafe_jscode=True,
-        columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+        columns_auto_size_mode=ColumnsAutoSizeMode.NO_AUTOSIZE,
         theme="alpine",
         height=460,
         key="mta_aggrid",
@@ -454,6 +554,59 @@ def _analise_mensal_tgco(df):
     fig.update_layout(xaxis_title="", yaxis_title="")
     layout_grafico(fig, altura=320)
     st.plotly_chart(fig, width="stretch")
+
+
+def _disponivel_por_mes(df):
+    """Item 26 — quanto do disponível está previsto pra cada mês (usa
+    "Mês previsto", NUNCA a Data do pedido). Linha sem mês aparece como
+    "Sem mês", não some da conta."""
+    st.markdown('<div class="pj-titulo-secao">Disponível por mês</div>', unsafe_allow_html=True)
+
+    disponiveis = df[df["DISPONIVEL_BOOL"]].copy()
+    if disponiveis.empty:
+        st.info("Nada disponível no filtro atual.")
+        return
+
+    disponiveis["_mes"] = disponiveis["MES_PLANEJAMENTO"].fillna("Sem mês")
+    resumo = disponiveis.groupby("_mes").agg(
+        valor=("VALOR_NUMERICO", "sum"), linhas=("linha", "count")
+    ).reset_index()
+    com_mes = resumo[resumo["_mes"] != "Sem mês"].sort_values("_mes")
+    sem_mes = resumo[resumo["_mes"] == "Sem mês"]
+    resumo = pd.concat([com_mes, sem_mes])
+    resumo["rotulo_mes"] = resumo["_mes"].apply(lambda m: _mes_ano(m) if m != "Sem mês" else "Sem mês")
+
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        fig = px.bar(resumo, x="rotulo_mes", y="valor", color_discrete_sequence=[STATUS["info"]])
+        _rotular_barras(fig, resumo["valor"])
+        fig.update_layout(xaxis_title="", yaxis_title="")
+        layout_grafico(fig, altura=330)
+        st.plotly_chart(fig, width="stretch")
+    with col2:
+        exibir = resumo[["rotulo_mes", "valor", "linhas"]].copy()
+        exibir["valor"] = exibir["valor"].apply(moeda_completa)
+        st.dataframe(
+            exibir.rename(columns={"rotulo_mes": "Mês previsto", "valor": "Disponível", "linhas": "Linhas"}),
+            hide_index=True, width="stretch", height=330,
+        )
+
+
+def _nao_classificados(df):
+    """Item 54 — nada de decisão silenciosa: toda linha que não casou com
+    nenhuma regra de categoria aparece listada aqui, pra virar regra nova
+    depois (REGRAS_CATEGORIA em projetos/regras/mta_regras.py)."""
+    nc = df[df["CATEGORIA"] == NAO_CLASSIFICADO]
+    if nc.empty:
+        st.caption("✅ Todas as linhas casaram com alguma regra de categoria — nenhum \"Não classificado\".")
+        return
+    with st.expander(f"⚠️ {len(nc)} linha(s) sem regra de categoria — precisam de regra nova"):
+        st.dataframe(
+            nc[["linha", "atividade", "tarefa", "VALOR_NUMERICO"]].rename(columns={
+                "linha": "Linha", "atividade": "Atividade", "tarefa": "Tarefa", "VALOR_NUMERICO": "Valor",
+            }),
+            hide_index=True, width="stretch",
+        )
 
 
 def _indicadores(df):
@@ -1049,14 +1202,18 @@ def render(dados):
     st.divider()
     _disponibilidade_financeira(filtrado)
     st.divider()
+    _atendido_x_disponivel(filtrado)
+    st.divider()
     _disponivel_por_destinacao(filtrado)
     st.divider()
     _tabela_operacional(filtrado)
     st.divider()
-    _analise_mensal_tgco(filtrado)
+    _disponivel_por_mes(filtrado)
     st.divider()
 
-    with st.expander("📊 Gráficos secundários (situação, histórico, executora, pacote)"):
+    with st.expander("📊 Análises secundárias (TGCO, situação, executora, pacote)"):
+        _analise_mensal_tgco(filtrado)
+        st.divider()
         _indicadores(filtrado)
         st.divider()
         _situacao(filtrado)
@@ -1065,6 +1222,9 @@ def render(dados):
 
     st.divider()
     _analise_saldo(filtrado, dados)
+
+    st.divider()
+    _nao_classificados(filtrado)
 
     st.divider()
     secao_evolucao(

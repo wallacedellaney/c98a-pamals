@@ -48,3 +48,7 @@ TRAMITE_EM_TRAMITE = "EM TRÂMITE"
 # significa dinheiro já usado, mesma coisa que "atendido" pro propósito de
 # disponibilidade (ver mta_regras.py::esta_utilizado).
 TRAMITE_PROCESSADO = "PROCESSADO"
+# Situações próprias (2026-09-03): não são "atendido" nem "disponível" —
+# ver mta_regras.py::classificar_status_recurso.
+TRAMITE_CANCELADO = "CANCELADO"
+TRAMITE_BLOQUEIO = "BLOQUEIO"
