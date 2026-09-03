@@ -210,11 +210,49 @@ def _disponibilidade_financeira(df):
         cartao_indicador("🔴 Não aprovado", moeda_compacta(v_nao_aprovado),
                           f"{len(nao_aprovado)} linha(s) · fora do recurso disponível", "critical"),
     ]
-    if v["qtd_excecoes"]:
+    tem_excecoes = bool(v["qtd_excecoes"])
+    if tem_excecoes:
         cards.append(cartao_indicador(
             "🟠 Exceções", moeda_compacta(v["valor_excecoes"]),
             f"{v['qtd_excecoes']} linha(s) aprovadas mas canceladas/bloqueadas", "warning"))
     grade_indicadores(cards)
+
+    # Cards clicáveis (item 41 do prompt, pedido de novo em 2026-09-03: "queria
+    # que tudo fosse clicavel, cada coisa eu clicar verde ou azul, a parte do
+    # atendido, ja puxasse a lista embaixo") — os cards acima são HTML puro
+    # (não clicam); em vez de arriscar a CSS deles, cada card ganha um botão
+    # fino logo abaixo, na mesma ordem/coluna, que filtra a Tabela
+    # operacional via `st.session_state["mta_status_selecionado"]` (mesmo
+    # mecanismo já usado pelo quadro "Disponível por destinação").
+    filtro_atual = st.session_state.get("mta_status_selecionado")
+    opcoes_filtro = [
+        ("Total aprovado", None),
+        ("🟢 Atendido", STATUS_ATENDIDO),
+        ("🔵 Disponível", STATUS_DISPONIVEL),
+        (None, None),  # "% atendido" não filtra nada
+        ("🔴 Não aprovado", STATUS_NAO_APROVADO),
+    ]
+    if tem_excecoes:
+        opcoes_filtro.append(("🟠 Exceções", "EXCECOES"))
+    cols_botao = st.columns(len(cards))
+    for col, (rotulo, valor_status) in zip(cols_botao, opcoes_filtro):
+        if rotulo is None:
+            continue
+        with col:
+            ativo = filtro_atual == valor_status if valor_status != "Total aprovado" else filtro_atual is None
+            texto_botao = ("✓ " if (valor_status is not None and filtro_atual == valor_status) else "") + "Ver linhas →"
+            if st.button(texto_botao, key=f"mta_status_btn_{valor_status or 'total'}", width="stretch"):
+                st.session_state["mta_status_selecionado"] = valor_status
+                st.rerun()
+    if filtro_atual:
+        rotulo_ativo = next((r for r, v_ in opcoes_filtro if v_ == filtro_atual), filtro_atual)
+        c1, c2 = st.columns([5, 1])
+        with c1:
+            st.caption(f"👆 Tabela operacional abaixo filtrada por status: **{rotulo_ativo}**")
+        with c2:
+            if st.button("✕ Limpar", key="mta_status_limpar", width="stretch"):
+                st.session_state.pop("mta_status_selecionado", None)
+                st.rerun()
 
     st.caption(
         f"Aprovado bruto (tudo com Aprovado = SIM): {moeda_completa(v['valor_aprovado_bruto'])} · "
@@ -223,7 +261,7 @@ def _disponibilidade_financeira(df):
     )
     if not v["fecha"]:
         st.error("⚠️ Atendido + Disponível + Exceções ≠ Aprovado bruto — avisa o Claude, a regra saiu do lugar.")
-    if v["qtd_excecoes"]:
+    if tem_excecoes:
         with st.expander(f"🟠 Ver as {v['qtd_excecoes']} exceção(ões) (aprovado, mas cancelado/bloqueado)"):
             st.dataframe(
                 v["excecoes"][["linha", "atividade", "tarefa", "tramite", "VALOR_NUMERICO"]].rename(
@@ -377,10 +415,20 @@ def _tabela_operacional(df):
     st.markdown('<div class="pj-titulo-secao">Tabela operacional</div>', unsafe_allow_html=True)
 
     destinacao_sel = st.session_state.get("mta_destinacao_selecionada")
+    status_sel = st.session_state.get("mta_status_selecionado")
     base = df
+    legendas_filtro = []
     if destinacao_sel:
-        base = df[df["grupo_estrategico"] == destinacao_sel]
-        st.caption(f"Filtrado por destinação selecionada acima: **{destinacao_sel}** ({len(base)} linha(s)).")
+        base = base[base["grupo_estrategico"] == destinacao_sel]
+        legendas_filtro.append(f"destinação **{destinacao_sel}**")
+    if status_sel == "EXCECOES":
+        base = base[~base["STATUS_RECURSO"].isin([STATUS_ATENDIDO, STATUS_DISPONIVEL, STATUS_NAO_APROVADO])]
+        legendas_filtro.append("status **Exceções**")
+    elif status_sel:
+        base = base[base["STATUS_RECURSO"] == status_sel]
+        legendas_filtro.append(f"status **{status_sel}**")
+    if legendas_filtro:
+        st.caption(f"Filtrado por {' + '.join(legendas_filtro)} ({len(base)} linha(s)).")
 
     extras = st.multiselect(
         "+ Mais colunas", [c for c in COLUNAS_TABELA_EXTRA if c in base.columns],
@@ -453,7 +501,7 @@ def _tabela_operacional(df):
         update_mode=GridUpdateMode.MODEL_CHANGED | GridUpdateMode.SELECTION_CHANGED,
         allow_unsafe_jscode=True,
         columns_auto_size_mode=ColumnsAutoSizeMode.NO_AUTOSIZE,
-        theme="alpine",
+        theme="streamlit",
         height=460,
         key="mta_aggrid",
     )
@@ -862,16 +910,17 @@ def _analise_saldo(df, dados):
     remover"). Só mudou de POSIÇÃO na página (agora depois da visão geral
     de recursos, não mais logo no início) — nenhum cálculo foi alterado."""
     st.markdown('<div class="pj-titulo-secao">Análise do dinheiro em saldo (Hora de Voo) — Contrato 005</div>', unsafe_allow_html=True)
-    st.caption(
-        "Cruza a fila de solicitações de Hora de Voo do MTA com o dinheiro real do "
-        "Contrato 005 (VEE ONE) — a aba \"Empenhos\" não distingue categoria (o mesmo "
-        "código ND cobre Hora de Voo, Parcela Fixa, Requisição e Sob Demanda), então o "
-        "valor empenhado/saldo abaixo é do **contrato inteiro**, não só Hora de Voo. O "
-        "\"Mês previsto\" do MTA é o **mês de uso** — o empenho de fato acontece 1 mês "
-        "depois (ex.: horas de junho são empenhadas em julho; Wallace, 2026-07-28: "
-        "\"horas de junho, empenhado em julho\"). RAP = saldo de empenho que não é "
-        "diretamente de 2026 (ano anterior), ainda não usado — prioridade de uso."
-    )
+    with st.expander("ℹ️ Como essa análise é calculada"):
+        st.caption(
+            "Cruza a fila de solicitações de Hora de Voo do MTA com o dinheiro real do "
+            "Contrato 005 (VEE ONE) — a aba \"Empenhos\" não distingue categoria (o mesmo "
+            "código ND cobre Hora de Voo, Parcela Fixa, Requisição e Sob Demanda), então o "
+            "valor empenhado/saldo abaixo é do **contrato inteiro**, não só Hora de Voo. O "
+            "\"Mês previsto\" do MTA é o **mês de uso** — o empenho de fato acontece 1 mês "
+            "depois (ex.: horas de junho são empenhadas em julho; Wallace, 2026-07-28: "
+            "\"horas de junho, empenhado em julho\"). RAP = saldo de empenho que não é "
+            "diretamente de 2026 (ano anterior), ainda não usado — prioridade de uso."
+        )
 
     empenhos_info = dados.get("empenhos_contrato005")
     if empenhos_info is not None:
@@ -1016,15 +1065,16 @@ def _analise_saldo(df, dados):
         grade_indicadores(cartoes_mta)
 
     with aba_projecao:
-        st.caption(
-            "Projeção mês a mês do **saldo dos empenhos já emitidos** (não do saldo geral do contrato, "
-            "que é só o limite de autorização — isso aqui é dinheiro já formalizado): parte do saldo de "
-            "hoje, soma cada parcela de Hora de Voo ainda na fila (sem RAP — RAP já virou empenho de "
-            "verdade e já está no saldo inicial, contar de novo duplicaria) deslocada 1 mês pela "
-            "defasagem empenho→uso, e subtrai o gasto médio mensal (ver conta em \"Consumo\", na aba "
-            "Resumo — horas restantes ÷ meses não pagos × valor da hora de voo). Não considera novos "
-            "ciclos de MTA além do que já está na fila — se a DIRMAB atrasar uma parcela, a data muda."
-        )
+        with st.expander("ℹ️ Como a projeção é calculada"):
+            st.caption(
+                "Projeção mês a mês do **saldo dos empenhos já emitidos** (não do saldo geral do contrato, "
+                "que é só o limite de autorização — isso aqui é dinheiro já formalizado): parte do saldo de "
+                "hoje, soma cada parcela de Hora de Voo ainda na fila (sem RAP — RAP já virou empenho de "
+                "verdade e já está no saldo inicial, contar de novo duplicaria) deslocada 1 mês pela "
+                "defasagem empenho→uso, e subtrai o gasto médio mensal (ver conta em \"Consumo\", na aba "
+                "Resumo — horas restantes ÷ meses não pagos × valor da hora de voo). Não considera novos "
+                "ciclos de MTA além do que já está na fila — se a DIRMAB atrasar uma parcela, a data muda."
+            )
         if empenhos_info is None or not media_mensal:
             st.info("Sem dados de empenhos/hora de voo do Contrato 005 — não dá pra projetar.")
         else:
