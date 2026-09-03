@@ -40,3 +40,11 @@ PRIMEIRA_LINHA_DADOS = 3
 # Status finais — não contam mais como "sem andamento".
 TRAMITE_ATENDIDO = "ATENDIDO"
 TRAMITE_EM_TRAMITE = "EM TRÂMITE"
+# "PROCESSADO" — achado em 2026-09-03 (Wallace, checagem de recurso do MTA):
+# 6 linhas (R$17,55 mi) com Trâmite="PROCESSADO", TODAS de atividades de
+# contrato (CNT 005, CNT 031, Exchange PT6A-114A) — nunca aparece em
+# Requisição/2025-BABx. Antes disso caíam em "Sem informação" porque a
+# regra só reconhecia ATENDIDO/EM TRÂMITE — na prática, "processado"
+# significa dinheiro já usado, mesma coisa que "atendido" pro propósito de
+# disponibilidade (ver mta_regras.py::esta_utilizado).
+TRAMITE_PROCESSADO = "PROCESSADO"
