@@ -1,0 +1,89 @@
+*C-98 - 03/09/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+12 D / 17 M
+(08 DI / 04 DO / 04 II / 02 IN / 00 ITR / 01 IT / 08 IS / 02 IP)
+ 
+*Previsão até o final do dia: 12 D / 17 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis:* 13
+- 2743
+
+
+*Montadas:* 17 
+
+
+
+
+*Esforço  Aéreo*
+Anual: 10100:00 / 6254:20 / 61,92% 
+
+
+*Motores disponíveis: 20*
+
+
+*CLA*
+[ ] 2723 - IS - Agd hélice, Volume 261304001846, SPCOA 05631/2026. Chegou no CTLA em 31/08. - DPE: 02 DIAS após chegada do item.
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*PAMA-LS*
+[ ] 2704 - DI
+[ ] 2706 - IP - 72 APE- DPE: A ser definido.
+[ ] 2724 - IP - ANV acidentada.
+[ ] 2726 - IS - 87 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2728 - IN - REALIZANDO SERVIÇO DE MONTAGEM APÓS A AVALIAÇÃO DE SINISTRO - DPE: 30/09
+[ ] 2730 - IS - SEM MOTOR - 42 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 71 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - IS - Aguardando hélice. - DPE: 02 DIA após chegada do item.                             
+[ ] 2733 - IT - Realizando instrumentação no IPEV. DPE: 14/09.
+[ ] 2739 - DI
+
+
+*1°/15°GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2702 - DO
+[ ] 2703 - DO
+[ ] 2708 - DO
+[ ] 2729 - IS - Itens recolhidos ao PAMA-SP - 06 IPLR - DPE: 05 DIAS após retorno dos itens.
+
+
+*2º ETA*
+[ ] 2719 - II - Realizando inspeções ID 06,08 / 4400FH - DPE: 18/09
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - II - Realizando inspeções ID5-15-06B/08/10/12 e troca de motor - DPE: 04/09
+
+
+*6º ETA*
+[ ] 2709 - IS - Agd hélice - PN: P7036368-01 - Nº DO PED: 329260019271. - DPE: 18/09
+[ ] 2720 - DI
+[ ] 2721 - II -  Realizando inspeções ID 5-15-03 - AIFP de motor e hélice - DPE: 04/09
+
+
+*7º ETA*
+[ ] 2732 - IS - Em processo de montagem, sem motor e hélice - 07 IPLR - DPE: 25/10
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2738 - DI
+[ ] 2740 - II - Realizando inspeções ID5-15-(06, 07, 08, 12), MOT1M12, 3400H (MOT) e  BAT100H. - DPE: 11/09
+[ ] 2741 - IN - Aeronave aguardando avaliação presencial da equipe técnica do PAMA-SP sobre vazamento de óleo pela bomba de retorno e flange G do motor. - DPE: Agd DPE do PAMA-SP
