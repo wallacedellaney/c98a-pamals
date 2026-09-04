@@ -1009,9 +1009,13 @@ def _analise_saldo(df, dados):
             ]
             if mes_emp_prox is not None:
                 cartoes_ate_quando.append(
-                    cartao_indicador("⏳ Próximo a empenhar", _mes_ano(mes_emp_prox.strftime("%Y-%m")),
-                                      f"Referente ao uso de {_mes_ano(mes_uso_prox.strftime('%Y-%m'))} · "
-                                      "valor estimado no Fechamento Mensal, ainda não confirmado", "warning")
+                    cartao_indicador(
+                        "⏳ Próximo a empenhar",
+                        _mes_ano(mes_emp_prox.strftime("%Y-%m")) + (f" · ~{moeda_compacta(media_mensal)}" if media_mensal else ""),
+                        f"Referente ao uso de {_mes_ano(mes_uso_prox.strftime('%Y-%m'))} · valor estimado pela "
+                        "média de gasto mensal (ver \"Consumo\" abaixo) — ainda não confirmado no Fechamento Mensal",
+                        "warning",
+                    )
                 )
             grade_indicadores(cartoes_ate_quando)
             st.divider()
