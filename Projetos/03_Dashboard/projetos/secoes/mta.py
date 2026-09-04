@@ -810,7 +810,7 @@ def _analise_financeira(df):
         )
 
 
-def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
+def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15, saida_mes0_real=None):
     """Projeção mês a mês do saldo real do Contrato 005: parte do saldo em
     aberto de hoje, soma cada parcela de Hora de Voo que ainda vai virar
     empenho ("Mês previsto" do MTA é o mês de USO — o empenho de fato
@@ -821,10 +821,17 @@ def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
     que não são final 2026, então tira ele da linha cronológica de
     entrada" — o RAP já está refletido no `saldo_inicial` (via saldo dos
     empenhos pré-2026 do Contrato 005), contá-lo de novo aqui como entrada
-    futura duplicaria esse dinheiro. Devolve (tabela mês a mês, primeiro
-    mês em que o saldo fica negativo — ou None se não fica, dentro do
-    horizonte, detalhe por mês de quais parcelas do MTA entram nesse mês —
-    pra painel clicável)."""
+    futura duplicaria esse dinheiro.
+
+    `saida_mes0_real` (2026-09-04, pedido do Wallace: "a saída em setembro
+    é aquele que eu falei", não a média) — quando informado, substitui
+    `media_mensal` SÓ na 1ª linha da projeção (mês atual): é o único mês
+    cuja saída a gente já sabe de verdade (horas já voadas no mês de uso
+    anterior), os demais meses seguem futuros, sem dado real ainda, por
+    isso continuam na média. Devolve (tabela mês a mês, primeiro mês em
+    que o saldo fica negativo — ou None se não fica, dentro do horizonte,
+    detalhe por mês de quais parcelas do MTA entram nesse mês — pra
+    painel clicável)."""
     mes0 = pd.Timestamp(horario.hoje_br()).replace(day=1)
 
     entradas = {}
@@ -842,9 +849,12 @@ def _projetar_saldo(saldo_inicial, media_mensal, fila_hv, horizonte_meses=15):
     saldo = saldo_inicial
     mes = mes0
     mes_critico = None
-    for _ in range(horizonte_meses):
+    for indice_mes in range(horizonte_meses):
         entrada = entradas.get(mes, 0.0)
-        saida = media_mensal or 0.0
+        if indice_mes == 0 and saida_mes0_real is not None:
+            saida = saida_mes0_real
+        else:
+            saida = media_mensal or 0.0
         saldo_final = saldo + entrada - saida
         linhas.append({
             "mes": mes, "saldo_inicial": saldo, "entrada": entrada, "saida": saida, "saldo_final": saldo_final,
@@ -1046,6 +1056,18 @@ def _analise_saldo(df, dados):
         if horas_restantes and valor_hora_voo else None
     )
 
+    # Valor REAL do próximo mês a empenhar (horas realmente voadas no mês de
+    # uso x valor da hora) — pedido do Wallace 2026-09-04: "a saída em
+    # setembro é aquele que eu falei [R$1.780.187,52], não a média" — usado
+    # tanto no card "Próximo a empenhar" quanto na 1ª linha da projeção
+    # mês a mês (`_projetar_saldo`), pra não ter 2 números diferentes pro
+    # mesmo mês na mesma página. Só existe quando o MÊS DE USO já fechou
+    # (Disponibilidade Diária completa) — cai pra `media_mensal` senão.
+    horas_mes_prox = _horas_voadas_reais_no_mes(mes_uso_prox.year, mes_uso_prox.month)
+    valor_real_mes_prox = (
+        horas_mes_prox * valor_hora_voo if horas_mes_prox is not None and valor_hora_voo else None
+    )
+
     aba_resumo, aba_projecao, aba_parcelas, aba_empenhos = st.tabs(
         ["📊 Resumo", "📈 Até quando dá a grana", "📅 Parcelas do MTA", "📄 Empenhos (Contrato 005)"]
     )
@@ -1058,16 +1080,6 @@ def _analise_saldo(df, dados):
                                   f"Cobre o uso de {_mes_ano(mes_uso_feito.strftime('%Y-%m'))}", "good"),
             ]
             if mes_emp_prox is not None:
-                # Valor REAL do mês (horas realmente voadas x valor da hora),
-                # não a média anual — pedido do Wallace 2026-09-04 ("a saída
-                # de R$1.780.187,52 tá lá, usa isso"). Só existe quando o mês
-                # já tem Disponibilidade Diária suficiente pra fechar (ex.:
-                # mês corrente ainda em andamento não fecha) — cai pra média
-                # anual (`media_mensal`) nesse caso, sempre mostrando algo.
-                horas_mes_prox = _horas_voadas_reais_no_mes(mes_uso_prox.year, mes_uso_prox.month)
-                valor_real_mes_prox = (
-                    horas_mes_prox * valor_hora_voo if horas_mes_prox is not None and valor_hora_voo else None
-                )
                 valor_exibido = valor_real_mes_prox if valor_real_mes_prox is not None else media_mensal
                 fonte_valor = (
                     f"{horas_mes_prox:.1f}h reais voadas × {moeda_completa(valor_hora_voo)}/h"
@@ -1157,7 +1169,9 @@ def _analise_saldo(df, dados):
         if empenhos_info is None or not media_mensal:
             st.info("Sem dados de empenhos/hora de voo do Contrato 005 — não dá pra projetar.")
         else:
-            projecao, mes_critico = _projetar_saldo(saldo_total_real, media_mensal, fila_projetavel)
+            projecao, mes_critico = _projetar_saldo(
+                saldo_total_real, media_mensal, fila_projetavel, saida_mes0_real=valor_real_mes_prox,
+            )
 
             if mes_critico is not None:
                 st.markdown(
