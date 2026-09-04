@@ -32,7 +32,9 @@ reescrito, só reorganizado. As contas NOVAS (Aprovado/Utilizado/Disponível/
 TGCO/Livre, Grupo estratégico) vêm de `projetos/regras/mta_regras.py`,
 mesmo padrão de sempre (regra de negócio centralizada, não espalhada)."""
 
+import re
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
@@ -886,6 +888,54 @@ def _painel_detalhe_mes(linha):
     )
 
 
+_CAMINHO_DISPONIBILIDADE_DIARIA = Path(__file__).resolve().parents[4] / "Coordenadoria" / "02_Dados_Tratados" / "base_disponibilidade_diaria.xlsx"
+
+
+def _parse_esforco_hhmm(valor):
+    if valor is None or (isinstance(valor, float) and pd.isna(valor)):
+        return None
+    m = re.match(r"(\d+):(\d+)(?::(\d+))?", str(valor))
+    if not m:
+        return None
+    return int(m.group(1)) + int(m.group(2)) / 60
+
+
+def _horas_voadas_reais_no_mes(ano, mes):
+    """Horas REALMENTE voadas num mês específico (não é média/estimativa) —
+    mesmo método do Cômputo Mensal do Contrato 005
+    (fechamento_mensal.py::_horas_voadas_no_mes/_carregar_horas_voadas_por_intervalo):
+    "esforco_anual_realizado" da Disponibilidade Diária é um ACUMULADO do
+    ano, então cada mês é a diferença entre o acumulado no fim do mês e no
+    fim do mês anterior. Devolve None se a Disponibilidade Diária não tiver
+    dados suficientes pra cobrir o mês pedido (mês ainda não começou, ou o
+    relatório não chegou até lá).
+
+    2026-09-04, pedido do Wallace ("a saída de R$1.780.187,52 tá lá, usa
+    isso em vez da média"): usado pra trocar a estimativa genérica
+    (média anual) do card 'Próximo a empenhar' pelo valor REAL do mês
+    específico, quando esse mês já está fechado (ex.: Ago/2026)."""
+    if not _CAMINHO_DISPONIBILIDADE_DIARIA.exists():
+        return None
+    df = pd.read_excel(_CAMINHO_DISPONIBILIDADE_DIARIA)
+    df["data_referencia"] = pd.to_datetime(df["data_referencia"]).dt.date
+    df["esforco_horas"] = df["esforco_anual_realizado"].apply(_parse_esforco_hhmm)
+    df = df.dropna(subset=["esforco_horas"]).sort_values("data_referencia").reset_index(drop=True)
+    if len(df) < 2:
+        return None
+
+    total_mes = 0.0
+    achou = False
+    for i in range(1, len(df)):
+        anterior, hoje = df.iloc[i - 1], df.iloc[i]
+        delta = hoje["esforco_horas"] - anterior["esforco_horas"]
+        if delta < 0:
+            continue  # virada de ano/reinício do acumulado — não inventa
+        if hoje["data_referencia"].year == ano and hoje["data_referencia"].month == mes:
+            total_mes += delta
+            achou = True
+    return round(total_mes, 2) if achou else None
+
+
 def _empenhado_ate_calendario():
     """Até qual mês o empenho de Hora de Voo já está CONFIRMADO, e qual é o
     próximo — direto do calendário, sem depender do "Atendido" do MTA (que
@@ -1008,12 +1058,28 @@ def _analise_saldo(df, dados):
                                   f"Cobre o uso de {_mes_ano(mes_uso_feito.strftime('%Y-%m'))}", "good"),
             ]
             if mes_emp_prox is not None:
+                # Valor REAL do mês (horas realmente voadas x valor da hora),
+                # não a média anual — pedido do Wallace 2026-09-04 ("a saída
+                # de R$1.780.187,52 tá lá, usa isso"). Só existe quando o mês
+                # já tem Disponibilidade Diária suficiente pra fechar (ex.:
+                # mês corrente ainda em andamento não fecha) — cai pra média
+                # anual (`media_mensal`) nesse caso, sempre mostrando algo.
+                horas_mes_prox = _horas_voadas_reais_no_mes(mes_uso_prox.year, mes_uso_prox.month)
+                valor_real_mes_prox = (
+                    horas_mes_prox * valor_hora_voo if horas_mes_prox is not None and valor_hora_voo else None
+                )
+                valor_exibido = valor_real_mes_prox if valor_real_mes_prox is not None else media_mensal
+                fonte_valor = (
+                    f"{horas_mes_prox:.1f}h reais voadas × {moeda_completa(valor_hora_voo)}/h"
+                    if valor_real_mes_prox is not None
+                    else "média de gasto mensal (ver \"Consumo\" abaixo) — mês ainda sem Disponibilidade Diária suficiente pra fechar"
+                )
                 cartoes_ate_quando.append(
                     cartao_indicador(
                         "⏳ Próximo a empenhar",
-                        _mes_ano(mes_emp_prox.strftime("%Y-%m")) + (f" · ~{moeda_compacta(media_mensal)}" if media_mensal else ""),
-                        f"Referente ao uso de {_mes_ano(mes_uso_prox.strftime('%Y-%m'))} · valor estimado pela "
-                        "média de gasto mensal (ver \"Consumo\" abaixo) — ainda não confirmado no Fechamento Mensal",
+                        _mes_ano(mes_emp_prox.strftime("%Y-%m")) + (f" · ~{moeda_compacta(valor_exibido)}" if valor_exibido else ""),
+                        f"Referente ao uso de {_mes_ano(mes_uso_prox.strftime('%Y-%m'))} · {fonte_valor} — "
+                        "ainda não confirmado no Fechamento Mensal",
                         "warning",
                     )
                 )
