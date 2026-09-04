@@ -887,19 +887,27 @@ def _painel_detalhe_mes(linha):
 
 
 def _empenhado_ate_calendario():
-    """Até qual mês o empenho de Hora de Voo já está feito, e qual é o
+    """Até qual mês o empenho de Hora de Voo já está CONFIRMADO, e qual é o
     próximo — direto do calendário, sem depender do "Atendido" do MTA (que
-    não bate 1:1 com a data real do empenho). Regra confirmada pelo
-    Wallace em 2026-07-28: "horas de junho, empenhado em julho" — o
-    empenho de um mês de uso acontece no mês seguinte, então o mês de uso
-    corrente (hoje) só termina de ser empenhado no mês que vem; o mês de
-    uso anterior já foi. Devolve (mes_uso_feito, mes_empenho_feito,
-    mes_uso_proximo, mes_empenho_proximo)."""
+    não bate 1:1 com a data real do empenho).
+
+    2026-09-03 (correção pedida pelo Wallace, olhando o card ao vivo): a
+    regra de 2026-07-28 ("horas de junho, empenhado em julho") tava certa
+    sobre O MÊS em que o empenho acontece, mas o card assumia esse mês
+    como "✅ já feito" assim que ele começa — na prática, o empenho do
+    mês corrente ainda é só uma ESTIMATIVA no Fechamento Mensal até
+    acontecer de verdade (confirmado com o Wallace em 03/09/2026, mês
+    corrente Set/2026: "próximo a empenhar SETEMBRO REFERENTE A AGOSTO,
+    tem o valor estimado lá no Fechamento Mensal" — ou seja, Set/2026
+    ainda é "próximo", não "já feito"). Por isso os dois pares recuaram
+    1 mês: o último CONFIRMADO é sempre o mês anterior ao atual, e o
+    PRÓXIMO (ainda previsto, não confirmado) é o mês atual. Devolve
+    (mes_uso_feito, mes_empenho_feito, mes_uso_proximo, mes_empenho_proximo)."""
     mes_atual = pd.Timestamp(horario.hoje_br()).replace(day=1)
-    mes_uso_feito = mes_atual - pd.DateOffset(months=1)
-    mes_empenho_feito = mes_atual
-    mes_uso_proximo = mes_atual
-    mes_empenho_proximo = mes_atual + pd.DateOffset(months=1)
+    mes_empenho_feito = mes_atual - pd.DateOffset(months=1)
+    mes_uso_feito = mes_empenho_feito - pd.DateOffset(months=1)
+    mes_empenho_proximo = mes_atual
+    mes_uso_proximo = mes_empenho_proximo - pd.DateOffset(months=1)
     return mes_uso_feito, mes_empenho_feito, mes_uso_proximo, mes_empenho_proximo
 
 
@@ -1002,7 +1010,8 @@ def _analise_saldo(df, dados):
             if mes_emp_prox is not None:
                 cartoes_ate_quando.append(
                     cartao_indicador("⏳ Próximo a empenhar", _mes_ano(mes_emp_prox.strftime("%Y-%m")),
-                                      f"Referente ao uso de {_mes_ano(mes_uso_prox.strftime('%Y-%m'))}", "warning")
+                                      f"Referente ao uso de {_mes_ano(mes_uso_prox.strftime('%Y-%m'))} · "
+                                      "valor estimado no Fechamento Mensal, ainda não confirmado", "warning")
                 )
             grade_indicadores(cartoes_ate_quando)
             st.divider()
