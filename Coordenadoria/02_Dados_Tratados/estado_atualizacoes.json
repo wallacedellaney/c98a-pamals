@@ -1,7 +1,7 @@
 {
   "disponibilidade_diaria": {
-    "status": "sem_novidade",
-    "last_error": null,
+    "status": "erro",
+    "last_error": "[Errno 61] Connection refused",
     "remote_modified_time": "2026-09-04T10:56:49.482Z",
     "local_updated_at": "2026-09-07T13:23:59.076030-03:00",
     "record_count": 44
@@ -9,9 +9,9 @@
   "rac": {
     "remote_modified_time": "2026-09-04T14:45:24.645Z",
     "local_updated_at": "2026-09-07T13:24:10.350630-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 30,
-    "last_error": null
+    "last_error": "[Errno 61] Connection refused"
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-09-02T17:50:12.735Z",

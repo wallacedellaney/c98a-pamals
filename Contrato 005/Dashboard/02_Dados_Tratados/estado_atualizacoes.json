@@ -2,13 +2,13 @@
   "emergencias": {
     "remote_modified_time": "2026-09-04T14:46:35.049Z",
     "local_updated_at": "2026-09-07T13:24:31.195647-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 9,
-    "last_error": null
+    "last_error": "[Errno 61] Connection refused"
   },
   "pagamentos": {
     "remote_modified_time": "2026-09-03T23:29:17.976Z",
-    "local_updated_at": "2026-09-07T13:24:37.123371-03:00",
+    "local_updated_at": "2026-09-08T08:22:31.451285-03:00",
     "status": "atualizado",
     "record_count": 33,
     "last_error": null
