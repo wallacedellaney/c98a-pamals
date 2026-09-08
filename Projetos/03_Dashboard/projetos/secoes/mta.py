@@ -1005,8 +1005,17 @@ def _analise_saldo(df, dados):
 
     hv = df[df["para_contrato"] == "HORA DE VOO"].copy()
     eh_rap_mta = hv["pacote"] == "RAP"
+    # "Remanejar" (exato) no Preenchimento TGCO — Wallace, 2026-09-08, sobre a
+    # linha 17761 (Hora de Voo 08/10): "ta escrito remanejar agora no
+    # preenchimento da tgco, pode desconsiderar ele" — essa parcela não vai
+    # virar empenho de verdade (foi remanejada pra outro lugar), então não
+    # deve contar nem na fila nem na projeção de entrada. Match exato (não
+    # "contains") pra não pegar textos parecidos mas com sentido diferente,
+    # como "Remanejar tarefa módulo extra" (linha 63940 — recebendo
+    # remanejamento, não perdendo).
+    eh_remanejada = hv["preenchimento_tgco"] == "Remanejar"
     atendido = hv[hv["situacao_consolidada"] == "Atendido"]
-    fila_mta = hv[(hv["situacao_consolidada"] != "Atendido") & ~eh_rap_mta]
+    fila_mta = hv[(hv["situacao_consolidada"] != "Atendido") & ~eh_rap_mta & ~eh_remanejada]
     rap_mta = hv[eh_rap_mta]
     # Projeção usa só a fila (sem RAP) — RAP já virou empenho de verdade e
     # já está refletido no saldo inicial (saldo dos empenhos pré-2026), contá-lo
