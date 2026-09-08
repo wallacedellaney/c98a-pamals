@@ -25037,18 +25037,18 @@ data_snapshot,numero_solicitacao,pn,categoria,quantidade,tipo,status,solicitante
 2026-09-08,13410542693U8,30994-001,T,1,Emergência,Pendente,2S Godoy Silva,2026-05-14 10:54:00,NaT
 2026-09-08,13410363012U8,2601188-9,C,1,Emergência,Pendente,2S Godoy Silva,2026-05-14 10:36:00,NaT
 2026-09-08,13409595836U8,SCAT8-960,C,2,Emergência,Finalizada,2S Godoy Silva,2026-05-14 09:59:00,NaT
-2026-09-08,13115053387U8,AN929-4W,C,2,Emergência,Finalizada,2S Ramon,2026-05-11 15:05:00,NaT
+2026-09-08,13115053387U8,AN929-4W,C,2,Emergência,Atender,2S Ramon,2026-05-11 15:05:00,NaT
 2026-09-08,12510195447U8,13102-63,C,1,Reposição de Estoque,Pendente,Andrew,2026-05-05 10:19:00,NaT
-2026-09-08,12414303473U8,13102-63,C,1,Emergência,Pendente,2S Ramon,2026-05-04 14:30:00,NaT
-2026-09-08,11909345398U8,B-5987,C,26,Pedido Normal,Aprovada,2S Ramon,2026-04-29 09:34:00,NaT
+2026-09-08,12414303473U8,13102-63,C,1,Emergência,Atender,2S Ramon,2026-05-04 14:30:00,NaT
+2026-09-08,11909345398U8,B-5987,C,26,Pedido Normal,Atender,2S Ramon,2026-04-29 09:34:00,NaT
 2026-09-08,09317522705U8,40SP100,C,20,Pedido Normal,Finalizada,barretoamb,2026-04-03 17:52:00,NaT
 2026-09-08,08508503162U8,C592001-0205,C,3,Outros,Negada,barretoamb,2026-03-26 08:50:00,NaT
 2026-09-08,08507554496U8,2661615-10,T,1,Pedido Normal,Aprovada,2S Godoy Silva,2026-03-26 07:55:00,NaT
-2026-09-08,08412005767U8,E6391,C,5,Outros,Pendente,2S Ramon,2026-03-25 12:00:00,NaT
-2026-09-08,08411590283U8,P7036368-01,R,5,Outros,Pendente,2S Ramon,2026-03-25 11:59:00,NaT
+2026-09-08,08412005767U8,E6391,C,5,Outros,Atender,2S Ramon,2026-03-25 12:00:00,NaT
+2026-09-08,08411590283U8,P7036368-01,R,5,Outros,Atender,2S Ramon,2026-03-25 11:59:00,NaT
 2026-09-08,08008373220U8,C145-00-46,C,1,Emergência,Finalizada,cristianoccs,2026-03-21 08:37:00,NaT
 2026-09-08,07807213357U8,2115040-8,C,2,Emergência,Finalizada,fernandescaf,2026-03-19 07:21:00,NaT
-2026-09-08,07711450337U8,A-1664-17,C,1,Outros,Aprovada,wallacewdl,2026-03-18 11:45:00,NaT
+2026-09-08,07711450337U8,A-1664-17,C,1,Outros,Pendente,wallacewdl,2026-03-18 11:45:00,NaT
 2026-09-08,07711411668U8,A-1638-1,C,30,Outros,Finalizada,wallacewdl,2026-03-18 11:41:00,NaT
 2026-09-08,07711292790U8,A1750-6,C,4,Outros,Negada,wallacewdl,2026-03-18 11:29:00,NaT
 2026-09-08,07711254590U8,C-40323-83,C,6,Outros,Aprovada,wallacewdl,2026-03-18 11:25:00,NaT
@@ -25210,7 +25210,7 @@ data_snapshot,numero_solicitacao,pn,categoria,quantidade,tipo,status,solicitante
 2026-09-08,265113453U8,AT-RL1019,C,1,Reposição de Estoque,Pendente,Enio,2025-09-22 11:34:00,NaT
 2026-09-08,265113400U8,2615011-2,C,1,Reposição de Estoque,Pendente,Enio,2025-09-22 11:34:00,NaT
 2026-09-08,265113303U8,S2837-1,C,1,Reposição de Estoque,Pendente,Enio,2025-09-22 11:33:00,NaT
-2026-09-08,260145918U8,3029566,C,14,Pedido Normal,Finalizada,wallacewdl,2025-09-17 14:59:00,NaT
+2026-09-08,260145918U8,3029566,C,14,Pedido Normal,Pendente,wallacewdl,2025-09-17 14:59:00,NaT
 2026-09-08,260143501U8,2617015-22,C,2,Emergência,Pendente,barretoamb,2025-09-17 14:35:00,NaT
 2026-09-08,260143240U8,2617015-18,C,1,Emergência,Pendente,barretoamb,2025-09-17 14:32:00,NaT
 2026-09-08,260140714U8,2615011-2,C,1,Emergência,Pendente,barretoamb,2025-09-17 14:07:00,NaT
@@ -25236,60 +25236,60 @@ data_snapshot,numero_solicitacao,pn,categoria,quantidade,tipo,status,solicitante
 2026-09-08,210141832U8,101-00901,P,1,Outros,Finalizada,1S Rios,2025-07-29 14:18:00,NaT
 2026-09-08,210112831U8,A1633-56,C,14,Reposição de Estoque,Finalizada,Enio,2025-07-29 11:28:00,NaT
 2026-09-08,203110455U8,2641011-1,T,1,Pedido Normal,Finalizada,wallacewdl,2025-07-22 11:04:00,NaT
-2026-09-08,203110123U8,16167-006,C,1,Pedido Normal,Finalizada,wallacewdl,2025-07-22 11:01:00,NaT
-2026-09-08,203105902U8,MS20007-70,C,5,Pedido Normal,Finalizada,wallacewdl,2025-07-22 10:59:00,NaT
-2026-09-08,203105656U8,2654029-14,C,1,Pedido Normal,Aprovada,wallacewdl,2025-07-22 10:56:00,NaT
-2026-09-08,203105457U8,F4-9-1,C,1,Pedido Normal,Aprovada,wallacewdl,2025-07-22 10:54:00,NaT
+2026-09-08,203110123U8,16167-006,C,1,Pedido Normal,Atender,wallacewdl,2025-07-22 11:01:00,NaT
+2026-09-08,203105902U8,MS20007-70,C,5,Pedido Normal,Atender,wallacewdl,2025-07-22 10:59:00,NaT
+2026-09-08,203105656U8,2654029-14,C,1,Pedido Normal,Pendente,wallacewdl,2025-07-22 10:56:00,NaT
+2026-09-08,203105457U8,F4-9-1,C,1,Pedido Normal,Pendente,wallacewdl,2025-07-22 10:54:00,NaT
 2026-09-08,203104930U8,M22759/41-24-9,C,15,Pedido Normal,Negada,wallacewdl,2025-07-22 10:49:00,NaT
 2026-09-08,203104639U8,B-5363,C,5,Pedido Normal,Negada,wallacewdl,2025-07-22 10:46:00,NaT
 2026-09-08,203104208U8,DD2W,C,12,Pedido Normal,Finalizada,wallacewdl,2025-07-22 10:42:00,NaT
 2026-09-08,203103718U8,C592001-0206,C,12,Pedido Normal,Finalizada,wallacewdl,2025-07-22 10:37:00,NaT
 2026-09-08,203103122U8,9-01360,C,14,Pedido Normal,Finalizada,wallacewdl,2025-07-22 10:31:00,NaT
 2026-09-08,203092346U8,A1633-56,C,5,Pedido Normal,Finalizada,wallacewdl,2025-07-22 09:23:00,NaT
-2026-09-08,203091601U8,068-02800,C,5,Pedido Normal,Finalizada,wallacewdl,2025-07-22 09:16:00,NaT
-2026-09-08,203091240U8,NAS1745-15,C,14,Pedido Normal,Aprovada,wallacewdl,2025-07-22 09:12:00,NaT
-2026-09-08,203090831U8,3045999-01,C,5,Pedido Normal,Finalizada,wallacewdl,2025-07-22 09:08:00,NaT
+2026-09-08,203091601U8,068-02800,C,5,Pedido Normal,Atender,wallacewdl,2025-07-22 09:16:00,NaT
+2026-09-08,203091240U8,NAS1745-15,C,14,Pedido Normal,Pendente,wallacewdl,2025-07-22 09:12:00,NaT
+2026-09-08,203090831U8,3045999-01,C,5,Pedido Normal,Pendente,wallacewdl,2025-07-22 09:08:00,NaT
 2026-09-08,203083951U8,CR3243-4-6,C,17,Pedido Normal,Negada,wallacewdl,2025-07-22 08:39:00,NaT
 2026-09-08,199155050U8,DCN4-3819,C,23,Pedido Normal,Finalizada,wallacewdl,2025-07-18 15:50:00,NaT
-2026-09-08,199154308U8,3029268,C,10,Pedido Normal,Finalizada,wallacewdl,2025-07-18 15:43:00,NaT
+2026-09-08,199154308U8,3029268,C,10,Pedido Normal,Pendente,wallacewdl,2025-07-18 15:43:00,NaT
 2026-09-08,199153631U8,AN4-11A,C,7,Pedido Normal,Aprovada,wallacewdl,2025-07-18 15:36:00,NaT
 2026-09-08,199152050U8,NAS1149F1290P,C,15,Pedido Normal,Negada,wallacewdl,2025-07-18 15:20:00,NaT
-2026-09-08,199150737U8,NA525-832R7,C,19,Pedido Normal,Aprovada,wallacewdl,2025-07-18 15:07:00,NaT
-2026-09-08,199144439U8,MS20365-1032,C,24,Pedido Normal,Aprovada,wallacewdl,2025-07-18 14:44:00,NaT
+2026-09-08,199150737U8,NA525-832R7,C,19,Pedido Normal,Pendente,wallacewdl,2025-07-18 15:07:00,NaT
+2026-09-08,199144439U8,MS20365-1032,C,24,Pedido Normal,Pendente,wallacewdl,2025-07-18 14:44:00,NaT
 2026-09-08,199144034U8,MS24694S135,C,22,Pedido Normal,Negada,wallacewdl,2025-07-18 14:40:00,NaT
 2026-09-08,199143351U8,C145-350,C,4,Pedido Normal,Aprovada,wallacewdl,2025-07-18 14:33:00,NaT
 2026-09-08,199142912U8,C664503-0101,C,4,Pedido Normal,Aprovada,wallacewdl,2025-07-18 14:29:00,NaT
-2026-09-08,199142620U8,065-0030-00,T,5,Pedido Normal,Aprovada,wallacewdl,2025-07-18 14:26:00,NaT
-2026-09-08,199142233U8,011-01020-10,R,1,Pedido Normal,Pendente,wallacewdl,2025-07-18 14:22:00,NaT
-2026-09-08,199141638U8,MD41-448,R,5,Pedido Normal,Aprovada,wallacewdl,2025-07-18 14:16:00,NaT
+2026-09-08,199142620U8,065-0030-00,T,5,Pedido Normal,Pendente,wallacewdl,2025-07-18 14:26:00,NaT
+2026-09-08,199142233U8,011-01020-10,R,1,Pedido Normal,Atender,wallacewdl,2025-07-18 14:22:00,NaT
+2026-09-08,199141638U8,MD41-448,R,5,Pedido Normal,Pendente,wallacewdl,2025-07-18 14:16:00,NaT
 2026-09-08,199141413U8,C622010-0101,R,2,Pedido Normal,Aprovada,wallacewdl,2025-07-18 14:14:00,NaT
 2026-09-08,199141057U8,156-0019G,R,4,Pedido Normal,Pendente,wallacewdl,2025-07-18 14:10:00,NaT
-2026-09-08,199134231U8,C668540-0102,C,1,Pedido Normal,Aprovada,wallacewdl,2025-07-18 13:42:00,NaT
-2026-09-08,199133753U8,011-00868-10,R,2,Pedido Normal,Aprovada,wallacewdl,2025-07-18 13:37:00,NaT
-2026-09-08,199133450U8,011-00779-10,R,1,Pedido Normal,Aprovada,wallacewdl,2025-07-18 13:34:00,NaT
-2026-09-08,199133202U8,RFN3934,T,3,Pedido Normal,Finalizada,wallacewdl,2025-07-18 13:32:00,NaT
-2026-09-08,199132903U8,065-0058-01,R,2,Pedido Normal,Aprovada,wallacewdl,2025-07-18 13:29:00,NaT
+2026-09-08,199134231U8,C668540-0102,C,1,Pedido Normal,Pendente,wallacewdl,2025-07-18 13:42:00,NaT
+2026-09-08,199133753U8,011-00868-10,R,2,Pedido Normal,Pendente,wallacewdl,2025-07-18 13:37:00,NaT
+2026-09-08,199133450U8,011-00779-10,R,1,Pedido Normal,Pendente,wallacewdl,2025-07-18 13:34:00,NaT
+2026-09-08,199133202U8,RFN3934,T,3,Pedido Normal,Pendente,wallacewdl,2025-07-18 13:32:00,NaT
+2026-09-08,199132903U8,065-0058-01,R,2,Pedido Normal,Pendente,wallacewdl,2025-07-18 13:29:00,NaT
 2026-09-08,199132622U8,C163030-1001,T,5,Pedido Normal,Negada,wallacewdl,2025-07-18 13:26:00,NaT
-2026-09-08,199132410U8,066-3054-01,R,4,Pedido Normal,Aprovada,wallacewdl,2025-07-18 13:24:00,NaT
+2026-09-08,199132410U8,066-3054-01,R,4,Pedido Normal,Pendente,wallacewdl,2025-07-18 13:24:00,NaT
 2026-09-08,199131831U8,066-1069-00,R,4,Pedido Normal,Pendente,wallacewdl,2025-07-18 13:18:00,NaT
 2026-09-08,199131534U8,2606014-1,R,1,Pedido Normal,Aprovada,wallacewdl,2025-07-18 13:15:00,NaT
 2026-09-08,199131211U8,8210-002,R,1,Pedido Normal,Finalizada,wallacewdl,2025-07-18 13:12:00,NaT
-2026-09-08,199130448U8,0901-1,R,2,Pedido Normal,Finalizada,wallacewdl,2025-07-18 13:04:00,NaT
-2026-09-08,199125824U8,C662041-0102,R,2,Pedido Normal,Finalizada,wallacewdl,2025-07-18 12:58:00,NaT
+2026-09-08,199130448U8,0901-1,R,2,Pedido Normal,Atender,wallacewdl,2025-07-18 13:04:00,NaT
+2026-09-08,199125824U8,C662041-0102,R,2,Pedido Normal,Atender,wallacewdl,2025-07-18 12:58:00,NaT
 2026-09-08,199125228U8,51539-012N,R,2,Pedido Normal,Pendente,wallacewdl,2025-07-18 12:52:00,NaT
 2026-09-08,199124628U8,C660501-0102,T,1,Pedido Normal,Aprovada,wallacewdl,2025-07-18 12:46:00,NaT
 2026-09-08,199114906U8,2606013-1AM,R,4,Pedido Normal,Finalizada,wallacewdl,2025-07-18 11:49:00,NaT
-2026-09-08,199114410U8,060-0017-00,R,2,Pedido Normal,Aprovada,wallacewdl,2025-07-18 11:44:00,NaT
+2026-09-08,199114410U8,060-0017-00,R,2,Pedido Normal,Pendente,wallacewdl,2025-07-18 11:44:00,NaT
 2026-09-08,199114100U8,071-1242-06,R,5,Pedido Normal,Pendente,wallacewdl,2025-07-18 11:41:00,NaT
-2026-09-08,199113852U8,799-1,R,2,Pedido Normal,Finalizada,wallacewdl,2025-07-18 11:38:00,NaT
-2026-09-08,199113423U8,064-1019-05,R,4,Pedido Normal,Atender,wallacewdl,2025-07-18 11:34:00,NaT
+2026-09-08,199113852U8,799-1,R,2,Pedido Normal,Negada,wallacewdl,2025-07-18 11:38:00,NaT
+2026-09-08,199113423U8,064-1019-05,R,4,Pedido Normal,Pendente,wallacewdl,2025-07-18 11:34:00,NaT
 2026-09-08,199113157U8,164-22201,C,7,Pedido Normal,Aprovada,wallacewdl,2025-07-18 11:31:00,NaT
-2026-09-08,199105112U8,066-3059-01,R,6,Pedido Normal,Aprovada,wallacewdl,2025-07-18 10:51:00,NaT
+2026-09-08,199105112U8,066-3059-01,R,6,Pedido Normal,Pendente,wallacewdl,2025-07-18 10:51:00,NaT
 2026-09-08,199104646U8,2651023-1,T,5,Pedido Normal,Negada,wallacewdl,2025-07-18 10:46:00,NaT
-2026-09-08,199103939U8,2651022-1,T,3,Pedido Normal,Aprovada,wallacewdl,2025-07-18 10:39:00,NaT
+2026-09-08,199103939U8,2651022-1,T,3,Pedido Normal,Pendente,wallacewdl,2025-07-18 10:39:00,NaT
 2026-09-08,199103010U8,C482001-0402,T,4,Pedido Normal,Aprovada,wallacewdl,2025-07-18 10:30:00,NaT
-2026-09-08,199102348U8,162-107-00,R,7,Pedido Normal,Aprovada,wallacewdl,2025-07-18 10:23:00,NaT
-2026-09-08,199102046U8,161-117-00,R,7,Pedido Normal,Aprovada,wallacewdl,2025-07-18 10:20:00,NaT
+2026-09-08,199102348U8,162-107-00,R,7,Pedido Normal,Pendente,wallacewdl,2025-07-18 10:23:00,NaT
+2026-09-08,199102046U8,161-117-00,R,7,Pedido Normal,Pendente,wallacewdl,2025-07-18 10:20:00,NaT
 2026-09-08,199091859U8,162-11800,T,1,Pedido Normal,Negada,wallacewdl,2025-07-18 09:18:00,NaT
 2026-09-08,197153827U8,A-1638-7,C,9,Emergência,Pendente,cristianoccs,2025-07-16 15:38:00,NaT
 2026-09-08,197153301U8,A1639-40,C,9,Emergência,Pendente,cristianoccs,2025-07-16 15:33:00,NaT
@@ -25447,7 +25447,7 @@ data_snapshot,numero_solicitacao,pn,categoria,quantidade,tipo,status,solicitante
 2026-09-08,077111022U8,2641008-200,T,2,Emergência,Negada,barretoamb,2025-03-18 11:10:00,NaT
 2026-09-08,077105341U8,S3354-1,C,12,Outros,Negada,2S Ramon,2025-03-18 10:53:00,NaT
 2026-09-08,077105340U8,S3354-1,C,12,Outros,Finalizada,2S Ramon,2025-03-18 10:53:00,NaT
-2026-09-08,077103449U8,DAAS-A-010-1,R,2,Emergência,Finalizada,2S Ramon,2025-03-18 10:34:00,NaT
+2026-09-08,077103449U8,DAAS-A-010-1,R,2,Emergência,Negada,2S Ramon,2025-03-18 10:34:00,NaT
 2026-09-08,077103153U8,1270483-2,C,2,Outros,Pendente,2S Ramon,2025-03-18 10:31:00,NaT
 2026-09-08,077085855U8,2617015-15,C,4,Emergência,Aprovada,barretoamb,2025-03-18 08:58:00,NaT
 2026-09-08,077085408U8,2615011-2,C,1,Emergência,Negada,barretoamb,2025-03-18 08:54:00,NaT
