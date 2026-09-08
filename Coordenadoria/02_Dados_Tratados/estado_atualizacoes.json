@@ -8,10 +8,10 @@
   },
   "rac": {
     "remote_modified_time": "2026-09-04T14:45:24.645Z",
-    "local_updated_at": "2026-09-07T13:24:10.350630-03:00",
-    "status": "erro",
+    "local_updated_at": "2026-09-08T08:31:31.663969-03:00",
+    "status": "atualizado",
     "record_count": 30,
-    "last_error": "[Errno 61] Connection refused"
+    "last_error": null
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-09-02T17:50:12.735Z",
