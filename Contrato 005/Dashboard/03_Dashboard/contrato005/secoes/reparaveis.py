@@ -298,6 +298,82 @@ def _figura_historico_mensal(contagem, altura=320):
     return fig
 
 
+def _dados_observado_no_mes(df, historico):
+    """Abertura/entrega/condenação de OS que aconteceram no mês corrente —
+    pedido do Wallace, 2026-09-10: "teve mudança de entrega e condenação?
+    deixa claro na página uma parte falando o que foi observado no mês
+    também". Abertura e entrega usam a data real da própria OS (Data
+    Início / Data de Entrega, ambas confiáveis, não dependem de
+    histórico). Condenação usa o snapshot diário
+    (`historico_reparaveis.csv`) pra achar a 1ª vez que a Condição de
+    cada OS virou "CONDENADO" — sem isso, um item condenado em julho e
+    ainda condenado hoje apareceria de novo todo mês só por continuar com
+    esse status, o que não é "aconteceu esse mês"."""
+    hoje = pd.Timestamp(horario.hoje_br())
+    mes_atual = hoje.to_period("M")
+
+    # `data_entrega` vem como object depois de `_mesclar_complemento_rma`
+    # (pode ter texto vindo do complemento RMA, não só data real) — usa
+    # `errors="coerce"` pra ler as datas de verdade e ignorar o que não é
+    # data, sem quebrar o `.dt` abaixo.
+    data_inicio = pd.to_datetime(df["data_inicio"], errors="coerce")
+    data_entrega = pd.to_datetime(df["data_entrega"], errors="coerce")
+    abertas_mes = df[data_inicio.dt.to_period("M") == mes_atual]
+    entregues_mes = df[data_entrega.dt.to_period("M") == mes_atual]
+
+    condenadas_mes = df.iloc[0:0]
+    if historico is not None and not historico.empty and "condicao" in historico.columns:
+        cond_hist = historico[historico["condicao"] == "CONDENADO"].copy()
+        if not cond_hist.empty:
+            cond_hist["data_snapshot"] = pd.to_datetime(cond_hist["data_snapshot"], errors="coerce")
+            primeira_vez = cond_hist.dropna(subset=["data_snapshot"]).groupby("os")["data_snapshot"].min()
+            os_condenadas_no_mes = primeira_vez[primeira_vez.dt.to_period("M") == mes_atual].index
+            condenadas_mes = df[df["os"].isin(os_condenadas_no_mes)]
+
+    return mes_atual, abertas_mes, entregues_mes, condenadas_mes
+
+
+def _secao_observado_no_mes(df, historico):
+    mes_atual, abertas_mes, entregues_mes, condenadas_mes = _dados_observado_no_mes(df, historico)
+    rotulo_mes = f"{MESES_PT[mes_atual.month - 1]}/{mes_atual.year}"
+
+    st.markdown(f"##### O que foi observado em {rotulo_mes}")
+    st.caption(
+        "Abertura = Data Início dentro do mês. Entrega = Data de Entrega dentro do mês. "
+        "Condenação = OS cuja Condição virou \"CONDENADO\" pela 1ª vez neste mês (usa o "
+        "histórico diário — um item já condenado antes não é contado de novo)."
+    )
+    st.markdown(
+        _linha_kpis_html([
+            ("Movimentação do mês", [
+                ("OS abertas", len(abertas_mes), None, "🆕"),
+                ("Entregas", len(entregues_mes), STATUS["good"] if len(entregues_mes) else None, "📦"),
+                ("Condenações novas", len(condenadas_mes),
+                 STATUS["critical"] if len(condenadas_mes) else STATUS["good"], "⚠️"),
+            ]),
+        ]),
+        unsafe_allow_html=True,
+    )
+
+    if len(entregues_mes) == 0 and len(condenadas_mes) == 0:
+        st.caption("Sem entregas nem condenações novas registradas neste mês até agora.")
+
+    with st.expander(f"Ver as OS de {rotulo_mes.lower()}"):
+        colunas_detalhe = ["os", "pn", "nomenclatura", "situacao", "condicao", "onde_se_encontra"]
+        if len(entregues_mes):
+            st.markdown("**📦 Entregas do mês**")
+            st.dataframe(
+                entregues_mes[colunas_detalhe + ["data_entrega"]], hide_index=True, width="stretch",
+            )
+        if len(condenadas_mes):
+            st.markdown("**⚠️ Condenações novas do mês**")
+            st.dataframe(condenadas_mes[colunas_detalhe], hide_index=True, width="stretch")
+        if len(entregues_mes) == 0 and len(condenadas_mes) == 0:
+            st.caption("Nada a mostrar.")
+
+    st.divider()
+
+
 def _secao_historico_mensal(df):
     st.markdown("##### Histórico mensal — número de aberturas")
     st.caption("Quantidade de OS abertas (Data Início) por mês, independente da situação atual (em aberto ou já concluída).")
@@ -1074,4 +1150,5 @@ def render(dados):
         _secao_tabela(df)
 
     with aba_historico:
+        _secao_observado_no_mes(df, dados.get("historico_reparaveis"))
         _secao_historico_mensal(df)
