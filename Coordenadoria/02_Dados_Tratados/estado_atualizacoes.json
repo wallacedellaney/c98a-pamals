@@ -1,9 +1,9 @@
 {
   "disponibilidade_diaria": {
-    "status": "atualizado",
+    "status": "sem_novidade",
     "last_error": null,
     "remote_modified_time": "2026-09-18T11:45:12.656Z",
-    "local_updated_at": "2026-09-18T11:55:08.867398-03:00",
+    "local_updated_at": "2026-09-18T16:36:18.923197-03:00",
     "record_count": 49
   },
   "rac": {
