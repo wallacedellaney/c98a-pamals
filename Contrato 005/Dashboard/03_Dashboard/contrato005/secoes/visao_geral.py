@@ -159,13 +159,25 @@ def render(dados):
             v_2 = ind_reajuste.loc[ind_reajuste["indicador"] == "Valor do Contrato após 2° Reajuste", "valor"]
             st.metric("Valor do contrato (após 1° Reajuste)", formatar_moeda(v_1.iloc[0]) if len(v_1) else "—")
             st.caption(f"Após 2° Reajuste (projeção): {formatar_moeda(v_2.iloc[0])}" if len(v_2) else "—")
-            linhas_saldo = []
+            def _por_linha(linha):
+                v = ind_reajuste.loc[ind_reajuste["linha"] == linha, "valor"]
+                return v.iloc[0] if len(v) else None
+
+            # linhas da planilha: saldo após 1° Reajuste (41-43), usado desde 08/10/25 (76-78), disponível hoje (79-81)
+            tabela_md = ["| Módulo | Saldo em 08/10/25 (após 1° Reajuste) | Já usado desde então | **Disponível hoje** |", "|---|---:|---:|---:|"]
             for n in (1, 2, 3):
-                v_s = ind_reajuste.loc[ind_reajuste["indicador"] == f"Saldo do Módulo {n} até 08/10/26", "valor"]
-                if len(v_s):
-                    linhas_saldo.append(f"Módulo {n}: {formatar_moeda(v_s.iloc[0])}")
-            if linhas_saldo:
-                st.caption("Saldo projetado até 08/10/2026 — " + " · ".join(linhas_saldo))
+                base, usado, disp = _por_linha(40 + n), _por_linha(75 + n), _por_linha(78 + n)
+                if disp is None:
+                    continue
+                tabela_md.append(
+                    f"| Módulo {n} | {formatar_moeda(base) if base is not None else '—'} | "
+                    f"{formatar_moeda(usado) if usado is not None else '—'} | **{formatar_moeda(disp)}** |"
+                )
+            if len(tabela_md) > 2:
+                st.markdown("**Quanto ainda está disponível por módulo**")
+                st.markdown("\n".join(tabela_md))
+                st.caption("Disponível = saldo após o 1° Reajuste menos o que foi autorizado/faturado desde 08/10/2025 "
+                           "(NFs até a última atualização da planilha + orçamentos aguardando).")
         else:
             st.metric("Valor do contrato (após reajuste)", "—")
         if st.button("Ver Reajuste →", width="stretch", key="vg_ir_reajuste"):
