@@ -159,6 +159,13 @@ def render(dados):
             v_2 = ind_reajuste.loc[ind_reajuste["indicador"] == "Valor do Contrato após 2° Reajuste", "valor"]
             st.metric("Valor do contrato (após 1° Reajuste)", formatar_moeda(v_1.iloc[0]) if len(v_1) else "—")
             st.caption(f"Após 2° Reajuste (projeção): {formatar_moeda(v_2.iloc[0])}" if len(v_2) else "—")
+            linhas_saldo = []
+            for n in (1, 2, 3):
+                v_s = ind_reajuste.loc[ind_reajuste["indicador"] == f"Saldo do Módulo {n} até 08/10/26", "valor"]
+                if len(v_s):
+                    linhas_saldo.append(f"Módulo {n}: {formatar_moeda(v_s.iloc[0])}")
+            if linhas_saldo:
+                st.caption("Saldo projetado até 08/10/2026 — " + " · ".join(linhas_saldo))
         else:
             st.metric("Valor do contrato (após reajuste)", "—")
         if st.button("Ver Reajuste →", width="stretch", key="vg_ir_reajuste"):
