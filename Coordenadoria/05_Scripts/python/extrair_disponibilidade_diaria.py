@@ -40,17 +40,18 @@ PASTA_ORIGEM = BASES_ORIGINAIS / "Disponibilidade_Diaria"
 PASTA_RAIZ_DRIVE_ID = "1JLrUGunWo5ABsR3WuYo88b2WD4QWoxNH"
 RE_NOME_DOC = re.compile(r"Disponibilidade\s+(\d{2})/(\d{2})")
 
-RE_TITULO = re.compile(r"^\*C-98\s*-\s*(\d{2}/\d{2}/\d{4})\*$")
+RE_TITULO = re.compile(r"^\*?C-98\s*-\s*(\d{2}/\d{2}/\d{4})\*?$")
 RE_RESUMO_DM = re.compile(r"^(\d+)\s*D\s*/\s*(\d+)\s*M$")
 RE_CODIGOS = re.compile(
     r"^\((\d+)\s*DI\s*/\s*(\d+)\s*DO\s*/\s*(\d+)\s*II\s*/\s*(\d+)\s*IN\s*/\s*(\d+)\s*ITR\s*/\s*"
     r"(?:(\d+)\s*IT\s*/\s*)?(\d+)\s*IS\s*/\s*(\d+)\s*IP\)$"
 )
-RE_PREVISAO_FIM_DIA = re.compile(r"^\*Previsão até o final do dia:\s*(\d+)\s*D\s*/\s*(\d+)\s*M\*$")
-RE_DISPONIVEIS_SEMANA = re.compile(r"^\*Disponíveis:\*\s*(\d+)$")
-RE_MONTADAS_SEMANA = re.compile(r"^\*Montadas:\*\s*(\d+)$")
+RE_PREVISAO_FIM_DIA = re.compile(r"^\*?Previsão até o final do dia:\s*(\d+)\s*D\s*/\s*(\d+)\s*M\*?$")
+RE_DISPONIVEIS_SEMANA = re.compile(r"^\*?Disponíveis:\*?\s*(\d+)$")
+RE_MONTADAS_SEMANA = re.compile(r"^\*?Montadas:\*?\s*(\d+)$")
 RE_ESFORCO = re.compile(r"^Anual:\s*([\d:]+)\s*/\s*([\d:]+)\s*/\s*([\d,]+)%$")
-RE_MOTORES = re.compile(r"^\*Motores disponíveis:\s*(\d+)\*$")
+RE_MOTORES = re.compile(r"^\*?Motores disponíveis:\s*(\d+)\*?$")
+RE_LISTA_MATRICULAS = re.compile(r"^[\d,\s.]*\d[\d,\s.]*$")
 RE_UNIDADE = re.compile(r"^\*([^*]+)\*$")
 RE_AERONAVE = re.compile(r"^\[\s?\]\s*(\d{3,4})\s*-\s*([A-Z]{1,3})(?:\s*-\s*(.*))?$")
 RE_DPE_SPLIT = re.compile(r"\s*-\s*DPE\s*:\s*", re.IGNORECASE)
@@ -98,9 +99,14 @@ def _parse_lista_matriculas(linha):
     return [m.strip() for m in linha.split(",") if m.strip()]
 
 
+def resumo_visto_flag(resumo):
+    return ["resumo"] if "motores_disponiveis" in resumo else []
+
+
 def parse_relatorio(caminho):
     linhas = [l.strip() for l in caminho.read_text(encoding="utf-8-sig").splitlines()]
     linhas = [l for l in linhas if l != ""]
+    formato_plano = not any(l.startswith("*") for l in linhas)
 
     resumo = {}
     aeronaves = []
@@ -152,7 +158,7 @@ def parse_relatorio(caminho):
         if m:
             resumo["previsao_semana_disponiveis_qtd"] = int(m.group(1))
             prox = linhas[i + 1] if i + 1 < len(linhas) else ""
-            if prox.startswith("-"):
+            if prox.startswith("-") or RE_LISTA_MATRICULAS.match(prox):
                 resumo["previsao_semana_disponiveis_novas"] = ", ".join(_parse_lista_matriculas(prox))
                 i += 2
                 continue
@@ -164,7 +170,7 @@ def parse_relatorio(caminho):
         if m:
             resumo["previsao_semana_montadas_qtd"] = int(m.group(1))
             prox = linhas[i + 1] if i + 1 < len(linhas) else ""
-            if prox.startswith("-"):
+            if prox.startswith("-") or RE_LISTA_MATRICULAS.match(prox):
                 resumo["previsao_semana_montadas_novas"] = ", ".join(_parse_lista_matriculas(prox))
                 i += 2
                 continue
@@ -211,6 +217,13 @@ def parse_relatorio(caminho):
         m = RE_UNIDADE.match(linha)
         if m and m.group(1) not in TITULOS_CONHECIDOS:
             unidade_atual = m.group(1)
+            i += 1
+            continue
+
+        if (formato_plano and "resumo" in resumo_visto_flag(resumo) and linha not in TITULOS_CONHECIDOS
+                and not any(c in linha for c in "[]():") and not linha.startswith("-")
+                and not RE_LISTA_MATRICULAS.match(linha) and not linha.startswith("C-98")):
+            unidade_atual = linha
             i += 1
             continue
 
