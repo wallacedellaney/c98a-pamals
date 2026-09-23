@@ -62,6 +62,23 @@ TERMOS_CANCELAMENTO_OBSERVACAO = [
     "não ser mais necess", "não necessári",
 ]
 
+# Termos que, aparecendo na observação da Coordenadoria (fiscal), indicam que
+# o próprio fiscal decidiu NÃO aplicar avaliação negativa a essa ocorrência
+# (ex.: enquanto analisa argumentos técnicos apresentados pela contratada) —
+# mesmo efeito prático do cancelamento pro cômputo (não negativa nenhum dia),
+# mas o motivo é outro (decisão do fiscal, não a emergência ter deixado de
+# existir). Regra confirmada pelo Wallace em 2026-09-23 com o exemplo real da
+# emergência 313260018708 (FAB 2741, PASSENGER DOOR): comentário do fiscal
+# diz "durante essa análise, não será aplicada avaliação negativa à empresa
+# quanto a essa ocorrência". Silencioso, mesmo padrão de
+# TERMOS_CANCELAMENTO_OBSERVACAO — não vira nota em "inconsistências". Se a
+# análise concluir e o fiscal decidir negativar afinal, o jeito de reverter é
+# tirar essa frase do comentário (ou reescrevê-lo) na planilha de origem.
+TERMOS_ISENCAO_AVALIACAO_NEGATIVA = [
+    "não será aplicada avaliação negativa", "não serão aplicadas avaliações negativas",
+    "sem aplicação de avaliação negativa", "não haverá avaliação negativa",
+]
+
 
 def _proximo_dia_util(data):
     """Pula sábado e domingo — sem feriados por enquanto (decisão do
@@ -88,6 +105,13 @@ def _tem_comentario_cancelamento(observacao):
         return False
     texto = str(observacao).strip().lower()
     return any(termo in texto for termo in TERMOS_CANCELAMENTO_OBSERVACAO)
+
+
+def _tem_isencao_avaliacao_negativa(observacao):
+    if pd.isna(observacao):
+        return False
+    texto = str(observacao).strip().lower()
+    return any(termo in texto for termo in TERMOS_ISENCAO_AVALIACAO_NEGATIVA)
 
 
 def _classificar_aeronaves():
@@ -137,6 +161,12 @@ def calcular_mes(ano, mes, hoje=None):
         # oficial também devem virar "montada"). Silencioso — não vira nota
         # em "inconsistências" (pedido do Wallace).
         if _tem_comentario_cancelamento(row.get("obs_coordenadoria_fiscal")):
+            continue
+
+        # Fiscal decidiu explicitamente não aplicar avaliação negativa a essa
+        # ocorrência (ver TERMOS_ISENCAO_AVALIACAO_NEGATIVA acima) — mesmo
+        # tratamento silencioso do cancelamento, mas motivo diferente.
+        if _tem_isencao_avaliacao_negativa(row.get("obs_coordenadoria_fiscal")):
             continue
 
         data_abertura = row["data_abertura"]
@@ -308,6 +338,12 @@ def calcular_media_diaria_vee_one(ano, mes, hoje=None):
         if matricula not in pontuadas:
             continue
         if _tem_comentario_cancelamento(row.get("obs_coordenadoria_fiscal")):
+            continue
+
+        # Fiscal decidiu explicitamente não aplicar avaliação negativa a essa
+        # ocorrência (ver TERMOS_ISENCAO_AVALIACAO_NEGATIVA acima) — mesmo
+        # tratamento silencioso do cancelamento, mas motivo diferente.
+        if _tem_isencao_avaliacao_negativa(row.get("obs_coordenadoria_fiscal")):
             continue
 
         data_abertura = row["data_abertura"]
