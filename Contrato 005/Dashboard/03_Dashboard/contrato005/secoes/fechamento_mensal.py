@@ -29,7 +29,7 @@ if str(SCRIPTS_PYTHON) not in sys.path:
 _RAIZ_PROJETO = Path(__file__).resolve().parents[5]
 CAMINHO_DISPONIBILIDADE_DIARIA = _RAIZ_PROJETO / "Coordenadoria" / "02_Dados_Tratados" / "base_disponibilidade_diaria.xlsx"
 
-from contrato005.data.carregar_dados import carregar_computo_mensal, carregar_reajuste
+from contrato005.data.carregar_dados import carregar_computo_mensal, carregar_reajuste, carregar_disponibilidade_historico
 from contrato005.data.justificativas import carregar_justificativas, sincronizar_mes, STATUS_PENDENTE
 from contrato005.components.exportar import gerar_pdf_bytes, gerar_xlsx_bytes
 from calcular_computo_mensal import _tem_comentario_cancelamento, calcular_media_diaria_vee_one
@@ -84,10 +84,12 @@ def render(dados):
     # "Financeiro" só mostra os valores oficiais já apurados (aba 4.1),
     # mesmo princípio de transparência de "Atrasos".
     if dados.get("modo_externo"):
-        aba_computo, aba_atrasos, aba_financeiro = st.tabs(["Cômputo Mensal", "Atrasos", "Financeiro (RMA)"])
+        aba_computo, aba_atrasos, aba_financeiro, aba_historico = st.tabs(
+            ["Cômputo Mensal", "Atrasos", "Financeiro (RMA)", "Histórico Mensal"]
+        )
     else:
-        aba_computo, aba_atrasos, aba_financeiro, aba_apresentacao, aba_ata = st.tabs(
-            ["Cômputo Mensal", "Atrasos", "Financeiro (RMA)", "Apresentação (RMA)", "Ata de Reunião"]
+        aba_computo, aba_atrasos, aba_financeiro, aba_apresentacao, aba_ata, aba_historico = st.tabs(
+            ["Cômputo Mensal", "Atrasos", "Financeiro (RMA)", "Apresentação (RMA)", "Ata de Reunião", "Histórico Mensal"]
         )
         with aba_apresentacao:
             _apresentacao_rma(mes_escolhido)
@@ -103,6 +105,73 @@ def render(dados):
     with aba_atrasos:
         _atrasos(dados, mes_escolhido)
 
+    with aba_historico:
+        _historico_mensal_disponibilidade()
+
+
+
+def _historico_mensal_disponibilidade():
+    """% montada / % disponível por mês, desde o início do contrato
+    (17/02/2025) — calculado direto dos relatórios diários de
+    disponibilidade da Coordenadoria, SEM passar pelo Cômputo Mensal
+    oficial (esse só existe a partir de meados de 2026, quando a coluna
+    "Estoque" das emergências começou a ser preenchida — antes disso não
+    dava pra saber se uma emergência tinha estoque ou não, então a regra
+    de negativação atual não pode ser aplicada retroativamente). Pedido do
+    Wallace em 2026-09-23: "queria ter desde o início do contrato... antes
+    não tinha a parte de estoques". Ver 00_Instrucoes/disponibilidade_historico.md.
+
+    % montada de um dia = montadas_hoje / (di+do+ii+in+itr+it+is+ip) — o
+    denominador é a soma dos códigos de situação do resumo, que é o total
+    de aeronaves do relatório daquele dia (evita ter que manter uma lista
+    separada do tamanho da frota ao longo do tempo, que mudou)."""
+    st.subheader("Histórico Mensal — % Montada e % Disponível")
+    st.caption(
+        "Desde 17/02/2025 (relatório mais antigo achado no Drive), calculado direto dos "
+        "relatórios diários de disponibilidade — método diferente do Cômputo Mensal oficial "
+        "(que só existe a partir de meados de 2026, quando passou a ter a coluna \"Estoque\" "
+        "nas emergências). Os 2 números não são diretamente comparáveis mês a mês."
+    )
+
+    df, _ = carregar_disponibilidade_historico()
+    if df.empty:
+        st.info("Sem dados de disponibilidade histórica carregados.")
+        return
+
+    df = df.copy()
+    df["data_referencia"] = pd.to_datetime(df["data_referencia"])
+    df["total_frota"] = df["di"] + df["do_"] + df["ii"] + df["in_"] + df["itr"] + df["it"] + df["is_"] + df["ip"]
+    df = df[df["total_frota"] > 0]
+    df["pct_montada"] = df["montadas_hoje"] / df["total_frota"] * 100
+    df["pct_disponivel"] = df["disponiveis_hoje"] / df["total_frota"] * 100
+    df["mes"] = df["data_referencia"].dt.to_period("M")
+
+    mensal = (
+        df.groupby("mes")
+        .agg(pct_montada=("pct_montada", "mean"), pct_disponivel=("pct_disponivel", "mean"),
+             dias_com_relatorio=("pct_montada", "count"))
+        .reset_index()
+        .sort_values("mes")
+    )
+    mensal["mes_label"] = mensal["mes"].astype(str)
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=mensal["mes_label"], y=mensal["pct_montada"], name="% Montada",
+                              mode="lines+markers", line=dict(color=CYAN, width=3)))
+    fig.add_trace(go.Scatter(x=mensal["mes_label"], y=mensal["pct_disponivel"], name="% Disponível",
+                              mode="lines+markers", line=dict(color=AMBER, width=3)))
+    layout_grafico(fig, altura=420)
+    fig.update_yaxes(title_text="%", rangemode="tozero")
+    st.plotly_chart(fig, width="stretch")
+
+    with st.expander("Tabela mensal"):
+        tabela = mensal[["mes_label", "pct_montada", "pct_disponivel", "dias_com_relatorio"]].rename(columns={
+            "mes_label": "Mês", "pct_montada": "% Montada", "pct_disponivel": "% Disponível",
+            "dias_com_relatorio": "Dias com relatório",
+        })
+        tabela["% Montada"] = tabela["% Montada"].round(2)
+        tabela["% Disponível"] = tabela["% Disponível"].round(2)
+        st.dataframe(tabela, width="stretch", hide_index=True)
 
 def _mostrar_motivo_celula(matricula, dia, valor, df_motivos):
     if pd.isna(valor):

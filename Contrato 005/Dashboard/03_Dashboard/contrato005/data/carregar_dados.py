@@ -13,6 +13,11 @@ import streamlit as st
 
 DASHBOARD_ROOT = Path(__file__).resolve().parents[3]
 DADOS_TRATADOS = DASHBOARD_ROOT / "02_Dados_Tratados"
+# "Disponibilidade diária" é da Coordenadoria (área compartilhada entre
+# projetos, fora de Contrato 005/), não daqui — path sobe até a raiz do
+# repositório (C-98A PAMALS) e desce por Coordenadoria/02_Dados_Tratados/.
+RAIZ_PROJETO = DASHBOARD_ROOT.parent.parent
+DADOS_TRATADOS_COORDENADORIA = RAIZ_PROJETO / "Coordenadoria" / "02_Dados_Tratados"
 
 
 @st.cache_data
@@ -196,6 +201,21 @@ def carregar_historico_devolucoes():
     """Snapshot diário dos itens de Empréstimos — só existe a partir de
     2026-07-10. Ver 00_Instrucoes/analise_periodo.md."""
     return _carregar_historico_generico("historico_devolucoes.csv", dtype={"numero_ordem": str})
+
+
+def carregar_disponibilidade_historico():
+    """Relatórios diários de disponibilidade (Coordenadoria) desde
+    17/02/2025 — usado pro histórico mensal de % montada/disponível "desde
+    o início do contrato", independente do Cômputo Mensal oficial (que só
+    dá pra calcular a partir de quando a planilha passou a ter a coluna
+    "Estoque" nas emergências, meados de 2026). Ver
+    00_Instrucoes/disponibilidade_historico.md."""
+    caminho = DADOS_TRATADOS_COORDENADORIA / "base_disponibilidade_diaria.xlsx"
+    if not caminho.exists():
+        return pd.DataFrame(), None
+    mtime = caminho.stat().st_mtime
+    df = _ler_excel(str(caminho), mtime, sheet_name="Relatorios")
+    return df, mtime
 
 
 def carregar_pagamentos():
