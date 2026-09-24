@@ -18,7 +18,7 @@
   "tpjl_extras": {
     "status": "erro",
     "last_error": "solicitacoes: Falha ao baixar o arquivo 1YtvZCc0jtZ1gXzHWp8Se5ASVoycZDapojODjAaSNmaU: <HttpError 403 when requesting https://www.googleapis.com/drive/v3/files/1YtvZCc0jtZ1gXzHWp8Se5ASVoycZDapojODjAaSNmaU?alt=media returned \"Only files with binary content can be downloaded. Use Export with Docs Editors files.\". Details: \"[{'message': 'Only files with binary content can be downloaded. Use Export with Docs Editors files.', 'domain': 'global', 'reason': 'fileNotDownloadable', 'location': 'alt', 'locationType': 'parameter'}]\">",
-    "local_updated_at": "2026-09-23T12:27:27.715952-03:00",
+    "local_updated_at": "2026-09-24T12:49:57.796781-03:00",
     "record_count": 21668,
     "remote_modified_time": "2026-07-14T16:38:21.000Z",
     "record_count_consumo": 11298,
