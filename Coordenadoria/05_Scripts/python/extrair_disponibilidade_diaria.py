@@ -42,10 +42,14 @@ RE_NOME_DOC = re.compile(r"Disponibilidade\s+(\d{2})/(\d{2})")
 
 RE_TITULO = re.compile(r"^\*?C-98\s*-\s*(\d{2}/\d{2}/\d{4})\*?$")
 RE_RESUMO_DM = re.compile(r"^(\d+)\s*D\s*/\s*(\d+)\s*M$")
-RE_CODIGOS = re.compile(
-    r"^\((\d+)\s*DI\s*/\s*(\d+)\s*DO\s*/\s*(\d+)\s*II\s*/\s*(\d+)\s*IN\s*/\s*(\d+)\s*ITR\s*/\s*"
-    r"(?:(\d+)\s*IT\s*/\s*)?(\d+)\s*IS\s*/\s*(\d+)\s*IP\)$"
-)
+# Parênteses com a contagem por código (ex.: "(14 DI / 02 DO / 04 II / 00 ITR / 01 IN / 06 IS / 03 IP)").
+# A ORDEM dos códigos dentro dos parênteses varia na fonte — achado em 2026-09-23 no backfill
+# histórico (desde 10/02/2025): relatórios de boa parte de 2025 e início de 2026 trazem "ITR"
+# antes de "IN" (regex antiga, posicional, exigia IN antes de ITR e dava 0 em tudo pra esses
+# dias). Por isso agora casamos cada código pelo NOME (qualquer ordem, "IT" sempre opcional —
+# só existe desde 2026-08-25), não por posição.
+RE_CODIGOS = re.compile(r"^\(([^()]+)\)$")
+RE_CODIGO_ITEM = re.compile(r"(\d+)\s*(DI|DO|II|IN|ITR|IT|IS|IP)\b")
 RE_PREVISAO_FIM_DIA = re.compile(r"^\*?Previsão até o final do dia:\s*(\d+)\s*D\s*/\s*(\d+)\s*M\*?$")
 RE_DISPONIVEIS_SEMANA = re.compile(r"^\*?Disponíveis:\*?\s*(\d+)$")
 RE_MONTADAS_SEMANA = re.compile(r"^\*?Montadas:\*?\s*(\d+)$")
@@ -131,21 +135,21 @@ def parse_relatorio(caminho):
 
         m = RE_CODIGOS.match(linha)
         if m:
-            di, do_, ii, in_, itr, it, is_, ip = m.groups()
-            resumo["di"] = int(di)
-            resumo["do_"] = int(do_)
-            resumo["ii"] = int(ii)
-            resumo["in_"] = int(in_)
-            resumo["itr"] = int(itr)
-            # "IT" (indisponível por instrumentação, atividade do IPEV) é um
-            # código novo, só apareceu pela 1ª vez em 2026-08-25 — antes disso
-            # o resumo nunca trazia esse grupo, por isso é opcional na regex
-            # e cai em 0 quando ausente (ver 00_Instrucoes/disponibilidade_diaria.md).
-            resumo["it"] = int(it) if it is not None else 0
-            resumo["is_"] = int(is_)
-            resumo["ip"] = int(ip)
-            i += 1
-            continue
+            itens = {codigo: int(qtd) for qtd, codigo in RE_CODIGO_ITEM.findall(m.group(1))}
+            if {"DI", "DO", "II", "IS", "IP"} <= itens.keys():
+                resumo["di"] = itens.get("DI", 0)
+                resumo["do_"] = itens.get("DO", 0)
+                resumo["ii"] = itens.get("II", 0)
+                resumo["in_"] = itens.get("IN", 0)
+                resumo["itr"] = itens.get("ITR", 0)
+                # "IT" (indisponível por instrumentação, atividade do IPEV) é um
+                # código novo, só apareceu pela 1ª vez em 2026-08-25 — antes disso
+                # o resumo nunca trazia esse grupo (ver 00_Instrucoes/disponibilidade_diaria.md).
+                resumo["it"] = itens.get("IT", 0)
+                resumo["is_"] = itens.get("IS", 0)
+                resumo["ip"] = itens.get("IP", 0)
+                i += 1
+                continue
 
         m = RE_PREVISAO_FIM_DIA.match(linha)
         if m:
