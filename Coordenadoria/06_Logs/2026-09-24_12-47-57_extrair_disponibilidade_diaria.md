@@ -1,0 +1,339 @@
+# Execução: extrair_disponibilidade_diaria
+
+Data: 2026-09-24 12:47:57
+
+## Arquivos lidos
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_01_04_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_01_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_01_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_01_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_01_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_01_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_01_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_01_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_02_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_02_03_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_02_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_02_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_02_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_02_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_02_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_02_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_02_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_03_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_03_03_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_03_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_03_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_03_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_03_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_03_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_03_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_04_03_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_04_04_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_04_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_04_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_04_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_04_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_04_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_04_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_04_11_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_11_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_05_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_06_11_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_04_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_07_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_08_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_03_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_09_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_10_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_11_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_11_04_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_11_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_11_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_11_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_11_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_11_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_11_11_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_11_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_11_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_12_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_13_11_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_04_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_14_11_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_04_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_15_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_16_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_16_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_16_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_16_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_16_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_16_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_16_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_16_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_02_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_17_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_02_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_18_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_19_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_19_02_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_19_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_19_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_19_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_19_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_19_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_19_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_19_12_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_20_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_20_02_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_20_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_20_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_20_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_20_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_20_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_20_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_02_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_21_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_22_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_22_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_22_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_22_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_22_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_22_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_22_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_22_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_22_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_23_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_23_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_23_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_23_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_23_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_23_09_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_24_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_24_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_24_03_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_24_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_24_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_24_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_24_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_24_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_25_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_25_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_25_03_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_25_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_25_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_25_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_25_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_25_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_25_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_02_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_03_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_26_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_02_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_02_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_03_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_27_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_28_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_28_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_28_05_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_28_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_28_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_28_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_28_08_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_28_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_29_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_29_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_29_05_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_29_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_29_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_29_08_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_29_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_30_01_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_30_03_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_30_04_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_30_06_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_30_06_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_30_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_30_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_30_09_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_30_10_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_31_03_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_31_03_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_31_07_2025.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_31_07_2026.txt
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/01_Bases_Originais/Disponibilidade_Diaria/Disponibilidade_31_08_2026.txt
+
+## Arquivos gerados
+- /home/runner/work/c98a-pamals/c98a-pamals/Coordenadoria/02_Dados_Tratados/base_disponibilidade_diaria.xlsx
+
+## Inconsistências encontradas
+- Disponibilidade_14_04_2025.txt: soma dos códigos (30) != aeronaves listadas (28).
+- Disponibilidade_15_04_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_05_05_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_06_05_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_07_05_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_08_05_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_09_05_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_12_05_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_13_05_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_14_05_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_27_06_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_14_08_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_18_09_2025.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_25_09_2025.txt: soma dos códigos (30) != aeronaves listadas (60).
+- Disponibilidade_26_09_2025.txt: soma dos códigos (30) != aeronaves listadas (60).
+- Disponibilidade_13_01_2026.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_15_01_2026.txt: soma dos códigos (30) != aeronaves listadas (28).
+- Disponibilidade_19_01_2026.txt: soma dos códigos (30) != aeronaves listadas (28).
+- Disponibilidade_20_01_2026.txt: soma dos códigos (30) != aeronaves listadas (28).
+- Disponibilidade_21_01_2026.txt: soma dos códigos (30) != aeronaves listadas (27).
+- Disponibilidade_22_01_2026.txt: soma dos códigos (30) != aeronaves listadas (26).
+- Disponibilidade_26_01_2026.txt: soma dos códigos (30) != aeronaves listadas (28).
+- Disponibilidade_27_01_2026.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_02_02_2026.txt: soma dos códigos (30) != aeronaves listadas (60).
+- Disponibilidade_03_02_2026.txt: soma dos códigos (30) != aeronaves listadas (60).
+- Disponibilidade_16_04_2026.txt: soma dos códigos (30) != aeronaves listadas (90).
+- Disponibilidade_14_04_2026.txt: soma dos códigos (30) != aeronaves listadas (90).
+- Disponibilidade_17_04_2026.txt: soma dos códigos (30) != aeronaves listadas (90).
+- Disponibilidade_20_05_2026.txt: soma dos códigos (29) != aeronaves listadas (28).
+- Disponibilidade_03_06_2026.txt: soma dos códigos (30) != aeronaves listadas (29).
+- Disponibilidade_24_06_2026.txt: soma dos códigos (28) != aeronaves listadas (29).
+- Disponibilidade_15_09_2026.txt: soma dos códigos (29) != aeronaves listadas (26).
+- Disponibilidade_16_09_2026.txt: soma dos códigos (29) != aeronaves listadas (26).
+- Disponibilidade_18_09_2026.txt: soma dos códigos (29) != aeronaves listadas (28).
+- Disponibilidade_21_09_2026.txt: soma dos códigos (29) != aeronaves listadas (28).
+- Disponibilidade_22_09_2026.txt: soma dos códigos (29) != aeronaves listadas (28).
+
+## Erros
+- nenhum
+
+## Próximas ações recomendadas
+- nenhuma
