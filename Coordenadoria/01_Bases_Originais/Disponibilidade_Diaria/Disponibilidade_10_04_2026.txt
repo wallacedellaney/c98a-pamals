@@ -1,0 +1,89 @@
+*C-98 - 10/04/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+12 D / 20 M
+(10 DI / 02 DO / 04 II / 05 IN / 00 ITR / 06 IS / 03 IP)
+ 
+*Previsão até o final do dia: 14 D / 20 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis* 18
+- 2721, 2728, 2729, 2737, 2738, 2741
+
+
+*Montadas* 21
+- 2728
+
+
+*Esforço  Aéreo*
+Anual: 100700:00 / 1959:10 / 19,46%
+
+
+*Motores disponíveis: 25*
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - IN - Motor removido por acionamento da garantia (AT 384%192) - DPE: 22/05
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2702 - II - Realizando inspeções ID5-15-01/-03/-06/-07/-08/-09/-10/-21/-22 E TROCA DO MOTOR, IC DE EXTINTOR/ CALIBRAÇÃO DE BÚSSOLA MAGNÉTICA - DPE: 30/04
+[ ] 2704 - DO
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 91 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 44 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - DI
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - IN - Aplicação de diretivas do motor - DPE: 15/04
+
+
+*1º/5º GAV*
+[ ] 2703 - DI
+[ ] 2708 - DO
+[ ] 2721 - IN - Pesquisa de pane sistema HSI - DPE: 10/04
+[ ] 2728 - IS - Aguardando 02 IPLR já desembarcadas em NT, agd desembaraço - DPE: 01 DIA após o recebimento dos itens.
+[ ] 2729 - II - Realizando inspeções ID 06 / 2800FH - DPE: 13/04
+
+
+*2º ETA*
+[ ] 2719 - IS - Agd kit HSI do PAMA-SP - DPE: 10 DIAS após recebimento do Kit.
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - II - Realizando inspeções ID 5-15-0A/06/10/3100FH - DPE: 15/04
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - IN - Pesquisa de pane de falha intermitente do freio direito - DPE: 14/04
+[ ] 2738 - II - Realizando inspeções ID5-15-(06, 20, MB-A), MOT18A6, MOT18M12, MOTA12 E 400H(MOT) - DPE: 13/04
+[ ] 2740 - DI
+[ ] 2741 - IN - Anv realizando balanceamento de hélice - DPE: 10/04

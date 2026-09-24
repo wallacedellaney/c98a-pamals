@@ -1,0 +1,102 @@
+*C-98 - 31/03/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+12D / 17M
+(10 DI / 02 DO / 05 II / 01 ITR / 01 IN / 07 IS / 04 IP)
+ 
+*Previsão até o final do dia: 13 D / 17 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 15
+- 2729, 2733 (Inspeção programada)
+- 2728 (Manutenção não programada)
+
+
+*Montadas*: 18
+- 2729
+
+
+*Esforço  Aéreo*
+Anual: 12555:00 / 1650:35 / 13,15%
+
+
+*Motores disponíveis: 23*
+
+
+*BABV*
+[ ] 2741 - II - Realizando inspeções CORR / MOTOR / CÉLULA - DPE: 08/04
+
+
+*BAMN*
+[ ] 2738 - II - Realizando inspeções ID5-15-0A/07/10/22 (CEL) E 3700H (MOT) - DPE: 18/04
+
+
+*BASM*
+[ ] 2708 - DO
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2702 - II - Realizando inspeções ID5-15-0A e HSI do motor. - DPE: 11/04.
+[ ] 2704 - DI
+[ ] 2706 - IP - 78 APE- DPE: A ser definido
+[ ] 2721 - IP - 21 AIFP. Será iniciada a instalação de motor, hélice e interior. - DPE: 11/04/2025
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 29 AIFP. Serão atendidas pela ATM, Vee One e FAB. - DPE: 30 DIAS após a chegada dos itens.
+[ ] 2730 - IS - SEM MOTOR - 08 AIFP  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 07 AIFP -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 25 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - IS - Realizando reparos por ocasião de Bird Strike. - 07 AIFP - DPE: 02 DIAS após a chegada dos itens.
+[ ] 2733 - II - Realizando inspeções INSP5-15-06 + ME + MG + INSP36M + 3800FH; Voo de experiência previsto para 31/03. - DPE: 31/03
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - IS - Aguardando envio dos itens. 06 AIFP. Agd DPE Vee One. DPE: 01 DIA após chegada dos itens.
+
+
+*1º/5º GAV*
+[ ] 2728 - IN - Realizando regulagem de manete - DPE: 02/04.
+[ ] 2729 - ITR - Em transporte a FCU, pneu e velocímetro, Mangueira adquirida pela Vee One e aguardando entrega. - DPE: 02/04.
+
+
+*2º ETA*
+[ ] 2719 - DI
+[ ] 2722 - DO
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - IS - HSI do motor - 01 AIFP - DPE: 02/05.
+
+
+*7º ETA*
+[ ] 2736 - II - Realizando inspeções ID5-15(0A ,07) - DPE: 21/04
+[ ] 2737 - DI
+[ ] 2740 - DI

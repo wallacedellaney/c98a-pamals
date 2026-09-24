@@ -1,0 +1,98 @@
+*C-98 - 20/01/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+15 D / 20 M
+(12 DI / 03 DO / 03 II / 02 IN / 07 IS / 03 IP)
+ 
+*Previsão até o final do dia: 16 D / 20 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 17
+- 2731  (Manutenção programada)
+
+
+*Montadas*: 20
+•
+
+
+*Esforço  Aéreo*
+Anual: 9760:00 / 236:45/ 2,41%
+
+
+*Motores disponíveis: 26*
+
+
+*BAMN*
+[ ] 2741 - IS - Montagem do kit hsi, fechamento de motor - 02  AIFP - DPE: 23/01 - 02 AIFP em desembaraço alfandegário em GIG pela VeeOne. 01 AIFP em reparado na William em trânsito para o PAMALS. 
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - IN - Retirada de itens para montagem do 2721. 03 IPLR - DPE: 07 DIAS após chegada do material.
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 90 AIFP. Serão atendidas pela ATM, Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 19 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 12 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 31 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - II ID5-15-06/01/09/12/20+60M DPE: 21/01
+[ ] 2733 - IS - 01 AIFP (HOSE ASSY) . DPE: 05 DIAS após chegada dos itens.
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - IN - Instalação do motor, DPE 23/01
+
+
+*1º/5º GAV*
+[ ] 2708 - DO
+[ ] 2721 - DI
+[ ] 2728 - DI
+[ ] 2729 - DO
+
+
+*2º ETA*
+[ ] 2719 - II - ID 0A, 15, 20, MG, 54M e 4300FH. 01 IPLR - DPE do item pela VeeOne: 06/01 - DPE: 29/01
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - II REALIZANDO INSPEÇÃO DA BATERIA DPE 20/01
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - IS - DPE 23/01(1 AIFP e 1 IPLR)
+
+
+*7º ETA*
+[ ] 2736 - DI 
+[ ] 2737 - DI
+[ ] 2738 - DI 
+[ ] 2740 - DI

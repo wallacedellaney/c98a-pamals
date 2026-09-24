@@ -1,0 +1,104 @@
+*C-98 - 11/07/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+15 D / 16 M
+(13 DI / 02 DO / 03 II / 00 ITR / 00 IN / 08 IS / 04 IP)
+ 
+*Previsão até o final do dia: 15 D / 16 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 16
+- 2720 (Manutenção programada)
+
+
+*Montadas*: 18
+- 2709, 2720
+
+
+*Esforço  Aéreo*
+Anual: 12555:00 / 4439:00 / 35,36%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2741 - II - Realizando inspeções de célula e HSI do motor. - 06 IPLR de itens de motor - DPE: 15/08
+
+
+*BAPV*
+[ ] 2738 - DI
+
+
+*BASM*
+[ ] 2708 - DO
+
+
+*CLA*
+[ ] 2723 - II - Realizando inspeções ID5-15-02/06/08/09/10/11/21/22 + INSP4 + 2600F; 04 IPLR - DPE: 25/07
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2721 - IP - 07 AIFP e 61 IPLR. Será iniciada a instalação de motor e interior.  Orçamentos dos itens faltantes solicitados em 30/04 e 13/05 - DPE: 15/08/2025.
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 03 AIFP E 62 IPLR. Serão atendidas pela ATM, Vee One e FAB. Orçamentos dos itens faltantes solicitados em 30/04 e 13/05. - DPE: 22/08/2025.
+[ ] 2730 - IS - SEM MOTOR - 15 AIFP  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 09 AIFP -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 33 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 16 AIFP - DPE: 05 DIAS após chegada dos itens.
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2704 - DI
+[ ] 2728 - IS - 04 AIFP - DPE: 07 DIAS após chegada dos itens.
+[ ] 2729 - II - realizando inspeções ID 01,06,07,09,20 / 2600FH - DPE: 21/07
+
+
+*2º ETA*
+[ ] 2719 - DO
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - 03 AIFP aguardando DPE Vee One- DPE: 18/07
+[ ] 2720 - IS - Necessidade de gaxeta MS29512-05 - DPE: 18/07
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2740 - DI

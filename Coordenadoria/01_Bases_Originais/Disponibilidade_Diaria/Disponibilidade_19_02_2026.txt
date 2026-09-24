@@ -1,0 +1,94 @@
+*C-98 - 19/02/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+15 D / 19 M
+(13 DI / 02 DO / 04 II / 03 IN / 00 ITR / 05 IS / 03 IP)
+ 
+*Previsão até o final do dia: 15 D / 19 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis* 18
+- 2733, 2739, 2741
+
+
+*Montadas* 19
+
+
+*Esforço  Aéreo*
+Anual: 9760:00 / 776:20 / 7,95%
+
+
+*Motores disponíveis: 25*
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - DO
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 92 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 46 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IN - Realizando troca de PTVR por T5 alta. DPE: 20/02
+[ ] 2739 - II - Realizando inspeções D5-15-06+900FH - DPE: 20/02
+
+
+*1º/15º GAV*
+[ ] 2727 - IN - Aguarda resposta do AT PAMA-SP 690%701 - 01 AIFP - DPE: ASD (AT do PAMA-LS respondido, solicitado alteração de DPE e motivo da indisponibilidade)
+
+
+*1º/5º GAV*
+[ ] 2708 - II - Realizando inspeções ID 01,02,09,11 / 12 M - DPE: 06/03
+[ ] 2721 - DI
+[ ] 2728 - IN - Troca de motor - 01 AIFP e 02 IPLR - DPE: 24/02
+[ ] 2729 - DI
+
+
+*2º ETA*
+[ ] 2719 - II - Realizando inspeções ID 0A, 15, 20, MG, 54M e 4300FH. 04 IPLR - DPE: 13/03
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - Agd bateria e Fuel Pump - 02 IPLR - DPE: 06/03
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2738 - DI
+[ ] 2740 - DI
+[ ] 2741 - II - Montagem do kit hsi, fechamento de motor - ID5-15(09,20,01,07 E 06) - DPE: 20/02

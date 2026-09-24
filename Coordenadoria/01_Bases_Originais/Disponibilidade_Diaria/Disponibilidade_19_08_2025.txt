@@ -1,0 +1,101 @@
+*C-98 - 19/08/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+13 D / 15 M
+(11 DI / 02 DO / 04 II / 01 ITR / 01 IN / 07 IS / 04 IP)
+ 
+*Previsão até o final do dia: 14 D / 15 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 15
+- 2736, 2743 (Manutenção não programada)
+
+
+*Montadas*: 16
+- 2736
+
+
+*Esforço  Aéreo*
+Anual: 6985:00 / 5364:35 / 76,80%
+
+
+*Motores disponíveis: 24*
+
+
+*BAMN*
+[ ] 2740 - II - Realizando inspeções ID5-15-(0A, MG)(CEL), CORR72M E 2700H(MOT) - DPE: 29/08
+[ ] 2741 - II - Realizando inspeções de célula e HSI do motor. - 05 IPLR de itens de motor - DPE: 01/09
+
+
+*BAPV*
+[ ] 2738 - DI
+
+
+*CLA*
+[ ] 2723 - DI 
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2721 - IP - 02 AIFP e 49 IPLR. Será iniciada a instalação de motor e interior.  Orçamentos dos itens faltantes solicitados em 30/04 e 13/05 - DPE: 30/09/2025.
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 05 AIFP E 62 IPLR. Serão atendidas pela ATM, Vee One e FAB. Orçamentos dos itens faltantes solicitados em 30/04 e 13/05. - DPE: 22/08/2025.
+[ ] 2730 - IS - SEM MOTOR - 19 AIFP  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 09 AIFP -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 35 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 12 AIFP - DPE: 05 DIAS após chegada dos itens.
+[ ] 2739 - IS - Aguardando materiais - 08 AIFP - DPE: 02 DIAS após chegada dos itens.
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2704 - DI
+[ ] 2708 - DO
+[ ] 2728 - DI
+[ ] 2729 - II - Realizando inspeções ID 01,06,07,09,20 / 2600FH - 03 IPLR - DPE: 19/08
+
+
+*2º ETA*
+[ ] 2719 - DO
+[ ] 2722 - II - Realizando inspeções ID 02, 06, 08, 11, 12, 21, 22/3600FH E 3-48M - 03 IPLR - DPE: 21/08
+
+
+*5º ETA*
+[ ] 2743 - IN - Removida a grade de saída da colmeia do ar condicionado para reparo. - DPE: ASD
+
+
+*6º ETA*
+[ ] 2709 - IS - Agd governador de sobrevelocidade. 01 AIFP - DPE: 22/08
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - ITR - 01 AIFP de conjunto de freio que apresentou vazamento durante operação em SBBV. PAP de MN > BV solicitado em 14/08 - DPE: 19/08
+[ ] 2737 - DI

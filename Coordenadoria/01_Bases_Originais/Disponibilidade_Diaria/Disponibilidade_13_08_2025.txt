@@ -1,0 +1,102 @@
+*C-98 - 13/08/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+14 D / 15 M
+(12 DI / 02 DO / 04 II / 00 ITR / 00 IN / 08 IS / 04 IP)
+ 
+*Previsão até o final do dia: 14 D / 15 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 16
+- 2702, 2708 (Manutenção programada)
+- 2720 (Manutenção não programada)
+
+
+*Montadas*: 17
+- 2720, 2722
+
+
+*Esforço  Aéreo*
+Anual: 6985:00 / 5214:45 / 74,66%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2741 - II - Realizando inspeções de célula e HSI do motor. - 05 IPLR de itens de motor - DPE: 15/08
+
+
+*BAPV*
+[ ] 2738 - DI
+
+
+*BASM*
+[ ] 2708 - DO
+
+
+*CLA*
+[ ] 2723 - DI 
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2702 - II - Realizando inspeções ID5-15-0A, MOT1, MOT3 E A SUBSTITUIÇÃO DO PARABRISA - DPE: 15/08
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2721 - IP - 04 AIFP e 52 IPLR. Será iniciada a instalação de motor e interior.  Orçamentos dos itens faltantes solicitados em 30/04 e 13/05 - DPE: 15/08/2025.
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 04 AIFP E 62 IPLR. Serão atendidas pela ATM, Vee One e FAB. Orçamentos dos itens faltantes solicitados em 30/04 e 13/05. - DPE: 22/08/2025.
+[ ] 2730 - IS - SEM MOTOR - 18 AIFP E 1 IPLR  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 08 AIFP E 1 IPLR -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 36 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 12 AIFP - DPE: 05 DIAS após chegada dos itens.
+[ ] 2739 - IS - Aguardando materiais - 08 AIFP - DPE: 02 DIAS após chegada dos itens.
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2704 - DI
+[ ] 2728 - DI
+[ ] 2729 - II - Realizando inspeções ID 01,06,07,09,20 / 2600FH - 03 IPLR - DPE: 13/08
+
+
+*2º ETA*
+[ ] 2719 - DO
+[ ] 2722 - II - Realizando inspeções ID 02, 06, 08, 11, 12, 21, 22/3600FH E 3-48M - 03 IPLR - DPE: 21/08
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - Agd governador de sobrevelocidade. 01 AIFP - DPE: 14/08
+[ ] 2720 - IS - Agd governador de sobrevelocidade. 01 AIFP - DPE: 14/08
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2740 - DI

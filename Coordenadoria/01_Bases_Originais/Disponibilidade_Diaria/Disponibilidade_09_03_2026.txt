@@ -1,0 +1,99 @@
+*C-98 - 09/03/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+15 D / 1T9 M
+(12 DI / 03 DO / 05 II / 01 IN / 00 ITR / 06 IS / 03 IP)
+ 
+*Previsão até o final do dia: 17 D / 19 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis* 19
+- 2703, 2708, 2738, 2739
+
+
+*Montadas* 19
+
+
+
+
+*Esforço  Aéreo*
+Anual: 9760:00 / 1172:55 / 12,02%
+
+
+*Motores disponíveis: 25*
+
+
+*BAMN*
+[ ] 2738 - II - Realizando inspeções ID5-15-(0A, 21, MG-A)(CEL), CORR36M, 300H(MOT), BAT 100H, EXTINTOR (01), MOT1M12, MOT2M6, MOT18A6, MOTA12 - DPE: 09/03
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*EEAR*
+[ ] 2703 - II - Revisão geral da bateria - DPE: 06/03
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - DO
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 91 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 46 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - DI
+[ ] 2739 - II - Realizando Inspeções ID5-15-0A+1000FH - DPE: 13/03
+
+
+*1º/15º GAV*
+[ ] 2727 - IN - Realizando teste do motor - 01 AIFP - DPE: 10/03
+
+
+*1º/5º GAV*
+[ ] 2708 - II - Realizando inspeções ID 01,02,09,11 / 12 M - DPE: 09/03
+[ ] 2721 - DO
+[ ] 2728 - DI
+[ ] 2729 - DI
+
+
+*2º ETA*
+[ ] 2719 - IS - Agd kit HSI do PAMA-SP - DPE: 05 DIA após recebimento do Kit.
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - Fuel Pump entregue e agd mangueira da Vee One - 02 IPLR - DPE: 13/03
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2740 - DI
+[ ] 2741 - II - Realizando inspeção Engine IC e pesquisa de pane na FCU, 01 IPLR de T5 SET - DPE: 13/03

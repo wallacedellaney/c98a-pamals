@@ -1,0 +1,105 @@
+*C-98 - 22/07/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+13 D / 16 M
+(11 DI / 02 DO / 04 II / 01 ITR / 02 IN / 06 IS / 04 IP)
+ 
+*Previsão até o final do dia: 14 D / 16M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 18
+- 2704, 2723, 2738 (Manutenção programada)
+- 2720, 2739 (Manutenção não programada)
+
+
+*Montadas*: 18
+- 2723, 2738
+
+
+*Esforço  Aéreo*
+Anual: 12555:00 / 4740:55 / 37,76%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2741 - II - Realizando inspeções de célula e HSI do motor. - 06 IPLR de itens de motor - DPE: 15/08
+
+
+*BAPV*
+[ ] 2738 - ITR - Aguardando entrega dos eixos e conjunto de freio - 02 AIFP desembarcadas em PV, agd desembaraço - DPE: 23/07
+
+
+*BASM*
+[ ] 2708 - DO
+
+
+*CLA*
+[ ] 2723 - II - Realizando inspeções ID5-15-02/06/08/09/10/11/21/22 + INSP4 + 2600F; 04 IPLR - DPE: 25/07
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2721 - IP - 05 AIFP e 59 IPLR. Será iniciada a instalação de motor e interior.  Orçamentos dos itens faltantes solicitados em 30/04 e 13/05 - DPE: 15/08/2025.
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 02 AIFP E 61 IPLR. Serão atendidas pela ATM, Vee One e FAB. Orçamentos dos itens faltantes solicitados em 30/04 e 13/05. - DPE: 22/08/2025.
+[ ] 2730 - IS - SEM MOTOR - 16 AIFP  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 08 AIFP -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 35 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 16 AIFP - DPE: 05 DIAS após chegada dos itens.
+[ ] 2739 - IN - SILOMS será alterado de ITR para IN - DPE: 22/07
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2704 - II - Realizando inspeções INSP ID 06, 15, MG / 4700FH - DPE: 23/07
+[ ] 2728 - DI
+[ ] 2729 - II - Realizando inspeções ID 01,06,07,09,20 / 2600FH - 04 IPLR - DPE: 22/07
+
+
+*2º ETA*
+[ ] 2719 - DO
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - 03 AIFP - Aguardando DPE Vee One- DPE: 25/07
+[ ] 2720 - IN - Ajuste barométrico do altímetro do 2P - DPE: 25/07
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2740 - DI

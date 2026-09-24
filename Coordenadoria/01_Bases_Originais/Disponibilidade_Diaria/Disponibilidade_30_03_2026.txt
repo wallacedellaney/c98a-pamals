@@ -1,0 +1,95 @@
+*C-98 - 30/03/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+15 D / 20 M
+(12 DI / 03 DO / 01 II / 05 IN / 00 ITR / 06 IS / 03 IP)
+ 
+*Previsão até o final do dia: 16 D / 20 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis* 18
+- 2728, 2723, 2736
+
+
+*Montadas* 21
+- 2741
+
+
+*Esforço  Aéreo*
+Anual: 9760:00 / 1694:55 / 17,37%
+
+
+*Motores disponíveis: 24*
+
+
+*CLA*
+[ ] 2723 - II - Realizando inspeções ID5-15-0A + 2900 FH + INSP1 (27-M) - DPE: 03/04
+
+
+*DACTA II*
+[ ] 2742 - IN - Acionada garantia do motor. Agd ações a serem tomadas pela empresa (AT 384%190) - DPE: 01/05
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - DO
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 91 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 44 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - DI
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - IN - Realizando troca de hélice - DPE: 15/04
+
+
+*1º/5º GAV*
+[ ] 2708 - DO
+[ ] 2721 - DO
+[ ] 2728 - IN - Pesquisa de pane HSI - DPE: 30/03
+[ ] 2729 - DI
+
+
+*2º ETA*
+[ ] 2719 - IS - Agd kit HSI do PAMA-SP - DPE: 05 DIAS após recebimento do Kit.
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - IS - Agd pedidos de transferência 03 AIFP - DPE: 03/04
+
+
+*7º ETA*
+[ ] 2736 - IN - Realizando substituição do parabrisa - DPE: 02/04
+[ ] 2737 - DI
+[ ] 2738 - DI
+[ ] 2740 - DI
+[ ] 2741 - IN - Anv não completa ciclo de partida - 01 IPLR de T5 SET, Volume 261381000891/0001 expedido em 26/03 do CTLA para BAMN - DPE: 03/04

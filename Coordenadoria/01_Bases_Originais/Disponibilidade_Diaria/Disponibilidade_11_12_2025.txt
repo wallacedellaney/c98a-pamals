@@ -1,0 +1,98 @@
+*C-98 - 11/12/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+16 D / 19 M
+(14 DI / 02 DO / 03 II / 00 ITR / 02 IN / 06 IS / 03 IP)
+ 
+*Previsão até o final do dia: 16 D / 19M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 17
+- 2737 (Manutenção não programada)
+
+
+*Montadas*: 21
+- 2733, 2741
+
+
+*Esforço  Aéreo*
+Anual: 8460:00 / 8136:20 / 96,17%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2741 - IS - PAP dos itens de motor solicitados em 09/12 - 04 IPLR - DPE: 30/12
+
+
+*CLA*
+[ ] 2723 - II - Realizando inspeções ID5-20-06 / 20 + INSP3 + 2800FH - DPE: 19/12
+
+
+*DACTA II*
+[ ] 2742 - DO - TKS inoperante.
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - IN - Retirada de itens para montagem do 2721. 12 IPLR - DPE: 07 DIAS após chegada do material.
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2708 - IN - Troca do fitting do montante - DPE 19/12
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 89 AIFP. Serão atendidas pela ATM, Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 18 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 05 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 30 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Exhaust duct do PAMA-SP finalizado. BABE irá coordenar transporte na LTN do próximo fim de semana - 01 AIFP - DPE: 05 DIAS após chegada dos itens.
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2721 - DI
+[ ] 2728 - DI
+[ ] 2729 - DO
+
+
+*2º ETA*
+[ ] 2719 - II - ID 0A, 15, 20, MG e 4300FH + Recolhimento de kit HSI pelo PAMASP p/ verificação de cumprimento de boletim. - 04 IPLR - DPE: 11/12
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - II - Realizando inspeções programadas e troca de hélice por TBO - DPE: 12/12
+[ ] 2738 - DI
+[ ] 2740 - DI

@@ -1,0 +1,103 @@
+*C-98 - 14/04/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+09 D / 15 M
+(08 DI / 01 DO / 05 II / 00 ITR / 02 IN / 10 IS / 04 IP)
+ 
+*Previsão até o final do dia: 09 D / 15 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 14
+- 2702, 2738, 2722 (Manutenção programada)
+- 2703, 2719 (Manutenção não programada)
+
+
+*Montadas*: 17
+
+
+
+
+*Esforço  Aéreo*
+Anual: 12555:00 / 1967:15/ 15,67%
+
+
+*Motores disponíveis: 22*
+
+
+*BABV*
+[ ] 2741 - DI
+
+
+*BAMN*
+[ ] 2738 - II - Realizando inspeções ID5-15-0A/07/10/22 (CEL) E 3700H (MOT) - DPE: 18/04
+
+
+*BASM*
+[ ] 2708 - IS - ANV com NAV1 inoperante - 01 AIFP - Agd DPE Vee One - DPE: 01 DIA após chegada do item
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - IN - Freio com baixa eficiência. - DPE: 15/04
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2702 - II - Realizando inspeções ID5-15-0A e HSI do motor. - DPE: 16/04.
+[ ] 2704 - DI
+[ ] 2706 - IP - 78 APE- DPE: A ser definido
+[ ] 2721 - IP - 20 AIFP. Será iniciada a instalação de motor, hélice e interior. - DPE: 30/04/2025.
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 29 AIFP. Serão atendidas pela ATM, Vee One e FAB. - DPE: 30 DIAS após a chegada dos itens.
+[ ] 2730 - IS - SEM MOTOR - 11 AIFP  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 07 AIFP -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 29 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - IS - Realizando reparos por ocasião de Bird Strike. - 08 AIFP - DPE: 02 DIAS após a chegada dos itens.
+[ ] 2733 - DI
+[ ] 2739 - II - Insp: ID5-15-0A+01+09+20+400FH+INSP4-36M. DPE: 23/04
+
+
+*1º/15º GAV*
+[ ] 2727 - IS - Aguardando envio dos itens. 02 AIFP. Agd DPE Vee One. DPE: 01 DIA após chegada dos itens.
+
+
+*1º/5º GAV*
+[ ] 2728 - IS - Velocímetro em transporte, mangueira adquirida pela Vee One e aguardando entrega. - 03 IPLR - DPE: 07 DIAS após chegada dos itens.
+[ ] 2729 - DO. DPE errado e-mail solicitando correção enviado. 
+
+
+*2º ETA*
+[ ] 2719 - IN - Realizando correção de Flap travado em cima. - DPE: 15/04
+[ ] 2722 - II - Realizando inspeções ID 0A, 01, 07, 09, 15, 20 / 3300FH. - DPE: 22/04
+
+
+*5º ETA*
+[ ] 2743 - IS. DPE: ASD
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - IS - HSI do motor - 01 AIFP - DPE: 02/05.
+
+
+*7º ETA*
+[ ] 2736 - II - Realizando inspeções ID5-15(0A ,07) 01 - DPE: 21/04.
+[ ] 2737 - DI
+[ ] 2740 - DI

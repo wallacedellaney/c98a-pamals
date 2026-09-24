@@ -1,0 +1,104 @@
+*C-98 - 27/02/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+12D / 16M
+(12 DI / 01 DO / 03 II / 00 ITR / 02 IN / 08 IS / 04 IP)
+ 
+*Previsão até o final do dia: 14 D / 16 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 16
+- 2719 (Inspeção programada)
+- 2703, 2731, 2739 (Manutenção não programada)
+
+
+*Montadas*: 16
+
+
+*Esforço  Aéreo*
+Anual: 12555:00 / 979:55 / 7,80%
+
+
+*Motores disponíveis: 23*
+
+
+*BABV*
+[ ] 2741 - DI
+
+
+*BAPV*
+[ ] 2738 - DI
+
+
+*BASM*
+[ ] 2708 - IS - 01 AIFP (Vee One) - DPE: 01 DIA após chegada do item
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - IN - Aeronave com vazamento de combustível pela tampa da asa esquerda. DPE: 28/02
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - DI
+[ ] 2706 - IP - 77 APE- DPE: A ser definido
+[ ] 2721 - IP - 29 AIFP - DPE: 14/03/2025
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 59 AIFP. - DPE: 30 DIAS após a chegada dos itens.
+[ ] 2730 - IS - SEM MOTOR - 08 AIFP  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 07 AIFP -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 27 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2728 - II - Realizando inspeções ID5-15-A/01/02/03/04/09/11/20/21/22 + 24M/30M - DPE: 07/03/2025.
+[ ] 2731 - IN - Aguardando orientações da Engenharia do PAMA-LS quanto ao reparo por colisão com pássaro. DPE: 27/02
+[ ] 2733 - IS - 04 - AIFP - DPE: 02 DIAS após a chegada dos itens.
+[ ] 2739 - IN - Pesquisa de pane no sistema de freio. DPE: 27/02.
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2729 - DI
+
+
+*2º ETA*
+[ ] 2719 - II - Realizando inspeções 06/3800FH - DPE: 28/02/2025
+[ ] 2722 - DO
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - Agd bomba de combustível - 01 AIFP - DPE: 28/02/2025
+[ ] 2720 - IS - Agd FCU e bomba de combustível - 02 AIFP - DPE: 28/02/2025.
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - II - Realizando inspeções ID5-15-(0A, 07, MG-A, MB-A), CORR42M (OS.: 3130016260, 31300259, 3130015195, 3130016261 E 3130016287). Orientado a solicitar extensão do motor. 01 IPLR (motor) - DPE: 14/03/2025
+[ ] 2740 - DI

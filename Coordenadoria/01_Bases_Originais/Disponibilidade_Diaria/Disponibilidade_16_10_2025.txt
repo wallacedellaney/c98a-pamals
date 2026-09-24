@@ -1,0 +1,99 @@
+*C-98 - 16/10/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+13 D / 16 M
+(12 DI / 01 DO / 02 II / 01 ITR / 02 IN / 09 IS / 03 IP)
+ 
+*Previsão até o final do dia: 13 D / 16 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 17
+- 2723, 2727 (Manutenção programada)
+- 2709, 2736 (Manutenção não programada)
+
+
+*Montadas*: 18
+- 2709, 2727
+
+
+*Esforço  Aéreo*
+Anual: 8460:00 / 6686:50 / 79,04%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2741 - IS - CTVR recolhida ao PAMA-SP. - 05 IPLR - DPE: 20/10
+
+
+*CLA*
+[ ] 2723 - II - Realizando inspeções D5-15-0A / 01 / 07 + INSP1-21M + 2700FH / MOT1M12 / MOT2M6 - DPE: 17/10
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - IN - Retirada de itens para montagem do 2721. 20 IPLR - DPE: A ser definido
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2721 - DI
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 88 AIFP. Serão atendidas pela ATM, Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 17 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 08 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 28 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 06 AIFP - DPE: 10 DIAS após chegada dos itens.
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - IS - Aguardando cubo de roda da Vee One. - DPE: 01 DIA após chegada do item
+
+
+*1º/5º GAV*
+[ ] 2708 - II - Realizando inspeções ID 0A,20,MH / 2100FH - DPE: 22/10
+[ ] 2728 - IS - Realizando inspeções 0A, MG /100 FH E 2+4 (36-M) - 08 IPLR - DPE: 01 DIA após chegada do material
+[ ] 2729 - DI
+
+
+*2º ETA*
+[ ] 2719 - ITR - Itens aguardando transporte previsto para 16/10 - 02 IPLR - DPE: 02 DIAS após chegada dos itens.
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - Agd. inspeção da turbina de gases no PAMA-SP, PAP solicitado em 14/10 - 01 IPLR - DPE: 17/10
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - IN - Substituição do sensor de baixo nível de combustível. - DPE: 17/10
+[ ] 2737 - DO
+[ ] 2738 - DI
+[ ] 2740 - DI

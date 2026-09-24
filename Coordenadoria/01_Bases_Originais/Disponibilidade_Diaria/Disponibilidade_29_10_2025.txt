@@ -1,0 +1,98 @@
+*C-98 - 29/10/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+14 D / 19 M
+(13 DI / 01 DO / 04 II / 00 ITR / 02 IN / 07 IS / 03 IP)
+ 
+*Previsão até o final do dia: 16 D / 19 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 18
+- 2708, 2709, 2739 (Manutenção programada)
+- 2729 (Manutenção não programada)
+
+
+*Montadas*: 19
+
+
+*Esforço  Aéreo*
+Anual: 8460:00 / 7024:25 / 83,03%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2741 - IS - CTVR recolhida ao PAMA-SP. - 07 IPLR - DPE: 30/10
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DO - TKS inoperante, agd resposta AT 386%1008 - DPE: ASD
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - IN - Retirada de itens para montagem do 2721. 24 IPLR - DPE: 07 DIAS após chegada do material
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 86 AIFP. Serão atendidas pela ATM, Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 17 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 08 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 28 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 05 AIFP - DPE: 10 DIAS após chegada dos itens.
+[ ] 2739 - II - Realizando inspeções INSP.1-42M+ 700FH. - DPE: 29/10
+
+
+*1º/15º GAV*
+[ ] 2727 - II - Realizando inspeções ID5-15-06B/08/09/01/20 - DPE: 05/11
+
+
+*1º/5º GAV*
+[ ] 2708 - II - Realizando inspeções ID 0A,20,MH / 2100FH - DPE: 31/10
+[ ] 2721 - DI
+[ ] 2728 - IS - Aguardando chegada dos itens em emergência - 08 IPLR - DPE: 01 DIA após chegada do material
+[ ] 2729 - IN - Realizando pesquisa de parâmetro de motor - DPE: 29/10
+
+
+*2º ETA*
+[ ] 2719 - DI
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - II -Realizando inspeção 5-15-0A/06/2500FH - 01 IPLR - DPE: 31/10
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2738 - DI
+[ ] 2740 - DI

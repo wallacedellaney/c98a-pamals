@@ -1,0 +1,88 @@
+*C-98 - 08/05/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+13 D / 19 M
+(12 DI / 01 DO / 07 II / 00 IN / 00 ITR / 07 IS / 02 IP)
+ 
+*Previsão até o final do dia: 14 D / 19 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis* 19
+- 2721, 2731, 2733, 2739, 2741, 2742
+
+
+*Montadas* 21
+- 2727, 2741
+
+
+*Esforço  Aéreo*
+Anual: 10070:00 / 2590:25 / 25,72%
+
+
+*Motores disponíveis: 25*
+
+
+*BACO*
+[ ] 2742 - II - Realizando inspeções ID5-15-06B/09/11 - DPE: 15/05
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*PAMA-LS*
+[ ] 2702 - II - Realizando inspeções ID5-15-01/-03/-06/-07/-08/-09/-10/-21/-22 E TROCA DO MOTOR, IC DE EXTINTOR/ CALIBRAÇÃO DE BÚSSOLA MAGNÉTICA. Aguardando envio de Kit pelo PAMA-SP para cumprimento de diretivas do motor / Visita da empresa - Aguardando o envio do parabrisa pela Vee One - DPE: 15/05
+[ ] 2704 - DI
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 91 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 44 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - II - Realizando inspeções programadas ID5-15-06/07/08+300FH DO MOTOR. FCU com previsão de ser liberada pela Vee One em 08/05 - DPE 15/05
+[ ] 2733 - II - Realizando inspeções programadas ID5-15-06/07/08+4100FH - DPE: 12/05
+[ ] 2739 - II - Realizando inspeção programada ID5-15-06/07/09/10/20+1100FH. Será usada FCU do 2731 - DPE:  08/05
+
+
+*1º/15º GAV*
+[ ] 2727 - IS - Aguardando envio de Kit pelo PAMA-SP para cumprimento de diretivas do motor. 01 AIFP em processo de aquisição na Textron. - DPE: 01 DIA após chegada do material
+
+
+*1º/5º GAV*
+[ ] 2703 - DI
+[ ] 2708 - DO
+[ ] 2728 - II - Realizando inspeção ID 01,06,07,08,09,10,20 / 100:00 FH. Todas as emergências já atendidas - DPE: 15/05
+[ ] 2729 - DI
+
+
+*2º ETA*
+[ ] 2719  - IS - Aguardando 02 IPLR agd atendimento pela Vee One - DPE: 01 DIA após recebimento do item.
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - DI
+[ ] 2721 - II - Realizando inspeção CORR. 18M. Todas as emergências já atendidas - DPE: 12/05
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2738 - DI
+[ ] 2740 - DI
+[ ] 2741 - IS - Disjuntor “Fuel select Warn” saltando, aguardando AIFP de conector em processo de aquisição pela Vee One com chegada na empresa prevista para 04/05. - DPE: 15/05

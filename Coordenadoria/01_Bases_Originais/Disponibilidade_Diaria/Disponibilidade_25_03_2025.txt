@@ -1,0 +1,104 @@
+*C-98 - 25/03/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+15D / 18M
+(12 DI / 03 DO / 03 II / 00 ITR / 01 IN / 07 IS / 04 IP)
+ 
+*Previsão até o final do dia: 15 D / 18 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 17
+- 2729, 2737 (Inspeção programada)
+
+
+*Montadas*: 19
+- 2729
+
+
+*Esforço  Aéreo*
+Anual: 12555:00 / 1520:35 / 12,11%
+
+
+*Motores disponíveis: 23*
+
+
+*BABV*
+[ ] 2741 - DI
+
+
+*BAPV*
+[ ] 2738 - DI
+
+
+*BASM*
+[ ] 2708 - DO
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - DI
+[ ] 2706 - IP - 78 APE- DPE: A ser definido
+[ ] 2721 - IP - 22 AIFP. Será iniciada a instalação de motor, hélice e interior. - DPE: 28/03/2025
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 29 AIFP. Serão atendidas pela ATM, Vee One e FAB. - DPE: 30 DIAS após a chegada dos itens.
+[ ] 2730 - IS - SEM MOTOR - 08 AIFP  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 06 AIFP -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 25 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2728 - DO
+[ ] 2731 - IS - Será realizada missão de LS para BE, 2 BEP e material. - 07 AIFP - DPE: 02 DIAS após a chegada dos itens.
+[ ] 2733 - DI
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - IS - Verificando se foi autorizada a troca do FCU pelo PAMA-SP. 02 AIFP de Conjunto de freio e pneu. Agd DPE Vee One. DPE: 01/04.
+
+
+*1º/5º GAV*
+[ ] 2729 - II - Realizando inspeções 06,08,MG/2400FH. 02 IPLR de FCU e velocímetro; Agd DPE Vee One - DPE: 26/03
+
+
+*2º ETA*
+[ ] 2719 - IN - Realizando pesquisa de pane Pitot-Estático e Shimmy. - DPE: 25/03
+[ ] 2722 - DO
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - IS - Agd bomba de combustível e Velocímetro - 01 AIFP - DPE: 02/05/2025.
+
+
+*7º ETA*
+[ ] 2736 - II - Realizando inspeções ID5-15(0A ,07) - DPE: 21/04
+[ ] 2737 - II - Realizando inspeções ID5-15-(0A, 07, MG-A, MB-A), CORR42M e inspeções de motor, conforme orientação do PAMA-LS e PAMA-SP. - DPE: 28/03.
+[ ] 2740 - DI

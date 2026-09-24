@@ -1,0 +1,99 @@
+*C-98 - 21/10/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+11 D / 17 M
+(11 DI / 00 DO / 04 II / 01 ITR / 04 IN / 07 IS / 03 IP)
+ 
+*Previsão até o final do dia: 13 D / 17 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 18
+- 2708, 2709, 2720, 2739 (Manutenção programada)
+- 2721, 2729, 2736 (Manutenção não programada)
+
+
+*Montadas*: 18
+- 2709
+
+
+*Esforço  Aéreo*
+Anual: 8460:00 / 6829:00 / 80,72%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2741 - IS - CTVR recolhida ao PAMA-SP. - 06 IPLR - DPE: 30/10
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - IN - Retirada de itens para montagem do 2721. 23 IPLR - DPE: A ser definido
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 88 AIFP. Serão atendidas pela ATM, Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 17 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 08 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 28 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 08 AIFP - DPE: 10 DIAS após chegada dos itens.
+[ ] 2739 - II - Realizando inspeções INSP.1-42M+ 700FH. - DPE: 21/10
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2708 - II - Realizando inspeções ID 0A,20,MH / 2100FH - DPE: 22/10
+[ ] 2721 - IN - Pesquisa de pane de vazamento de combustível. - DPE: 23/10
+[ ] 2728 - IS - Aguardando chegada dos itens em emergência - 08 IPLR - DPE: 01 DIA após chegada do material
+[ ] 2729 - IN - Pesquisa de pane parâmetros do motor. - DPE: 24/10
+
+
+*2º ETA*
+[ ] 2719 - ITR - Transporte realizado em 19/10 - 02 IPLR - DPE: 02 DIAS após chegada dos itens.
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - II -Realizando inspeção 5-15-0A/06/2500FH - 01 IPLR - DPE: 24/10
+[ ] 2720 - II - Realizando inspeções 5-15-0A/06/2900FH - DPE: 24/10
+
+
+*7º ETA*
+[ ] 2736 - IN - Substituição do sensor de baixo nível de combustível. - DPE: 21/10
+[ ] 2737 - DI
+[ ] 2738 - DI
+[ ] 2740 - DI

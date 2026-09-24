@@ -1,0 +1,99 @@
+*C-98 - 09/10/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+12 D / 16 M
+(11 DI / 01 DO / 05 II / 00 ITR / 02 IN / 08 IS / 03 IP)
+ 
+*Previsão até o final do dia: 13 D / 16 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 15
+- 2736, 2737 (Manutenção programada)
+- 2708 (Manutenção não programada)
+
+
+*Montadas*: 19
+- 2709, 2736, 2737
+
+
+*Esforço  Aéreo*
+Anual: 8460:00 / 6475:35 / 76,54%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2741 - IS - CTVR recolhida ao PAMA-SP. - 05 IPLR - DPE: 20/10
+
+
+*CLA*
+[ ] 2723 - II - Realizando inspeções D5-15-0A / 01 / 07 + INSP1-21M + 2700FH / MOT1M12 / MOT2M6 - DPE: 17/10
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - IN - Retirada de itens para montagem do 2721. 04 IPLR - DPE: A ser definido
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2721 - DO
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 88 AIFP. Serão atendidas pela ATM, Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 17 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 08 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 30 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 07 AIFP - DPE: 10 DIAS após chegada dos itens.
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - II - Realizando inspeção ID5-15-10. - DPE: 10/10/2025
+
+
+*1º/5º GAV*
+[ ] 2708 - IN - Horizonte do 1P com movimentações bruscas com anv reta e nivelada. - DPE: 09/10
+[ ] 2728 - II - Realizando inspeções 0A, MG /100 FH E 2+4 (36-M) - 07 IPLR - DPE: 10/10
+[ ] 2729 - DI
+
+
+*2º ETA*
+[ ] 2719 - II - Realizando inspeções ID 01, 02, 04, 06, 11 / 4200 FH - 02 IPLR - DPE: 15/10
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - Agd. inspeção da turbina de gases no PAMA-SP - 02 IPLR - DPE: 17/10
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - II - Realizando inspeções ID5-15-(0A E 22) e 3500H. 01 IPLR - DPE: 10/10
+[ ] 2737 - IS - Aguarda chegada dos sensores de combustível - 02 AIFP - DPE: 13/10
+[ ] 2738 - DI
+[ ] 2740 - DI

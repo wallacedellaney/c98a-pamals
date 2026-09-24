@@ -1,0 +1,95 @@
+*C-98 - 05/02/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+12 D / 19 M
+(11 DI / 01 DO / 06 II / 04 IN / 01 ITR / 04 IS / 03 IP)
+ 
+*Previsão até o final do dia: 12 D / 20 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis* 17
+- 2727, 2729, 2733, 2741, 2742
+
+
+*Montadas* 21
+- 2709, 2727
+
+
+*Esforço  Aéreo*
+Anual: 9760:00 / 540:30 / 5,54%
+
+
+*Motores disponíveis: 25*
+
+
+*BACO*
+[ ] 2742 - II - Realizando inspeções ID5-15-0A/01/20 - DPE: 11/02
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - IN - Pane de UCG durante giro. 01 AIFP e 02 IPLR - DPE: 10/02
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 92 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 21 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 16 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 40 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IN - Serviço de balanceamento de combustível - DPE: 09/02
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - ITR - AWB 127-1431 3751 com previsão de entrega em 07/02 - DPE: 01 DIA após chegada dos itens
+
+
+*1º/5º GAV*
+[ ] 2708 - II - Realizando inspeções ID 01,02,09,11 / 12 M - DPE: 06/03
+[ ] 2721 - DO
+[ ] 2728 - IN - Troca de motor - DPE: 24/02
+[ ] 2729 - IN - Oscilação de indicação de combustível. - DPE: 06/02
+
+
+*2º ETA*
+[ ] 2719 - II - Realizando inspeções ID 0A, 15, 20, MG, 54M e 4300FH. 04 IPLR - DPE: 13/03
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - II - Realizando inspeções 5-15-0A/07/08/2700FH - 01 AIFP e 02 IPLR - DPE: 06/02
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - II - Realizando inspeções ID5-15-(06,10,MB)(CEL), 3900H (MOT) - DPE: 13/02
+[ ] 2738 - DI
+[ ] 2740 - DI
+[ ] 2741 - II - Montagem do kit hsi, fechamento de motor - ID5-15(09,20,01,07 E 06) - DPE: 06/02

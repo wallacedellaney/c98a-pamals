@@ -1,0 +1,102 @@
+CP Rafael
+
+
+*C-98 - 05/11/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+12 D / 17 M
+(10 DI / 02 DO / 04 II / 01 ITR / 03 IN / 07 IS / 03 IP)
+ 
+*Previsão até o final do dia: 13 D / 17 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 17
+- 2709, 2722, 2738 (Manutenção programada)
+- 2709, 2720 (Manutenção não programada)
+
+
+*Montadas*: 20
+- 2709, 2720, 2739
+
+
+*Esforço  Aéreo*
+Anual: 8460:00 / 7226:55 / 85,4%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2741 - IS - CTVR recolhida ao PAMA-SP. - 04 IPLR - DPE: 14/11
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DO - TKS inoperante, agd resposta AT 386%1008 - DPE: ASD
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - IN - Retirada de itens para montagem do 2721. 21 IPLR - DPE: 07 DIAS após chegada do material
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 86 AIFP. Serão atendidas pela ATM, Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 18 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 09 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 30 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 05 AIFP - DPE: 10 DIAS após chegada dos itens.
+[ ] 2739 - DO
+
+
+*1º/15º GAV*
+[ ] 2727 - II - Realizando inspeções ID5-15-06B/08/09/01/20 - DPE: 05/11
+
+
+*1º/5º GAV*
+[ ] 2708 - IS - Aguardando EAS - DPE: 05/11
+[ ] 2721 - DI
+[ ] 2728 - II - Instalando os itens atendidos pelo Parque - DPE: 12/11
+[ ] 2729 - II - Realizando inspeções 0A,08 / 2700FH - DPE: 11/11
+
+
+*2º ETA*
+[ ] 2719 - DI
+[ ] 2722 - II - Realizando inspeções 0A, 07 / 3700FH  - DPE: 11/11
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - 01 IPLR - Item em processo de entrega pela VeeOne. DPE: 07/11
+[ ] 2720 - ITR - 01 AIFP - Item em processo de entrega pela VeeOne. DPE: 07/11
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2738 - II - Realizando inspeções ID5-15-(0A E 07) e 100H. - DPE: 07/11
+[ ] 2740 - DI

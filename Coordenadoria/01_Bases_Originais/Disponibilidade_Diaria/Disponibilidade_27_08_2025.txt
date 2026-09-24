@@ -1,0 +1,101 @@
+*C-98 - 27/08/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+13 D / 17 M
+(11 DI / 02 DO / 05 II / 00 ITR / 02 IN / 06 IS / 04 IP)
+ 
+*Previsão até o final do dia: 14 D / 17 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 17
+- 2727, 2740 (Manutenção programada)
+- 2729, 2739 (Manutenção não programada)
+
+
+*Montadas*: 17
+
+
+*Esforço  Aéreo*
+Anual: 6985:00 / 5519:25 / 79,02%
+
+
+*Motores disponíveis: 24*
+
+
+*BAMN*
+[ ] 2741 - II - Realizando inspeções de célula e HSI do motor. - 02 IPLR - DPE: 05/09
+
+
+*BAPV*
+[ ] 2738 - DI
+
+
+*CLA*
+[ ] 2723 - DI 
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - DI
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2721 - IP - 01 AIFP e 48 IPLR. MONTAGEM PARA ENTREGA AO 1/5 GAV - MOTOR E HÉLICE JÁ INSTALADOS NA AERONAVE - DPE: 30/09/2025.
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 02 AIFP E 67 IPLR. Serão atendidas pela ATM, Vee One e FAB. Orçamentos dos itens faltantes solicitados em 30/04 e 13/05. - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 19 AIFP  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 09 AIFP -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 34 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 16 AIFP - DPE: 05 DIAS após chegada dos itens.
+[ ] 2739 - IN - Instalação dos atuadores dos compensadores do aileron e profundor - DPE: 28/08
+
+
+*1º/15º GAV*
+[ ] 2727 - II - Realizando inspeção de 200h (MOT) - DPE: 29/08
+
+
+*1º/5º GAV*
+[ ] 2708 - DO
+[ ] 2728 - II - Realizando inspeções 0A, MG /100 FH E 2+4 (36-M) - 05 IPLR - DPE:05/09
+[ ] 2729 - IN - Pesquisa de pane de indicação do liquidômetro variando. DPE: 27/08
+
+
+*2º ETA*
+[ ] 2719 - DO
+[ ] 2722 - II - Realizando inspeções ID 02, 06, 08, 11, 12, 21, 22/3600FH E 3-48M - 01 IPLR - DPE: 01/09
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - Agd governador de sobrevelocidade. 01 AIFP - DPE: 16/09
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2740 - II - Realizando inspeções ID5-15-(0A, MG)(CEL), CORR72M E 2700H(MOT) - DPE: 29/08

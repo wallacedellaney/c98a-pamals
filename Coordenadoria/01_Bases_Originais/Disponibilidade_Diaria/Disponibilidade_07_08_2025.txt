@@ -1,0 +1,102 @@
+*C-98 - 07/08/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+13 D / 16 M
+(11 DI / 02 DO / 05 II / 00 ITR / 01 IN / 07 IS / 04 IP)
+ 
+*Previsão até o final do dia: 13 D / 17 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 16
+- 2708 (Manutenção programada)
+- 2709, 2728 (Manutenção não programada)
+
+
+*Montadas*: 18
+- 2709, 2722
+
+
+*Esforço  Aéreo*
+Anual: 7229:35 / 5099:35 / 70,54%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2741 - II - Realizando inspeções de célula e HSI do motor. - 05 IPLR de itens de motor - DPE: 15/08
+
+
+*BAPV*
+[ ] 2738 - DI
+
+
+*BASM*
+[ ] 2708 - II - Realizando inspeções 05-15-03/08/10/21 - DPE: 12/08
+
+
+*CLA*
+[ ] 2723 - DI 
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2702 - II - Realizando inspeções ID5-15-0A, MOT1, MOT3 E A SUBSTITUIÇÃO DO PARABRISA - DPE: 15/08
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2721 - IP - 05 AIFP e 60 IPLR. Será iniciada a instalação de motor e interior.  Orçamentos dos itens faltantes solicitados em 30/04 e 13/05 - DPE: 15/08/2025.
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 03 AIFP E 62 IPLR. Serão atendidas pela ATM, Vee One e FAB. Orçamentos dos itens faltantes solicitados em 30/04 e 13/05. - DPE: 22/08/2025.
+[ ] 2730 - IS - SEM MOTOR - 16 AIFP E 1 IPLR  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 07 AIFP E 1 IPLR -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 34 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 12 AIFP - DPE: 05 DIAS após chegada dos itens.
+[ ] 2739 - IS - Aguardando materiais - 05 AIFP - DPE: 02 DIAS após chegada dos itens.
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2704 - DI
+[ ] 2728 - IN - Pesquisa de pane (Fonte elétrica não entrou durante a partida) - DPE: 08/08
+[ ] 2729 - II - Realizando inspeções ID 01,06,07,09,20 / 2600FH - 03 IPLR - DPE: 18/08
+
+
+*2º ETA*
+[ ] 2719 - DO
+[ ] 2722 - II - Realizando inspeções ID 02, 06, 08, 11, 12, 21, 22/3600FH E 3-48M - 01 IPLR - DPE: 21/08
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - 01 AIFP - AWB 127-5310 4181 com previsão de entrega em 09/08. - DPE: 08/08
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2740 - DO

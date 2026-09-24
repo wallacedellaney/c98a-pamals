@@ -1,0 +1,94 @@
+*C-98 - 13/02/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+14 D / 20 M
+(11 DI / 03 DO / 05 II / 03 IN / 00 ITR / 05 IS / 03 IP)
+ 
+*Previsão até o final do dia: 16 D / 20 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis* 18
+- 2733, 2737, 2741
+
+
+*Montadas* 20
+
+
+*Esforço  Aéreo*
+Anual: 9760:00 / 723:45 / 7,42%
+
+
+*Motores disponíveis: 25*
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - DO
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 92 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 46 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - IN - Pesquisa de pane, vazamento de óleo do motor e T5 atingiu 750ºC durante o voo. DPE: 13/02
+[ ] 2739 - II - Realizando inspeções D5-15-06+900FH - DPE: 20/02
+
+
+*1º/15º GAV*
+[ ] 2727 - IN - Aguarda resposta do AT PAMA-SP 690%701 - DPE: ASD (AT do PAMA-LS respondido, solicitado alteração de DPE e motivo da indisponibilidade)
+
+
+*1º/5º GAV*
+[ ] 2708 - II - Realizando inspeções ID 01,02,09,11 / 12 M - DPE: 06/03
+[ ] 2721 - DI
+[ ] 2728 - IN - Troca de motor - DPE: 24/02
+[ ] 2729 - DO
+
+
+*2º ETA*
+[ ] 2719 - II - Realizando inspeções ID 0A, 15, 20, MG, 54M e 4300FH. 04 IPLR - DPE: 13/03
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - Agd bateria e Fuel Pump - 02 IPLR - DPE: 27/02
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - II - Realizando inspeções ID5-15-(06,10,MB)(CEL), 3900H (MOT) - DPE: 13/02
+[ ] 2738 - DI
+[ ] 2740 - DI
+[ ] 2741 - II - Montagem do kit hsi, fechamento de motor - ID5-15(09,20,01,07 E 06) - DPE: 16/02

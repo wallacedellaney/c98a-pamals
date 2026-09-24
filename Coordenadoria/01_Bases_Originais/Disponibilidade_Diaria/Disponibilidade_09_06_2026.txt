@@ -1,0 +1,88 @@
+*C-98 - 09/06/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+13 D / 21 M
+(09 DI / 04 DO / 06 II / 04 IN / 00 ITR / 04 IS / 02 IP)
+ 
+*Previsão até o final do dia: 13 D / 21 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis:* 18
+- 2709, 2719, 2731, 2739, 2741
+
+
+*Montadas:* 22
+- 2709
+
+
+*Esforço  Aéreo*
+Anual: 10070:00 / 3629:15 / 36,04%
+
+
+*Motores disponíveis: 24*
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*PAMA-LS*
+[ ] 2702 - DO
+[ ] 2704 - DI
+[ ] 2706 - IP - 75 APE- DPE: A ser definido.
+[ ] 2724 - IP - ANV acidentada.
+[ ] 2726 - IS - 91 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 44 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - II - Realizando inspeções programadas ID5-15-06/07/08+300FH e troca de para-brisa. - DPE: 10/06
+[ ] 2733 - DI
+[ ] 2739 - II - Realizando inspeção ID5-15-0A+MG+ME+1200FH - DPE: 12/06
+
+
+*1º/15º GAV*
+[ ] 2727 - IN - Vazamento de óleo pelo bocal de abastecimento do motor. - DPE: ASD
+
+
+*1º/5º GAV*
+[ ] 2703 - DO
+[ ] 2708 - DO
+[ ] 2728 - IN - Aguardando avaliação de sinistro - DPE: 06/07
+[ ] 2729 - II - Realizando inspeções ID 0A,02,07,10,11,12,21,22 / 2900FH/HSI - DPE: 22/07
+
+
+*2º ETA*
+[ ] 2719 - II - Realizando inspeções 4300 FH/HSI.- DPE: 11/06
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - II - Realizando inspeções ID 5-15-0A/01/02/03/06/09/11/14/15/21/22/2700FH - DPE: 12/06
+[ ] 2720 - DI
+[ ] 2721 - IN - Indicator fuel flow entregue em 08/06 - DPE: 17/06
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2738 - II - Realizando inspeções programadas e agd motor para troca por TBO Volume 261381001613 recebido no CTLA em 08/06. - DPE: 19/06
+[ ] 2740 - DI
+[ ] 2741 - IN - Pesquisa de pane de vazamento de óleo do motor. - DPE: 10/06

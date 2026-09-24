@@ -1,0 +1,89 @@
+*C-98 - 14/04/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+14 D / 20 M
+(12 DI / 02 DO / 05 II / 03 IN / 00 ITR / 05 IS / 03 IP)
+ 
+*Previsão até o final do dia: 15 D / 21 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis* 18
+- 2703, 2720, 2728, 2741
+
+
+*Montadas* 21
+- 2728
+
+
+*Esforço  Aéreo*
+Anual: 10070:00 / 2111:35 / 20,97%
+
+
+*Motores disponíveis: 25*
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - IN - Motor removido por acionamento da garantia (AT 384%192) - DPE: 22/05
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2702 - II - Realizando inspeções ID5-15-01/-03/-06/-07/-08/-09/-10/-21/-22 E TROCA DO MOTOR, IC DE EXTINTOR/ CALIBRAÇÃO DE BÚSSOLA MAGNÉTICA - DPE: 30/04
+[ ] 2704 - DO
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 91 AIFP. Serão atendidas pela Vee One e FAB - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 44 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 13 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 57 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DI
+[ ] 2733 - DI
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - IN - Agd liberação do motor por parte do PAMA-SP após interações com empresa - DPE: ASD
+
+
+*1º/5º GAV*
+[ ] 2703 - II - Realizando inspeção ID 07 - DPE: 20/04
+[ ] 2708 - DO
+[ ] 2721 - DI
+[ ] 2728 - II - Realizando inspeção ID 01,06,07,08,09,10,20 / 100:00 FH - DPE: 24/04
+[ ] 2729 - DI
+
+
+*2º ETA*
+[ ] 2719 - IS - Agd kit HSI do PAMA-SP - DPE: 10 DIAS após recebimento do Kit.
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - II - Realizando inspeções ID 5-15-0A/06/10/3100FH - DPE: 17/04
+
+
+*7º ETA*
+[ ] 2736 - DI
+[ ] 2737 - II - Realizando inspeções ID5-15-(0A;08;20;01), 100H(MOT), MOT2M6; MOT1M12, 100H (BAT), 12M (BAT); FCU; LIFE RAFT; IT LS 21 288 C-98 016 E IT LS 24 339 C-98 022 - DPE: 22/04
+[ ] 2738 - DI
+[ ] 2740 - DI
+[ ] 2741 - IN - Anv realizando balanceamento de hélice - DPE: 16/04

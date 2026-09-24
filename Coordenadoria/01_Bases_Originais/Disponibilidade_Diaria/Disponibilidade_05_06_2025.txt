@@ -1,0 +1,105 @@
+*C-98 - 05/06/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+14 D / 18 M
+(13 DI / 01 DO / 03 II / 00 ITR / 01 IN / 08 IS / 04 IP)
+ 
+*Previsão até o final do dia: 14 D / 18 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 17
+- 2729, 2737 (Manutenção programada)
+- 2709 (Manutenção não programada)
+
+
+*Montadas*: 19
+- 2720
+
+
+*Esforço  Aéreo*
+Anual: 12555:00 / 3449:00 / 27,47%
+
+
+*Motores disponíveis: 19*
+
+
+*BABV*
+[ ] 2741 - DI
+
+
+*BAPV*
+[ ] 2738 - DI
+
+
+*BASM*
+[ ] 2708 - DO
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2704 - DI
+[ ] 2706 - IP - 77 APE- DPE: A ser definido
+[ ] 2721 - IP - 14 AIFP e 73 IPLR. Será iniciada a instalação de motor e interior.  Orçamentos dos itens faltantes solicitados em 30/04 e 13/05 - DPE: 06/06/2025.
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 25 AIFP E 11 IPLR. Serão atendidas pela ATM, Vee One e FAB. Orçamentos dos itens faltantes solicitados em 30/04 e 13/05. - DPE: 22/08/2025.
+[ ] 2730 - IS - SEM MOTOR - 11 AIFP  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 05 AIFP -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 28 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - IS - Aguardando chegada dos itens. - 12 AIFP - DPE: 02 DIAS após a chegada dos itens.
+[ ] 2733 - DI
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2728 - IS - Aguardando chegada dos itens - 07 AIFP - DPE: 07 DIAS após chegada dos itens.
+[ ] 2729 - II - Realizando inspeções ID 0A, 03 / 2500 FH - DPE: 10/06
+
+
+*2º ETA*
+[ ] 2719 - DI
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - IS - Aguardando atendimento do conjunto de hélice - 01 AIFP - DPE: 02 DIAS após chegada do item.
+
+
+*6º ETA*
+[ ] 2709 - IN - Substituição da boia de combustível. - DPE: 06/06
+[ ] 2720 - IS - Agd motor Ped APLI 329250018453 - 01 AIFP - DPE: 13/06.
+
+
+*7º ETA*
+[ ] 2736 - II - Realizando HSI do Motor no GLOG-MN - DPE: 16/06.
+[ ] 2737 - II - Realizando inspeções ID5-15-03/06 e troca de motor - DPE: 09/06
+[ ] 2740 - DI

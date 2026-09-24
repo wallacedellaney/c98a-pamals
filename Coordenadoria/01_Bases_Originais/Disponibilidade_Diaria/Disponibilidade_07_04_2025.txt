@@ -1,0 +1,99 @@
+*C-98 - 07/04/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+10D / 17M
+(09 DI / 01 DO / 04 II / 00 ITR / 03 IN / 09 IS / 04 IP)
+ 
+*Previsão até o final do dia: 12 D / 17 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 15
+- 2702, 2741 (Manutenção não programada)
+- 2729, 2737, 2740 (Manutenção não programada)
+
+
+*Montadas*: 19
+- 2708, 2727
+
+
+*Esforço  Aéreo*
+Anual: 12555:00 / 1841:00 / 14,66%
+
+
+*Motores disponíveis: 23*
+
+
+*BAMN*
+[ ] 2738 - II - Realizando inspeções ID5-15-0A/07/10/22 (CEL) E 3700H (MOT) - DPE: 18/04
+[ ] 2741 - II - Realizando inspeções CORR / MOTOR / CÉLULA - DPE: 07/04
+
+
+*BASM*
+[ ] 2708 - IS - ANV com NAV1 inoperante - 01 AIFP - Agd DPE Vee One - DPE: 01 DIA após chegada do item
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - DI
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*PAMA-LS*
+[ ] 2701 - IP - Sem possibilidade de montagem.
+[ ] 2702 - II - Realizando inspeções ID5-15-0A e HSI do motor. - DPE: 11/04.
+[ ] 2704 - DI
+[ ] 2706 - IP - 78 APE- DPE: A ser definido
+[ ] 2721 - IP - 20 AIFP. Será iniciada a instalação de motor, hélice e interior. - DPE: 30/04/2025.
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 29 AIFP. Serão atendidas pela ATM, Vee One e FAB. - DPE: 30 DIAS após a chegada dos itens.
+[ ] 2730 - IS - SEM MOTOR - 10 AIFP  - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 07 AIFP -  DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 25 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - IS - Realizando reparos por ocasião de Bird Strike. - 08 AIFP - DPE: 02 DIAS após a chegada dos itens.
+[ ] 2733 - DI
+[ ] 2739 - DI
+
+
+*1º/15º GAV*
+[ ] 2727 - IS - Aguardando envio dos itens. 02 AIFP. Agd DPE Vee One. DPE: 01 DIA após chegada dos itens.
+
+
+*1º/5º GAV*
+[ ] 2728 - IS - Velocímetro e quadrante em transporte, mangueira adquirida pela Vee One e aguardando entrega. - 03 IPLR - DPE: 07 DIAS após chegada dos itens.
+[ ] 2729 - IN - Realizando instalação do King Installation Kit - DPE: 09/04.
+
+
+*2º ETA*
+[ ] 2719 - DI
+[ ] 2722 - DO
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - IS - HSI do motor - 01 AIFP - DPE: 02/05.
+
+
+*7º ETA*
+[ ] 2736 - II - Realizando inspeções ID5-15(0A ,07) 01 - DPE: 21/04.
+[ ] 2737 - IN - Suspensa a prorrogação de TBO do motor, devido a variação de 50 LB de Torque durante voo reto e nivelado. Após a solução da pane, requer-se novo AT para Engenharia do PAMA-SP - DPE: 08/04
+[ ] 2740 - IN - Luz Chip Detector âmbar acendeu no PFD. - DPE: 07/04

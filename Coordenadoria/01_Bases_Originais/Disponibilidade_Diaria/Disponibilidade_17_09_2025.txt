@@ -1,0 +1,97 @@
+*C-98 - 17/09/2025*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+14 D / 16 M
+(10 DI / 04 DO / 04 II / 01 ITR / 01 IN / 06 IS / 03 IP)
+ 
+*Previsão até o final do dia: 15 D / 16 M*
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis*: 16
+- 2728 (Manutenção programada)
+- 2739 (Manutenção não programada)
+
+
+*Montadas*: 16
+
+
+*Esforço  Aéreo*
+Anual: 6960:00 /5922:15 / 85%
+
+
+*Motores disponíveis: 24*
+
+
+*BAMN*
+[ ] 2741 - II - Realizando inspeções de célula e HSI do motor. - 06 IPLR - DPE: 30/09
+
+
+*CLA*
+[ ] 2723 - DI
+
+
+*DACTA II*
+[ ] 2742 - II - ID5-15-07 troca de motor e hélice - DPE 26/09 
+
+
+*EEAR*
+[ ] 2703 - DI
+
+
+*EPCAR*
+[ ] 2702 - DI
+
+
+*PAMA-LS*
+[ ] 2704 - DI
+[ ] 2706 - IP - 75 APE- DPE: A ser definido
+[ ] 2721 - IP - 01 AIFP e 34 IPLR. MONTAGEM PARA ENTREGA AO 1/5 GAV - MOTOR E HÉLICE JÁ INSTALADOS NA AERONAVE - DPE: 30/09/2025.
+[ ] 2724 - IP - ANV acidentada
+[ ] 2726 - IS - 73 AIFP . Serão atendidas pela ATM, Vee One e FAB. Orçamentos dos itens faltantes solicitados em 30/04 e 13/05. - DPE: A DET
+[ ] 2730 - IS - SEM MOTOR - 18 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2732 - IS - SEM MOTOR - 08 AIFP - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 32 AIFP - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - DO - Aguardando translado para PAMASP, DPE: 12/09
+[ ] 2733 - IS - Aguardando materiais para troca de berço - 08 AIFP - DPE: 10 DIAS após chegada dos itens.
+[ ] 2739 - IN - MOTOR SEM INDICAÇÃO DE TEMPERATURA DO ÓLEO; DPE: 17/09/25
+
+
+*1º/15º GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2708 - DO
+[ ] 2728 - II - Realizando inspeções 0A, MG /100 FH E 2+4 (36-M) - 06 IPLR - DPE:19/09
+[ ] 2729 - DO
+
+
+*2º ETA*
+[ ] 2719 - DO
+[ ] 2722 - ITR - Volume 251304002095 no CTLA inserido em manifesto para o CAN NT - DPE: 03 DIAS após chegada dos itens.
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - IS - Agd governador de sobrevelocidade. - 01 AIFP - DPE: 26/09
+[ ] 2720 - DI
+
+
+*7º ETA*
+[ ] 2736 -DI
+[ ] 2737 - II -  CUMPRINDO INSPEÇÃO ID5-15-(06, 09, 12)(MOT), CORR48M E 3700H(MOT) DPE 03/10/2025
+[ ] 2738 - DI
+[ ] 2740 - DI
