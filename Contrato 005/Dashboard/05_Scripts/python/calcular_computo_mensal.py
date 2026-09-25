@@ -405,6 +405,192 @@ def carregar_mes(ano, mes):
     return df_matriz, df_motivos, resumo
 
 
+
+# ---------------------------------------------------------------------------
+# Cálculo RETROATIVO (fev-nov/2025) — trabalho pedido pelo Wallace em
+# 2026-09-23/25: "queria ter [a matriz de montadas] desde o início do
+# contrato... é para ter igual o fechamento mensal, montar aquele jogo de
+# montadas 0 e 1 desde fevereiro de 2025" + "nao muda a geral principal
+# nossa de pontuação, isso é só para trabalho retroativo".
+#
+# Diferenças em relação ao `calcular_mes()` oficial:
+# - Não existe campo "Estoque" preenchido antes de meados de 2026 — usa a
+#   mesma regra da linha "real VEE ONE" (`calcular_media_diaria_vee_one`):
+#   negativa toda AIFP/IPLR aberta (com ou sem estoque), começando na
+#   própria data de abertura, sem pular pro próximo dia útil.
+# - O roster "dentro do contrato" NÃO vem do RAC de hoje (que só reflete a
+#   composição ATUAL da frota) — vem de um histórico reconstruído à mão
+#   junto com o Wallace, mês a mês, a partir da aba "1.2" (hand-made) de
+#   cada RMA mensal no Drive ("Fechamentos mensais"), confirmando aeronave
+#   por aeronave nas planilhas RMA_2025-*.xlsx. Ver ROSTER_RETROATIVO
+#   abaixo — cada mês foi conferido e confirmado pelo Wallace um por um.
+# - Fevereiro, março e abril/2025 são o período de adaptação do contrato
+#   (regra TR item 16.10.7): índice de montagem forçado em 1, sem
+#   negativação nenhuma — não roda o cálculo de emergências pra esses 3
+#   meses, só marca a matriz inteira como montada.
+# - Escreve em pasta separada (`computo_mensal_retroativo/`) — nunca
+#   mexe nos arquivos do Cômputo Mensal oficial (`computo_mensal/`).
+# ---------------------------------------------------------------------------
+
+PASTA_COMPUTO_RETROATIVO = DADOS_TRATADOS / "computo_mensal_retroativo"
+
+MESES_ADAPTACAO_RETROATIVO = {(2025, 2), (2025, 3), (2025, 4)}
+
+# Roster "dentro do contrato" mês a mês, reconstruído com o Wallace a partir
+# da aba "1.2" de cada RMA (2026-09-25) — fevereiro é o próprio roster da
+# aba 1.2 de fev/2025 (mesmo sendo mês de adaptação, listado aqui só pra
+# referência/consistência); março e abril não têm roster confiável (aba 1.2
+# ausente em março, RMA de abril nem existe em xlsx no Drive) — não importa
+# pro resultado porque os 2 são meses de adaptação (tudo = 1 de qualquer
+# forma). Dezembro/2025 em diante já é coberto pelo Cômputo Mensal oficial
+# (Estoque passou a ser preenchido) — não precisa de versão retroativa.
+ROSTER_RETROATIVO = {
+    (2025, 2): ["2702", "2703", "2704", "2708", "2719", "2722", "2723", "2727", "2729",
+                "2731", "2736", "2737", "2738", "2739", "2740", "2741", "2742", "2743"],
+    (2025, 5): ["2702", "2703", "2704", "2708", "2709", "2719", "2722", "2723", "2727", "2728",
+                "2729", "2731", "2733", "2736", "2737", "2738", "2739", "2740", "2741", "2742", "2743"],
+    (2025, 6): ["2702", "2703", "2704", "2708", "2709", "2719", "2722", "2723", "2727", "2728",
+                "2729", "2731", "2733", "2736", "2737", "2738", "2739", "2740", "2741", "2742", "2743"],
+    (2025, 7): ["2702", "2703", "2704", "2708", "2709", "2719", "2722", "2723", "2727", "2728",
+                "2729", "2731", "2733", "2736", "2737", "2738", "2739", "2740", "2741", "2742", "2743"],
+    (2025, 8): ["2702", "2703", "2704", "2708", "2709", "2719", "2720", "2722", "2723", "2727", "2728",
+                "2729", "2731", "2733", "2736", "2737", "2738", "2739", "2740", "2741", "2742", "2743"],
+    (2025, 9): ["2702", "2703", "2704", "2708", "2709", "2719", "2720", "2722", "2723", "2727", "2728",
+                "2729", "2731", "2733", "2736", "2737", "2738", "2739", "2740", "2741", "2742", "2743"],
+    (2025, 10): ["2702", "2703", "2704", "2708", "2709", "2719", "2720", "2721", "2722", "2723", "2727",
+                 "2728", "2729", "2731", "2733", "2736", "2737", "2738", "2739", "2740", "2741", "2742", "2743"],
+    (2025, 11): ["2702", "2703", "2704", "2708", "2709", "2719", "2720", "2721", "2722", "2723", "2727",
+                 "2728", "2729", "2731", "2733", "2736", "2737", "2738", "2739", "2740", "2741", "2742", "2743"],
+}
+
+
+def calcular_mes_retroativo(ano, mes):
+    """Mesmo formato de saída do `calcular_mes()` oficial (matriz, motivos,
+    resumo), mas pro período fev-nov/2025, usando a regra "real VEE ONE"
+    (sem estoque, negativa desde a abertura) e o roster histórico de
+    ROSTER_RETROATIVO em vez do RAC de hoje. Ver docstring da seção acima."""
+    ultimo_dia_mes = calendar.monthrange(ano, mes)[1]
+    primeiro_dia = date(ano, mes, 1)
+    fim_mes = date(ano, mes, ultimo_dia_mes)
+
+    adaptacao = (ano, mes) in MESES_ADAPTACAO_RETROATIVO
+    pontuadas = ROSTER_RETROATIVO.get((ano, mes)) or ROSTER_RETROATIVO[(2025, 2)]
+
+    periodos = []
+    inconsistencias = []
+
+    if not adaptacao:
+        emergencias = pd.read_excel(CAMINHO_EMERGENCIAS_HISTORICO)
+        emergencias["matricula_aeronave"] = emergencias["matricula_aeronave"].astype(str)
+        emergencias = emergencias[emergencias["tpemg"].isin(TIPOS_CONSIDERADOS)].copy()
+        emergencias["data_abertura"] = pd.to_datetime(emergencias["data_abertura"], errors="coerce").dt.date
+        emergencias["atendido_cancelado_dt"] = pd.to_datetime(emergencias["atendido_cancelado"], errors="coerce")
+
+        for _, row in emergencias.iterrows():
+            matricula = row["matricula_aeronave"]
+            if matricula not in pontuadas:
+                continue
+            if _tem_comentario_cancelamento(row.get("obs_coordenadoria_fiscal")):
+                continue
+            if _tem_isencao_avaliacao_negativa(row.get("obs_coordenadoria_fiscal")):
+                continue
+
+            data_abertura = row["data_abertura"]
+            atendido_dt = row["atendido_cancelado_dt"]
+            data_fim_emergencia = atendido_dt.date() if pd.notna(atendido_dt) else None
+
+            if data_abertura is None or data_abertura > fim_mes:
+                continue
+            if data_fim_emergencia is not None and data_fim_emergencia < primeiro_dia:
+                continue
+
+            inicio_negativacao = data_abertura
+            fim_negativacao = (
+                (data_fim_emergencia - timedelta(days=1)) if data_fim_emergencia
+                else date(ano, mes, ultimo_dia_mes)
+            )
+            inicio_efetivo = max(inicio_negativacao, primeiro_dia)
+            fim_efetivo = min(fim_negativacao, date(ano, mes, ultimo_dia_mes))
+            if inicio_efetivo > fim_efetivo:
+                continue
+
+            periodos.append({
+                "matricula": matricula,
+                "numero_emergencia": row["numero_emergencia"],
+                "pn": row.get("pn"),
+                "nomenclatura": row.get("nomenclatura"),
+                "tipo": row["tpemg"],
+                "data_abertura": data_abertura,
+                "data_cancelamento": data_fim_emergencia,
+                "periodo_no_mes_inicio": inicio_efetivo,
+                "periodo_no_mes_fim": fim_efetivo,
+            })
+
+    linhas_matriz = []
+    for matricula in pontuadas:
+        periodos_aeronave = [p for p in periodos if p["matricula"] == matricula]
+        for dia in range(1, ultimo_dia_mes + 1):
+            data_dia = date(ano, mes, dia)
+            if adaptacao:
+                montada = 1
+            else:
+                negativada = any(
+                    p["periodo_no_mes_inicio"] <= data_dia <= p["periodo_no_mes_fim"] for p in periodos_aeronave
+                )
+                montada = 0 if negativada else 1
+            linhas_matriz.append({
+                "matricula": matricula, "dia": dia,
+                "fim_de_semana": data_dia.weekday() >= 5,
+                "montada": montada,
+            })
+
+    df_matriz = pd.DataFrame(linhas_matriz)
+    df_motivos = pd.DataFrame(periodos)
+
+    if not df_matriz.empty:
+        media_diaria = df_matriz.groupby("dia")["montada"].mean() * 100
+        mmam_previa = round(media_diaria.mean(), 2)
+    else:
+        mmam_previa = None
+
+    resumo = {
+        "ano": ano, "mes": mes,
+        "aeronaves_pontuadas": pontuadas,
+        "adaptacao": adaptacao,
+        "ultimo_dia_mes": ultimo_dia_mes,
+        "ultimo_dia_calculado": ultimo_dia_mes,
+        "mmam_previa": mmam_previa,
+        "inconsistencias": inconsistencias,
+    }
+
+    PASTA_COMPUTO_RETROATIVO.mkdir(parents=True, exist_ok=True)
+    mes_ref = f"{ano}-{mes:02d}"
+    df_matriz.to_csv(PASTA_COMPUTO_RETROATIVO / f"{mes_ref}_matriz.csv", index=False)
+    df_motivos.to_csv(PASTA_COMPUTO_RETROATIVO / f"{mes_ref}_motivos.csv", index=False)
+    with open(PASTA_COMPUTO_RETROATIVO / f"{mes_ref}_resumo.json", "w", encoding="utf-8") as f:
+        json.dump(resumo, f, ensure_ascii=False, indent=2, default=str)
+
+    return df_matriz, df_motivos, resumo
+
+
+def carregar_mes_retroativo(ano, mes):
+    mes_ref = f"{ano}-{mes:02d}"
+    caminho_matriz = PASTA_COMPUTO_RETROATIVO / f"{mes_ref}_matriz.csv"
+    caminho_motivos = PASTA_COMPUTO_RETROATIVO / f"{mes_ref}_motivos.csv"
+    caminho_resumo = PASTA_COMPUTO_RETROATIVO / f"{mes_ref}_resumo.json"
+    if not caminho_matriz.exists():
+        return None, None, None
+    df_matriz = pd.read_csv(caminho_matriz, dtype={"matricula": str})
+    try:
+        df_motivos = pd.read_csv(caminho_motivos, dtype={"matricula": str}) if caminho_motivos.exists() else pd.DataFrame()
+    except pd.errors.EmptyDataError:
+        # Mês de adaptação (sem nenhuma negativação) grava um CSV vazio
+        # (0 linhas, 0 colunas) — read_csv não aceita isso.
+        df_motivos = pd.DataFrame()
+    with open(caminho_resumo, encoding="utf-8") as f:
+        resumo = json.load(f)
+    return df_matriz, df_motivos, resumo
+
 if __name__ == "__main__":
     import sys
     ano = int(sys.argv[1]) if len(sys.argv) > 1 else horario.hoje_br().year

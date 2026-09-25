@@ -32,7 +32,10 @@ CAMINHO_DISPONIBILIDADE_DIARIA = _RAIZ_PROJETO / "Coordenadoria" / "02_Dados_Tra
 from contrato005.data.carregar_dados import carregar_computo_mensal, carregar_reajuste, carregar_disponibilidade_historico
 from contrato005.data.justificativas import carregar_justificativas, sincronizar_mes, STATUS_PENDENTE
 from contrato005.components.exportar import gerar_pdf_bytes, gerar_xlsx_bytes
-from calcular_computo_mensal import _tem_comentario_cancelamento, calcular_media_diaria_vee_one
+from calcular_computo_mensal import (
+    _tem_comentario_cancelamento, calcular_media_diaria_vee_one,
+    calcular_mes_retroativo, carregar_mes_retroativo,
+)
 
 MESES_PT = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -172,6 +175,100 @@ def _historico_mensal_disponibilidade():
         tabela["% Montada"] = tabela["% Montada"].round(2)
         tabela["% Disponível"] = tabela["% Disponível"].round(2)
         st.dataframe(tabela, width="stretch", hide_index=True)
+
+
+def _computo_mensal_retroativo(mes_escolhido):
+    """Matriz aeronave x dia pra fev-nov/2025, ANTES do Cômputo Mensal
+    oficial existir (sem campo Estoque ainda). Cálculo próprio, separado do
+    oficial — ver calcular_computo_mensal.calcular_mes_retroativo."""
+    st.subheader(f"Cômputo Mensal (retroativo) — {_formatar_mes(mes_escolhido)}")
+    st.warning(
+        "📜 Período anterior ao Cômputo Mensal oficial (que só existe a partir de dez/2025, quando o "
+        "campo \"Estoque\" das emergências passou a ser preenchido). Esta é uma reconstrução "
+        "**retroativa e não oficial**: usa a mesma regra da linha \"real VEE ONE\" (negativa toda "
+        "AIFP/IPLR aberta, com ou sem estoque, desde a data de abertura) e o roster de aeronaves "
+        "\"dentro do contrato\" daquele mês específico, reconstruído com o Wallace a partir da aba "
+        "\"1.2\" de cada RMA mensal no Drive. Não substitui nem altera o Cômputo Mensal oficial."
+    )
+
+    col_calc, _ = st.columns([1, 3])
+    with col_calc:
+        if st.button("🔄 Recalcular", key="computo_retroativo_recalcular", width="stretch"):
+            with st.spinner("Recalculando (retroativo)..."):
+                calcular_mes_retroativo(mes_escolhido.year, mes_escolhido.month)
+            st.rerun()
+
+    df_matriz, df_motivos, resumo = carregar_mes_retroativo(mes_escolhido.year, mes_escolhido.month)
+    if df_matriz is None:
+        st.info("Ainda não foi calculado pra este mês — clique em \"Recalcular\".")
+        return
+
+    if resumo.get("adaptacao"):
+        st.info(
+            "Período de adaptação do contrato (fev/mar/abr de 2025, regra TR item 16.10.7): índice de "
+            "montagem forçado em 1 — sem negativação, independente de emergências abertas."
+        )
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("MMAM (retroativo)", f"{resumo['mmam_previa']}%" if resumo["mmam_previa"] is not None else "—")
+    c2.metric("Aeronaves dentro do contrato", len(resumo["aeronaves_pontuadas"]))
+    c3.metric("Dias no mês", resumo["ultimo_dia_mes"])
+
+    st.markdown("##### Matriz aeronave x dia (1 = montada, 0 = desmontada)")
+    pivot = df_matriz.pivot(index="matricula", columns="dia", values="montada")
+
+    mapa_rotulo = {}
+    fins_de_semana = set()
+    for dia in pivot.columns:
+        wd = date(mes_escolhido.year, mes_escolhido.month, int(dia)).weekday()
+        rotulo = f"{dia} {ABREV_SEMANA[wd]}"
+        mapa_rotulo[dia] = rotulo
+        if wd >= 5:
+            fins_de_semana.add(rotulo)
+
+    percentual_dia = df_matriz.groupby("dia")["montada"].mean().mul(100)
+    pivot.loc["% Montadas"] = percentual_dia
+    pivot = pivot.rename(columns=mapa_rotulo)
+
+    def _formatar_valor(matricula, v):
+        if matricula == "% Montadas":
+            return "" if pd.isna(v) else f"{v:.0f}%"
+        if pd.isna(v):
+            return ""
+        return f"{v:.0f}"
+
+    pivot_num = pivot
+    pivot_texto = pivot_num.apply(lambda row: row.map(lambda v: _formatar_valor(row.name, v)), axis=1)
+
+    def _cor_linha(row):
+        matricula = row.name
+        estilos = []
+        for coluna in row.index:
+            v = pivot_num.loc[matricula, coluna]
+            if matricula == "% Montadas":
+                estilos.append("font-weight: 700; border-top: 2px solid " + LINE + ";")
+            elif pd.isna(v):
+                estilos.append(f"background-color: {LINE}" if coluna in fins_de_semana else "")
+            else:
+                cor = STATUS["good"] if v == 1 else STATUS["critical"]
+                estilos.append(f"background-color: {cor}55")
+        return estilos
+
+    styler = pivot_texto.style.apply(_cor_linha, axis=1)
+    altura_tabela = 35 * (len(pivot) + 1) + 3
+    st.dataframe(styler, width="stretch", height=altura_tabela)
+
+    if not df_motivos.empty:
+        with st.expander(f"📋 {len(df_motivos)} negativação(ões) no mês — motivo"):
+            tabela = df_motivos[[
+                "matricula", "numero_emergencia", "tipo", "nomenclatura",
+                "data_abertura", "data_cancelamento", "periodo_no_mes_inicio", "periodo_no_mes_fim",
+            ]].rename(columns={
+                "matricula": "FAB", "numero_emergencia": "Emergência", "tipo": "Tipo",
+                "nomenclatura": "Item", "data_abertura": "Abertura", "data_cancelamento": "Cancelada/Atendida",
+                "periodo_no_mes_inicio": "Negativa desde", "periodo_no_mes_fim": "Negativa até",
+            })
+            st.dataframe(tabela, width="stretch", hide_index=True)
 
 def _mostrar_motivo_celula(matricula, dia, valor, df_motivos):
     if pd.isna(valor):
@@ -723,6 +820,20 @@ def _valor_hora_voo_atual():
 
 
 def _computo_mensal(mes_escolhido):
+    # Meses antes de dez/2025 não têm o campo "Estoque" preenchido nas
+    # emergências (só passou a existir em meados de 2026), então o cálculo
+    # oficial `calcular_mes()` não funciona pra eles — desvia pra uma versão
+    # retroativa separada, com sua própria regra (ver
+    # calcular_computo_mensal.calcular_mes_retroativo) e seu próprio roster
+    # histórico de aeronaves, SEM tocar em nada do caminho oficial abaixo.
+    # Pedido do Wallace, 2026-09-25: "queria ter desde o início do
+    # contrato... é para ter igual o fechamento mensal, montar aquele jogo
+    # de montadas 0 e 1 desde fevereiro de 2025" + "nao muda a geral
+    # principal nossa de pontuação, isso é só para trabalho retroativo".
+    if (mes_escolhido.year, mes_escolhido.month) < (2025, 12):
+        _computo_mensal_retroativo(mes_escolhido)
+        return
+
     st.subheader(f"Cômputo Mensal — {_formatar_mes(mes_escolhido)}")
     st.caption(
         "Prévia calculada automaticamente a partir dos registros de emergências AIFP/IPLR sem estoque "
