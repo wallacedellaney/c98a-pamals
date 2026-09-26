@@ -185,10 +185,13 @@ def _computo_mensal_retroativo(mes_escolhido):
     st.warning(
         "📜 Período anterior ao Cômputo Mensal oficial (que só existe a partir de dez/2025, quando o "
         "campo \"Estoque\" das emergências passou a ser preenchido). Esta é uma reconstrução "
-        "**retroativa e não oficial**: usa a mesma regra da linha \"real VEE ONE\" (negativa toda "
-        "AIFP/IPLR aberta, com ou sem estoque, desde a data de abertura) e o roster de aeronaves "
-        "\"dentro do contrato\" daquele mês específico, reconstruído com o Wallace a partir da aba "
-        "\"1.2\" de cada RMA mensal no Drive. Não substitui nem altera o Cômputo Mensal oficial."
+        "**retroativa e não oficial**: usa a MESMA regra do Cômputo Mensal oficial (início = próximo "
+        "dia útil após a data da informação, libera no dia seguinte ao atendimento), só SEM checar "
+        "Estoque (todo AIFP/IPLR sempre negativa) — validada em 2026-09-25/26 contra as apresentações "
+        "reais (\"RMA <mês>.pptx\") que o Wallace monta todo mês, com 27 de 29 combinações "
+        "aeronave/mês batendo exato. Usa também o roster de aeronaves \"dentro do contrato\" daquele "
+        "mês específico, reconstruído com o Wallace a partir da aba \"1.2\" de cada RMA mensal no "
+        "Drive. Não substitui nem altera o Cômputo Mensal oficial."
     )
 
     col_calc, _ = st.columns([1, 3])
@@ -262,10 +265,10 @@ def _computo_mensal_retroativo(mes_escolhido):
         with st.expander(f"📋 {len(df_motivos)} negativação(ões) no mês — motivo"):
             tabela = df_motivos[[
                 "matricula", "numero_emergencia", "tipo", "nomenclatura",
-                "data_abertura", "data_cancelamento", "periodo_no_mes_inicio", "periodo_no_mes_fim",
+                "data_info", "data_cancelamento", "periodo_no_mes_inicio", "periodo_no_mes_fim",
             ]].rename(columns={
                 "matricula": "FAB", "numero_emergencia": "Emergência", "tipo": "Tipo",
-                "nomenclatura": "Item", "data_abertura": "Abertura", "data_cancelamento": "Cancelada/Atendida",
+                "nomenclatura": "Item", "data_info": "Informação", "data_cancelamento": "Cancelada/Atendida",
                 "periodo_no_mes_inicio": "Negativa desde", "periodo_no_mes_fim": "Negativa até",
             })
             st.dataframe(tabela, width="stretch", hide_index=True)

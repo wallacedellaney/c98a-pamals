@@ -436,6 +436,124 @@ PASTA_COMPUTO_RETROATIVO = DADOS_TRATADOS / "computo_mensal_retroativo"
 
 MESES_ADAPTACAO_RETROATIVO = {(2025, 2), (2025, 3), (2025, 4)}
 
+# Correções manuais, caso a caso — pedido do Wallace em 2026-09-25: "vamos
+# corrigindo manualmente cada caso", confirmado comparando com as
+# apresentações "RMA <mês>.pptx" / "Análise média mensal aeronaves
+# montadas.pptx" que o Wallace monta todo mês no Drive (pasta do mês em
+# "Fechamentos mensais") — essas apresentações são o dado real, conferido
+# pelo fiscal, e servem de gabarito pra validar o cálculo retroativo.
+#
+# Override de "data_info": usa essa data no lugar da que está na planilha,
+# pra emergências que foram reclassificadas de ANCE pra AIFP/IPLR bem
+# depois da abertura real (nossa base só guarda o tpemg ATUAL, sem
+# histórico de quando mudou).
+CORRECOES_DATA_INFO_RETROATIVO = {
+    # 313250017063 (FAB 2736, LOW L SWITCH): aberta 24/09/2025 como ANCE
+    # (não negativa) — só virou AIFP em 09/10/2025, depois do prazo já
+    # vencido (ver obs_coordenadoria_fiscal). Confirmado batendo exato com
+    # as apresentações de setembro E outubro usando 09/10 como data_info.
+    "313250017063": date(2025, 10, 9),
+}
+
+# Override da data de atendido/cancelado — pra emergências cuja data na
+# planilha de hoje foi corrigida/lançada bem depois do mês fechar (a
+# planilha de emergências é viva, continua sendo editada com atraso), então
+# não reflete mais a data real de quando a aeronave voltou a montar naquele
+# mês específico.
+CORRECOES_ATENDIDO_RETROATIVO = {
+    # 313250016987 (FAB 2741): planilha de hoje mostra atendido em
+    # 30/10/2025, mas a apresentação de outubro (feita em 06/11, antes da
+    # correção tardia) mostra "Atd/cancelada" em branco e a observação diz
+    # "Material recebido... dia 27/10/2025" — a aeronave voltou a montar no
+    # dia 28/10, não dia 31.
+    "313250016987": date(2025, 10, 27),
+}
+
+# Emergências cujo comentário bate no filtro de cancelamento
+# (TERMOS_CANCELAMENTO_OBSERVACAO, ex.: "cancel...") mas que na verdade são
+# só o fechamento ADMINISTRATIVO depois do material já ter sido entregue —
+# não uma isenção real (o operador não devolveu/dispensou o item, só
+# encerrou o processo no sistema depois). Nesses casos o filtro de
+# cancelamento está incorreto e o período de negativação real deve contar.
+EMERGENCIAS_FORCAR_INCLUSAO_RETROATIVO = {
+    # 386250012956 (FAB 2743, nov/2025): "Emergência cancelada pela BACO em
+    # 05/12. AWB ... entregue em 02/12" — cancelamento é só o fechamento
+    # depois da entrega (02/12), não isenção. A apresentação de novembro
+    # confirma negativação de 28 a 30/11 (antes do cancelamento).
+    "386250012956",
+}
+
+# Emergências que o fiscal decidiu tratar como ANCE "para todos os fins"
+# (não negativa nada) — mesmo espírito de TERMOS_ISENCAO_AVALIACAO_NEGATIVA,
+# mas com uma frase que a lista atual não pega ("tratando a emergencia
+# internamente como ANCE... o fiscal vai tratar essa emergência para todos
+# os fins como ANCE"). Só no retroativo por enquanto (não mexe no termo
+# oficial usado por calcular_mes, que é "a geral principal" — pedido do
+# Wallace de não mudar isso sem confirmar primeiro).
+#
+# 313250016991, 313250017010, 313250017009 (FAB 2737, set/2025): "o
+# operador abriu a emergência como IPLR/AIFP mas em determinados momentos
+# do mês voou a aeronave (tratando a emergencia internamente como ANCE),
+# para não prejudicar a empresa o fiscal vai tratar essa emergência para
+# todos os fins como ANCE. 1T Wallace 01.10" — confirmado comparando com a
+# apresentação de setembro, que só negativa 2737 a partir da 4ª emergência
+# (313250017060), sem o comentário ANCE.
+EMERGENCIAS_EXCLUIDAS_RETROATIVO = {
+    "313250016991", "313250017010", "313250017009",
+}
+
+# Emergências que devem ser excluídas só em MESES específicos — casos onde
+# a apresentação de um mês simplesmente não lista a emergência (o fiscal
+# não contou ela naquele mês por algum motivo não documentado), mas ela
+# segue válida/contando nos outros meses em que aparece normalmente.
+#
+# 685250010033 (FAB 2728): fica "Providência tom" de out/2025 até jan/2026
+# na planilha (só o recibo assinado do cartão GPS demorou pra fechar
+# formalmente) — conta normal em setembro/outubro (bate com a apresentação
+# desses meses), mas NÃO aparece na apresentação de novembro pra 2728 (a
+# matriz de novembro mostra 2728 montada nos dias 1-6, quando essa
+# emergência já estava aberta há semanas).
+#
+# 396250014964 (FAB 2733): mesma situação — "Providência tom" desde
+# jul/2025, conta normal até outubro, mas não aparece na apresentação de
+# novembro pra 2733.
+EMERGENCIAS_EXCLUIDAS_RETROATIVO_POR_MES = {
+    (2025, 11): {"685250010033", "396250014964"},
+}
+
+# Emergências cujo "Atd/cancelada" na planilha de hoje foi preenchido bem
+# depois do mês fechar (comparado com a apresentação daquele mês, que
+# mostra a coluna em branco = ainda aberta na época) — trata como se ainda
+# estivesse aberta pro cálculo retroativo daquele mês (nunca libera
+# sozinha, só quando o mês acaba ou vira o mês seguinte).
+EMERGENCIAS_FORCAR_AINDA_ABERTA_RETROATIVO = {
+    # 304250074908 (FAB 2704, nov/2025): planilha de hoje mostra atendido
+    # em 28/11, mas a apresentação de novembro (feita em 04/12, DEPOIS do
+    # dia 28) mostra a coluna em branco — se tivesse sido atendido mesmo em
+    # 28/11, a apresentação já teria essa data. A matriz de novembro
+    # confirma 2704 desmontada até o fim do mês (dia 30).
+    "304250074908",
+    # 396250015798 (FAB 2733, nov/2025): mesmo padrão — planilha de hoje
+    # mostra atendido em 24/11 (mesmo dia da info, o que zerava o período
+    # no cálculo), mas a apresentação mostra a coluna em branco e a matriz
+    # confirma 2733 desmontada de 25 a 30/11.
+    "396250015798",
+}
+
+# Emergências transferidas de uma aeronave pra outra no meio do mês — nossa
+# base só guarda a matrícula FINAL, sem histórico de qual aeronave estava
+# com o item em cada período. Reconstruído a partir dos comentários da
+# apresentação de novembro/2025 ("Emg transferida do 2722 para o 2719 em
+# 24/11", etc.) — todas as 3 emergências abaixo foram transferidas do 2722
+# pro 2719 no mesmo dia (24/11/2025): o 2722 fica negativado até o próprio
+# dia da transferência (inclusive), o 2719 (matrícula que já está gravada
+# na planilha) só a partir do próximo dia útil depois da transferência.
+TRANSFERENCIAS_RETROATIVO = {
+    "685250010201": {"matricula_origem": "2722", "data_transferencia": date(2025, 11, 24)},
+    "685250010202": {"matricula_origem": "2722", "data_transferencia": date(2025, 11, 24)},
+    "685250010206": {"matricula_origem": "2722", "data_transferencia": date(2025, 11, 24)},
+}
+
 # Roster "dentro do contrato" mês a mês, reconstruído com o Wallace a partir
 # da aba "1.2" de cada RMA (2026-09-25) — fevereiro é o próprio roster da
 # aba 1.2 de fev/2025 (mesmo sendo mês de adaptação, listado aqui só pra
@@ -466,9 +584,23 @@ ROSTER_RETROATIVO = {
 
 def calcular_mes_retroativo(ano, mes):
     """Mesmo formato de saída do `calcular_mes()` oficial (matriz, motivos,
-    resumo), mas pro período fev-nov/2025, usando a regra "real VEE ONE"
-    (sem estoque, negativa desde a abertura) e o roster histórico de
-    ROSTER_RETROATIVO em vez do RAC de hoje. Ver docstring da seção acima."""
+    resumo), mas pro período fev-nov/2025, usando o roster histórico de
+    ROSTER_RETROATIVO em vez do RAC de hoje.
+
+    Regra de negativação (validada em 2026-09-25 contra 29 combinações
+    aeronave/mês tiradas das apresentações reais "RMA <mês>.pptx" —
+    18/29 bateram exato de cara, o resto são os casos manuais corrigidos
+    acima ou transferências de emergência entre aeronaves ainda não
+    reconstruídas): MESMA regra do `calcular_mes()` oficial — início =
+    próximo dia útil após a "data da informação" (não a abertura!), o
+    próprio dia do atendimento ainda conta negativado, libera no dia
+    seguinte — só SEM checar o campo Estoque (que não existia antes de
+    dez/2025, então toda AIFP/IPLR conta como "sem estoque" = sempre
+    negativa). A primeira versão desta função usava a data de abertura sem
+    pular dia útil (igual a linha "real VEE ONE" do gráfico) — trocada
+    porque batia muito pior com os dados reais (14/29 vs 18/29 de cara, e a
+    diferença nos casos que já bateram exato ficava em 1-2 dias, não
+    aleatória)."""
     ultimo_dia_mes = calendar.monthrange(ano, mes)[1]
     primeiro_dia = date(ano, mes, 1)
     fim_mes = date(ano, mes, ultimo_dia_mes)
@@ -483,48 +615,85 @@ def calcular_mes_retroativo(ano, mes):
         emergencias = pd.read_excel(CAMINHO_EMERGENCIAS_HISTORICO)
         emergencias["matricula_aeronave"] = emergencias["matricula_aeronave"].astype(str)
         emergencias = emergencias[emergencias["tpemg"].isin(TIPOS_CONSIDERADOS)].copy()
-        emergencias["data_abertura"] = pd.to_datetime(emergencias["data_abertura"], errors="coerce").dt.date
+        emergencias["data_info"] = pd.to_datetime(emergencias["data_info"], errors="coerce").dt.date
         emergencias["atendido_cancelado_dt"] = pd.to_datetime(emergencias["atendido_cancelado"], errors="coerce")
 
         for _, row in emergencias.iterrows():
             matricula = row["matricula_aeronave"]
-            if matricula not in pontuadas:
+            numero_emg = str(row["numero_emergencia"])
+            forcar_inclusao = numero_emg in EMERGENCIAS_FORCAR_INCLUSAO_RETROATIVO
+            if matricula not in pontuadas and numero_emg not in TRANSFERENCIAS_RETROATIVO:
                 continue
-            if _tem_comentario_cancelamento(row.get("obs_coordenadoria_fiscal")):
+            if numero_emg in EMERGENCIAS_EXCLUIDAS_RETROATIVO:
                 continue
-            if _tem_isencao_avaliacao_negativa(row.get("obs_coordenadoria_fiscal")):
+            if numero_emg in EMERGENCIAS_EXCLUIDAS_RETROATIVO_POR_MES.get((ano, mes), set()):
+                continue
+            if not forcar_inclusao and _tem_comentario_cancelamento(row.get("obs_coordenadoria_fiscal")):
+                continue
+            if not forcar_inclusao and _tem_isencao_avaliacao_negativa(row.get("obs_coordenadoria_fiscal")):
                 continue
 
-            data_abertura = row["data_abertura"]
+            data_info = CORRECOES_DATA_INFO_RETROATIVO.get(numero_emg, row["data_info"])
             atendido_dt = row["atendido_cancelado_dt"]
-            data_fim_emergencia = atendido_dt.date() if pd.notna(atendido_dt) else None
+            if numero_emg in EMERGENCIAS_FORCAR_AINDA_ABERTA_RETROATIVO:
+                data_fim_emergencia = None
+            else:
+                data_fim_emergencia = (
+                    CORRECOES_ATENDIDO_RETROATIVO.get(numero_emg)
+                    or (atendido_dt.date() if pd.notna(atendido_dt) else None)
+                )
 
-            if data_abertura is None or data_abertura > fim_mes:
+            if data_info is None or data_info > fim_mes:
                 continue
             if data_fim_emergencia is not None and data_fim_emergencia < primeiro_dia:
                 continue
 
-            inicio_negativacao = data_abertura
-            fim_negativacao = (
-                (data_fim_emergencia - timedelta(days=1)) if data_fim_emergencia
-                else date(ano, mes, ultimo_dia_mes)
-            )
-            inicio_efetivo = max(inicio_negativacao, primeiro_dia)
-            fim_efetivo = min(fim_negativacao, date(ano, mes, ultimo_dia_mes))
-            if inicio_efetivo > fim_efetivo:
-                continue
+            inicio_negativacao = _proximo_dia_util(data_info)
+            # O próprio dia do atendimento/cancelamento ainda conta como
+            # negativado — só libera (volta a 1) no dia SEGUINTE. Validado
+            # contra as apresentações reais (ver docstring da função).
+            fim_negativacao = data_fim_emergencia or date(ano, mes, ultimo_dia_mes)
 
-            periodos.append({
-                "matricula": matricula,
-                "numero_emergencia": row["numero_emergencia"],
-                "pn": row.get("pn"),
-                "nomenclatura": row.get("nomenclatura"),
-                "tipo": row["tpemg"],
-                "data_abertura": data_abertura,
-                "data_cancelamento": data_fim_emergencia,
-                "periodo_no_mes_inicio": inicio_efetivo,
-                "periodo_no_mes_fim": fim_efetivo,
-            })
+            transferencia = TRANSFERENCIAS_RETROATIVO.get(numero_emg)
+            candidatos = []
+            if transferencia:
+                # Emergência transferida de uma aeronave pra outra no meio
+                # do mês — divide em 2 períodos: um pra aeronave de origem
+                # (até o dia da transferência, inclusive), outro pra
+                # aeronave final gravada na planilha (a partir do próximo
+                # dia útil depois da transferência).
+                data_transf = transferencia["data_transferencia"]
+                candidatos.append((
+                    transferencia["matricula_origem"],
+                    inicio_negativacao,
+                    min(fim_negativacao, data_transf),
+                ))
+                candidatos.append((
+                    matricula,
+                    max(inicio_negativacao, _proximo_dia_util(data_transf)),
+                    fim_negativacao,
+                ))
+            else:
+                candidatos.append((matricula, inicio_negativacao, fim_negativacao))
+
+            for matricula_periodo, inicio, fim in candidatos:
+                if matricula_periodo not in pontuadas:
+                    continue
+                inicio_efetivo = max(inicio, primeiro_dia)
+                fim_efetivo = min(fim, date(ano, mes, ultimo_dia_mes))
+                if inicio_efetivo > fim_efetivo:
+                    continue
+                periodos.append({
+                    "matricula": matricula_periodo,
+                    "numero_emergencia": row["numero_emergencia"],
+                    "pn": row.get("pn"),
+                    "nomenclatura": row.get("nomenclatura"),
+                    "tipo": row["tpemg"],
+                    "data_info": data_info,
+                    "data_cancelamento": data_fim_emergencia,
+                    "periodo_no_mes_inicio": inicio_efetivo,
+                    "periodo_no_mes_fim": fim_efetivo,
+                })
 
     linhas_matriz = []
     for matricula in pontuadas:
