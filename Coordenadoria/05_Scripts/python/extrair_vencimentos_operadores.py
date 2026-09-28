@@ -62,9 +62,9 @@ SECOES_VALIDAS = {"POR HORA", "POR POUSO", "POR CALENDÁRIO", "POR CALENDARIO", 
 REGISTRO = [
     {
         "operador": "CLA",
-        "arquivo": OPERADORES_DIR / "CLA" / "Controle_de_Vencimentos_CLA_AGO_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "CLA" / "Controle_de_Vencimentos_CLA_SET_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-08",
+        "mes_fonte": "2026-09",
     },
     {
         # Lê o PDF, não o ODS, desde agosto/2026 (pedido do Wallace,
@@ -73,9 +73,9 @@ REGISTRO = [
         # "XXXXXX") que nem aparece no PDF publicado pela CINDACTA II; o
         # PDF é a versão oficial/limpa. Ver `_ler_pdf`.
         "operador": "DACTA II",
-        "arquivo": OPERADORES_DIR / "DACTA_II" / "Controle_de_Vencimentos_DACTAII_AGO_2026.pdf",
+        "arquivo": OPERADORES_DIR / "DACTA_II" / "Controle_de_Vencimentos_DACTAII_SET_2026.pdf",
         "tipo": "pdf",
-        "mes_fonte": "2026-08",
+        "mes_fonte": "2026-09",
     },
     {
         # Confirmado pelo Wallace: a pasta "PAMA-LS" do Drive (maio) e a pasta
@@ -83,9 +83,9 @@ REGISTRO = [
         # a base BABR mesmo, só a pasta mudou de nome. 2704 é a única
         # aeronave que é de fato do PAMA-LS (ver registro seguinte).
         "operador": "BABR",
-        "arquivo": OPERADORES_DIR / "BABR" / "Controle_de_Vencimentos_BABR_AGO_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BABR" / "Controle_de_Vencimentos_BABR_SET_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-08",
+        "mes_fonte": "2026-09",
     },
     {
         "operador": "BABE",
@@ -100,9 +100,9 @@ REGISTRO = [
         # Formato padrão igual aos demais operadores; usamos o XLSX, não o
         # PDF duplicado da mesma pasta.
         "operador": "BACO",
-        "arquivo": OPERADORES_DIR / "BACO" / "Controle_de_Vencimentos_BACO_AGO_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BACO" / "Controle_de_Vencimentos_BACO_SET_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-08",
+        "mes_fonte": "2026-09",
     },
     {
         # Formato diferente dos demais: sem seções POR HORA/POUSO/CALENDÁRIO,
@@ -125,9 +125,9 @@ REGISTRO = [
         # Vem numa aba "VENCIMENTO" dentro do arquivo de Diagonal, com células
         # mescladas verticalmente e ordem de colunas própria.
         "operador": "BAMN",
-        "arquivo": OPERADORES_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_AGOSTO_2026.ods",
+        "arquivo": OPERADORES_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_SETEMBRO_2026.ods",
         "tipo": "ods_bamn",
-        "mes_fonte": "2026-08",
+        "mes_fonte": "2026-09",
         "aba": "VENCIMENTO",
     },
     {
@@ -135,9 +135,9 @@ REGISTRO = [
         # a padrão, mas AERONAVE vem sem prefixo "FAB" (só o número, como na
         # BAMN).
         "operador": "BACG",
-        "arquivo": OPERADORES_DIR / "BACG" / "Controle_de_Vencimentos_BACG_AGO_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BACG" / "Controle_de_Vencimentos_BACG_SET_2026.xlsx",
         "tipo": "xlsx_aba_bare",
-        "mes_fonte": "2026-08",
+        "mes_fonte": "2026-09",
         "aba": "Controle de Vencimentos",
     },
     {
@@ -154,9 +154,9 @@ REGISTRO = [
         # C-98.xlsx", sem indicação de mês no nome) — mesmas 3 abas, mesmo
         # formato, confirmado.
         "operador": "BANT",
-        "arquivo": OPERADORES_DIR / "BANT" / "DIAGONAL_E_VENC_ITENS_C98_AGO26_BANT.xlsx",
+        "arquivo": OPERADORES_DIR / "BANT" / "DIAGONAL_E_VENC_ITENS_C98_SET26_BANT.xlsx",
         "tipo": "xlsx_aba_bare",
-        "mes_fonte": "2026-08",
+        "mes_fonte": "2026-09",
         "aba": "Controle de Vencimento de Itens",
     },
 ]
