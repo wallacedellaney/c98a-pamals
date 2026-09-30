@@ -1,0 +1,88 @@
+*C-98 - 30/09/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+15 D / 17 M
+(10 DI / 05 DO / 02 II / 02 IN / 00 ITR / 08 IS / 02 IP)
+ 
+*Previsão até o final do dia:* 16 D / 17 M
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis:* 20
+-  2703, 2721, 2733, 2739, 2741.
+
+
+*Montadas:* 20
+-  2703, 2721, 2741.
+
+
+*Esforço  Aéreo*
+Anual: 10100:00 / 7096:35 / 70,26%
+
+
+*Motores disponíveis:* 21
+
+
+*CLA*
+[ ] 2723 - DO
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*PAMA-LS*
+[ ] 2704 - DI
+[ ] 2706 - IP - 72 APE- DPE: A ser definido.
+[ ] 2724 - IP - ANV acidentada.
+[ ] 2726 - IS - 87 AIFP - DPE: A DET
+[ ] 2728 - IN - REALIZANDO SERVIÇO DE MONTAGEM APÓS A AVALIAÇÃO DE SINISTRO - DPE: 09/10
+[ ] 2730 - IS - SEM MOTOR - 42 IPLR - DPE: Aguarda DPE do PAMASP.
+[ ] 2734 - IS - SEM MOTOR - 72 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2731 - IS - Hélice no CAN-MN - Volume 261304001961/0001, SPCOA: 05912/2026 - DPE: 02 DIAS após chegada do item.
+[ ] 2733 - IN -  VAZAMENTO DE ÓLEO PELA HÉLICE- DPE: 30/09
+[ ] 2739 - II - REALIZANDO INSPEÇÃO ID5-15-0A+1400FH+MOT1M12 - DPE: 01/10
+
+
+*1°/15°GAV*
+[ ] 2727 - DI
+
+
+*1º/5º GAV*
+[ ] 2702 - DO
+[ ] 2703 - II - Realizando inspeções ID 0A,01,07,09 / 4300FH/ 12M; IPLR de pino do trem de pouso -  DPE: 02/10
+[ ] 2708 - DO
+[ ] 2729 - IS - Itens recolhidos ao PAMA-SP - 06 IPLR - DPE: 05 DIAS após retorno dos itens.
+
+
+*2º ETA*
+[ ] 2719 - DO
+[ ] 2722 - DI
+
+
+*5º ETA*
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - DI
+[ ] 2721 - IS - Agd motor e hélice, (Motor seguirá para BR hoje, hélice com DPE para 30/09) - DPE: 02/10
+
+
+*7º ETA*
+[ ] 2732 - IS - Em processo de montagem. Faltam 3 itens: 1)Motor aguardando VAT do PAMASP; 2)Hélice em produção no PAMALS com previsão de conclusão em 20/10 podendo ser adiantado. 3) Porta de passageiros em reparo na oficina interna. A intenção é concluir e transportar na missão da VAT em 05/10 - DPE: 25/10
+[ ] 2736 - DI
+[ ] 2737 - DI
+[ ] 2738 - DI
+[ ] 2740 - DI
+[ ] 2741 - IS - Instalando motor e aguardando a porta de passageiros. Porta com DPE para 28/09 - DPE: 02/10
