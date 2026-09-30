@@ -62,6 +62,25 @@ RE_MES_ANO_NUM = re.compile(r"^(\d{1,2})/(\d{2})$")
 ANO_MINIMO_DATA_VENCIMENTO = 2000
 
 
+def _numero_pouso_br(texto):
+    """Converte um valor de POUSO (sempre inteiro — não existe meio pouso)
+    escrito em formato brasileiro pra float. Bug achado pelo Wallace em
+    2026-09-30: "ta contando item com muito pouso nos proximos" — um valor
+    tipo "1.500" (mil e quinhentos pousos, ponto de milhar) virava 1.5 via
+    `float("1.500")`, fazendo um item que ainda tinha MUITOS pousos até
+    vencer aparecer como "próximo do vencimento". Como pouso nunca tem
+    fração, qualquer "." no texto só pode ser separador de milhar — nunca
+    decimal. Vírgula, quando presente, é que é o separador decimal (raro
+    em contagem de pouso, mas tratado pra não perder um valor real tipo
+    "450,5" se algum operador escrever assim)."""
+    texto = texto.strip()
+    if "," in texto:
+        texto = texto.replace(".", "").replace(",", ".")
+    else:
+        texto = texto.replace(".", "")
+    return float(texto)
+
+
 def classificar_disponibilidade(valor):
     """Retorna (tipo, valor_numerico, texto_original). tipo em
     {"Hora","Pouso","Calendário",None,"Desconhecido"}. Para Calendário,
@@ -108,11 +127,11 @@ def classificar_disponibilidade(valor):
             return "Calendário", round(float(m.group(1).replace(",", ".")) * 365), texto
         m = RE_POUSO.match(texto)
         if m:
-            return "Pouso", float(m.group(1).replace(",", ".")), None
+            return "Pouso", _numero_pouso_br(m.group(1)), None
         # Fonte leu como texto (ex.: CSV/ODS) mas é só um número puro sem
         # sufixo — mesma regra do int/float acima, só que em string.
         if RE_NUMERO_PURO.match(texto):
-            return "Pouso", float(texto.replace(",", ".")), None
+            return "Pouso", _numero_pouso_br(texto), None
     return "Desconhecido", None, str(valor)
 
 
