@@ -89,12 +89,16 @@ REGISTRO = [
     },
     {
         "operador": "BABE",
-        # A fonte de julho veio sem DISPONIBILIDADE nas duas linhas, portanto
-        # não permite classificar o vencimento sem inventar valor. Pela regra
-        # de busca, mantemos o último arquivo utilizável deste operador.
-        "arquivo": OPERADORES_DIR / "BABE" / "Controle_de_Vencimentos_BABE_JUN_2026.xlsx",
-        "tipo": "xlsx",
-        "mes_fonte": "2026-06",
+        # Fonte de julho veio sem DISPONIBILIDADE nas duas linhas (inválida,
+        # não permite classificar sem inventar valor) e agosto não teve
+        # pasta nova no Drive — ficou parado em junho até a BABE mandar
+        # setembro/2026. A partir de setembro a coluna AERONAVE passou a
+        # vir em número puro ("2731"), não mais "FAB 2731" — mesmo padrão
+        # da BACG/BANT, por isso o tipo mudou pra xlsx_aba_bare.
+        "arquivo": OPERADORES_DIR / "BABE" / "Controle_de_Vencimentos_BABE_SET_2026.xlsx",
+        "tipo": "xlsx_aba_bare",
+        "mes_fonte": "2026-09",
+        "aba": "Controle de Vencimentos",
     },
     {
         # Formato padrão igual aos demais operadores; usamos o XLSX, não o
