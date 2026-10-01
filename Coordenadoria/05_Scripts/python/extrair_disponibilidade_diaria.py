@@ -50,7 +50,7 @@ RE_RESUMO_DM = re.compile(r"^(\d+)\s*D\s*/\s*(\d+)\s*M$")
 # só existe desde 2026-08-25), não por posição.
 RE_CODIGOS = re.compile(r"^\(([^()]+)\)$")
 RE_CODIGO_ITEM = re.compile(r"(\d+)\s*(DI|DO|II|IN|ITR|IT|IS|IP)\b")
-RE_PREVISAO_FIM_DIA = re.compile(r"^\*?Previsão até o final do dia:\s*(\d+)\s*D\s*/\s*(\d+)\s*M\*?$")
+RE_PREVISAO_FIM_DIA = re.compile(r"^\*?Previsão até o final do dia:\*?\s*(\d+)\s*D\s*/\s*(\d+)\s*M\*?$")
 RE_DISPONIVEIS_SEMANA = re.compile(r"^\*?Disponíveis:\*?\s*(\d+)$")
 RE_MONTADAS_SEMANA = re.compile(r"^\*?Montadas:\*?\s*(\d+)$")
 RE_ESFORCO = re.compile(r"^Anual:\s*([\d:]+)\s*/\s*([\d:]+)\s*/\s*([\d,]+)%$")
