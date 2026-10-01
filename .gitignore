@@ -7,3 +7,15 @@ __pycache__/
 .streamlit/secrets.toml
 **/.streamlit/secrets.toml
 _ferramentas/
+
+# Copias brutas baixadas do Drive, sobrescritas a cada rodada de
+# atualizacao (atualizar_do_drive()) - nunca precisam de historico, so o
+# conteudo "atual" local pra extracao. Paradas de versionar em 2026-10-01
+# (eram ~1,7GB sozinhas no historico do .git, de longe o maior peso do
+# repositorio - cada rodada regravava o arquivo inteiro de novo).
+Projetos/01_Bases_Originais/TPJL/TPOB - Controle CABW 2025 (Google Sheets).xlsx
+Projetos/01_Bases_Originais/TPJL/TPOB - Controle CABW 2026 (Google Sheets).xlsx
+Coordenadoria/01_Bases_Originais/Motores/MOTORES_C98.xlsx
+Coordenadoria/01_Bases_Originais/Vencimentos/Vencimentos_C-98U8.xlsx
+Projetos/01_Bases_Originais/MTA/MTA - Acompanhamento e Solicitacoes (Google Sheets).xlsx
+Coordenadoria/01_Bases_Originais/RAC/Analise critica de emergencias C-98 2026 (Google Sheets).xlsx
