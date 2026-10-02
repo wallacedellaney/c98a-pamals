@@ -15,7 +15,7 @@ from shared import horario
 from coordenadoria.components.fontes_dados import secao_fontes_dados
 from coordenadoria.components.paleta import AMBER, SECONDARY, LINE, PANEL, STATUS, INK
 from coordenadoria.data.carregar_dados import carregar_tudo
-from coordenadoria.secoes import dashboard_geral, rac, disponibilidade_diaria, diagonal_manutencao, vencimentos, motores, previsao_mensal
+from coordenadoria.secoes import dashboard_geral, rac, disponibilidade_diaria, diagonal_manutencao, vencimentos, motores, previsao_mensal, rotina
 from coordenadoria.utils import atualizar_dados_rac
 
 PAGINAS = {
@@ -26,6 +26,7 @@ PAGINAS = {
     "Vencimentos": vencimentos,
     "Motores": motores,
     "Previsão Mensal": previsao_mensal,
+    "Rotina": rotina,
 }
 
 

@@ -22,7 +22,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 LOG = RAIZ / "shared" / "automacao.log"
 
 sys.path.insert(0, str(RAIZ))
-from shared import horario  # noqa: E402 — precisa vir depois do sys.path.insert acima
+from shared import horario, trello_sync  # noqa: E402 — precisa vir depois do sys.path.insert acima
 
 SCRIPTS = {
     "disponibilidade_diaria": RAIZ / "Coordenadoria" / "05_Scripts" / "python" / "extrair_disponibilidade_diaria.py",
@@ -67,6 +67,26 @@ SCRIPTS = {
     # nessa data — testado com --atualizar-do-drive, funcionou. Ver
     # Contrato 005/Dashboard/00_Instrucoes/reajuste.md.
     "reajuste": RAIZ / "Contrato 005" / "Dashboard" / "05_Scripts" / "python" / "extrair_reajuste.py",
+}
+
+# Card do Trello (quadro VEE ONE > lista "Avisos Automáticos") de cada fonte —
+# avisa só quando a rodada de fato commitou algo novo (ver _executar_uma),
+# não a cada execução. "disponibilidade_diaria" fica de fora de propósito:
+# tem aviso próprio mais detalhado (compara DI/DO/etc antes/depois) dentro
+# do próprio extrair_disponibilidade_diaria.py, pra não duplicar comentário.
+CARDS_TRELLO = {
+    "rac": "AVDNcQfX",
+    "emergencias": "wxAuULcx",
+    "pagamentos": "5vQanAV4",
+    "vencimentos_tmot": "bxsL67A8",
+    "mta": "In9mROwg",
+    "tpjl": "8tlZzw6Y",
+    "tpjl_extras": "YVa7Lc8H",
+    "reparaveis": "nx6rfQmb",
+    "reparaveis_rma": "eLRHspm1",
+    "devolucoes": "eta3fbl4",
+    "motores": "3ycHh0kj",
+    "reajuste": "UiPWPlvE",
 }
 
 
@@ -120,6 +140,11 @@ def _executar_uma(fonte):
         _registrar(f"COMMIT OK mas PUSH FALHOU:\n{push.stderr}\n")
         return False
     _registrar("Commitado e enviado pro GitHub com sucesso.\n")
+    if fonte in CARDS_TRELLO:
+        trello_sync.comentar_cartao(
+            CARDS_TRELLO[fonte],
+            f"Dado atualizado em {horario.agora_br().strftime('%d/%m/%Y %H:%M')} — {mensagem}",
+        )
     return True
 
 

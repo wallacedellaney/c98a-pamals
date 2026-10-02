@@ -29,10 +29,15 @@ from datetime import date
 import pandas as pd
 
 from common import BASES_ORIGINAIS, DADOS_TRATADOS, ESTADO_ATUALIZACOES, registrar_log
-from shared import drive_sync, estado, horario
+from shared import drive_sync, estado, horario, trello_sync
 from shared.escrita_atomica import caminho_temporario
 
 PASTA_ORIGEM = BASES_ORIGINAIS / "Disponibilidade_Diaria"
+
+# Card piloto no Trello (quadro VEE ONE > lista "Avisos Automáticos") — recebe
+# um comentário só quando o relatório mais recente muda de verdade (não a
+# cada execução do agendamento). Ver shared/trello_sync.py.
+CARD_TRELLO_DISPONIBILIDADE = "Wjm3747m"
 
 # Ver 00_Instrucoes/disponibilidade_diaria.md — pasta "Atualização de
 # Disponibilidade" → ano → mês (nome do mês muda todo mês, tem que buscar
@@ -272,15 +277,56 @@ def extrair():
     return df_relatorios, df_aeronaves, inconsistencias
 
 
+CODIGOS_SITUACAO = ["di", "do_", "ii", "in_", "itr", "it", "is_", "ip"]
+
+
+def _avisar_trello_se_mudou(resumo_anterior, df_relatorios):
+    """Posta um comentário no Trello só quando o relatório mais recente
+    (maior data_referencia) muda de verdade em relação ao que já estava
+    salvo. Nunca levanta exceção - uma falha aqui não pode derrubar a
+    extração principal."""
+    try:
+        if df_relatorios.empty or resumo_anterior is None:
+            return
+        atual = df_relatorios.sort_values("data_referencia").iloc[-1]
+        if atual.get("data_referencia") != resumo_anterior.get("data_referencia"):
+            return  # relatório novo (dia seguinte) - não é "mudança", é fonte nova
+        diferencas = [
+            f"{codigo.rstrip('_').upper()} {resumo_anterior.get(codigo)}→{atual.get(codigo)}"
+            for codigo in CODIGOS_SITUACAO
+            if codigo in atual.index and codigo in resumo_anterior.index
+            and atual.get(codigo) != resumo_anterior.get(codigo)
+        ]
+        if not diferencas:
+            return
+        data_str = atual["data_referencia"].strftime("%d/%m/%Y") if hasattr(atual["data_referencia"], "strftime") else str(atual["data_referencia"])
+        texto = f"Disponibilidade Diária mudou ({data_str}): " + ", ".join(diferencas) + "."
+        trello_sync.comentar_cartao(CARD_TRELLO_DISPONIBILIDADE, texto)
+    except Exception:
+        pass
+
+
 def main():
     DADOS_TRATADOS.mkdir(parents=True, exist_ok=True)
-    df_relatorios, df_aeronaves, inconsistencias = extrair()
 
     destino = DADOS_TRATADOS / "base_disponibilidade_diaria.xlsx"
+    resumo_anterior = None
+    if destino.exists():
+        try:
+            df_antigo = pd.read_excel(destino, sheet_name="Relatorios")
+            if not df_antigo.empty:
+                resumo_anterior = df_antigo.sort_values("data_referencia").iloc[-1]
+        except Exception:
+            resumo_anterior = None
+
+    df_relatorios, df_aeronaves, inconsistencias = extrair()
+
     with caminho_temporario(destino) as tmp:
         with pd.ExcelWriter(tmp) as writer:
             df_relatorios.to_excel(writer, index=False, sheet_name="Relatorios")
             df_aeronaves.to_excel(writer, index=False, sheet_name="Aeronaves")
+
+    _avisar_trello_se_mudou(resumo_anterior, df_relatorios)
 
     registrar_log(
         nome_execucao="extrair_disponibilidade_diaria",
