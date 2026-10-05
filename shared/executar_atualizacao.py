@@ -14,6 +14,7 @@ a próxima já pega o dado atualizado).
 Ver 00_Instrucoes/atualizacoes.md (raiz do projeto).
 """
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -89,6 +90,53 @@ CARDS_TRELLO = {
     "reajuste": "UiPWPlvE",
 }
 
+# Arquivo de estado (estado_atualizacoes.json) de cada fonte, pra comparar
+# record_count antes/depois da rodada e mostrar a mudança real no Trello (não
+# só "atualizou") — cada área (Coordenadoria/Contrato 005/Projetos) tem o seu
+# próprio arquivo, e a chave dentro dele é sempre igual ao nome da fonte.
+# "reparaveis_rma" fica de fora: não usa shared/estado.py (upsert idempotente
+# próprio, sem record_count).
+ESTADO_POR_FONTE = {
+    "disponibilidade_diaria": RAIZ / "Coordenadoria" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "rac": RAIZ / "Coordenadoria" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "vencimentos_tmot": RAIZ / "Coordenadoria" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "motores": RAIZ / "Coordenadoria" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "emergencias": RAIZ / "Contrato 005" / "Dashboard" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "pagamentos": RAIZ / "Contrato 005" / "Dashboard" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "devolucoes": RAIZ / "Contrato 005" / "Dashboard" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "reparaveis": RAIZ / "Contrato 005" / "Dashboard" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "reajuste": RAIZ / "Contrato 005" / "Dashboard" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "mta": RAIZ / "Projetos" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "tpjl": RAIZ / "Projetos" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+    "tpjl_extras": RAIZ / "Projetos" / "02_Dados_Tratados" / "estado_atualizacoes.json",
+}
+
+
+def _record_count(fonte):
+    """Lê o record_count atual da fonte no estado_atualizacoes.json da área
+    dela. Retorna None se não tiver (arquivo não existe, fonte sem estado
+    rastreado, ou chave ainda não escrita)."""
+    caminho = ESTADO_POR_FONTE.get(fonte)
+    if not caminho or not caminho.exists():
+        return None
+    try:
+        with open(caminho, encoding="utf-8") as f:
+            dados = json.load(f)
+        return dados.get(fonte, {}).get("record_count")
+    except Exception:
+        return None
+
+
+def _mensagem_mudanca(antes, depois, agora_str):
+    base = f"Dado atualizado em {agora_str}"
+    if antes is None or depois is None:
+        return base + " — sem contagem de registros disponível pra essa fonte."
+    delta = depois - antes
+    if delta == 0:
+        return base + f" — {depois} registros (total igual; pode ter mudado conteúdo dentro de linhas já existentes)."
+    sinal = "+" if delta > 0 else ""
+    return base + f" — {antes} → {depois} registros ({sinal}{delta})."
+
 
 def _registrar(texto):
     with open(LOG, "a", encoding="utf-8") as f:
@@ -114,6 +162,8 @@ def _executar_uma(fonte):
     agora = horario.agora_br().strftime("%Y-%m-%d %H:%M:%S")
 
     _sincronizar_com_remoto()
+
+    record_count_antes = _record_count(fonte)
 
     resultado = subprocess.run(
         [sys.executable, str(script), "--atualizar-do-drive"],
@@ -141,10 +191,11 @@ def _executar_uma(fonte):
         return False
     _registrar("Commitado e enviado pro GitHub com sucesso.\n")
     if fonte in CARDS_TRELLO:
-        trello_sync.comentar_cartao(
-            CARDS_TRELLO[fonte],
-            f"Dado atualizado em {horario.agora_br().strftime('%d/%m/%Y %H:%M')} — {mensagem}",
+        record_count_depois = _record_count(fonte)
+        texto_aviso = _mensagem_mudanca(
+            record_count_antes, record_count_depois, horario.agora_br().strftime("%d/%m/%Y %H:%M")
         )
+        trello_sync.comentar_cartao(CARDS_TRELLO[fonte], texto_aviso)
     return True
 
 
