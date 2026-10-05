@@ -330,12 +330,29 @@ def atualizar_do_drive():
     fontes — idempotente (rodar de novo no mesmo mês só substitui as linhas
     desse mês, ver `atualizar_do_mes`), então não tem problema rodar toda
     hora mesmo a RMA do mês só mudando quando o Wallace sobe um arquivo
-    novo. Sempre usa o mês corrente (`horario.hoje_br()`) — a pasta certa
-    ("Fechamentos mensais" > ano > mês) é achada sozinha por
-    `gerar_ata_reuniao._localizar_pasta_mes`, sem precisar hardcodar nada
-    aqui quando o mês virar."""
+    novo.
+
+    2026-10-05 — corrigido: antes tentava só o mês corrente
+    (`horario.hoje_br()`) e falhava assim que o mês virava e a pasta nova
+    ("Fechamentos mensais" > ano > mês) ainda não existia no Drive (a
+    empresa sempre manda a RMA do mês anterior só depois de uns dias) —
+    "ficou parado em julho" mesmo com agosto já disponível há quase um mês,
+    porque nunca tentava de novo um mês anterior. Agora tenta o mês
+    corrente e, se a pasta não existir ainda, recua até 3 meses pra achar o
+    mês mais recente que já tem RMA no Drive (loga qual usou)."""
     hoje = horario.hoje_br()
-    return atualizar_do_mes(hoje.year, hoje.month)
+    ano, mes = hoje.year, hoje.month
+    ultimo_erro = None
+    for _ in range(4):  # mês corrente + até 3 meses anteriores
+        try:
+            return atualizar_do_mes(ano, mes)
+        except FileNotFoundError as e:
+            ultimo_erro = e
+            mes -= 1
+            if mes == 0:
+                mes = 12
+                ano -= 1
+    raise ultimo_erro
 
 
 if __name__ == "__main__":
