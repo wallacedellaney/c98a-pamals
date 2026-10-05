@@ -1,10 +1,10 @@
 {
   "disponibilidade_diaria": {
-    "status": "sem_novidade",
+    "status": "atualizado",
     "last_error": null,
-    "remote_modified_time": "2026-10-02T11:47:14.627Z",
-    "local_updated_at": "2026-10-02T13:36:17.777976-03:00",
-    "record_count": 293
+    "remote_modified_time": "2026-10-05T11:32:45.602Z",
+    "local_updated_at": "2026-10-05T08:39:39.719036-03:00",
+    "record_count": 294
   },
   "rac": {
     "remote_modified_time": "2026-10-02T12:57:32.490Z",
