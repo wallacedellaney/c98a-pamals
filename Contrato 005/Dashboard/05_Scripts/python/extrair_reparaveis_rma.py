@@ -273,13 +273,37 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
     return pd.DataFrame(linhas), inconsistencias
 
 
+def _baixar_rma_para_reparaveis(gar, arquivos_pasta):
+    """Acha o arquivo certo pra complementar Reparáveis — DIFERENTE de
+    `gar._baixar_rma_em_andamento` (usada pela Ata/Financeiro/Apresentação,
+    que querem o "Pré RMA" mesmo incompleto, pra preparar a reunião do
+    fechamento). Aqui a aba 1.10 (controle acumulado de OS) só vem
+    preenchida de verdade na versão "RMA Finalizada {Mês}.xlsx" — o "Pré
+    RMA C-98 {Mês}-26.xlsx" é só o molde/rascunho que a empresa usa durante
+    o mês, com a 1.10 em branco (achado em 2026-10-05, pedido do Wallace:
+    "ta de julho, tem de agosto... RMA FINALIZADA, ABA 1.10" — a pasta de
+    Agosto tinha os dois arquivos, "Pré RMA C-98 Agosto-26.xlsx" com 0
+    linhas válidas na 1.10 e "RMA Finalizada Agosto.xlsx" com 124). Prioriza
+    "RMA Finalizada"; só cai pro "Pré RMA"/"RMA em andamento" se a
+    finalizada ainda não tiver sido mandada (mês ainda em aberto)."""
+    candidato = next(
+        (f for f in arquivos_pasta if "rma finalizada" in f["name"].lower() and f["name"].lower().endswith(".xlsx")),
+        None,
+    )
+    if candidato is not None:
+        from shared import drive_sync
+        return drive_sync.baixar_arquivo(candidato["id"]), candidato["name"]
+    # Mês ainda não finalizado — usa o mesmo fallback da Ata/Financeiro.
+    return gar._baixar_rma_em_andamento(arquivos_pasta)
+
+
 def atualizar_do_mes(ano, mes):
     import gerar_ata_reuniao as gar
     from shared import drive_sync
 
     drive_sync.garantir_credencial_arquivo()
     arquivos_pasta = gar._localizar_pasta_mes(ano, mes)
-    conteudo, nome_arquivo = gar._baixar_rma_em_andamento(arquivos_pasta)
+    conteudo, nome_arquivo = _baixar_rma_para_reparaveis(gar, arquivos_pasta)
 
     df_novo, inconsistencias = extrair(conteudo, ano, mes, nome_arquivo)
 

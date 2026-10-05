@@ -997,18 +997,7 @@ def _secao_tabela(df):
 
     filtrado = filtrado.reset_index(drop=True)
 
-    c_qtd, c_export = st.columns([3, 1])
-    metrica_html(c_qtd, "OS (após filtro)", len(filtrado))
-    with c_export:
-        st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
-        if not filtrado.empty:
-            st.download_button(
-                "⬇️ Exportar (XLSX)",
-                gerar_xlsx_bytes(filtrado.drop(columns=["tat_calculado"], errors="ignore"), "Reparaveis"),
-                file_name="reparaveis_filtrado.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                width="stretch",
-            )
+    metrica_html(st, "OS (após filtro)", len(filtrado))
 
     # "Dias até vencer o prazo" — pedido do Wallace, 2026-08-24: coluna
     # nova, não existia (só tinha o TAT bruto). Só faz sentido pra quem
@@ -1048,6 +1037,24 @@ def _secao_tabela(df):
         "fonte": "Fonte (onde/devolução/recibo)",
     })
     tabela_texto = _tabela_para_texto(tabela)
+
+    # Botão de exportar — pedido do Wallace, 2026-10-05: "quero igual a base
+    # de dados controle dos reparáveis... mais ou menos igual tá lá" — antes
+    # exportava o DataFrame bruto (colunas em snake_case, sem a mescla com a
+    # RMA ainda formatada); agora exporta `tabela_texto`, que é exatamente a
+    # mesma tabela renderizada em tela (nomes em português, datas dd/mm/aaaa,
+    # já com onde/recibo/devolução/condenação da RMA mesclados).
+    if not tabela_texto.empty:
+        _, col_export = st.columns([3, 1])
+        with col_export:
+            st.download_button(
+                "⬇️ Exportar (XLSX)",
+                gerar_xlsx_bytes(tabela_texto, "Reparaveis"),
+                file_name="reparaveis_filtrado.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                width="stretch",
+                key="reparaveis_export_xlsx",
+            )
 
     # Cor com significado, não decoração (pedido do Wallace no brief de
     # refinamento) — "fora do prazo" pinta a linha inteira num vermelho MUITO
