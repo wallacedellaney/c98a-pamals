@@ -67,8 +67,18 @@ def _valor_monetario(valor, contexto, inconsistencias):
         return None
     if isinstance(valor, (int, float)):
         return float(valor)
-    inconsistencias.append(f"Valor inválido (não numérico) em {contexto}: {valor!r} — não somado.")
-    return None
+    # A planilha às vezes traz o valor como texto formatado (ex.: "R$ 135.000,00")
+    # em vez de número — achado em 2026-10-07 quando a coluna "Valor" da fonte
+    # passou a vir assim e zerou a soma do MTA (quase tudo caía aqui como inválido).
+    texto = str(valor).strip()
+    if texto in ("", "-", "R$ -", "R$-"):
+        return None
+    texto_limpo = texto.replace("R$", "").strip().replace(".", "").replace(",", ".")
+    try:
+        return float(texto_limpo)
+    except ValueError:
+        inconsistencias.append(f"Valor inválido (não numérico) em {contexto}: {valor!r} — não somado.")
+        return None
 
 
 def _data(valor, contexto, inconsistencias):
