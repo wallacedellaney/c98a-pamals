@@ -32,8 +32,10 @@
     "2732",
     "2734"
   ],
-  "ultimo_dia_calculado": 6,
+  "ultimo_dia_calculado": 7,
   "ultimo_dia_mes": 31,
   "mmam_previa": 95.65,
-  "inconsistencias": []
+  "inconsistencias": [
+    "Emergência 396250014941 (FAB 2733, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente."
+  ]
 }
