@@ -789,7 +789,12 @@ def _analise_financeira(df):
         }),
         include_groups=False,
     ).reset_index().rename(columns={"categoria_antiga": "Categoria"})
-    resumo["% atendido"] = (100 * resumo["Já atendido"] / resumo["Valor total"]).round(0).astype("Int64").astype(str) + "%"
+    # Mesmo problema da aba "Por categoria" (ver _atendido_x_disponivel): categoria sem
+    # nenhum valor numérico (ex.: tudo None por falha de parser na fonte) deixa
+    # "Valor total" = 0 e a divisão direta quebrava a aba Resumo — achado pelo Wallace
+    # em 2026-10-07 junto com o mesmo bug na outra aba.
+    total_seguro = resumo["Valor total"].where(resumo["Valor total"] != 0)
+    resumo["% atendido"] = (100 * resumo["Já atendido"] / total_seguro).round(0).fillna(0).astype(int).astype(str) + "%"
     for col in ("Valor total", "Já atendido", "Ainda pendente"):
         resumo[col] = resumo[col].apply(moeda_completa)
     st.dataframe(resumo, hide_index=True, width="stretch")
