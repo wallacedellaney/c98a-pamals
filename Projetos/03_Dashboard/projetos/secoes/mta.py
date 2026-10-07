@@ -318,7 +318,11 @@ def _atendido_x_disponivel(df):
         if coluna not in tabela.columns:
             tabela[coluna] = 0.0
     tabela["Total"] = tabela[STATUS_ATENDIDO] + tabela[STATUS_DISPONIVEL]
-    tabela["% atendido"] = (100 * tabela[STATUS_ATENDIDO] / tabela["Total"]).round(0).fillna(0).astype(int).astype(str) + "%"
+    # Categoria com Atendido=0 e Disponível=0 deixa Total=0 — divisão direta quebrava o
+    # dashboard (ZeroDivisionError, achado pelo Wallace em 2026-10-07). Protege com
+    # .where antes de dividir; sem registro, mostra 0% em vez de travar a página.
+    total_seguro = tabela["Total"].where(tabela["Total"] != 0)
+    tabela["% atendido"] = (100 * tabela[STATUS_ATENDIDO] / total_seguro).round(0).fillna(0).astype(int).astype(str) + "%"
     tabela = tabela.sort_values("Total", ascending=False)
     exibir = tabela.copy()
     for coluna in (STATUS_ATENDIDO, STATUS_DISPONIVEL, "Total"):
