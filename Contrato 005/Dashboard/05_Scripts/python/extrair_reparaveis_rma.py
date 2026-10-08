@@ -286,8 +286,18 @@ def _baixar_rma_para_reparaveis(gar, arquivos_pasta):
     linhas válidas na 1.10 e "RMA Finalizada Agosto.xlsx" com 124). Prioriza
     "RMA Finalizada"; só cai pro "Pré RMA"/"RMA em andamento" se a
     finalizada ainda não tiver sido mandada (mês ainda em aberto)."""
+    # O nome varia mês a mês — "RMA Finalizada Agosto.xlsx" (ago/26) e
+    # "RMA C.98 Setembro.26 - Finalizada.xlsx" (set/26) não têm a frase
+    # "rma finalizada" junta. Acha pelas duas palavras separadas em vez de
+    # frase exata (achado pelo Wallace em 2026-10-08: setembro caiu pro
+    # "Pré RMA" vazio por causa disso).
     candidato = next(
-        (f for f in arquivos_pasta if "rma finalizada" in f["name"].lower() and f["name"].lower().endswith(".xlsx")),
+        (
+            f for f in arquivos_pasta
+            if "rma" in f["name"].lower()
+            and "finalizada" in f["name"].lower()
+            and f["name"].lower().endswith(".xlsx")
+        ),
         None,
     )
     if candidato is not None:
