@@ -29,12 +29,25 @@ Pasta Drive **Auditoria** (`folderId 1azF4106GmWXE2NNzGrLqAy8jlBDSuqMV`, dentro 
   5. Entrega sem motivo especificado no recibo
   6. Recibo não encontrado no Drive
   7. Resumo (tabela com a contagem de cada categoria + total)
-- Depois de escrever o documento, registrar as mesmas observações na coluna **"Observação Fiscal"** (U) da aba "DEVOLUÇÃO", e ajustar a coluna **"Status"** (W): "Desconsiderado" só para isenção por colisão de pássaros; as reclassificadas como "não foi devolução" (emergência/MAPEM) voltam para **vazio** na coluna de status antigo (Q) ou recebem cor amarela; cor verde = aceito como devolução.
-- **Exportar para PDF**: converter o `.xlsx`/`.docx` para PDF e ajustar a área de impressão/paginação (orientação, largura de colunas) para que as tabelas não quebrem de forma estranha entre páginas.
+- Formato do arquivo: **.docx** (igual às versões anteriores na pasta Auditoria) — **não** é PDF. Uma cópia vai para a pasta do mês em "Fechamento mensal" (ex.: `09 SETEMBRO`, a mesma pasta onde fica a RMA Finalizada).
+- O PDF que vai para o fechamento é o da **RMA completa da empresa** (`RMA ... Finalizada.pdf`), não o da auditoria. Só conferir se já está lá; não precisa gerar.
+
+### Depois da auditoria: registrar na planilha "Devoluções" e avisar o fiscal (2026-10-08)
+1. **Escrever na planilha** (aba "DEVOLUÇÃO"), seguindo o padrão que já está nas células:
+   - Coluna **"Observação Fiscal"** (U): **acrescentar** (nunca apagar o que já existe) um trecho no formato
+     `Auditoria Consumíveis — DD/MM/AAAA (vN): <o que o recibo mostra> — <quem recebeu / data / local, quando houver>.`
+     Ex. real da v4: `Auditoria Consumíveis — 01/10/2026 (v4): recibo 135/FAB/25 confirma devolução — recebido por Jomilson José da Silva (SO) em 08/10/2025, Base Aérea de Natal.`
+   - Coluna **"Status"** final (W): "OK" só para **devolução real confirmada** (célula verde); emergência/MAPEM/condenado/sem motivo/recibo não encontrado ficam **vazias** (amarelo = entregaram mas não foi aceito como devolução); "Desconsiderado" só para a isenção de colisão com pássaros (linhas 4-10).
+2. **Responder ao fiscal (Wallace) aqui no chat**, nesta ordem:
+   - avisar **o que foi escrito** na planilha (quais linhas, qual texto);
+   - **resumo comparando com a versão anterior** da auditoria (o que mudou de categoria, linhas novas no universo, recibos que apareceram/sumiram);
+   - **lista das linhas que podem receber "OK"** (devolução real confirmada e ainda sem OK) — perguntar antes de marcar, a decisão é do fiscal.
+3. Depois rodar `extrair_devolucoes.py --atualizar-do-drive` para o site (tela Empréstimos) refletir a planilha.
 
 ## Gatilho para o futuro
 Sempre que o Wallace disser algo como "checar RMA" / "atualizar RMA" / "fazer a auditoria":
 1. Reparáveis (1.8/1.9/1.10) — rodar `atualizar_do_mes`, lembrar dos condenados (1.9).
 2. Devoluções: colar 1.13 (Finalizada) na aba "RMA" da planilha Devoluções, propagar pra aba "DEVOLUÇÃO".
-3. Fazer a auditoria de Consumíveis (CAT=C, RC preenchido) seguindo o padrão acima, novo arquivo no Drive (pasta Auditoria + cópia no Fechamento mensal), exportar PDF.
-4. Depois de tudo, atualizar os sites/dashboards (reparáveis e devoluções) com os dados novos.
+3. Fazer a auditoria de Consumíveis (CAT=C, RC preenchido) seguindo o padrão acima, novo arquivo .docx no Drive (pasta Auditoria + cópia no Fechamento mensal do mês). Conferir se o PDF da RMA completa está no fechamento.
+4. Registrar o resultado na planilha "Devoluções" (Observação Fiscal + Status) e responder ao fiscal no chat: o que foi escrito, comparação com a versão anterior e quais linhas podem receber "OK".
+5. Depois de tudo, atualizar os sites/dashboards (reparáveis e devoluções) com os dados novos.
