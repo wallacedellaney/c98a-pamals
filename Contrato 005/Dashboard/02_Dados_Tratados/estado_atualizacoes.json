@@ -7,11 +7,11 @@
     "last_error": null
   },
   "pagamentos": {
-    "remote_modified_time": "2026-10-16T15:06:01.044Z",
-    "local_updated_at": "2026-10-16T12:21:22.071735-03:00",
-    "status": "erro",
+    "remote_modified_time": "2026-10-19T16:27:09.742Z",
+    "local_updated_at": "2026-10-19T13:33:16.515841-03:00",
+    "status": "atualizado",
     "record_count": 36,
-    "last_error": "Unable to find the server at oauth2.googleapis.com"
+    "last_error": null
   },
   "devolucoes": {
     "remote_modified_time": "2026-10-13T18:09:50.828Z",
