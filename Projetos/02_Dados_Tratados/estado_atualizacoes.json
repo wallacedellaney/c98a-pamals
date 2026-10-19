@@ -7,13 +7,13 @@
     "last_error": null
   },
   "tpjl": {
-    "remote_modified_time": "2026-10-16T13:41:26.570Z",
-    "local_updated_at": "2026-10-19T10:31:27.907414-03:00",
-    "status": "erro",
+    "remote_modified_time": "2026-10-19T14:35:20.575Z",
+    "local_updated_at": "2026-10-19T13:34:11.226404-03:00",
+    "status": "atualizado",
     "record_count": 308,
     "record_count_2025": 185,
     "record_count_2026": 123,
-    "last_error": "2025: Unable to find the server at oauth2.googleapis.com; 2026: Unable to find the server at oauth2.googleapis.com"
+    "last_error": null
   },
   "tpjl_extras": {
     "status": "erro",

@@ -19780,7 +19780,7 @@ data_snapshot,ano,numero_requisicao,pn,status_atual,valor_total,situacao_previsa
 2026-10-19,2026,LST063003U8,A-5567,Embarcado,516.34,Sem data definida,
 2026-10-19,2026,LST064003U8,A-1635-136,Embarcado,191.04,Sem data definida,
 2026-10-19,2026,LST070002U8,A-1636-32,Embarcado,314.56,Sem data definida,
-2026-10-19,2026,LST070004U8,S2614-8-2,Recebida na Comissão,1859.13,Sem data definida,
+2026-10-19,2026,LST070004U8,S2614-8-2,Embarcado,1859.13,Sem data definida,
 2026-10-19,2026,LST070005U8,B-5406,Embarcado,1572.48,Sem data definida,
 2026-10-19,2026,LST070006U8,B-6131,Embarcado,1148.68,Sem data definida,
 2026-10-19,2026,LST070007U8,5111602-16,Cancelado,1250.4,Cancelado,
