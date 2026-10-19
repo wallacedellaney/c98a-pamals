@@ -3,7 +3,7 @@
     "status": "sem_novidade",
     "last_error": null,
     "remote_modified_time": "2026-10-16T15:14:19.711Z",
-    "local_updated_at": "2026-10-19T09:34:21.865700-03:00",
+    "local_updated_at": "2026-10-19T13:32:24.185118-03:00",
     "record_count": 300
   },
   "rac": {
@@ -16,15 +16,15 @@
   "vencimentos_tmot": {
     "remote_modified_time": "2026-10-09T12:31:06.758Z",
     "local_updated_at": "2026-10-16T12:21:29.196796-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 183,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "motores": {
     "remote_modified_time": "2026-09-11T00:28:23.141Z",
     "local_updated_at": "2026-09-11T12:00:12.638815-03:00",
     "status": "erro",
     "record_count": 39,
-    "last_error": "'Worksheet hélice does not exist.'"
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   }
 }

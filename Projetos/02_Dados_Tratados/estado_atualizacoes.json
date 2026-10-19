@@ -2,23 +2,23 @@
   "mta": {
     "remote_modified_time": "2026-10-15T18:27:45.898Z",
     "local_updated_at": "2026-10-16T12:21:37.507595-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 88,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "tpjl": {
     "remote_modified_time": "2026-10-16T13:41:26.570Z",
-    "local_updated_at": "2026-10-16T12:22:23.445232-03:00",
-    "status": "atualizado",
+    "local_updated_at": "2026-10-19T10:31:27.907414-03:00",
+    "status": "erro",
     "record_count": 308,
     "record_count_2025": 185,
     "record_count_2026": 123,
-    "last_error": null
+    "last_error": "2025: Unable to find the server at oauth2.googleapis.com; 2026: Unable to find the server at oauth2.googleapis.com"
   },
   "tpjl_extras": {
     "status": "erro",
-    "last_error": "solicitacoes: Falha ao baixar o arquivo 1YtvZCc0jtZ1gXzHWp8Se5ASVoycZDapojODjAaSNmaU: <HttpError 403 when requesting https://www.googleapis.com/drive/v3/files/1YtvZCc0jtZ1gXzHWp8Se5ASVoycZDapojODjAaSNmaU?alt=media returned \"Only files with binary content can be downloaded. Use Export with Docs Editors files.\". Details: \"[{'message': 'Only files with binary content can be downloaded. Use Export with Docs Editors files.', 'domain': 'global', 'reason': 'fileNotDownloadable', 'location': 'alt', 'locationType': 'parameter'}]\">",
-    "local_updated_at": "2026-10-16T12:22:34.984219-03:00",
+    "last_error": "consumo: Unable to find the server at oauth2.googleapis.com; estoque: Unable to find the server at oauth2.googleapis.com; solicitacoes: Unable to find the server at oauth2.googleapis.com",
+    "local_updated_at": "2026-10-19T10:31:34.849762-03:00",
     "record_count": 21668,
     "remote_modified_time": "2026-07-14T16:38:21.000Z",
     "record_count_consumo": 11298,

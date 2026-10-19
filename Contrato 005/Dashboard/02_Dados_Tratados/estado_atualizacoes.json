@@ -9,29 +9,29 @@
   "pagamentos": {
     "remote_modified_time": "2026-10-16T15:06:01.044Z",
     "local_updated_at": "2026-10-16T12:21:22.071735-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 36,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "devolucoes": {
     "remote_modified_time": "2026-10-13T18:09:50.828Z",
     "local_updated_at": "2026-10-16T12:22:57.390400-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 413,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "reparaveis": {
     "remote_modified_time": "2026-10-01T15:22:07.155Z",
     "local_updated_at": "2026-10-16T12:22:41.030230-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 557,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "reajuste": {
     "remote_modified_time": "2026-10-16T15:06:50.451Z",
     "local_updated_at": "2026-10-16T12:23:07.261056-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 58,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   }
 }
