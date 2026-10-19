@@ -25,6 +25,6 @@
     "local_updated_at": "2026-09-11T12:00:12.638815-03:00",
     "status": "erro",
     "record_count": 39,
-    "last_error": "Unable to find the server at oauth2.googleapis.com"
+    "last_error": "'Worksheet hélice does not exist.'"
   }
 }
