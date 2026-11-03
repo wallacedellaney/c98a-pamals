@@ -29,6 +29,35 @@ def _ler_csv(caminho_str, _mtime, **kwargs):
     return pd.read_csv(caminho_str, **kwargs)
 
 
+def normalizar_valor_monetario(serie):
+    """Converte moeda em texto e marcadores como ``/ /`` para número/NaN.
+
+    A planilha de empenhos mistura valores numéricos com marcadores de
+    campo ainda não preenchido. A normalização precisa ocorrer na entrada,
+    antes de qualquer cálculo ou formatação da tela.
+    """
+    numero = pd.to_numeric(serie, errors="coerce")
+    texto_pendente = serie.notna() & numero.isna()
+    if not texto_pendente.any():
+        return numero
+
+    texto = (
+        serie.loc[texto_pendente]
+        .astype("string")
+        .str.replace("R$", "", regex=False)
+        .str.replace("\u00a0", "", regex=False)
+        .str.strip()
+    )
+    formato_brasileiro = texto.str.contains(",", regex=False, na=False)
+    texto.loc[formato_brasileiro] = (
+        texto.loc[formato_brasileiro]
+        .str.replace(".", "", regex=False)
+        .str.replace(",", ".", regex=False)
+    )
+    numero.loc[texto_pendente] = pd.to_numeric(texto, errors="coerce").astype("float64")
+    return numero
+
+
 def carregar_historico_mta():
     caminho = DADOS_TRATADOS / "historico_mta.csv"
     if not caminho.exists():
@@ -115,6 +144,9 @@ def carregar_empenhos_contrato005():
     if not caminho_pagamentos.exists() or not caminho_reajuste.exists():
         return None
     empenhos = _ler_excel(str(caminho_pagamentos), caminho_pagamentos.stat().st_mtime, sheet_name="Empenhos")
+    for coluna in ("valor_empenhado", "saldo"):
+        if coluna in empenhos:
+            empenhos[coluna] = normalizar_valor_monetario(empenhos[coluna])
     cronograma = _ler_excel(str(caminho_reajuste), caminho_reajuste.stat().st_mtime, sheet_name="CronogramaMensal")
     indicadores = _ler_excel(str(caminho_reajuste), caminho_reajuste.stat().st_mtime, sheet_name="Indicadores")
 
@@ -193,6 +225,56 @@ def carregar_esforco_anual():
         "horas_realizadas": realizado,
         "horas_nao_voadas": previsto - realizado,
     }
+
+
+def carregar_resumo_projetos():
+    """Dados mínimos para os cards de escolha MTA / TPJL."""
+    df_mta, mtime_mta = carregar_mta()
+    df_tpjl, mtime_tpjl = carregar_tpjl()
+    return {
+        "mta": df_mta,
+        "mta_atualizado_em": mtime_mta,
+        "tpjl": df_tpjl,
+        "tpjl_atualizado_em": mtime_tpjl,
+    }
+
+
+def carregar_mta_painel():
+    """Carrega somente as fontes usadas pela página MTA."""
+    df_mta, mtime_mta = carregar_mta()
+    return {
+        "mta": df_mta,
+        "mta_atualizado_em": mtime_mta,
+        "mta_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "mta"),
+        "mta_historico": carregar_historico_mta(),
+        "empenhos_contrato005": carregar_empenhos_contrato005(),
+        "esforco_anual": carregar_esforco_anual(),
+    }
+
+
+def carregar_tpjl_painel():
+    """Carrega somente as fontes usadas pela página TPJL."""
+    df_tpjl, mtime_tpjl = carregar_tpjl()
+    df_tpjl_extras, mtime_tpjl_extras = carregar_tpjl_extras()
+    return {
+        "tpjl": df_tpjl,
+        "tpjl_atualizado_em": mtime_tpjl,
+        "tpjl_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "tpjl"),
+        "tpjl_historico": carregar_historico_tpjl(),
+        "tpjl_extras": df_tpjl_extras,
+        "tpjl_extras_atualizado_em": mtime_tpjl_extras,
+        "tpjl_extras_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "tpjl_extras"),
+        "tpjl_extras_historico_solicitacoes": carregar_historico_tpjl_solicitacoes(),
+    }
+
+
+def carregar_para_pagina(pagina):
+    """Evita ler bases de outra página a cada abertura do dashboard."""
+    if pagina == "MTA":
+        return carregar_mta_painel()
+    if pagina == "TPJL":
+        return carregar_tpjl_painel()
+    return carregar_resumo_projetos()
 
 
 def carregar_tudo():

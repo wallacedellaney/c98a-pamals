@@ -15,7 +15,7 @@ import streamlit as st
 
 from projetos.components import paleta
 from projetos.components.fontes_dados import secao_fontes_dados
-from projetos.data.carregar_dados import carregar_tudo
+from projetos.data.carregar_dados import carregar_para_pagina
 from projetos.secoes import selecao, mta, tpjl
 
 PAGINAS = {"MTA": mta, "TPJL": tpjl}
@@ -26,8 +26,8 @@ def render(ao_voltar=None):
         st.session_state["projetos_pagina"] = None
 
     paleta.injetar_tema()
-    dados = carregar_tudo()
     pagina = st.session_state["projetos_pagina"]
+    dados = carregar_para_pagina(pagina)
 
     col_voltar, _ = st.columns([2, 3])
     with col_voltar:
