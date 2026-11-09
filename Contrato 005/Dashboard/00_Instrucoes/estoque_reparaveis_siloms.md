@@ -56,7 +56,7 @@ python3 "Contrato 005/Dashboard/05_Scripts/python/montar_aba_reparaveis_estoque.
     - R = realizado: sempre tem Dt. Contábil, e é o mesmo filtro `ST_MOVIMENTO='R'` da query.
     - A = aberto; C = cancelado; E = estornado.
     - Consumíveis também aparecem com R.
-  - **Coluna E (Razão):** I é a entrada de reparo. Vem do LEP, com "reparo/revisão geral", quase sempre com Ctrl EQP. Os outros códigos:
+  - **Coluna E (Razão):** I é a entrada de reparo; LEP = OS externa, segundo o Wallace. Vem do LEP, com "reparo/revisão geral", quase sempre com Ctrl EQP. Os outros códigos:
     - C: vem do TSEP;
     - 5: vem da CABW;
     - T: transferência de base;
@@ -71,6 +71,21 @@ python3 "Contrato 005/Dashboard/05_Scripts/python/montar_aba_reparaveis_estoque.
   - soma as entradas por razão no resumo;
   - cria a aba "Movimentos reparáveis".
 - **Entradas do calculado x movimentos:** em vários itens, as entradas do calculado não batem com os movimentos, qualquer que seja a data de corte. Para as entradas, usar os movimentos.
+
+## Saídas (09/11/2026, 16h)
+
+- **Arquivo:** "movimentosEstoque.xls", na mesma pasta Estoque (id `1KvXJIeza6X-IZAOPzWJVj6GA98VHJVMQ`).
+  - Tem 3.752 linhas, de todos os projetos, e quase todas com Ctrl EQP.
+  - **Período: de 10/02/2026 a 09/11/2026.** Faltam as saídas de 10/02/2025 a 09/02/2026.
+- **O que o script usa:**
+  - filtra Prj U8 (313 linhas);
+  - saídas com origem PAMALS/TSAU (166 linhas, em geral razão T, para as bases);
+  - entradas com destino TSAU, sem repetir o nº do Movimento.
+  - 5º argumento: `[saidas.csv|.xls]`.
+- **Resultado:**
+  - 233 reparáveis com movimentação;
+  - 216 eventos de saída e 438 retornos de OS externa no histórico.
+  - O histórico fecha o ciclo de cada SN: OS aberta → retorno da OS externa (LEP) → saída do TSAU para a base.
 
 ## O que mais foi feito em 09/11/2026 (fechamento de outubro)
 
