@@ -14,10 +14,10 @@
     "last_error": null
   },
   "vencimentos_tmot": {
-    "remote_modified_time": "2026-10-09T12:31:06.758Z",
-    "local_updated_at": "2026-11-09T10:42:18.409802-03:00",
+    "remote_modified_time": "2026-11-09T16:32:26.995Z",
+    "local_updated_at": "2026-11-09T18:24:22.730495-03:00",
     "status": "atualizado",
-    "record_count": 183,
+    "record_count": 169,
     "last_error": null
   },
   "motores": {
