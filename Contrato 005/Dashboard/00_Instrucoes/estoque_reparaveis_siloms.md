@@ -101,6 +101,43 @@ python3 "Contrato 005/Dashboard/05_Scripts/python/montar_aba_reparaveis_estoque.
   - Dos 31 que não fecham, 21 estão fora do calculado (saldo inicial tomado como 0).
   - Causas prováveis: PN parecido com outro CFF ou sufixo (30-182 x 30-182A), movimento entre subsetores do TSAU, ou saldo reparável no estoque de hoje.
 
+## Onde fica: planilha Devoluções (09/11/2026, 17h)
+
+Pedido do Wallace: "quero tudo junto lá no Devoluções". O controle fica nas abas "Reparáveis – *" da planilha Devoluções, sheetIds 891093601 a 891093604.
+
+**Como publicar:**
+
+```
+python3 "Contrato 005/Dashboard/05_Scripts/python/publicar_reparaveis_devolucoes.py" <xlsx do montar> <relatorio-siloms-stock.xlsx> <entradas.csv> <saidas.csv>
+```
+
+O script grava pela conta de serviço e reescreve as quatro abas inteiras.
+
+**As quatro abas:**
+- **Saldos:** um item por linha, com os itens que não fecham no topo.
+  - Saldo recalculado = inicial + entradas − saídas, por fórmula.
+  - Situação: Fecha, A explicar ou Justificada.
+  - A coluna L ("Justificativa", amarela) é preenchida à mão.
+  - Link "ver" leva ao histórico do item.
+- **Histórico:** formato longo, um evento por linha, filtrável por PN.
+  - Cada PN começa no saldo inicial e termina no saldo SILOMS de hoje.
+  - Cores: azul para os saldos, laranja para as saídas, verde para o retorno de OS externa, lilás para a OS.
+- **Evidências:** só os itens que não fecham, com a causa provável calculada sozinha. Possíveis causas:
+  - fora do calculado;
+  - PN parecido no estoque;
+  - saldo do tipo Reparável;
+  - movimento não realizado;
+  - subsetor do TSAU.
+  - A coluna H é preenchida à mão.
+- **Mov. SILOMS:** todos os movimentos do U8 desses PNs.
+  - "Efeito no TSAU" vale +q nas entradas R e −q nas saídas R.
+
+**Cuidados:**
+- **Antes de republicar,** salvar o que estiver preenchido em Saldos!L e Evidências!H. O script não preserva essas colunas.
+- **Conferir a numeração das linhas:** em 09/11 nada estava preenchido. O backup das abas antigas está no scratchpad da sessão.
+- **Aba RMA:** foi arrumada (cabeçalho, congelamento, datas dd/mm/aaaa).
+- **Cópias antigas no Relatório de estoque calculado:** as abas "Reparáveis" e "Movimentos reparáveis" ficaram desatualizadas. A fonte agora é a Devoluções.
+
 ## O que mais foi feito em 09/11/2026 (fechamento de outubro)
 
 - **RMA de outubro conferida:**
