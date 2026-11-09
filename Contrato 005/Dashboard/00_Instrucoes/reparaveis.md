@@ -822,3 +822,17 @@ ao meio pra caber.
    media `getBoundingClientRect()`: os 4 grupos somam ~1414px, cabem
    dentro dos ~1440px de conteúdo numa tela de 1600px de largura — em
    tela mais estreita ainda pode quebrar, degradação aceitável).
+
+## RMA de outubro/2026: formatos novos (09/11/2026)
+
+**Aba 1.8**
+- Ganhou a coluna "sn devolvido". O "N° da OS" passou da coluna 5 para a 6 e veio com **#VALUE!** em todas as 18 linhas.
+- A coluna 5 agora é o nº da GMM, com 15 dígitos. Antes ela era lida como OS, e por isso nada saía como "entregue no mês".
+- O extrator agora acha a coluna da OS pelo cabeçalho e só aceita números na faixa de OS.
+- Quando a OS não vem, casa a linha com a 1.10 por **PN + SN**.
+- Resultado: 12 das 18 devoluções ligadas à OS.
+- As que sobram vão para o log. São OS abertas em 09/10 (os COMPUTER PA 065-0042-xx) que a empresa ainda não pôs na 1.10. Essas OS existem na Divulgação/SILOMS.
+
+**Aba 1.10**
+- 537 das 691 OS vieram **como texto**. O extrator agora aceita texto só com dígitos.
+- Resultado: 684 OS complementadas em outubro. Antes eram só 154.

@@ -43,6 +43,7 @@ ela já tinha dado da 1.10) ou como linha nova (se só existe na 1.9).
 """
 
 import io
+import re
 from datetime import date
 
 import openpyxl
@@ -79,6 +80,17 @@ OS_MINIMO_VALIDO = 100_000
 # número certo pra corrigir sozinho, esses 2 ficam de fora (viram
 # inconsistência no log, não uma OS "recuperada" inventada).
 OS_MAXIMO_VALIDO = 9_999_999_999
+
+
+def _chave_pn(v):
+    return re.sub(r"[^A-Z0-9]", "", str(v or "").upper())
+
+
+def _chave_sn(v):
+    t = str(v or "").strip()
+    if re.fullmatch(r"\d+\.0", t):
+        t = t[:-2]
+    return re.sub(r"[^A-Z0-9]", "", t.upper())
 
 
 def _valor_texto(v):
@@ -157,12 +169,33 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
         return pd.DataFrame(), inconsistencias
 
     os_entregues_no_mes = set()
+    # 2026-11-09 (RMA de outubro): a empresa mudou o layout da 1.8 — entrou
+    # a coluna "sn devolvido" e o "N° da OS" passou da coluna 5 para a 6, e
+    # veio com erro de fórmula (#VALUE!) em todas as linhas. Agora a coluna
+    # da OS é achada pelo cabeçalho, só aceita número dentro da faixa de OS
+    # (antes a coluna 5 trazia o nº da GMM, que tem 15 dígitos) e, quando a
+    # OS não vem, a linha é guardada para casar com a 1.10 por PN + SN.
+    pendentes_18 = []
     if "1.8" in wb.sheetnames:
         ws88 = wb["1.8"]
-        for r in range(6, ws88.max_row + 1):
-            numero_os = ws88.cell(row=r, column=5).value
-            if isinstance(numero_os, (int, float)) and numero_os >= OS_MINIMO_VALIDO:
+        col_os, col_pn, col_sn, linha_ini = 5, 2, 4, 6
+        for r in range(1, 12):
+            cab = [str(ws88.cell(row=r, column=c).value or "").strip().upper() for c in range(1, 16)]
+            if any(t.startswith("N° DA OS") or t.startswith("Nº DA OS") for t in cab):
+                col_os = next(i + 1 for i, t in enumerate(cab) if t.startswith("N° DA OS") or t.startswith("Nº DA OS"))
+                col_pn = next((i + 1 for i, t in enumerate(cab) if "PN" in t), col_pn)
+                col_sn = next((i + 1 for i, t in enumerate(cab) if t.startswith("SN")), col_sn)
+                linha_ini = r + 1
+                break
+        for r in range(linha_ini, ws88.max_row + 1):
+            numero_os = ws88.cell(row=r, column=col_os).value
+            if isinstance(numero_os, (int, float)) and OS_MINIMO_VALIDO <= numero_os <= OS_MAXIMO_VALIDO:
                 os_entregues_no_mes.add(int(numero_os))
+            else:
+                pn = ws88.cell(row=r, column=col_pn).value
+                sn = ws88.cell(row=r, column=col_sn).value
+                if pn not in (None, "") and sn not in (None, ""):
+                    pendentes_18.append((r, _chave_pn(pn), _chave_sn(sn)))
     else:
         inconsistencias.append(f"{nome_arquivo}: aba 1.8 não encontrada — não dá pra marcar quais OS foram entregues neste mês específico.")
 
@@ -171,6 +204,10 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
     registros = {}
     for r in range(6, ws810.max_row + 1):
         nos = ws810.cell(row=r, column=7).value
+        # 2026-11-09 (RMA de outubro): 537 das 691 OS vieram como texto
+        # ("3040249831") em vez de número — aceita texto só com dígitos.
+        if isinstance(nos, str) and re.fullmatch(r"\s*\d+(\.0)?\s*", nos):
+            nos = float(nos)
         if not isinstance(nos, (int, float)) or nos < OS_MINIMO_VALIDO:
             continue
         if nos > OS_MAXIMO_VALIDO:
@@ -224,6 +261,24 @@ def extrair(conteudo_bytes, ano, mes, nome_arquivo):
             "motivo_condenacao": None,
             "arquivo_fonte": nome_arquivo,
         }
+
+    if pendentes_18:
+        por_pn_sn = {}
+        for reg in registros.values():
+            por_pn_sn.setdefault((_chave_pn(reg["pn"]), _chave_sn(reg["sn"])), []).append(reg)
+        for r, kpn, ksn in pendentes_18:
+            achados = por_pn_sn.get((kpn, ksn), [])
+            if len(achados) == 1:
+                achados[0]["entregue_no_mes"] = True
+            elif not achados:
+                inconsistencias.append(
+                    f"{nome_arquivo}, aba 1.8, linha {r}: sem nº de OS e o PN+SN não existe na 1.10 — "
+                    "devolução sem OS ligada."
+                )
+            else:
+                inconsistencias.append(
+                    f"{nome_arquivo}, aba 1.8, linha {r}: sem nº de OS e o PN+SN aparece em {len(achados)} OS da 1.10 — não marcado."
+                )
 
     # Aba 1.9 — "Materiais reparáveis condenados" (pedido do Wallace,
     # 2026-08-12: "na aba 1.9 tem os devolvidos condenados, busca nas OS
