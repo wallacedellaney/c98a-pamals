@@ -44,6 +44,34 @@ python3 "Contrato 005/Dashboard/05_Scripts/python/montar_aba_reparaveis_estoque.
 - **Pendente:** rascunho à VEE ONE, com todos em cópia, encaminhando o relatório "para conhecimento", dizendo que o fiscal vai trabalhar nesse controle para os reparáveis.
   - A VEE ONE não tem acesso ao arquivo. O Wallace compartilha, ou se manda um recorte.
 
+## Movimentos do SILOMS (09/11/2026, 15h)
+
+- **Arquivo:** "Movimento entrada TSAU 10-02-25 a 09-11-26.xls", na pasta Fechamento mensal/2026/10 OUTUBRO/Estoque (id `1BhALptlNJwzlTTJ6ij_VMt13Blf51AHs`).
+  - Tem 2.124 linhas, todas com setor destino TSAU, de 11/02/2025 a 09/11/2026.
+  - Só tem as entradas. As 52 linhas com Tp "S" são ajustes internos do TSAU.
+  - **Faltam as saídas do TSAU para as bases.** Pedir o relatório com setor de origem TSAU.
+- **Colunas:**
+  - **Coluna B (Tp):** E = entrada; S = saída.
+  - **Coluna F (St):** é o status do movimento, não a categoria.
+    - R = realizado: sempre tem Dt. Contábil, e é o mesmo filtro `ST_MOVIMENTO='R'` da query.
+    - A = aberto; C = cancelado; E = estornado.
+    - Consumíveis também aparecem com R.
+  - **Coluna E (Razão):** I é a entrada de reparo. Vem do LEP, com "reparo/revisão geral", quase sempre com Ctrl EQP. Os outros códigos:
+    - C: vem do TSEP;
+    - 5: vem da CABW;
+    - T: transferência de base;
+    - X: vem do LEP/LLM;
+    - F: ajuste.
+- **Universo da aba:**
+  - os reparáveis do controle de OS e da planilha Devoluções (CAT R/T);
+  - mais os PNs com entrada de reparo (Razão I, St R) no TSAU.
+  - Em 09/11: 171 itens, dos quais 113 não estavam no calculado (sem saldo em 10/02/2025).
+- **O que o script faz com os movimentos (4º argumento, .csv ou .xls com xlrd):**
+  - põe os movimentos no histórico de cada item;
+  - soma as entradas por razão no resumo;
+  - cria a aba "Movimentos reparáveis".
+- **Entradas do calculado x movimentos:** em vários itens, as entradas do calculado não batem com os movimentos, qualquer que seja a data de corte. Para as entradas, usar os movimentos.
+
 ## O que mais foi feito em 09/11/2026 (fechamento de outubro)
 
 - **RMA de outubro conferida:**
