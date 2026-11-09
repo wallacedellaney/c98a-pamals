@@ -69,3 +69,12 @@ Sempre que o Wallace disser algo como "checar RMA" / "atualizar RMA" / "fazer a 
 - A conta de serviço não lê a pasta Auditoria.
 - A v5 com acento ("Auditoria Consumíveis - Outubro 2026 (v5).docx", na pasta 09 SETEMBRO) está **corrompida**. A válida é "Auditoria_Consumiveis_Outubro_2026_v5.docx", na pasta Auditoria.
 - O .docx novo vai para ~/Downloads, e o Wallace arrasta para a pasta Auditoria e para a pasta do mês.
+
+## Status padrão para reparáveis na aba DEVOLUÇÃO (09/11/2026, pedido do Wallace)
+- A **baixa é só para consumíveis**, com "OK" na coluna W. Reparáveis (CAT R/T) só são computados no controle separado.
+- **Coluna W para R/T**, em linhas com Nº da RC preenchido:
+  - **"Reparável – computado"**: recibo informado, sem pendência.
+  - **"Reparável – pendente"**: recibo não localizado (ex.: 598/FAB/26, informado para 29 itens e não achado no Drive) ou dados incoerentes (devolução antes do envio, PN divergente, estorno sem documento, item avariado).
+  - Os "OK" antigos de R/T foram mantidos.
+- **Coluna U:** observação do fiscal no formato "Fiscal DD/MM/AAAA: ...", sempre acrescentando. A empresa escreve na coluna V e o fiscal responde na U.
+- **Rodada de 09/11:** 50 computados, 34 pendentes, 35 observações.
