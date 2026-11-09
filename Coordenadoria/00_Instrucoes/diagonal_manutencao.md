@@ -93,6 +93,10 @@ odfpy) + um leitor dedicado só pra BAMN (`_ler_bamn`, dentro do próprio
 `extrair_diagonal_manutencao.py`, por causa das células mescladas e ordem de
 colunas diferente) + uma lista fixa `EVENTOS_APROXIMADOS` somente pro PAMA-LS.
 
+## Atualização de outubro/2026
+
+Wallace (09/11/2026): "atualiza vencimentos, diagonal e MAPEM de outubro". Diagonais de outubro incorporadas para **BABE, BACG, BACO, BABR, CLA, DACTA II e BAMN** (setembro não tinha entrado; o sistema estava em agosto, e a BABE em julho). Abas mudaram de nome: BACG agora "DIAGONAL 2026" (era "DIAGONAL 2025"), BACO "DIAGONAL 2026 e 2027", CLA "OUT". **BANT** não mandou outubro e segue em agosto; **PAMA-LS** segue em agosto. Total: 378 eventos de 9 operadores.
+
 ## Atualização de agosto/2026
 
 Wallace: "olha vencimentos e diagonais do mes de agosto e atualiza para gente

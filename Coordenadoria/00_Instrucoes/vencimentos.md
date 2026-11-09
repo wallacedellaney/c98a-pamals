@@ -90,6 +90,12 @@ A pasta do Drive chamada "PAMA-LS" (maio) e a pasta "BABR" (abril/junho) parecia
 
 Todos os 9 operadores confirmados estão incorporados.
 
+### Atualização de outubro/2026
+
+Wallace (09/11/2026): "atualiza vencimentos, diagonal e MAPEM de outubro". Fontes de outubro baixadas da pasta MAPEM/DIAGONAL/VENCIMENTOS › 2026 › 10 Outubro do Drive e registradas para **BABE, BACG, BACO, BABR, CLA, DACTA II e BAMN** (a BAMN mandou a aba VENCIMENTO dentro do mesmo arquivo da Diagonal, como de costume). **BANT** não mandou nada de outubro e segue na fonte de setembro; **PAMA-LS** segue em agosto. Total: 762 itens de 9 operadores.
+
+Formato novo: a BACG passou a mandar a matrícula como número decimal (`2727.0`) em vez de inteiro, e nenhuma linha era reconhecida. `_ler_xlsx` agora converte número inteiro em float para int antes do processamento.
+
 ### Atualização de agosto/2026
 
 Wallace: "olha vencimentos e diagonais do mes de agosto e atualiza para gente

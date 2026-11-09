@@ -28,12 +28,12 @@ REGISTRO_GRADE = [
     # a mais nova aqui, já que `ler_grade_generica` já lê .ods nativamente
     # (mesmo leitor da DACTA II).
     {"operador": "BANT", "arquivo": DIAGONAL_DIR / "BANT" / "DIAGONAL_C-98_e_Controle_de_Itens_AGO2026.ods", "aba": "DIAGONAL C-98"},
-    {"operador": "DACTA II", "arquivo": DIAGONAL_DIR / "DACTA_II" / "Diagonal_de_Inspecao_CINDACTA-II_AGO2026.ods", "aba": "DIAGONAL 2026"},
-    {"operador": "BABR", "arquivo": DIAGONAL_DIR / "BABR" / "Diagonal_do_C98_6ETA_GLOG-BR_AGOSTO2026.xlsx", "aba": "DIAGONAL 2026"},
-    {"operador": "BABE", "arquivo": DIAGONAL_DIR / "BABE" / "Controle_Diagonal_BABE_JUL2026.xlsx", "aba": "DIAGONAL 2026"},
-    {"operador": "BACO", "arquivo": DIAGONAL_DIR / "BACO" / "Controle_Diagonal_AGO_2026.xlsx", "aba": "DIAGONAL 2026"},
-    {"operador": "BACG", "arquivo": DIAGONAL_DIR / "BACG" / "Controle_Diagonal_AGOSTO2026.xlsx", "aba": "DIAGONAL 2025"},
-    {"operador": "CLA", "arquivo": DIAGONAL_DIR / "CLA" / "Controle_de_Diagonal_CLA_AGO_2026.xlsx", "aba": "AGO"},
+    {"operador": "DACTA II", "arquivo": DIAGONAL_DIR / "DACTA_II" / "Diagonal_de_Inspecao_CINDACTA-II_OUT2026.ods", "aba": "DIAGONAL 2026"},
+    {"operador": "BABR", "arquivo": DIAGONAL_DIR / "BABR" / "Diagonal_do_C98_6ETA_GLOG-BR_OUTUBRO2026.xlsx", "aba": "DIAGONAL 2026"},
+    {"operador": "BABE", "arquivo": DIAGONAL_DIR / "BABE" / "Controle_Diagonal_BABE_OUT2026.xlsx", "aba": "DIAGONAL 2026"},
+    {"operador": "BACO", "arquivo": DIAGONAL_DIR / "BACO" / "Controle_Diagonal_OUT_2026.xlsx", "aba": "DIAGONAL 2026 e 2027"},
+    {"operador": "BACG", "arquivo": DIAGONAL_DIR / "BACG" / "Controle_Diagonal_OUTUBRO2026.xlsx", "aba": "DIAGONAL 2026"},
+    {"operador": "CLA", "arquivo": DIAGONAL_DIR / "CLA" / "Controle_de_Diagonal_CLA_OUT_2026.xlsx", "aba": "OUT"},
     # A partir de agosto/2026 a PAMA-LS passou a mandar a Diagonal de verdade
     # (antes só tínhamos EVENTOS_APROXIMADOS, reconstruídos de texto — o
     # binário original não transferia íntegro do Drive). Mesmo layout de
@@ -42,7 +42,7 @@ REGISTRO_GRADE = [
     {"operador": "PAMA-LS", "arquivo": DIAGONAL_DIR / "PAMA-LS" / "Diagonal_2704_AGOSTO_2026.xlsx", "aba": "PROJEÇÃO DE VENCIMENTOS INSPEÇÕ"},
 ]
 
-BAMN_ARQUIVO = DIAGONAL_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_AGOSTO_2026.ods"
+BAMN_ARQUIVO = DIAGONAL_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_OUTUBRO_2026.ods"
 
 # PAMA-LS: o binário original não transferiu íntegro. Dados reconstruídos a
 # partir de texto simplificado — a atribuição exata mês-a-mês é aproximada,

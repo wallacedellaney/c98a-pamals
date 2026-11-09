@@ -62,9 +62,9 @@ SECOES_VALIDAS = {"POR HORA", "POR POUSO", "POR CALENDÁRIO", "POR CALENDARIO", 
 REGISTRO = [
     {
         "operador": "CLA",
-        "arquivo": OPERADORES_DIR / "CLA" / "Controle_de_Vencimentos_CLA_SET_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "CLA" / "Controle_de_Vencimentos_CLA_OUT_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-09",
+        "mes_fonte": "2026-10",
     },
     {
         # Lê o PDF, não o ODS, desde agosto/2026 (pedido do Wallace,
@@ -73,9 +73,9 @@ REGISTRO = [
         # "XXXXXX") que nem aparece no PDF publicado pela CINDACTA II; o
         # PDF é a versão oficial/limpa. Ver `_ler_pdf`.
         "operador": "DACTA II",
-        "arquivo": OPERADORES_DIR / "DACTA_II" / "Controle_de_Vencimentos_DACTAII_SET_2026.pdf",
+        "arquivo": OPERADORES_DIR / "DACTA_II" / "Controle_de_Vencimentos_DACTAII_OUT_2026.pdf",
         "tipo": "pdf",
-        "mes_fonte": "2026-09",
+        "mes_fonte": "2026-10",
     },
     {
         # Confirmado pelo Wallace: a pasta "PAMA-LS" do Drive (maio) e a pasta
@@ -83,9 +83,9 @@ REGISTRO = [
         # a base BABR mesmo, só a pasta mudou de nome. 2704 é a única
         # aeronave que é de fato do PAMA-LS (ver registro seguinte).
         "operador": "BABR",
-        "arquivo": OPERADORES_DIR / "BABR" / "Controle_de_Vencimentos_BABR_SET_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BABR" / "Controle_de_Vencimentos_BABR_OUT_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-09",
+        "mes_fonte": "2026-10",
     },
     {
         "operador": "BABE",
@@ -95,18 +95,18 @@ REGISTRO = [
         # setembro/2026. A partir de setembro a coluna AERONAVE passou a
         # vir em número puro ("2731"), não mais "FAB 2731" — mesmo padrão
         # da BACG/BANT, por isso o tipo mudou pra xlsx_aba_bare.
-        "arquivo": OPERADORES_DIR / "BABE" / "Controle_de_Vencimentos_BABE_SET_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BABE" / "Controle_de_Vencimentos_BABE_OUT_2026.xlsx",
         "tipo": "xlsx_aba_bare",
-        "mes_fonte": "2026-09",
+        "mes_fonte": "2026-10",
         "aba": "Controle de Vencimentos",
     },
     {
         # Formato padrão igual aos demais operadores; usamos o XLSX, não o
         # PDF duplicado da mesma pasta.
         "operador": "BACO",
-        "arquivo": OPERADORES_DIR / "BACO" / "Controle_de_Vencimentos_BACO_SET_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BACO" / "Controle_de_Vencimentos_BACO_OUT_2026.xlsx",
         "tipo": "xlsx",
-        "mes_fonte": "2026-09",
+        "mes_fonte": "2026-10",
     },
     {
         # Formato diferente dos demais: sem seções POR HORA/POUSO/CALENDÁRIO,
@@ -129,9 +129,9 @@ REGISTRO = [
         # Vem numa aba "VENCIMENTO" dentro do arquivo de Diagonal, com células
         # mescladas verticalmente e ordem de colunas própria.
         "operador": "BAMN",
-        "arquivo": OPERADORES_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_SETEMBRO_2026.ods",
+        "arquivo": OPERADORES_DIR / "BAMN" / "Diagonal_de_Manutencao_C98_OUTUBRO_2026.ods",
         "tipo": "ods_bamn",
-        "mes_fonte": "2026-09",
+        "mes_fonte": "2026-10",
         "aba": "VENCIMENTO",
     },
     {
@@ -139,9 +139,9 @@ REGISTRO = [
         # a padrão, mas AERONAVE vem sem prefixo "FAB" (só o número, como na
         # BAMN).
         "operador": "BACG",
-        "arquivo": OPERADORES_DIR / "BACG" / "Controle_de_Vencimentos_BACG_SET_2026.xlsx",
+        "arquivo": OPERADORES_DIR / "BACG" / "Controle_de_Vencimentos_BACG_OUT_2026.xlsx",
         "tipo": "xlsx_aba_bare",
-        "mes_fonte": "2026-09",
+        "mes_fonte": "2026-10",
         "aba": "Controle de Vencimentos",
     },
     {
@@ -169,7 +169,11 @@ REGISTRO = [
 def _ler_xlsx(caminho, aba=None):
     wb = openpyxl.load_workbook(caminho, data_only=True)
     ws = wb[aba] if aba else wb[wb.sheetnames[0]]
-    return [[ws.cell(row=r, column=c).value for c in range(1, 9)] for r in range(1, ws.max_row + 1)]
+    linhas = [[ws.cell(row=r, column=c).value for c in range(1, 9)] for r in range(1, ws.max_row + 1)]
+    # Outubro/2026: a BACG passou a mandar a matrícula como número decimal
+    # (2727.0) em vez de inteiro — normaliza número inteiro em float pra int,
+    # senão o padrão de matrícula "só dígitos" não reconhece nenhuma linha.
+    return [[int(v) if isinstance(v, float) and v.is_integer() else v for v in linha] for linha in linhas]
 
 
 def _ler_ods(caminho):
