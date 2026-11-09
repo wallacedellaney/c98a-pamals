@@ -2,7 +2,7 @@
 Uso: python3 montar_aba_reparaveis_estoque.py <estoque_calculado.xlsx> <relatorio-siloms-stock.xlsx> <saida.xlsx> [entradas.csv|.xls] [saidas.csv|.xls]
 Movimentos: relatório do SILOMS "Movimento entrada TSAU" (colunas Dt. Movto, Tp, ..., Razão, St, PN, CodEmp...).
 St é o status do movimento (R realizado, A aberto, C cancelado, E estornado); só R entra na conta. Razão I = retorno de OS externa (LEP = OS externa).
-Saídas: relatório "movimentosEstoque" (todos os projetos, Ctrl EQP); o script filtra Prj U8 e saídas com origem PAMALS/TSAU. Em 09/11 ele começava em 10/02/2026.
+Saídas: relatório "movimentosEstoque" (todos os projetos, Ctrl EQP); o script filtra Prj U8 e saídas com origem PAMALS/TSAU. O de 09/11 (movimentosEstoque (2).xls, 20 MB, todos os Ctrl) cobre 10/02/2025 a 09/11/2026; baixar pela conta de serviço (o conector do Drive limita a 10 MB).
 Ver 00_Instrucoes/estoque_reparaveis_siloms.md."""
 import sys, re, datetime as dt
 from pathlib import Path
@@ -59,7 +59,7 @@ def main(calc, hoje, saida, movs=None, saidas=None):
         m = m[m.Prj.str.strip() == "U8"].drop_duplicates(subset=["Movimento", "Tp", "PN"])
         mR = m[(m.St == "R") & (m.Tp == "E") & (m["Setor Destino"] == "TSAU")]
         mS = m[(m.St == "R") & (m.Tp == "S") & (m["Setor Origem"] == "TSAU") & (m["OM Origem"] == "PAMALS")]
-        rep |= set(mR[mR["Razão"] == "I"].k) | set(mS.k)
+        rep |= set(mR[mR["Razão"] == "I"].k) | set(mS[mS.Ctrl.str.strip() == "EQP"].k)
         com_mov = set(mR.k) | set(mS.k)
     else:
         mR, mS, com_mov = None, None, set()
@@ -79,7 +79,7 @@ def main(calc, hoje, saida, movs=None, saidas=None):
     lin(["Fontes: SILOMS Relatório de estoque calculado (levantamentoOficio); estoque do dia (relatorio-siloms-stock); controle de reparáveis (OS); planilha Devoluções (CAT R/T)."])
     lin([]); h = lin(["PN", "Nomenclatura", "CFF", "Cód. material", "Tinha em 10/02/2025", "Entradas desde 10/02/2025", "Saídas desde 10/02/2025",
                       "Estoque no relatório calculado", "Conferência (inicial+entradas−saídas)", "Estoque hoje (SILOMS)", "Diferença hoje x calculado", "OS de reparo", "Lançamentos na planilha Devoluções",
-                      "Entradas no TSAU (movimentos, St=R)", "…de OS externa (Razão I, LEP)", "…de compra (C)", "…outras", "Na base do calculado?", "Saídas do TSAU (movimentos, St=R, desde 10/02/2026)"], B, cinza)
+                      "Entradas no TSAU (movimentos, St=R)", "…de OS externa (Razão I, LEP)", "…de compra (C)", "…outras", "Na base do calculado?", "Saídas do TSAU (movimentos, St=R)", "Estoque pelos movimentos (inicial+entradas−saídas)", "Diferença hoje x movimentos"], B, cinza)
     blocos = []
     for _, r in mov.iterrows():
         kk = r.k; os_ = b[b.k == kk].sort_values("data_inicio"); dv = [x for x in dev if k(x[1]) == kk]
@@ -89,7 +89,7 @@ def main(calc, hoje, saida, movs=None, saidas=None):
         qi = float(mv[mv["Razão"] == "I"].q.sum()); qc = float(mv[mv["Razão"] == "C"].q.sum()); qt = float(mv.q.sum())
         nab = "Sim" if kk in set(f.k) else "Não (sem saldo em 10/02/2025)"
         qs = float(mS[mS.k == kk].q.sum()) if mS is not None else 0.0
-        lin([s(r.PN), nome, s(r.CFF), s(r.MAT), int(r.SALDO0), int(r.ENT), int(r.SAI), int(r.ATUAL), f"=E{n}+F{n}-G{n}", hj, f"=J{n}-H{n}", len(os_), len(dv), qt, qi, qc, qt - qi - qc, nab, qs])
+        lin([s(r.PN), nome, s(r.CFF), s(r.MAT), int(r.SALDO0), int(r.ENT), int(r.SAI), int(r.ATUAL), f"=E{n}+F{n}-G{n}", hj, f"=J{n}-H{n}", len(os_), len(dv), qt, qi, qc, qt - qi - qc, nab, qs, f"=E{n}+N{n}-S{n}", f"=J{n}-T{n}"])
         ev = []
         for _, o in os_.iterrows():
             ev.append((o.data_inicio, [s(o.data_inicio), "OS de reparo aberta", f"OS {s(o.os)}", f"SN {s(o.sn)}", s(o.unidade_solicitante), " / ".join(x for x in [s(o.condicao), s(o.situacao)] if x), f"Onde está: {s(o.onde_se_encontra)}" if s(o.onde_se_encontra) else ""]))
@@ -121,7 +121,7 @@ def main(calc, hoje, saida, movs=None, saidas=None):
         for e in ev: lin(e)
         if not ev: lin(["", "Sem OS nem devolução registradas; só movimento no SILOMS"])
         lin(["Desde 10/02/2025", "Movimento no SILOMS (TSAU)", f"Entradas: {int(r.ENT)}", f"Saídas: {int(r.SAI)}", f"Calculado: {int(r.ATUAL)}"])
-    for col, w in zip("ABCDEFGHIJKLM", [16, 38, 22, 22, 18, 30, 26, 14, 14, 12, 12, 10, 12]): ws.column_dimensions[col].width = w
+    for col, w in zip("ABCDEFGHIJKLMNOPQRSTU", [16, 38, 22, 22, 18, 30, 26, 14, 14, 12, 12, 10, 12, 12, 12, 12, 10, 14, 12, 14, 12]): ws.column_dimensions[col].width = w
     if m is not None:
         w2 = wb.create_sheet("Movimentos reparáveis")
         cols = [c for c in m.columns if c not in ("k", "c", "dt", "q")]

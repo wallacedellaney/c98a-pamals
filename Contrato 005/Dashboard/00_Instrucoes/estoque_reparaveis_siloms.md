@@ -87,6 +87,20 @@ python3 "Contrato 005/Dashboard/05_Scripts/python/montar_aba_reparaveis_estoque.
   - 216 eventos de saída e 438 retornos de OS externa no histórico.
   - O histórico fecha o ciclo de cada SN: OS aberta → retorno da OS externa (LEP) → saída do TSAU para a base.
 
+## Saídas completas (09/11/2026, 16h30)
+
+- **Arquivo:** "movimentosEstoque (2).xls", na pasta Estoque (id `1sR1zcZNlIaIQFVMiGmSD84x_xEJecPxX`).
+  - Tem 20 MB e 40.902 linhas, de 10/02/2025 a 09/11/2026, com todos os tipos de Ctrl.
+  - O conector do Drive só baixa até 10 MB. Baixar pela conta de serviço: `shared.drive_sync.baixar_arquivo(id)` devolve os bytes.
+- **Filtros:**
+  - Prj U8 e origem PAMALS/TSAU: 3.210 saídas.
+  - Só os PNs com Ctrl EQP entram no universo, para não puxar consumíveis.
+- **Conferência por item:** Tinha em 10/02/2025 + entradas − saídas, comparado com o estoque de hoje.
+  - Fica nas colunas T e U do resumo, por fórmula.
+  - Em 09/11: **208 de 239 fecham**.
+  - Dos 31 que não fecham, 21 estão fora do calculado (saldo inicial tomado como 0).
+  - Causas prováveis: PN parecido com outro CFF ou sufixo (30-182 x 30-182A), movimento entre subsetores do TSAU, ou saldo reparável no estoque de hoje.
+
 ## O que mais foi feito em 09/11/2026 (fechamento de outubro)
 
 - **RMA de outubro conferida:**
