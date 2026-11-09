@@ -51,3 +51,21 @@ Sempre que o Wallace disser algo como "checar RMA" / "atualizar RMA" / "fazer a 
 3. Fazer a auditoria de Consumíveis (CAT=C, RC preenchido) seguindo o padrão acima, novo arquivo .docx no Drive (pasta Auditoria + cópia no Fechamento mensal do mês). Conferir se o PDF da RMA completa está no fechamento.
 4. Registrar o resultado na planilha "Devoluções" (Observação Fiscal + Status) e responder ao fiscal no chat: o que foi escrito, comparação com a versão anterior e quais linhas podem receber "OK".
 5. Depois de tudo, atualizar os sites/dashboards (reparáveis e devoluções) com os dados novos.
+
+## Rodada de 09/11/2026 (RMA de outubro/2026): cuidados que viraram regra
+
+**Numeração das abas**
+- O "Nº de Ordem" da aba 1.13 da empresa **não é o mesmo** da aba "DEVOLUÇÃO" a partir da linha 91. Há deslocamento de 1 a 2, e 32 linhas novas vieram sem número.
+- **Nunca propagar pelo número de ordem.** Alinhar as duas listas pela **sequência de PN** (difflib) e conferir o PN linha a linha antes de escrever.
+- Gravar só em célula vazia.
+- Em 09/11: aba "RMA" regravada com a 1.13 (439 linhas). 140 campos propagados para a "DEVOLUÇÃO", nas colunas P, Q, R e T.
+
+**Auditoria v6 ("Auditoria Consumíveis - Novembro 2026 (v6).docx")**
+- O universo passou de 34 para 36 linhas.
+- Linha 216: o recibo 569/FAB/26 é de emergência. Linha 323: o recibo 1028/LS-C98/2025 duplica o da linha 19 (mesmo SN 53850).
+- **Nova categoria: "recibo já usado em outra linha"**. Sempre conferir se o mesmo recibo + SN já fecha outra linha.
+
+**Arquivos**
+- A conta de serviço não lê a pasta Auditoria.
+- A v5 com acento ("Auditoria Consumíveis - Outubro 2026 (v5).docx", na pasta 09 SETEMBRO) está **corrompida**. A válida é "Auditoria_Consumiveis_Outubro_2026_v5.docx", na pasta Auditoria.
+- O .docx novo vai para ~/Downloads, e o Wallace arrasta para a pasta Auditoria e para a pasta do mês.
