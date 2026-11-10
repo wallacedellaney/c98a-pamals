@@ -181,7 +181,9 @@ def atualizar_do_drive():
         try:
             mais_recente = _arquivo_mais_recente_da_pasta(config["drive_folder_id"])
             metadados_por_fonte[chave] = mais_recente
-            conteudo = drive_sync.baixar_arquivo(mais_recente["id"])
+            # 2026-11-10: a pasta de solicitações passou a ter planilha Google (não .xlsx); planilha nativa precisa de export.
+            nativo = str(mais_recente.get("mimeType", "")).startswith("application/vnd.google-apps")
+            conteudo = drive_sync.baixar_arquivo(mais_recente["id"], exportar_como=drive_sync.XLSX_MIME if nativo else None)
             ARQUIVOS_FONTE[chave].parent.mkdir(parents=True, exist_ok=True)
             ARQUIVOS_FONTE[chave].write_bytes(conteudo)
         except Exception as e:

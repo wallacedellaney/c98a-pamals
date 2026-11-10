@@ -276,7 +276,18 @@ def extrair(df_financeiro=None):
     inconsistencias = []
     wb = openpyxl.load_workbook(ARQUIVO_FONTE, data_only=True)
     df_situacao = _extrair_situacao_generico(wb["SILOMS"], COL_SITUACAO, LINHA_INICIO_SITUACAO)
-    df_helice = _extrair_situacao_generico(wb["hélice"], COL_HELICE, LINHA_INICIO_HELICE)
+    aba_helice = next((n for n in wb.sheetnames if n.strip().lower() in ("hélice", "helice", "hélices", "helices")), None)
+    if aba_helice:
+        df_helice = _extrair_situacao_generico(wb[aba_helice], COL_HELICE, LINHA_INICIO_HELICE)
+    else:
+        # 2026-11-10: a aba "hélice" sumiu da planilha de motores. Em vez de derrubar a atualização
+        # inteira, mantém a última situação de hélices já processada e avisa no log.
+        anterior = DADOS_TRATADOS / "base_motores_tratada.xlsx"
+        try:
+            df_helice = pd.read_excel(anterior, sheet_name="Helice")
+        except Exception:
+            df_helice = pd.DataFrame()
+        inconsistencias.append("A aba 'hélice' não existe mais na planilha de motores; mantida a última situação de hélices processada.")
     df_diagonal = _extrair_diagonal(wb, inconsistencias)
     df_diagonal_meta = _extrair_diagonal_metadados(wb)
     if df_financeiro is None:
