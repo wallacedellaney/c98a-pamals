@@ -158,7 +158,7 @@ def _registrar_historico_solicitacoes(df_solicitacoes):
     historico.to_csv(HISTORICO_SOLICITACOES, index=False)
 
 
-def _arquivo_mais_recente_da_pasta(folder_id):
+def _arquivo_mais_recente_da_pasta(folder_id, prefixo=None):
     """Lista a subpasta e retorna o metadado do arquivo com modifiedTime mais
     recente — Wallace sobe um arquivo novo (nome com timestamp) a cada
     atualização, nunca sobrescreve o mesmo ID (2026-07-16)."""
@@ -166,6 +166,12 @@ def _arquivo_mais_recente_da_pasta(folder_id):
     arquivos = [a for a in arquivos if a.get("mimeType") != "application/vnd.google-apps.folder"]
     if not arquivos:
         raise RuntimeError(f"Nenhum arquivo encontrado na pasta {folder_id}.")
+    # 2026-11-10: alguém pôs uma "Planilha nova" (Google) na pasta de solicitações em 08/09 e ela passou a ser
+    # a "mais recente". Quando há arquivos com o nome padrão do relatório (prefixo), usa só eles.
+    if prefixo:
+        padrao = [a for a in arquivos if a["name"].lower().startswith(prefixo.lower())]
+        if padrao:
+            arquivos = padrao
     return max(arquivos, key=lambda a: a["modifiedTime"])
 
 
@@ -179,7 +185,7 @@ def atualizar_do_drive():
     metadados_por_fonte = {}
     for chave, config in cfg.FONTES_EXTRAS.items():
         try:
-            mais_recente = _arquivo_mais_recente_da_pasta(config["drive_folder_id"])
+            mais_recente = _arquivo_mais_recente_da_pasta(config["drive_folder_id"], config.get("planilha"))
             metadados_por_fonte[chave] = mais_recente
             # 2026-11-10: a pasta de solicitações passou a ter planilha Google (não .xlsx); planilha nativa precisa de export.
             nativo = str(mais_recente.get("mimeType", "")).startswith("application/vnd.google-apps")
