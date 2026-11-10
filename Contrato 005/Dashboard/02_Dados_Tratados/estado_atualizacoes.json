@@ -1,9 +1,9 @@
 {
   "emergencias": {
-    "remote_modified_time": "2026-11-09T14:21:41.363Z",
-    "local_updated_at": "2026-11-09T18:24:11.431394-03:00",
+    "remote_modified_time": "2026-11-10T18:28:35.706Z",
+    "local_updated_at": "2026-11-10T15:37:40.955215-03:00",
     "status": "atualizado",
-    "record_count": 24,
+    "record_count": 35,
     "last_error": null
   },
   "pagamentos": {
