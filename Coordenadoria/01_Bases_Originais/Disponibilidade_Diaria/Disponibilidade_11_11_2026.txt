@@ -1,0 +1,87 @@
+*C-98 - 11/11/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+11 D / 13 M
+(10 DI / 01 DO / 06 II / 01 IN / 01 ITR / 08 IS / 01 IP / 01 AD)
+ 
+*Previsão até o final do dia:* 11 D / 13 M
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis:* 14
+- 2720, 2727, 2742
+
+
+*Montadas:* 14
+- 2720
+
+
+*Esforço  Aéreo*
+Anual: 10100:00 / 8617:40 / 85,32%
+
+
+*Motores disponíveis:* 22
+
+
+*BACO*
+[ ] 2742 - II - REALIZANDO INSPEÇÃO ID5-15-0A - DPE: 12/11
+
+
+*CLA*
+[ ] 2723 - II - CUMPRINDO AS INSPEÇÕES  ID05-15-0A/01/07/20/MD/MG - DPE: 27/11
+
+
+
+
+*PAMA-LS*
+[ ] 2704 - II - INSP ID5-15-02/-03/-10/-11/-21/-22 E TROCA DO PARABRISA DO 2P - DPE: 20/11
+[ ] 2706 - IP - 72 APE- DPE: A ser definido.
+[ ] 2724 - AD - Anv em desativação conforme rádio 106/OPGP-3/161026
+[ ] 2726 - IS - 88 AIFP - DPE: A ser definido.
+[ ] 2728 - IN - Em processo de montagem após sinsitro - DPE: 27/11
+[ ] 2730 - IS - Sem motor e hélice - 41 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+[ ] 2734 - IS - Sem motor e hélice - 69 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2727 - II - Realizando inspeções ID5-15-16 +06/01/02/09/11/20/21/22 - DPE: 13/11
+[ ] 2731 - ITR - Aguardando chegada do GDC, PN:011-00882-10 - DPE: 02 DIAS após recebimento do item.
+[ ] 2733 - DI
+[ ] 2739 - DI
+
+
+*1º/5º GAV*
+[ ] 2703 - DI
+[ ] 2708 - DO
+[ ] 2729 - IS - Itens recolhidos ao PAMA-SP - 06 IPLR - DPE: 05 DIAS após retorno dos itens.
+
+
+*2º ETA*
+[ ] 2722 - IS - Aguardando atendimento de emergência - DPE: DPE 10 DIAS após recebimento do item.
+
+
+*5º ETA*
+[ ] 2702 - DI
+[ ] 2719 - DI
+[ ] 2743 - DI
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - II - Realizando inspeções ID 5-15-0A/08/12/3400FH - DPE: 13/11
+[ ] 2721 - IS - Agd atendimento de 09 AIFP - DPE: DPE 15 DIAS após recebimento dos itens.
+
+
+*7º ETA*
+[ ] 2732 - IS - Em processo de montagem. Aguarda somente atendimento de hélice que vai de carreta para o RJ em 09/11. - DPE: 03 DIAS após recebimento do item.
+[ ] 2736 - II - Realizando troca de motor por TBO e inspeções ID5-15-(06, 08, MB-B)(CEL), (RG, 300H, MOT1M12)(MOT) - DPE: 20/11
+[ ] 2737 - DI
+[ ] 2738 - DI
+[ ] 2740 - IS - Realizando inspeções ID5-15-(0A, 22, 21, 11, 09, 03, 15)(CEL), (3500H, MOT1M12, HSI)(MOT). - DPE: 07 DIAS após chegada do kit HSI.
+[ ] 2741 - DI
