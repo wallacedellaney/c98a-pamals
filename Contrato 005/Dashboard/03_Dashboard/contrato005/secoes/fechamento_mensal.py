@@ -1036,7 +1036,12 @@ def _computo_mensal(mes_escolhido):
     # Aeronaves fora do contrato aparecem como linha em branco (sem
     # pontuação, sem preencher nada) — pedido do Wallace: "ajeitar as
     # aeronaves fora do contrato, coloca em baixo, sem preencher nada".
-    aeronaves_fora = resumo["aeronaves_fora_listadas"]
+    aeronaves_fora = [str(m) for m in resumo["aeronaves_fora_listadas"]]
+    # A matriz já traz as fora do contrato no meio (em ordem de matrícula);
+    # tira e reinsere no fim, depois do "% Montadas" — Wallace, 13/11/2026:
+    # "o fora do contrato fica em baixo".
+    pivot.index = pivot.index.astype(str)
+    pivot = pivot.drop(index=[m for m in aeronaves_fora if m in pivot.index])
     for m in aeronaves_fora:
         pivot.loc[m] = pd.Series(float("nan"), index=pivot.columns, dtype="float64")
 
