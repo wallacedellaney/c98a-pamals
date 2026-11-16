@@ -41,6 +41,27 @@ FILTROS_SITUACAO = [
 ]
 
 
+def preparar_tabela_pagamentos(df, modo_externo):
+    """Entrega a tabela na estrutura atual, inclusive para bases tratadas antigas.
+
+    A extração passou a gravar OB e data de pagamento em 16/11/2026. Durante
+    a transição, o arquivo XLSX publicado ainda pode não conter essas colunas;
+    elas ficam vazias até a próxima atualização, sem interromper a página.
+    """
+    tabela = df.copy()
+    for coluna in ("ordem_bancaria", "data_pagamento"):
+        if coluna not in tabela.columns:
+            tabela[coluna] = pd.NA
+
+    colunas = [
+        "modulo", "referencia", "numero_nota_fiscal", "data", "valor_nfs",
+        "faturado", "pendente", "situacao", "ordem_pagamento", "observacao",
+    ]
+    if not modo_externo:
+        colunas.extend(["empenho", "ordem_bancaria", "data_pagamento", "empenho_responsavel"])
+    return tabela[colunas]
+
+
 def _alerta_vencimentos(df):
     """NF faturada sem NP/OB com vencimento passado ou em até 7 dias (pedido de 16/11/2026)."""
     if "vencimento" not in df.columns:
@@ -236,6 +257,7 @@ def _mostrar_empenhos(empenhos, df, saldo_informado):
             linhas = df[df["empenho"].fillna("").map(
                 lambda valor: ne in [p.strip() for p in re.split(r"[,\n]", str(valor))]
             )]
+            linhas = preparar_tabela_pagamentos(linhas, modo_externo=False)
             st.dataframe(
                 linhas[[
                     "referencia", "numero_nota_fiscal", "valor_nfs", "situacao",
@@ -362,15 +384,8 @@ def render(dados):
     # deploy externo "005CELOG2025" (pedido do Wallace: "tira empenho do
     # pagamento tb, ela nao precis saber").
     modo_externo = dados.get("modo_externo", False)
-    colunas_tabela = [
-        "modulo", "referencia", "numero_nota_fiscal", "data", "valor_nfs",
-        "faturado", "pendente", "situacao", "ordem_pagamento", "observacao",
-    ]
-    if not modo_externo:
-        colunas_tabela.extend(["empenho", "ordem_bancaria", "data_pagamento", "empenho_responsavel"])
-
     st.dataframe(
-        filtrado[colunas_tabela].rename(columns={
+        preparar_tabela_pagamentos(filtrado, modo_externo).rename(columns={
             "ordem_pagamento": "NP", "ordem_bancaria": "OB",
             "data_pagamento": "Data do pagamento", "empenho": "NE(s)",
             "observacao": "Observação",
