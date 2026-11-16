@@ -190,7 +190,9 @@ def extrair_empenhos(wb):
         if not ne or not REGEX_EMPENHO.match(str(ne).strip()):
             continue
         empenhos[str(ne).strip()] = {
-            "valor_empenhado": row[10],   # coluna K
+            # 16/11/2026: J é o valor empenhado; K é o valor já usado (J − K = L, saldo).
+            "valor_empenhado": row[9],    # coluna J
+            "valor_utilizado": row[10],   # coluna K
             "saldo": row[11],             # coluna L
             "responsavel": row[26],       # coluna AA
             "justificativa": row[27],     # coluna AB
@@ -200,7 +202,7 @@ def extrair_empenhos(wb):
 
 def empenhos_para_dataframe(empenhos):
     linhas = [{"numero_empenho": ne, **dados} for ne, dados in empenhos.items()]
-    return pd.DataFrame(linhas, columns=["numero_empenho", "valor_empenhado", "saldo", "responsavel", "justificativa"])
+    return pd.DataFrame(linhas, columns=["numero_empenho", "valor_empenhado", "valor_utilizado", "saldo", "responsavel", "justificativa"])
 
 
 def cruzar_empenhos(df, empenhos):

@@ -54,17 +54,95 @@ def _alerta_vencimentos(df):
     st.error("**NF vencida ou vencendo em até 7 dias, sem NP/OB**\n\n" + "\n".join(linhas))
 
 
+DATA_BASE_REAJUSTE = pd.Timestamp("2025-10-08")
+
+
+def _numerico(serie):
+    """Converte para número; texto como 'R$ 1.234,56' vira 1234.56 e lixo vira NaN.
+    Evita o TypeError visto em 16/11/2026 (datas misturadas com valores na aba EMPENHOS)."""
+    def conv(v):
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            return v
+        if isinstance(v, str):
+            t = v.replace("R$", "").strip().replace(".", "").replace(",", ".")
+            try:
+                return float(t)
+            except ValueError:
+                return None
+        return None
+    return pd.to_numeric(serie.map(conv), errors="coerce")
+
+
+def _saldo_inicial_modulo(dados, modulo):
+    ind = dados.get("reajuste_indicadores")
+    if ind is None or ind.empty:
+        return None
+    achados = ind[ind["indicador"] == f"Saldo do Módulo {modulo} após 1° Reajuste"]
+    if achados.empty:
+        return None
+    return float(achados.iloc[0]["valor"])
+
+
+def _saldo_por_modulo(df, dados):
+    """Saldo de cada módulo = saldo após o 1º reajuste (08/10/2025, Planilha
+    Demonstrativa) − NFs emitidas depois de 08/10/2025 (planilha 005 online)
+    − orçamentos pedidos ainda sem NF (coluna Pendente = valor aprovado ou
+    estimado). Pedido do Wallace em 16/11/2026."""
+    st.markdown("##### Saldo por módulo")
+    datas = pd.to_datetime(df["data"], errors="coerce")
+    abertos = df[(df["tipo_registro"] == "orcamento") & df["numero_nota_fiscal"].isna()].copy()
+    abertos["previsto"] = _numerico(abertos["pendente"])
+
+    linhas, cols = [], st.columns(3)
+    for col, m in zip(cols, MODULOS):
+        inicial = _saldo_inicial_modulo(dados, m)
+        if inicial is None:
+            col.info(f"Módulo {m}: sem saldo-base (Planilha Demonstrativa).")
+            continue
+        faturado = df.loc[(df["modulo"] == m) & (datas > DATA_BASE_REAJUSTE), "valor_nfs"].sum()
+        comprometido = abertos.loc[abertos["modulo"] == m, "previsto"].sum()
+        atual = inicial - faturado
+        livre = atual - comprometido
+        col.metric(f"Módulo {m} · saldo hoje", formatar_moeda(atual))
+        col.metric("Depois dos orçamentos pedidos", formatar_moeda(livre),
+                   delta=f"-{formatar_moeda(comprometido)}" if comprometido else None,
+                   delta_color="inverse")
+        if livre < 0:
+            col.error(f"Os orçamentos pedidos passam o saldo do Módulo {m} em {formatar_moeda(-livre)}.")
+        linhas.append(m)
+    st.caption(
+        "Saldo hoje = saldo após o 1º reajuste (08/10/2025) − NFs emitidas depois disso. "
+        "Orçamentos pedidos = coluna Pendente da planilha 005 online (valor aprovado ou estimativa)."
+    )
+
+    if not abertos.empty:
+        tabela = abertos[["modulo", "referencia", "previsto", "observacao"]].copy()
+        tabela["previsto"] = tabela["previsto"].apply(lambda v: formatar_moeda(v) if pd.notna(v) else "sem valor ainda")
+        st.dataframe(
+            tabela.rename(columns={"modulo": "Módulo", "referencia": "Orçamento pedido",
+                                   "previsto": "Valor (aprovado/estimado)", "observacao": "Situação"}),
+            hide_index=True, width="stretch",
+        )
+    st.divider()
+
+
 def render(dados):
     if data_global.mostrar_snapshot_se_necessario(dados, "pagamentos"):
         return
 
     st.title("Pagamentos")
 
-    df = dados["pagamentos"]
+    df = dados["pagamentos"].copy()
     contrato = dados["contrato"]
-    empenhos = dados["empenhos"]
+    empenhos = dados["empenhos"].copy()
+    for c in ("valor_nfs", "faturado", "pendente"):
+        df[c] = _numerico(df[c])
+    for c in ("valor_empenhado", "saldo"):
+        empenhos[c] = _numerico(empenhos[c])
+    empenhos = empenhos[empenhos["numero_empenho"].astype(str).str.match(r"^\d{4}NE\d+$")]
 
     _alerta_vencimentos(df)
+    _saldo_por_modulo(df, dados)
 
     # --- Resumo rápido por módulo (clicável) ---
     if "modulo_resumo" not in st.session_state:
