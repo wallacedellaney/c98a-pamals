@@ -9,9 +9,9 @@
   "pagamentos": {
     "remote_modified_time": "2026-11-16T18:51:07.196Z",
     "local_updated_at": "2026-11-16T15:51:35.462636-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 41,
-    "last_error": null
+    "last_error": "The read operation timed out"
   },
   "devolucoes": {
     "remote_modified_time": "2026-11-16T13:04:18.533Z",
