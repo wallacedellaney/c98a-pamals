@@ -93,6 +93,23 @@ def padronizar_valores_monetarios(df, inconsistencias):
 
 
 REGEX_ORDEM_PAGAMENTO = re.compile(r"^\d{4}NP\d+$")
+REGEX_ORDEM_BANCARIA = re.compile(r"^\d{4}OB\d+$")
+REGEX_EMPENHO = re.compile(r"^\d{4}NE\d+$")
+
+
+MESES_ABREV = {
+    "JANEIRO": "JAN", "FEVEREIRO": "FEV", "MARCO": "MAR", "MARÇO": "MAR", "ABRIL": "ABR",
+    "MAIO": "MAI", "JUNHO": "JUN", "JULHO": "JUL", "AGOSTO": "AGO", "SETEMBRO": "SET",
+    "OUTUBRO": "OUT", "NOVEMBRO": "NOV", "DEZEMBRO": "DEZ",
+}
+
+
+def padronizar_referencia(ref):
+    """'SETEMBRO/26' -> 'SET/26' (16/11/2026: referências misturadas bagunçavam o gráfico)."""
+    if not isinstance(ref, str) or "/" not in ref:
+        return ref
+    mes, _, ano = ref.strip().partition("/")
+    return f"{MESES_ABREV.get(mes.strip().upper(), mes.strip().upper())}/{ano.strip()}"
 
 
 def situacao_pagamento(row):
@@ -102,9 +119,14 @@ def situacao_pagamento(row):
     # lançamento "Módulo III – Orçamento 19 GPS" (NF 1882) tinha
     # ordem_pagamento="Faturado" e caía como "Pago" por engano — só um
     # valor no formato real de ordem (ex.: "2026NP401058") conta como Pago.
+    #
+    # 16/11/2026 (pedido do Wallace): NP é o documento da liquidação; o
+    # dinheiro só sai na OB. NP → "Liquidado (NP)"; OB → "Pago (OB)".
     ordem = row["ordem_pagamento"]
+    if pd.notna(ordem) and REGEX_ORDEM_BANCARIA.match(str(ordem).strip()):
+        return "Pago (OB)"
     if pd.notna(ordem) and REGEX_ORDEM_PAGAMENTO.match(str(ordem).strip()):
-        return "Pago"
+        return "Liquidado (NP)"
     if pd.notna(row["valor_nfs"]) or pd.notna(row["faturado"]):
         return "Faturado, aguardando pagamento"
     if pd.notna(row["pendente"]):
@@ -163,7 +185,9 @@ def extrair_empenhos(wb):
     # descoberto em 2026-08-24 (mesma inconsistência aparecia desde julho).
     for row in ws.iter_rows(min_row=3, values_only=True):
         ne = row[0]
-        if not ne:
+        # Só linhas no formato AAAANEnnnnnn. Embaixo da tabela de empenhos há
+        # outra tabela (NF x data) que entrava como empenho (16/11/2026).
+        if not ne or not REGEX_EMPENHO.match(str(ne).strip()):
             continue
         empenhos[str(ne).strip()] = {
             "valor_empenhado": row[10],   # coluna K
@@ -234,6 +258,8 @@ def main():
     df = df.reset_index(drop=True)
 
     df = padronizar_valores_monetarios(df, inconsistencias)
+    mensal = df["tipo_registro"] == "mensal"
+    df.loc[mensal, "referencia"] = df.loc[mensal, "referencia"].apply(padronizar_referencia)
     df["situacao"] = df.apply(situacao_pagamento, axis=1)
 
     empenhos = extrair_empenhos(wb)

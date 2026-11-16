@@ -29,6 +29,31 @@ def _chave_cronologica(row):
     return (9999, 99)
 
 
+SITUACOES_QUITADAS = {"Liquidado (NP)", "Pago (OB)", "Pago"}
+
+
+def _alerta_vencimentos(df):
+    """NF faturada sem NP/OB com vencimento passado ou em até 7 dias (pedido de 16/11/2026)."""
+    if "vencimento" not in df.columns:
+        return
+    hoje = pd.Timestamp.today().normalize()
+    venc = pd.to_datetime(df["vencimento"], errors="coerce")
+    abertas = df[~df["situacao"].isin(SITUACOES_QUITADAS) & venc.notna()].copy()
+    abertas["vencimento"] = venc[abertas.index]
+    abertas = abertas[abertas["vencimento"] <= hoje + pd.Timedelta(days=7)]
+    if abertas.empty:
+        return
+    abertas["dias"] = (abertas["vencimento"] - hoje).dt.days
+    linhas = []
+    for _, r in abertas.sort_values("vencimento").iterrows():
+        nf = "" if pd.isna(r["numero_nota_fiscal"]) else f"NF {int(r['numero_nota_fiscal'])} · "
+        quando = f"venceu há {-r['dias']} dia(s)" if r["dias"] < 0 else (
+            "vence hoje" if r["dias"] == 0 else f"vence em {r['dias']} dia(s)")
+        linhas.append(f"- **{r['referencia']}** · {nf}{formatar_moeda(r['valor_nfs'])} · "
+                      f"{r['vencimento']:%d/%m/%Y} ({quando}) · {r['situacao']}")
+    st.error("**NF vencida ou vencendo em até 7 dias, sem NP/OB**\n\n" + "\n".join(linhas))
+
+
 def render(dados):
     if data_global.mostrar_snapshot_se_necessario(dados, "pagamentos"):
         return
@@ -38,6 +63,8 @@ def render(dados):
     df = dados["pagamentos"]
     contrato = dados["contrato"]
     empenhos = dados["empenhos"]
+
+    _alerta_vencimentos(df)
 
     # --- Resumo rápido por módulo (clicável) ---
     if "modulo_resumo" not in st.session_state:
@@ -96,6 +123,8 @@ def render(dados):
     # "tem coisa que so ta faturado, tem coisa que foi pago, tem a ordem de
     # pagamento e observacoes la, vamos apresentar".
     st.markdown("##### Situação dos pagamentos")
+    st.caption("Liquidado (NP) = NP emitida, liquidação feita; o dinheiro sai na OB. "
+               "Pago (OB) = ordem bancária registrada na planilha.")
     resumo_situacao = (
         filtrado.groupby("situacao")
         .agg(quantidade=("situacao", "size"), valor=("valor_nfs", "sum"))

@@ -50,7 +50,10 @@ Colunas:
 
 ## Regra de situação do pagamento
 
-* Se existir **Ordem de Pagamento** preenchida **com um número de ordem de verdade** (padrão `AAAANPnnnnnn`, ex.: `2026NP401058`) → **Pago**.
+* Ordem com padrão `AAAAOBnnnnnn` (ordem bancária) → **Pago (OB)**.
+* Ordem com padrão `AAAANPnnnnnn` (ex.: `2026NP401058`) → **Liquidado (NP)**. NP é a liquidação; o dinheiro sai na OB (mudança de 16/11/2026).
+* A tela mostra no topo as NF sem NP/OB vencidas ou vencendo em até 7 dias.
+* Empenhos: só entram linhas no formato `AAAANEnnnnnn`. Referências mensais são padronizadas como MMM/AA.
 * Se só tiver **Faturado** preenchido, sem uma ordem de pagamento de verdade → **Faturado, aguardando pagamento**.
 * Se estiver como **Pendente** → falta algo para fechar (pode ser recebimento de itens em aberto, ou é apenas uma previsão ainda não fechada — o texto da coluna `Empenho`/observação ajuda a identificar qual dos dois casos é).
 
