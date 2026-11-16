@@ -254,7 +254,7 @@ def main():
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=FutureWarning)
         df = pd.concat([bloco_mensal, bloco_modulo], ignore_index=True)
-    df = df[df[["numero_recibo", "numero_nota_fiscal", "valor_nfs", "faturado", "pendente"]].notna().any(axis=1)]
+    df = df[df[["numero_recibo", "numero_nota_fiscal", "valor_nfs", "faturado", "pendente", "observacao"]].notna().any(axis=1)]  # observacao: orçamento ainda sem valor (16/11/2026)
     df = df.reset_index(drop=True)
 
     df = padronizar_valores_monetarios(df, inconsistencias)

@@ -8,9 +8,9 @@
   },
   "pagamentos": {
     "remote_modified_time": "2026-11-16T14:30:00.914Z",
-    "local_updated_at": "2026-11-16T11:31:17.608412-03:00",
+    "local_updated_at": "2026-11-16T11:31:31.517645-03:00",
     "status": "atualizado",
-    "record_count": 38,
+    "record_count": 41,
     "last_error": null
   },
   "devolucoes": {
