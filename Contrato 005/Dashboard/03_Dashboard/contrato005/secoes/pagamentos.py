@@ -90,6 +90,19 @@ def _saldo_por_modulo(df, dados):
     estimado). Pedido do Wallace em 16/11/2026."""
     st.markdown("##### Saldo por módulo")
     datas = pd.to_datetime(df["data"], errors="coerce")
+    # NFs já abatidas no saldo-base: as da tabela "Antes do 1° Reajuste" da
+    # Planilha Demonstrativa (ex.: SET/25, NF 704, emitida em 27/10/2025).
+    # Sem essa lista, cai no corte por data de emissão.
+    nf_antes = set()
+    nfs_dem = dados.get("reajuste_notas_fiscais")
+    if nfs_dem is not None and not nfs_dem.empty:
+        antes = nfs_dem[nfs_dem["periodo"].astype(str).str.startswith("Antes")]
+        nf_antes = set(pd.to_numeric(antes["nota_fiscal"], errors="coerce").dropna().astype(int))
+    numero_nf = pd.to_numeric(df["numero_nota_fiscal"], errors="coerce")
+    if nf_antes:
+        depois_reajuste = numero_nf.notna() & ~numero_nf.isin(nf_antes)
+    else:
+        depois_reajuste = datas > DATA_BASE_REAJUSTE
     abertos = df[(df["tipo_registro"] == "orcamento") & df["numero_nota_fiscal"].isna()].copy()
     abertos["previsto"] = _numerico(abertos["pendente"])
 
@@ -99,7 +112,7 @@ def _saldo_por_modulo(df, dados):
         if inicial is None:
             col.info(f"Módulo {m}: sem saldo-base (Planilha Demonstrativa).")
             continue
-        faturado = df.loc[(df["modulo"] == m) & (datas > DATA_BASE_REAJUSTE), "valor_nfs"].sum()
+        faturado = df.loc[(df["modulo"] == m) & depois_reajuste, "valor_nfs"].sum()
         comprometido = abertos.loc[abertos["modulo"] == m, "previsto"].sum()
         atual = inicial - faturado
         livre = atual - comprometido
@@ -111,7 +124,8 @@ def _saldo_por_modulo(df, dados):
             col.error(f"Os orçamentos pedidos passam o saldo do Módulo {m} em {formatar_moeda(-livre)}.")
         linhas.append(m)
     st.caption(
-        "Saldo hoje = saldo após o 1º reajuste (08/10/2025) − NFs emitidas depois disso. "
+        "Saldo hoje = saldo após o 1º reajuste (08/10/2025) − NFs que não estão na tabela "
+        "\"Antes do 1° Reajuste\" da Planilha Demonstrativa. "
         "Orçamentos pedidos = coluna Pendente da planilha 005 online (valor aprovado ou estimativa)."
     )
 

@@ -177,12 +177,29 @@ def _executar_uma(fonte):
         _registrar("FALHOU — não commitando.\n")
         return False
 
-    status = subprocess.run(["git", "status", "--porcelain"], cwd=str(RAIZ), capture_output=True, text=True)
-    if not status.stdout.strip():
-        _registrar("Nada novo pra commitar (sem alteração de arquivo).\n")
+    # 16/11/2026 (pedido do Wallace): a atualização automática commita só
+    # DADOS. Código (.py), instruções (00_Instrucoes) e configuração ficam
+    # fora, para não subir mudança de código sem revisão dentro de um
+    # "Atualização automática".
+    status = subprocess.run(["git", "status", "--porcelain", "-z", "--untracked-files=all"],
+                            cwd=str(RAIZ), capture_output=True, text=True)
+    caminhos = []
+    entradas = [e for e in status.stdout.split("\0") if e]
+    i = 0
+    while i < len(entradas):
+        codigo, caminho = entradas[i][:2], entradas[i][3:]
+        if codigo.startswith("R"):
+            i += 1  # renomeação: a entrada seguinte é o nome antigo
+        i += 1
+        if caminho.endswith((".py", ".toml", ".json.example")) or "00_Instrucoes" in caminho \
+                or caminho.startswith((".claude", ".github", "shared/")):
+            continue
+        caminhos.append(caminho)
+    if not caminhos:
+        _registrar("Nada novo pra commitar (sem alteração de dados).\n")
         return True
 
-    subprocess.run(["git", "add", "-A"], cwd=str(RAIZ), check=True)
+    subprocess.run(["git", "add", "-A", "--"] + caminhos, cwd=str(RAIZ), check=True)
     mensagem = f"Atualização automática: {fonte} ({horario.agora_br().strftime('%d/%m/%Y %H:%M')})"
     subprocess.run(["git", "commit", "-m", mensagem], cwd=str(RAIZ), check=True)
     push = subprocess.run(["git", "push", "origin", "main"], cwd=str(RAIZ), capture_output=True, text=True)
