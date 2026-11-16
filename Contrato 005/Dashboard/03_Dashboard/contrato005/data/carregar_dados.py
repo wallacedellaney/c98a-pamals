@@ -21,12 +21,12 @@ DADOS_TRATADOS_COORDENADORIA = RAIZ_PROJETO / "Coordenadoria" / "02_Dados_Tratad
 
 
 @st.cache_data
-def _ler_excel(caminho_str, _mtime, **kwargs):
+def _ler_excel(caminho_str, mtime, **kwargs):
     return pd.read_excel(caminho_str, **kwargs)
 
 
 @st.cache_data
-def _ler_csv(caminho_str, _mtime, **kwargs):
+def _ler_csv(caminho_str, mtime, **kwargs):
     return pd.read_csv(caminho_str, **kwargs)
 
 
@@ -37,7 +37,7 @@ def carregar_emergencias():
 
 
 @st.cache_data
-def _historico_com_data_convertida(caminho_str, _mtime, dtype=None):
+def _historico_com_data_convertida(caminho_str, mtime, dtype=None):
     """Lê o histórico e já converte "data_snapshot" pra datetime uma vez só,
     em cache — sem isso, cada consumidor (slider de data global, comparação
     de período, Empréstimos, Análise de Período...) refazia

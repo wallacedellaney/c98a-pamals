@@ -10,12 +10,12 @@ DADOS_TRATADOS = DASHBOARD_ROOT / "02_Dados_Tratados"
 
 
 @st.cache_data
-def _ler_excel(caminho_str, _mtime, **kwargs):
+def _ler_excel(caminho_str, mtime, **kwargs):
     return pd.read_excel(caminho_str, **kwargs)
 
 
 @st.cache_data
-def _ler_csv(caminho_str, _mtime, **kwargs):
+def _ler_csv(caminho_str, mtime, **kwargs):
     return pd.read_csv(caminho_str, **kwargs)
 
 

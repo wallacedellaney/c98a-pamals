@@ -20,12 +20,12 @@ COORDENADORIA_DADOS_TRATADOS = DASHBOARD_ROOT.parent / "Coordenadoria" / "02_Dad
 
 
 @st.cache_data
-def _ler_excel(caminho_str, _mtime, **kwargs):
+def _ler_excel(caminho_str, mtime, **kwargs):
     return pd.read_excel(caminho_str, **kwargs)
 
 
 @st.cache_data
-def _ler_csv(caminho_str, _mtime, **kwargs):
+def _ler_csv(caminho_str, mtime, **kwargs):
     return pd.read_csv(caminho_str, **kwargs)
 
 
