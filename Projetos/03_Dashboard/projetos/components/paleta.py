@@ -86,19 +86,32 @@ FONTE_MONO = "SF Mono, Roboto Mono, ui-monospace, Menlo, monospace"
 MAX_WIDTH = "1560px"
 
 
+def _valor_monetario_seguro(valor):
+    """Converte números do pandas sem deixar valores ausentes derrubarem a página."""
+    if valor is None:
+        return None
+    try:
+        numero = float(valor)
+    except (TypeError, ValueError):
+        return None
+    return numero if math.isfinite(numero) else None
+
+
 def moeda_completa(valor):
-    if valor is None or (isinstance(valor, float) and math.isnan(valor)):
+    numero = _valor_monetario_seguro(valor)
+    if numero is None:
         return "R$ 0,00"
-    return "R$ " + f"{valor:,.2f}".replace(",", "_").replace(".", ",").replace("_", ".")
+    return "R$ " + f"{numero:,.2f}".replace(",", "_").replace(".", ",").replace("_", ".")
 
 
 def moeda_compacta(valor):
     """Formato compacto pra caber em card/rótulo de barra (ex.: "R$ 88,2
     mi") — o valor completo continua disponível no hover/detalhe."""
-    if valor is None or (isinstance(valor, float) and math.isnan(valor)):
+    numero = _valor_monetario_seguro(valor)
+    if numero is None:
         return "R$ 0"
-    sinal = "-" if valor < 0 else ""
-    absv = abs(valor)
+    sinal = "-" if numero < 0 else ""
+    absv = abs(numero)
     if absv >= 1_000_000:
         texto = f"{absv / 1_000_000:.1f}".replace(".", ",") + " mi"
     elif absv >= 1_000:

@@ -11,7 +11,7 @@ DADOS_TRATADOS = DASHBOARD_ROOT / "02_Dados_Tratados"
 
 @st.cache_data
 def _ler_excel(caminho_str, mtime, **kwargs):
-    return pd.read_excel(caminho_str, **kwargs)
+    return pd.read_excel(caminho_str, engine="calamine", **kwargs)
 
 
 @st.cache_data

@@ -22,7 +22,7 @@ DADOS_TRATADOS_COORDENADORIA = RAIZ_PROJETO / "Coordenadoria" / "02_Dados_Tratad
 
 @st.cache_data
 def _ler_excel(caminho_str, mtime, **kwargs):
-    return pd.read_excel(caminho_str, **kwargs)
+    return pd.read_excel(caminho_str, engine="calamine", **kwargs)
 
 
 @st.cache_data

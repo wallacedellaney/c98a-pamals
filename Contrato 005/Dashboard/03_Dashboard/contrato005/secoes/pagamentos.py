@@ -1,5 +1,7 @@
 """Tela de detalhe — Pagamentos."""
 
+import re
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -30,6 +32,13 @@ def _chave_cronologica(row):
 
 
 SITUACOES_QUITADAS = {"Liquidado (NP)", "Pago (OB)", "Pago"}
+
+FILTROS_SITUACAO = [
+    ("Pago (SIAFI)", {"Pago (OB)", "Pago (SIAFI)"}),
+    ("Liquidado (NP)", {"Liquidado (NP)"}),
+    ("Faturado", {"Faturado, aguardando liquidação", "Faturado, aguardando pagamento"}),
+    ("Pendente", {"Pendente de faturamento", "Pendente", "Sem lançamento"}),
+]
 
 
 def _alerta_vencimentos(df):
@@ -140,6 +149,107 @@ def _saldo_por_modulo(df, dados):
     st.divider()
 
 
+def _vinculos_por_empenho(df):
+    """Monta o detalhe por NE sem somar o saldo de uma mesma NE mais de uma vez."""
+    vinculos = {}
+    for _, linha in df.iterrows():
+        if pd.isna(linha.get("empenho")):
+            continue
+        for ne in re.split(r"[,\n]", str(linha["empenho"])):
+            ne = ne.strip()
+            if not re.fullmatch(r"\d{4}NE\d+", ne):
+                continue
+            nf = linha.get("numero_nota_fiscal")
+            nf_texto = f"NF {int(nf)}" if pd.notna(nf) else "sem NF"
+            vinculos.setdefault(ne, []).append(
+                f"{linha['referencia']} · {nf_texto} · {linha['situacao']}"
+            )
+    return {ne: " | ".join(itens) for ne, itens in vinculos.items()}
+
+
+def _controle_por_situacao(df):
+    """Mostra valores clicáveis; a escolha filtra a tabela detalhada abaixo."""
+    if "pagamentos_filtro_situacao" not in st.session_state:
+        st.session_state["pagamentos_filtro_situacao"] = None
+
+    st.markdown("##### Situação financeira")
+    st.caption("Clique em uma situação para ver somente os lançamentos correspondentes.")
+    colunas = st.columns(len(FILTROS_SITUACAO))
+    for coluna, (rotulo, situacoes) in zip(colunas, FILTROS_SITUACAO):
+        parte = df[df["situacao"].isin(situacoes)]
+        ativo = st.session_state["pagamentos_filtro_situacao"] == rotulo
+        with coluna:
+            st.metric(rotulo, formatar_moeda(parte["valor_nfs"].sum()), f"{len(parte)} lançamento(s)")
+            if st.button(
+                "Ocultar detalhe" if ativo else "Ver detalhes",
+                key=f"pagamentos_situacao_{rotulo}",
+                type="primary" if ativo else "secondary",
+                width="stretch",
+            ):
+                st.session_state["pagamentos_filtro_situacao"] = None if ativo else rotulo
+                st.rerun()
+
+    ativo = st.session_state["pagamentos_filtro_situacao"]
+    if not ativo:
+        return df, None
+    situacoes = dict(FILTROS_SITUACAO)[ativo]
+    return df[df["situacao"].isin(situacoes)].copy(), ativo
+
+
+def _mostrar_empenhos(empenhos, df, saldo_informado):
+    """Visão interna das NEs: total, usado, saldo e notas vinculadas."""
+    with st.expander("Empenhos, saldos e cobertura das NFs", expanded=True):
+        e1, e2, e3, e4 = st.columns(4)
+        e1.metric("Valor empenhado", formatar_moeda(empenhos["valor_empenhado"].sum()))
+        e2.metric("Já liquidado", formatar_moeda(empenhos["valor_utilizado"].sum()))
+        saldo_calculado = empenhos["saldo"].sum()
+        e3.metric("Saldo calculado pelas NEs", formatar_moeda(saldo_calculado))
+        e4.metric("Saldo informado no controle", formatar_moeda(saldo_informado))
+        diferenca = saldo_calculado - saldo_informado
+        if abs(diferenca) > 0.01:
+            st.warning(
+                "Divergência entre a soma das NEs e o resumo do Controle de Pagamentos: "
+                f"{formatar_moeda(diferenca)}. Conferir a atualização do cabeçalho da planilha."
+            )
+        st.caption("Cada NE entra uma única vez neste total. O saldo não é repetido por NF vinculada.")
+
+        vinculos = _vinculos_por_empenho(df)
+        tabela = empenhos.copy()
+        tabela["notas_vinculadas"] = tabela["numero_empenho"].map(vinculos).fillna("Sem lançamento na aba Controle")
+        tabela = tabela.sort_values(["saldo", "numero_empenho"], ascending=[False, True])
+        st.dataframe(
+            tabela.rename(columns={
+                "numero_empenho": "NE", "valor_empenhado": "Empenhado",
+                "valor_utilizado": "Liquidado", "saldo": "Saldo",
+                "responsavel": "Responsável", "justificativa": "Justificativa",
+                "notas_vinculadas": "NFs / situação vinculadas",
+            }),
+            hide_index=True, width="stretch", height=360,
+        )
+
+        ne = st.selectbox(
+            "Consultar uma NE e as respectivas NFs",
+            ["Todas"] + tabela["numero_empenho"].tolist(),
+            key="pagamentos_ne_consulta",
+        )
+        if ne != "Todas":
+            linhas = df[df["empenho"].fillna("").map(
+                lambda valor: ne in [p.strip() for p in re.split(r"[,\n]", str(valor))]
+            )]
+            st.dataframe(
+                linhas[[
+                    "referencia", "numero_nota_fiscal", "valor_nfs", "situacao",
+                    "ordem_pagamento", "ordem_bancaria", "data_pagamento", "observacao",
+                ]].rename(columns={
+                    "referencia": "Referência", "numero_nota_fiscal": "NF",
+                    "valor_nfs": "Valor", "situacao": "Situação", "ordem_pagamento": "NP",
+                    "ordem_bancaria": "OB", "data_pagamento": "Data do pagamento",
+                    "observacao": "Observação",
+                }),
+                hide_index=True, width="stretch",
+            )
+
+
 def render(dados):
     if data_global.mostrar_snapshot_se_necessario(dados, "pagamentos"):
         return
@@ -153,6 +263,10 @@ def render(dados):
         df[c] = _numerico(df[c])
     for c in ("valor_empenhado", "saldo"):
         empenhos[c] = _numerico(empenhos[c])
+    if "valor_utilizado" in empenhos:
+        empenhos["valor_utilizado"] = _numerico(empenhos["valor_utilizado"])
+    else:
+        empenhos["valor_utilizado"] = empenhos["valor_empenhado"] - empenhos["saldo"]
     empenhos = empenhos[empenhos["numero_empenho"].astype(str).str.match(r"^\d{4}NE\d+$")]
 
     _alerta_vencimentos(df)
@@ -181,6 +295,7 @@ def render(dados):
     st.divider()
 
     # --- Filtros e visão geral do contrato ---
+    filtrado_por_status, status_ativo = _controle_por_situacao(df)
     col_f1, col_f2, col_f3, col_f4 = st.columns(4)
     with col_f1:
         modulos = st.multiselect("Módulo", ordenar_unicos(df["modulo"].dropna().astype(int)))
@@ -191,7 +306,7 @@ def render(dados):
     with col_f4:
         notas = st.multiselect("Nº Nota Fiscal", ordenar_unicos(df["numero_nota_fiscal"]))
 
-    filtrado = df.copy()
+    filtrado = filtrado_por_status.copy()
     if modulos:
         filtrado = filtrado[filtrado["modulo"].isin(modulos)]
     if situacoes:
@@ -205,7 +320,9 @@ def render(dados):
     col1.metric("Faturado (filtro)", formatar_moeda(filtrado['faturado'].sum()))
     col2.metric("Pendente (filtro)", formatar_moeda(filtrado['pendente'].sum()))
     col3.metric("Valor total do contrato", formatar_moeda(contrato['valor_total_contrato']))
-    col4.metric("Saldo a faturar", formatar_moeda(contrato['saldo_a_faturar']))
+    col4.metric("Saldo informado no controle", formatar_moeda(contrato['saldo_a_faturar']))
+    if status_ativo:
+        st.caption(f"Detalhe filtrado: **{status_ativo}**. Use o mesmo botão para voltar a todos os lançamentos.")
 
     st.divider()
 
@@ -216,7 +333,7 @@ def render(dados):
     # pagamento e observacoes la, vamos apresentar".
     st.markdown("##### Situação dos pagamentos")
     st.caption("Liquidado (NP) = NP emitida, liquidação feita; o dinheiro sai na OB. "
-               "Pago (OB) = ordem bancária registrada na planilha.")
+               "Pago (OB) = pagamento confirmado no SIAFI.")
     resumo_situacao = (
         filtrado.groupby("situacao")
         .agg(quantidade=("situacao", "size"), valor=("valor_nfs", "sum"))
@@ -250,11 +367,13 @@ def render(dados):
         "faturado", "pendente", "situacao", "ordem_pagamento", "observacao",
     ]
     if not modo_externo:
-        colunas_tabela.append("empenho_responsavel")
+        colunas_tabela.extend(["empenho", "ordem_bancaria", "data_pagamento", "empenho_responsavel"])
 
     st.dataframe(
         filtrado[colunas_tabela].rename(columns={
-            "ordem_pagamento": "Ordem de Pagamento", "observacao": "Observação",
+            "ordem_pagamento": "NP", "ordem_bancaria": "OB",
+            "data_pagamento": "Data do pagamento", "empenho": "NE(s)",
+            "observacao": "Observação",
         }),
         width="stretch",
         hide_index=True,
@@ -262,23 +381,7 @@ def render(dados):
     )
 
     if not modo_externo:
-        with st.expander("Empenhos"):
-            ef1, ef2 = st.columns(2)
-            with ef1:
-                nes = st.multiselect("Nº Empenho (NE)", ordenar_unicos(empenhos["numero_empenho"]))
-            with ef2:
-                responsaveis = st.multiselect("Responsável", ordenar_unicos(empenhos["responsavel"]))
-
-            empenhos_filtrados = empenhos.copy()
-            if nes:
-                empenhos_filtrados = empenhos_filtrados[empenhos_filtrados["numero_empenho"].isin(nes)]
-            if responsaveis:
-                empenhos_filtrados = empenhos_filtrados[empenhos_filtrados["responsavel"].isin(responsaveis)]
-
-            e1, e2 = st.columns(2)
-            e1.metric("Valor empenhado (total)", formatar_moeda(empenhos_filtrados['valor_empenhado'].sum()))
-            e2.metric("Saldo (total)", formatar_moeda(empenhos_filtrados['saldo'].sum()))
-            st.dataframe(empenhos_filtrados, width="stretch", hide_index=True, height=360)
+        _mostrar_empenhos(empenhos, df, contrato['saldo_a_faturar'])
 
     with st.expander("Evolução mensal do faturamento", expanded=True):
         evolucao = filtrado[filtrado["tipo_registro"] == "mensal"][["referencia", "data", "valor_nfs"]].copy()

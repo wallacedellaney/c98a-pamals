@@ -29,7 +29,7 @@ DRIVE_FILE_ID = "1zV_SQKlcXVYeaqCbV0X-PiWnzdzOZPt5esaXp_4k6_o"
 HISTORICO_PAGAMENTOS = DADOS_TRATADOS / "historico_pagamentos.csv"
 COLUNAS_HISTORICO = [
     "tipo_registro", "modulo", "referencia", "numero_recibo", "numero_nota_fiscal",
-    "valor_nfs", "faturado", "pendente", "situacao",
+    "valor_nfs", "faturado", "pendente", "situacao", "situacao_siafi", "ordem_bancaria",
 ]
 
 # Snapshot diário da aba EMPENHOS — pedido do Wallace em 2026-07-28: entre o
@@ -122,15 +122,25 @@ def situacao_pagamento(row):
     #
     # 16/11/2026 (pedido do Wallace): NP é o documento da liquidação; o
     # dinheiro só sai na OB. NP → "Liquidado (NP)"; OB → "Pago (OB)".
-    ordem = row["ordem_pagamento"]
-    if pd.notna(ordem) and REGEX_ORDEM_BANCARIA.match(str(ordem).strip()):
+    # A tabela inferior da aba EMPENHOS é a fonte para confirmar a fase
+    # SIAFI: "Paga" (e/ou OB) encerra o pagamento; "NL/CPR" é liquidação.
+    situacao_siafi = str(row.get("situacao_siafi") or "").strip().upper()
+    ordem = row.get("ordem_pagamento")
+    ordem_bancaria = row.get("ordem_bancaria")
+    tem_ob = (
+        (pd.notna(ordem_bancaria) and REGEX_ORDEM_BANCARIA.match(str(ordem_bancaria).strip()))
+        or (pd.notna(ordem) and REGEX_ORDEM_BANCARIA.match(str(ordem).strip()))
+    )
+    if tem_ob:
         return "Pago (OB)"
+    if situacao_siafi == "PAGA":
+        return "Pago (SIAFI)"
     if pd.notna(ordem) and REGEX_ORDEM_PAGAMENTO.match(str(ordem).strip()):
         return "Liquidado (NP)"
     if pd.notna(row["valor_nfs"]) or pd.notna(row["faturado"]):
-        return "Faturado, aguardando pagamento"
+        return "Faturado, aguardando liquidação"
     if pd.notna(row["pendente"]):
-        return "Pendente"
+        return "Pendente de faturamento"
     return "Sem lançamento"
 
 
@@ -205,6 +215,56 @@ def empenhos_para_dataframe(empenhos):
     return pd.DataFrame(linhas, columns=["numero_empenho", "valor_empenhado", "valor_utilizado", "saldo", "responsavel", "justificativa"])
 
 
+def _chave_nf(valor):
+    """Normaliza o número da NF para cruzar os dois blocos da aba EMPENHOS."""
+    if pd.isna(valor):
+        return None
+    if isinstance(valor, (int, float)) and not isinstance(valor, bool):
+        return str(int(valor))
+    texto = str(valor).strip()
+    if re.fullmatch(r"\d+(?:\.0+)?", texto):
+        return str(int(float(texto)))
+    return None
+
+
+def extrair_situacoes_siafi(wb):
+    """Lê a tabela NF x SIAFI no fim da aba EMPENHOS.
+
+    Ela não tem cabeçalho fixo e fica abaixo da lista de NEs. A identificação
+    segura é: coluna A com número de NF e coluna C contendo ao menos uma NE.
+    Assim, não confundimos essa tabela com o cadastro principal de empenhos.
+    """
+    ws = wb["EMPENHOS"]
+    detalhes = {}
+    for row in ws.iter_rows(min_row=3, values_only=True):
+        numero_nf = _chave_nf(row[0] if len(row) > 0 else None)
+        empenhos = row[2] if len(row) > 2 else None
+        if not numero_nf or not empenhos or not REGEX_EMPENHO.search(str(empenhos)):
+            continue
+        detalhes[numero_nf] = {
+            "situacao_siafi": row[8] if len(row) > 8 else None,
+            "ordem_bancaria": row[9] if len(row) > 9 else None,
+            "data_pagamento": row[10] if len(row) > 10 else None,
+        }
+    return detalhes
+
+
+def enriquecer_situacao_siafi(df, detalhes_siafi):
+    """Acrescenta à NF a fase real do SIAFI sem alterar a fonte original."""
+    situacoes, obs, datas = [], [], []
+    for _, row in df.iterrows():
+        detalhe = detalhes_siafi.get(_chave_nf(row["numero_nota_fiscal"]), {})
+        situacoes.append(detalhe.get("situacao_siafi"))
+        obs.append(detalhe.get("ordem_bancaria"))
+        datas.append(detalhe.get("data_pagamento"))
+    df["situacao_siafi"] = situacoes
+    # A planilha usa "/ /" quando OB/data ainda não existem. Não deixar esse
+    # marcador contaminar o tipo da coluna e a serialização da tabela.
+    df["ordem_bancaria"] = [None if str(v).strip() in {"", "/ /", "nan"} else v for v in obs]
+    df["data_pagamento"] = pd.to_datetime(datas, errors="coerce")
+    return df
+
+
 def cruzar_empenhos(df, empenhos):
     saldos, valores, responsaveis, justificativas = [], [], [], []
     inconsistencias = []
@@ -262,9 +322,9 @@ def main():
     df = padronizar_valores_monetarios(df, inconsistencias)
     mensal = df["tipo_registro"] == "mensal"
     df.loc[mensal, "referencia"] = df.loc[mensal, "referencia"].apply(padronizar_referencia)
-    df["situacao"] = df.apply(situacao_pagamento, axis=1)
-
     empenhos = extrair_empenhos(wb)
+    df = enriquecer_situacao_siafi(df, extrair_situacoes_siafi(wb))
+    df["situacao"] = df.apply(situacao_pagamento, axis=1)
     df, inconsistencias_empenho = cruzar_empenhos(df, empenhos)
     inconsistencias.extend(inconsistencias_empenho)
     df_empenhos = empenhos_para_dataframe(empenhos)

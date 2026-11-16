@@ -345,6 +345,11 @@ def _fontes_dados_geral():
     _, col, _ = st.columns([1, 2, 1])
     with col:
         with st.expander("ℹ️ Fonte dos dados", expanded=False):
+            # O conteúdo de um expander ainda é executado quando ele está
+            # fechado. Só abrir todas as bases se o usuário realmente pedir.
+            if not st.toggle("Carregar a tabela de fontes", key="home_fontes_carregar"):
+                st.caption("Ative para ver as fontes e a última atualização de cada área.")
+                return
             linhas = []
             avisos = []
             for area, modulo_fontes, modulo_dados in (
