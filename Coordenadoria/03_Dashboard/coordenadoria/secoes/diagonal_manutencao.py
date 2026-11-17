@@ -274,7 +274,7 @@ def _rotulo_motor(aeronave, diagonal_meta, situacao):
 NOME_SITUACAO_CURTO = {
     "DI": "Disponível", "DO": "Disp. c/ restrição", "II": "Manut. programada",
     "IN": "Manut. não programada", "ITR": "Aguardando transporte",
-    "IS": "Aguardando suprimento", "IP": "Indisp. prolongada",
+    "IS": "Aguardando suprimento", "IP": "Indisp. prolongada", "AD": "Em desativação",
 }
 
 

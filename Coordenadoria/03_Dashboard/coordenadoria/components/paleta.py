@@ -71,6 +71,7 @@ COR_SITUACAO = {
     "IT": CATEGORICA[4],  # laranja — só apareceu nos relatórios a partir de 2026-08-25
     "IS": CATEGORICA[2],  # roxo
     "IP": "#5a4632",
+    "AD": SECONDARY,
 }
 
 NOME_SITUACAO = {
@@ -82,7 +83,8 @@ NOME_SITUACAO = {
     "IT": "Indisponível por instrumentação (IPEV)",
     "IS": "Aguardando suprimento",
     "IP": "Indisponibilidade prolongada",
+    "AD": "Aeronave em desativação",
 }
 
-ICONE_SITUACAO = {"DI": "✅", "DO": "🟡", "II": "🔧", "IN": "⚠️", "ITR": "🚚", "IT": "🎛️", "IS": "📦", "IP": "⛔"}
-COR_MD_SITUACAO = {"DI": "green", "DO": "green", "II": "orange", "IN": "red", "ITR": "gray", "IT": "blue", "IS": "violet", "IP": "red"}
+ICONE_SITUACAO = {"DI": "✅", "DO": "🟡", "II": "🔧", "IN": "⚠️", "ITR": "🚚", "IT": "🎛️", "IS": "📦", "IP": "⛔", "AD": "⏸️"}
+COR_MD_SITUACAO = {"DI": "green", "DO": "green", "II": "orange", "IN": "red", "ITR": "gray", "IT": "blue", "IS": "violet", "IP": "red", "AD": "gray"}

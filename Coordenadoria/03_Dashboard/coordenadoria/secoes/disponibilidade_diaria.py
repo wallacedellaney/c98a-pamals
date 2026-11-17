@@ -21,8 +21,8 @@ from coordenadoria.components.paleta import (
 )
 from coordenadoria.utils import atualizar_dados_disponibilidade, DISPONIBILIDADE_PASTA_URL
 
-ORDEM_SITUACAO = ["DI", "DO", "II", "IN", "ITR", "IT", "IS", "IP"]
-COLUNAS_SITUACAO_RESUMO = ["di", "do_", "ii", "in_", "itr", "it", "is_", "ip"]
+ORDEM_SITUACAO = ["DI", "DO", "II", "IN", "ITR", "IT", "IS", "IP", "AD"]
+COLUNAS_SITUACAO_RESUMO = ["di", "do_", "ii", "in_", "itr", "it", "is_", "ip", "ad"]
 
 # Pasta do Cômputo Mensal (Contrato 005) — pedido do Wallace, 2026-08-14:
 # jogar as linhas "contratual" e "real VEE ONE" (calculadas lá, ver
@@ -39,6 +39,16 @@ MESES_PT = [
 ]
 
 FILTRO_KEYS = ["disp_f_unidade", "disp_f_situacao", "disp_f_busca"]
+
+
+def total_indisponiveis(relatorio):
+    """Soma os códigos indisponíveis, incluindo AD e tratando históricos antigos."""
+    codigos = ["ii", "in_", "itr", "it", "is_", "ip", "ad"]
+    total = 0
+    for codigo in codigos:
+        valor = pd.to_numeric(relatorio.get(codigo, 0), errors="coerce")
+        total += 0 if pd.isna(valor) else int(valor)
+    return total
 
 
 def render(dados):
@@ -226,9 +236,8 @@ def _cards_indicadores(rel):
     _card_indicador(l2[2], f"{pct_esforco:.2f}%".replace(".", ","), "Esforço aéreo realizado",
                      f"{rel['esforco_anual_realizado']} de {rel['esforco_anual_previsto']}",
                      AMBER, barra_pct=pct_esforco, barra_cor=AMBER)
-    total_pendentes = (int(rel["ii"]) + int(rel["in_"]) + int(rel["itr"]) + int(rel.get("it", 0) or 0)
-                       + int(rel["is_"]) + int(rel["ip"]))
-    _card_indicador(l2[3], total_pendentes, "Aeronaves indisponíveis", "II + IN + ITR + IT + IS + IP",
+    total_pendentes = total_indisponiveis(rel)
+    _card_indicador(l2[3], total_pendentes, "Aeronaves indisponíveis", "II + IN + ITR + IT + IS + IP + AD",
                      STATUS["critical"] if total_pendentes else STATUS["good"])
 
 
@@ -295,7 +304,7 @@ def classificar_alerta(row):
     condicao = str(row["dpe_condicao"]).lower() if pd.notna(row["dpe_condicao"]) else ""
     dpe_data = row["dpe_data"]
 
-    if situacao == "IP" or "acidentada" in ocorrencia or "sem motor" in ocorrencia:
+    if situacao in ("IP", "AD") or "acidentada" in ocorrencia or "sem motor" in ocorrencia:
         return "critico"
     if pd.notna(dpe_data):
         dias = (dpe_data.date() if hasattr(dpe_data, "date") else dpe_data) - horario.hoje_br()
@@ -492,8 +501,7 @@ def _tabela_semana(relatorios, datas):
         rel = relatorios[relatorios["data_referencia"].dt.date == dia].iloc[0]
         d, m = int(rel["disponiveis_hoje"]), int(rel["montadas_hoje"])
         pct = round(100 * d / m) if m else 0
-        indisponiveis = (int(rel["ii"]) + int(rel["in_"]) + int(rel["itr"]) + int(rel.get("it", 0) or 0)
-                          + int(rel["is_"]) + int(rel["ip"]))
+        indisponiveis = total_indisponiveis(rel)
         linhas.append({"Dia": nome, "Data": dia.strftime("%d/%m"), "D": str(d), "M": str(m),
                         "% disponibilidade": f"{pct}%", "Indisponíveis": str(indisponiveis)})
 

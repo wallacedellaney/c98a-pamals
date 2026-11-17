@@ -44,6 +44,7 @@ CARD_TRELLO_DISPONIBILIDADE = "Wjm3747m"
 # de novo) → um Google Doc por dia.
 PASTA_RAIZ_DRIVE_ID = "1JLrUGunWo5ABsR3WuYo88b2WD4QWoxNH"
 RE_NOME_DOC = re.compile(r"Disponibilidade\s+(\d{2})/(\d{2})")
+RE_NOME_ARQUIVO = re.compile(r"^Disponibilidade_(\d{2})_(\d{2})_(\d{4})\.txt$")
 
 RE_TITULO = re.compile(r"^\*?C-98\s*-\s*(\d{2}/\d{2}/\d{4})\*?$")
 RE_RESUMO_DM = re.compile(r"^(\d+)\s*D\s*/\s*(\d+)\s*M$")
@@ -54,7 +55,7 @@ RE_RESUMO_DM = re.compile(r"^(\d+)\s*D\s*/\s*(\d+)\s*M$")
 # dias). Por isso agora casamos cada código pelo NOME (qualquer ordem, "IT" sempre opcional —
 # só existe desde 2026-08-25), não por posição.
 RE_CODIGOS = re.compile(r"^\(([^()]+)\)$")
-RE_CODIGO_ITEM = re.compile(r"(\d+)\s*(DI|DO|II|IN|ITR|IT|IS|IP)\b")
+RE_CODIGO_ITEM = re.compile(r"(\d+)\s*(DI|DO|II|IN|ITR|IT|IS|IP|AD)\b")
 RE_PREVISAO_FIM_DIA = re.compile(r"^\*?Previsão até o final do dia:\*?\s*(\d+)\s*D\s*/\s*(\d+)\s*M\*?$")
 RE_DISPONIVEIS_SEMANA = re.compile(r"^\*?Disponíveis:\*?\s*(\d+)$")
 RE_MONTADAS_SEMANA = re.compile(r"^\*?Montadas:\*?\s*(\d+)$")
@@ -112,6 +113,27 @@ def resumo_visto_flag(resumo):
     return ["resumo"] if "motores_disponiveis" in resumo else []
 
 
+def resolver_data_referencia(caminho, data_titulo):
+    """Usa a data do nome do documento quando o título interno estiver atrasado.
+
+    O nome é montado diretamente a partir do título do Google Doc no Drive.
+    Assim, ele identifica o relatório diário; o texto interno pode ter ficado
+    com a data do dia anterior por cópia do relatório anterior.
+    """
+    m = RE_NOME_ARQUIVO.match(caminho.name)
+    if not m:
+        return data_titulo, None
+    dia, mes, ano = m.groups()
+    data_arquivo = date(int(ano), int(mes), int(dia))
+    if data_arquivo == data_titulo:
+        return data_titulo, None
+    aviso = (
+        f"{caminho.name}: título informa {data_titulo:%d/%m/%Y}, mas o nome do documento informa "
+        f"{data_arquivo:%d/%m/%Y}; usada a data do documento para não duplicar o histórico."
+    )
+    return data_arquivo, aviso
+
+
 def parse_relatorio(caminho):
     linhas = [l.strip() for l in caminho.read_text(encoding="utf-8-sig").splitlines()]
     linhas = [l for l in linhas if l != ""]
@@ -153,6 +175,7 @@ def parse_relatorio(caminho):
                 resumo["it"] = itens.get("IT", 0)
                 resumo["is_"] = itens.get("IS", 0)
                 resumo["ip"] = itens.get("IP", 0)
+                resumo["ad"] = itens.get("AD", 0)
                 i += 1
                 continue
 
@@ -254,6 +277,10 @@ def extrair():
         if "data_referencia" not in resumo:
             inconsistencias.append(f"{caminho.name}: não encontrei a data de referência (título).")
             continue
+        data_referencia, aviso_data = resolver_data_referencia(caminho, resumo["data_referencia"])
+        resumo["data_referencia"] = data_referencia
+        if aviso_data:
+            inconsistencias.append(aviso_data)
         resumo["arquivo"] = caminho.name
         relatorios.append(resumo)
         for a in aeronaves:
@@ -267,7 +294,7 @@ def extrair():
     # quantidade de aeronaves listadas naquele relatório — checagem de
     # consistência (ver secao 31 do briefing).
     for _, rel in df_relatorios.iterrows():
-        soma_codigos = rel[["di", "do_", "ii", "in_", "itr", "it", "is_", "ip"]].sum()
+        soma_codigos = rel[["di", "do_", "ii", "in_", "itr", "it", "is_", "ip", "ad"]].sum()
         qtd_listada = len(df_aeronaves[df_aeronaves["data_referencia"] == rel["data_referencia"]])
         if soma_codigos != qtd_listada:
             inconsistencias.append(
@@ -277,7 +304,7 @@ def extrair():
     return df_relatorios, df_aeronaves, inconsistencias
 
 
-CODIGOS_SITUACAO = ["di", "do_", "ii", "in_", "itr", "it", "is_", "ip"]
+CODIGOS_SITUACAO = ["di", "do_", "ii", "in_", "itr", "it", "is_", "ip", "ad"]
 
 
 def _avisar_trello_se_mudou(resumo_anterior, df_relatorios):
