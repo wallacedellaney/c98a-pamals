@@ -16,6 +16,7 @@
     "2728",
     "2729",
     "2731",
+    "2732",
     "2733",
     "2736",
     "2737",
@@ -29,11 +30,10 @@
   "aeronaves_fora_listadas": [
     "2726",
     "2730",
-    "2732",
     "2734"
   ],
   "ultimo_dia_calculado": 17,
   "ultimo_dia_mes": 30,
-  "mmam_previa": 80.31,
+  "mmam_previa": 81.13,
   "inconsistencias": []
 }
