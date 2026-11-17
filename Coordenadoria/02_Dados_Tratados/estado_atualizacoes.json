@@ -9,9 +9,9 @@
   "rac": {
     "remote_modified_time": "2026-11-16T18:36:55.226Z",
     "local_updated_at": "2026-11-16T17:56:08.621541-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 30,
-    "last_error": null
+    "last_error": "The read operation timed out"
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-11-09T16:32:26.995Z",
