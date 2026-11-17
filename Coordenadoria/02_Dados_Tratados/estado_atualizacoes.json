@@ -7,11 +7,11 @@
     "record_count": 316
   },
   "rac": {
-    "remote_modified_time": "2026-11-16T18:36:55.226Z",
-    "local_updated_at": "2026-11-16T17:56:08.621541-03:00",
-    "status": "erro",
+    "remote_modified_time": "2026-11-17T16:25:52.537Z",
+    "local_updated_at": "2026-11-17T13:32:07.750395-03:00",
+    "status": "atualizado",
     "record_count": 30,
-    "last_error": "The read operation timed out"
+    "last_error": null
   },
   "vencimentos_tmot": {
     "remote_modified_time": "2026-11-09T16:32:26.995Z",
