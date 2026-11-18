@@ -43,6 +43,21 @@ CAMINHO_EMERGENCIAS_HISTORICO = DADOS_TRATADOS / "historico_completo_emergencias
 
 TIPOS_CONSIDERADOS = ("AIFP", "IPLR")
 
+# Início da cobertura contratual de aeronaves incluídas no meio do mês.
+# Antes da data, a aeronave fica em branco na matriz (não pontua nem
+# negativa) e não entra na média diária. FAB 2732: Carta nº 1/CP/6704, de
+# 17/11/2026, recebida pela VEE ONE em 18/11; cobertura a partir de
+# 19/11/2026 (pedido do Wallace, 18/11/2026). A classificação "dentro do
+# contrato" continua vindo do RAC; isto só limita os dias.
+INICIO_COBERTURA = {
+    "2732": date(2026, 11, 19),
+}
+
+
+def _coberta(matricula, data_dia):
+    inicio = INICIO_COBERTURA.get(str(matricula))
+    return inicio is None or data_dia >= inicio
+
 # Termos que, aparecendo na observação da Coordenadoria (fiscal), indicam que
 # a emergência não deve negativar NENHUM dia (regra do Wallace, 2026-07-17:
 # "cancelado pelo operador, cancelado pelo suprimentista, demanda nao
@@ -247,7 +262,7 @@ def calcular_mes(ano, mes, hoje=None):
         periodos_aeronave = [p for p in periodos if p["matricula"] == matricula]
         for dia in range(1, ultimo_dia_mes + 1):
             data_dia = date(ano, mes, dia)
-            if dia > ultimo_dia_calculado:
+            if dia > ultimo_dia_calculado or not _coberta(matricula, data_dia):
                 montada = None
             else:
                 negativada = any(
@@ -372,8 +387,10 @@ def calcular_media_diaria_vee_one(ano, mes, hoje=None):
     linhas = []
     for dia in range(1, ultimo_dia_calculado + 1):
         data_dia = date(ano, mes, dia)
-        negativadas = {p["matricula"] for p in periodos if p["inicio"] <= data_dia <= p["fim"]}
-        pct = 100 * (len(pontuadas) - len(negativadas)) / len(pontuadas) if pontuadas else None
+        cobertas = [m for m in pontuadas if _coberta(m, data_dia)]
+        negativadas = {p["matricula"] for p in periodos
+                       if p["inicio"] <= data_dia <= p["fim"] and p["matricula"] in cobertas}
+        pct = 100 * (len(cobertas) - len(negativadas)) / len(cobertas) if cobertas else None
         linhas.append({"dia": dia, "montada": pct})
 
     df = pd.DataFrame(linhas)

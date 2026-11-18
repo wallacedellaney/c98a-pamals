@@ -32,11 +32,11 @@ COR_OPERADOR_MOTOR = {"TBO": AMBER, "HSI": CYAN, "Simulação": CATEGORICA[2], "
 # Aeronave (pedido do Wallace em 2026-07-14), pra não precisar marcar toda
 # vez; continua editável (dá pra tirar/incluir depois, é só o valor
 # inicial). Ver 00_Instrucoes/computo_mensal.md pra aeronaves fora do
-# contrato (2726, 2730, 2732, 2734) e sem condições (2701, 2706, 2724),
+# contrato (2726, 2730, 2734; o 2732 entrou em 19/11/2026) e sem condições (2701, 2706, 2724),
 # que ficam de fora dessa lista de propósito.
 AERONAVES_PADRAO = {
     "2702", "2703", "2704", "2708", "2709", "2720", "2719", "2721", "2722", "2723",
-    "2727", "2728", "2729", "2731", "2733", "2736", "2737", "2738", "2739", "2740",
+    "2727", "2728", "2729", "2731", "2732", "2733", "2736", "2737", "2738", "2739", "2740",
     "2741", "2742", "2743",
 }
 
