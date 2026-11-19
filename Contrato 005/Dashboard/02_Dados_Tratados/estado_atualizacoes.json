@@ -15,10 +15,10 @@
   },
   "devolucoes": {
     "remote_modified_time": "2026-11-17T19:11:47.731Z",
-    "local_updated_at": "2026-11-18T16:23:37.366410-03:00",
-    "status": "erro",
+    "local_updated_at": "2026-11-19T13:44:32.064243-03:00",
+    "status": "atualizado",
     "record_count": 444,
-    "last_error": "Unable to find the server at oauth2.googleapis.com"
+    "last_error": null
   },
   "reparaveis": {
     "remote_modified_time": "2026-11-17T14:30:43.170Z",
