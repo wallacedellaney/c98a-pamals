@@ -16,22 +16,22 @@
   "devolucoes": {
     "remote_modified_time": "2026-11-17T19:11:47.731Z",
     "local_updated_at": "2026-11-18T16:23:37.366410-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 444,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "reparaveis": {
     "remote_modified_time": "2026-11-17T14:30:43.170Z",
     "local_updated_at": "2026-11-18T16:23:20.775426-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 590,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   },
   "reajuste": {
     "remote_modified_time": "2026-11-18T13:00:12.286Z",
     "local_updated_at": "2026-11-18T16:23:46.696064-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 60,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   }
 }

@@ -1,9 +1,9 @@
 {
   "disponibilidade_diaria": {
-    "status": "atualizado",
+    "status": "sem_novidade",
     "last_error": null,
     "remote_modified_time": "2026-11-19T11:43:43.884Z",
-    "local_updated_at": "2026-11-19T09:07:02.860321-03:00",
+    "local_updated_at": "2026-11-19T13:42:21.875990-03:00",
     "record_count": 318
   },
   "rac": {
@@ -23,8 +23,8 @@
   "motores": {
     "remote_modified_time": "2026-11-18T13:57:21.102Z",
     "local_updated_at": "2026-11-18T16:23:43.116305-03:00",
-    "status": "atualizado",
+    "status": "erro",
     "record_count": 39,
-    "last_error": null
+    "last_error": "Unable to find the server at oauth2.googleapis.com"
   }
 }
