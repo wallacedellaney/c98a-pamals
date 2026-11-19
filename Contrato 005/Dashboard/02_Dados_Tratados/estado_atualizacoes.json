@@ -29,9 +29,9 @@
   },
   "reajuste": {
     "remote_modified_time": "2026-11-18T13:00:12.286Z",
-    "local_updated_at": "2026-11-18T16:23:46.696064-03:00",
-    "status": "erro",
+    "local_updated_at": "2026-11-19T13:44:46.890687-03:00",
+    "status": "atualizado",
     "record_count": 60,
-    "last_error": "Unable to find the server at oauth2.googleapis.com"
+    "last_error": null
   }
 }
