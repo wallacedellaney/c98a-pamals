@@ -255,16 +255,11 @@ def carregar_mta_painel():
 def carregar_tpjl_painel():
     """Carrega somente as fontes usadas pela página TPJL."""
     df_tpjl, mtime_tpjl = carregar_tpjl()
-    df_tpjl_extras, mtime_tpjl_extras = carregar_tpjl_extras()
     return {
         "tpjl": df_tpjl,
         "tpjl_atualizado_em": mtime_tpjl,
         "tpjl_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "tpjl"),
         "tpjl_historico": carregar_historico_tpjl(),
-        "tpjl_extras": df_tpjl_extras,
-        "tpjl_extras_atualizado_em": mtime_tpjl_extras,
-        "tpjl_extras_estado": estado.obter_entrada(ESTADO_ATUALIZACOES, "tpjl_extras"),
-        "tpjl_extras_historico_solicitacoes": carregar_historico_tpjl_solicitacoes(),
     }
 
 

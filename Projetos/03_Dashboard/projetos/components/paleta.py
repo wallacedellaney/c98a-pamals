@@ -48,6 +48,12 @@ STATUS = {
     "neutro": MUTED,
 }
 
+# Saldo mantém a mesma cor no estoque atual e na evolução mensal.
+COR_TIPO_SALDO = {
+    "Utilizável": STATUS["good"],
+    "Reparável": STATUS["warning"],
+}
+
 # Ordem categórica fixa pros gráficos (nunca ciclar cor aleatória por série).
 CATEGORICA = [PRIMARY, STATUS["info"], STATUS["good"], STATUS["warning"], STATUS["critical"]]
 
