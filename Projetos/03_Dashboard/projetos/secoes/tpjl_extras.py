@@ -38,8 +38,11 @@ def _num(v):
     return f"{v:,.0f}".replace(",", ".")
 
 
-def _rotular(fig, valores):
-    fig.update_traces(text=[_num(v) for v in valores], textposition="outside", cliponaxis=False)
+def _rotular(fig):
+    for serie in fig.data:
+        valores = serie.x if serie.orientation == "h" else serie.y
+        serie.update(text=[_num(v) for v in valores], texttemplate="%{text}",
+                     textposition="auto")
     return fig
 
 
@@ -125,7 +128,7 @@ def _secao_consumo(df, estado_atual):
         st.caption("Quantidade consumida por ano")
         por_ano = filtrado.groupby("ano")["qtd_consumo"].sum().reset_index()
         fig = px.bar(por_ano, x="ano", y="qtd_consumo", color_discrete_sequence=[AMBER])
-        _rotular(fig, por_ano["qtd_consumo"])
+        _rotular(fig)
         fig.update_layout(xaxis_title="", yaxis_title="", xaxis={"type": "category"})
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch", key="tpjl_consumo_por_ano")
@@ -135,7 +138,7 @@ def _secao_consumo(df, estado_atual):
         por_cat = filtrado.groupby("categoria")["qtd_consumo"].sum().sort_values(ascending=False).reset_index()
         fig = px.bar(por_cat.sort_values("qtd_consumo"), x="qtd_consumo", y="categoria", orientation="h",
                      color_discrete_sequence=[STATUS["info"]])
-        _rotular(fig, por_cat.sort_values("qtd_consumo")["qtd_consumo"])
+        _rotular(fig)
         fig.update_layout(xaxis_title="", yaxis_title="")
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch", key="tpjl_consumo_por_categoria")
@@ -146,7 +149,7 @@ def _secao_consumo(df, estado_atual):
     top_pn["rotulo"] = top_pn["pn"].astype(str) + " — " + top_pn["descricao"].astype(str).str.slice(0, 40)
     top_pn = top_pn.sort_values("qtd_consumo")
     fig = px.bar(top_pn, x="qtd_consumo", y="rotulo", orientation="h", color_discrete_sequence=[STATUS["good"]])
-    _rotular(fig, top_pn["qtd_consumo"])
+    _rotular(fig)
     fig.update_layout(xaxis_title="", yaxis_title="")
     layout_grafico(fig, altura=380)
     st.plotly_chart(fig, width="stretch", key="tpjl_consumo_top_pn")
@@ -218,7 +221,7 @@ def _secao_estoque(df, estado_atual):
         por_unidade = _agrupado_top_n(filtrado, "unidade", "qtd_estoque", n=10)
         fig = px.bar(por_unidade.sort_values("qtd_estoque"), x="qtd_estoque", y="unidade", orientation="h",
                      color_discrete_sequence=[AMBER])
-        _rotular(fig, por_unidade.sort_values("qtd_estoque")["qtd_estoque"])
+        _rotular(fig)
         fig.update_layout(xaxis_title="", yaxis_title="")
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch", key="tpjl_estoque_por_unidade")
@@ -228,7 +231,7 @@ def _secao_estoque(df, estado_atual):
         por_setor = filtrado.groupby("setor")["qtd_estoque"].sum().sort_values(ascending=False).reset_index()
         fig = px.bar(por_setor.sort_values("qtd_estoque"), x="qtd_estoque", y="setor", orientation="h",
                      color_discrete_sequence=[STATUS["info"]])
-        _rotular(fig, por_setor.sort_values("qtd_estoque")["qtd_estoque"])
+        _rotular(fig)
         fig.update_layout(xaxis_title="", yaxis_title="")
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch", key="tpjl_estoque_por_setor")
@@ -239,7 +242,7 @@ def _secao_estoque(df, estado_atual):
     top_pn["rotulo"] = top_pn["pn"].astype(str) + " — " + top_pn["descricao"].astype(str).str.slice(0, 40)
     top_pn = top_pn.sort_values("qtd_estoque")
     fig = px.bar(top_pn, x="qtd_estoque", y="rotulo", orientation="h", color_discrete_sequence=[STATUS["good"]])
-    _rotular(fig, top_pn["qtd_estoque"])
+    _rotular(fig)
     fig.update_layout(xaxis_title="", yaxis_title="")
     layout_grafico(fig, altura=380)
     st.plotly_chart(fig, width="stretch", key="tpjl_estoque_top_pn")
@@ -315,7 +318,7 @@ def _secao_solicitacoes(df, estado_atual, historico=None):
         contagem.columns = ["status", "quantidade"]
         cores = {s: COR_STATUS_SOLICITACAO.get(s, STATUS["neutro"]) for s in contagem["status"]}
         fig = px.bar(contagem, x="status", y="quantidade", color="status", color_discrete_map=cores)
-        _rotular(fig, contagem["quantidade"])
+        _rotular(fig)
         fig.update_layout(xaxis_title="", yaxis_title="", showlegend=False)
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch", key="tpjl_sol_por_status")
@@ -325,7 +328,7 @@ def _secao_solicitacoes(df, estado_atual, historico=None):
         contagem_tipo = filtrado["tipo"].value_counts().sort_values().reset_index()
         contagem_tipo.columns = ["tipo", "quantidade"]
         fig = px.bar(contagem_tipo, x="quantidade", y="tipo", orientation="h", color_discrete_sequence=[AMBER])
-        _rotular(fig, contagem_tipo["quantidade"])
+        _rotular(fig)
         fig.update_layout(xaxis_title="", yaxis_title="")
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch", key="tpjl_sol_por_tipo")
@@ -337,7 +340,7 @@ def _secao_solicitacoes(df, estado_atual, historico=None):
         top_solic = top_solic.rename(columns={"numero_solicitacao": "quantidade"})
         fig = px.bar(top_solic.sort_values("quantidade"), x="quantidade", y="solicitante", orientation="h",
                      color_discrete_sequence=[STATUS["info"]])
-        _rotular(fig, top_solic.sort_values("quantidade")["quantidade"])
+        _rotular(fig)
         fig.update_layout(xaxis_title="", yaxis_title="")
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch", key="tpjl_sol_top_solicitantes")

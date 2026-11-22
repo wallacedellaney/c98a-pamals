@@ -26,6 +26,8 @@ import math
 
 import streamlit as st
 
+from shared.graficos import acabamento
+
 BG = "#0B1118"
 PANEL = "#121A24"
 PANEL_2 = "#182230"
@@ -141,7 +143,7 @@ def layout_grafico(fig, altura=340):
     )
     fig.update_xaxes(gridcolor=LINE, zerolinecolor=LINE, color=SECONDARY, showgrid=True, gridwidth=1)
     fig.update_yaxes(gridcolor=LINE, zerolinecolor=LINE, color=SECONDARY, showgrid=True, gridwidth=1)
-    return fig
+    return acabamento(fig)
 
 
 def injetar_tema():
@@ -162,23 +164,19 @@ def injetar_tema():
             overflow-y: auto !important;
         }}
 
-        [data-testid="stMain"],
-        [data-testid="stMainBlockContainer"],
-        .block-container {{
-            width: 100%;
-            max-width: none;
-            height: auto !important;
-            min-height: 100vh;
-            overflow: visible !important;
-            padding-top: 2rem !important;
-            padding-bottom: 3rem !important;
-            padding-left: 2.5rem !important;
-            padding-right: 2.5rem !important;
-            margin-top: 0 !important;
+        [data-testid="stMain"] {{height:auto;overflow:visible;}}
+        [data-testid="stMainBlockContainer"] {{
+            width:100%;max-width:{MAX_WIDTH};margin-inline:auto;
+            padding:clamp(3rem,5vh,4rem) clamp(.85rem,3.2vw,3.2rem) 3rem;
         }}
-
-        .block-container {{
-            max-width: {MAX_WIDTH};
+        [data-testid="stMain"] :is(p,h1,h2,h3,h4,h5,label,button,input,.pj-titulo-secao,.pj-cabecalho,.grade-indicadores,[role="combobox"]) {{
+            font-family:{FONTE_BASE};
+        }}
+        [data-testid="stMain"] :is(.ci-valor,[data-testid="stMetricValue"]) {{font-variant-numeric:tabular-nums;}}
+        @media(max-width:640px) {{
+            [data-testid="stMain"] .grade-indicadores {{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}}
+            [data-testid="stMain"] .cartao-indicador {{padding:10px;}}
+            [data-testid="stMain"] .ci-valor {{font-size:22px;}}
         }}
 
         h1, h2, h3, h4, h5 {{ color: {INK} !important; letter-spacing: 0 !important; }}

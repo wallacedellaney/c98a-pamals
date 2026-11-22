@@ -16,6 +16,8 @@ Redesenho visual completo em 2026-07-09:
   planilha) — mesma etapa do processo, nomes diferentes.
 """
 
+from html import escape
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -79,26 +81,24 @@ def _atualizar():
 
 def _indicadores(df, sufixo):
     total = len(df)
-    qtd_itens = df["qtd"].sum(skipna=True)
-    valor_total = df["valor_total"].sum(skipna=True)
+    valor_total = df["valor_total"].sum(min_count=1)
     empenhados = int(df["status_atual"].apply(lambda s: _eh_status(s, "Empenhado")).sum())
-    em_andamento = int(df["status_atual"].apply(_em_andamento).sum())
     pendencias = int(df["status_atual"].apply(eh_pendencia).sum())
-    cancelados = int(df["status_atual"].apply(lambda s: _eh_status(s, "Cancelado")).sum())
-    sem_previsao = int((df["situacao_previsao"] == "Sem data definida").sum())
 
-    st.markdown('<div class="pj-titulo-secao">Indicadores principais</div>', unsafe_allow_html=True)
     grade_indicadores([
         cartao_indicador("Requisições U8", total, None, "primary"),
-        cartao_indicador("Itens (quantidade)", int(qtd_itens) if pd.notna(qtd_itens) else 0, None, "primary"),
-        cartao_indicador("Valor total", moeda_compacta(valor_total), moeda_completa(valor_total), "primary"),
+        cartao_indicador("Valor total", moeda_compacta(valor_total) if pd.notna(valor_total) else "—",
+                        moeda_completa(valor_total) if pd.notna(valor_total) else None, "primary"),
         cartao_indicador("Empenhados", empenhados, f"{100 * empenhados / total:.0f}% do total" if total else None, "good"),
-        cartao_indicador("Em andamento", em_andamento, None, "info"),
-        cartao_indicador("Pendências", pendencias, "Ainda não concluídas" if pendencias else None, "warning"),
-        cartao_indicador("Cancelados", cancelados, None, "neutro"),
-        cartao_indicador("Sem previsão definida", sem_previsao, None, "neutro"),
+        cartao_indicador("Pendências", pendencias, None, "warning" if pendencias else "neutro"),
     ])
 
+
+def _outros_indicadores(df):
+    qtd_itens = df["qtd"].sum(skipna=True)
+    em_andamento = int(df["status_atual"].apply(_em_andamento).sum())
+    cancelados = int(df["status_atual"].apply(lambda s: _eh_status(s, "Cancelado")).sum())
+    sem_previsao = int((df["situacao_previsao"] == "Sem data definida").sum())
     with st.expander("Outros indicadores"):
         empenho_solicitado = int(df["status_atual"].apply(lambda s: _eh_status(s, "Empenho Solicitado")).sum())
         empenho_aprovado = int(df["status_atual"].apply(lambda s: _eh_status(s, "Empenho Aprovado")).sum())
@@ -110,6 +110,10 @@ def _indicadores(df, sufixo):
         sem_observacao = int(df["observacao_coordenadores"].isna().sum())
 
         grade_indicadores([
+            cartao_indicador("Itens (quantidade)", int(qtd_itens) if pd.notna(qtd_itens) else 0, None, "primary"),
+            cartao_indicador("Em andamento", em_andamento, None, "info"),
+            cartao_indicador("Cancelados", cancelados, None, "neutro"),
+            cartao_indicador("Sem previsão definida", sem_previsao, None, "neutro"),
             cartao_indicador("Empenho solicitado", empenho_solicitado, None, "info"),
             cartao_indicador("Empenho aprovado", empenho_aprovado, None, "info"),
             cartao_indicador("Em cotação", em_cotacao, None, "info"),
@@ -122,48 +126,42 @@ def _indicadores(df, sufixo):
 
 
 def _situacao_do_processo(df, sufixo):
-    st.markdown('<div class="pj-titulo-secao">Situação do processo</div>', unsafe_allow_html=True)
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.caption("Distribuição por Status atual (quantidade)")
-        contagem = df["status_atual"].value_counts().reset_index()
-        contagem.columns = ["status_atual", "quantidade"]
-        contagem = contagem.sort_values("quantidade", ascending=False)
-        if len(contagem) > 8:
-            principais = contagem.iloc[:8]
-            outros = pd.DataFrame([{"status_atual": "Outros", "quantidade": contagem.iloc[8:]["quantidade"].sum()}])
-            contagem = pd.concat([principais, outros], ignore_index=True)
-        contagem = contagem.sort_values("quantidade")
-        fig = px.bar(contagem, x="quantidade", y="status_atual", orientation="h",
-                     color_discrete_sequence=[CATEGORICA[0]])
-        fig.update_traces(text=contagem["quantidade"], textposition="outside", cliponaxis=False)
-        fig.update_layout(xaxis_title="", yaxis_title="", yaxis={"type": "category"})
-        layout_grafico(fig, altura=360)
-        st.plotly_chart(fig, width="stretch", key=f"tpjl_situacao_qtd_{sufixo}")
-
-    with col2:
-        st.caption("Valores por situação (participação no total)")
-        agrupado = df.groupby("status_atual")["valor_total"].sum(min_count=1).reset_index()
-        agrupado = agrupado.sort_values("valor_total", ascending=False)
-        if len(agrupado) > 8:
-            principais = agrupado.iloc[:8]
-            outros = pd.DataFrame([{"status_atual": "Outros", "valor_total": agrupado.iloc[8:]["valor_total"].sum()}])
-            agrupado = pd.concat([principais, outros], ignore_index=True)
-        fig = px.treemap(agrupado, path=["status_atual"], values="valor_total",
-                          color_discrete_sequence=CATEGORICA)
-        fig.update_traces(
-            texttemplate="%{label}<br>%{customdata[0]}",
-            customdata=[[moeda_compacta(v)] for v in agrupado["valor_total"]],
-        )
-        layout_grafico(fig, altura=360)
-        st.plotly_chart(fig, width="stretch", key=f"tpjl_situacao_valor_{sufixo}")
+    titulo, controle = st.columns([2, 1], vertical_alignment="center")
+    titulo.subheader("Situação das requisições", anchor=False)
+    moeda = controle.toggle("Mostrar valores em R$", key=f"tpjl_moeda_{sufixo}")
+    medida = "Valor total" if moeda else "Requisições"
+    situacoes = df["status_atual"].astype("string").fillna("Sem informação")
+    grupos = df.groupby(situacoes)["valor_total"]
+    serie = grupos.size() if medida == "Requisições" else grupos.sum(min_count=1).dropna()
+    if serie.empty:
+        st.info("Nenhum valor informado para a seleção.")
+        return
+    serie = serie.sort_values(ascending=False, kind="stable")
+    quadro = serie.rename_axis("Situação").reset_index(name="Medida")
+    if len(quadro) > 8:
+        restante = quadro.iloc[8:]["Medida"].sum()
+        residuo = "Demais situações"
+        while residuo in set(quadro.iloc[:8]["Situação"]):
+            residuo += " (agrupadas)"
+        quadro = pd.concat([quadro.iloc[:8], pd.DataFrame({"Situação": [residuo], "Medida": [restante]})],
+                           ignore_index=True)
+    quadro["Rótulo"] = quadro["Medida"].map(moeda_compacta if moeda else str)
+    quadro["Detalhe"] = quadro["Medida"].map(moeda_completa if moeda else str)
+    total = serie.sum()
+    quadro["Participação"] = (quadro["Medida"] / total).map(lambda v: f"{v:.1%}".replace(".", ",")) if total else "—"
+    fig = px.bar(quadro, x="Medida", y="Situação", orientation="h", text="Rótulo",
+                 custom_data=["Detalhe", "Participação"], color_discrete_sequence=[CATEGORICA[0]])
+    fig.update_traces(textposition="auto", hovertemplate="%{y}<br>" + medida
+                      + ": %{customdata[0]}<br>Participação: %{customdata[1]}<extra></extra>")
+    fig.update_yaxes(type="category", categoryorder="array", categoryarray=quadro["Situação"].tolist()[::-1])
+    fig.update_layout(xaxis_title="Valor total (R$)" if moeda else "Requisições", yaxis_title="", showlegend=False)
+    layout_grafico(fig, altura=max(245, 95 + 32 * len(quadro)))
+    st.plotly_chart(fig, width="stretch", key=f"tpjl_situacao_{sufixo}")
 
 
 def _distribuicao_etapa_processo(df, sufixo):
     st.markdown('<div class="pj-titulo-secao">Distribuição por etapa do processo</div>', unsafe_allow_html=True)
-    st.caption("Quantidade, participação e valor por etapa — não representa uma conversão sequencial garantida, "
-               "já que nem todo status da planilha permite identificar a etapa anterior.")
+    st.caption("Cada requisição aparece na sua etapa identificada. A participação usa o total da seleção.")
 
     total = len(df)
     linhas = []
@@ -179,10 +177,12 @@ def _distribuicao_etapa_processo(df, sufixo):
         return
 
     tabela = pd.DataFrame(linhas)
-    fig = px.bar(tabela, x="quantidade", y="etapa", orientation="h", color_discrete_sequence=[AMBER])
+    tabela["valor_exibido"] = tabela["valor"].map(moeda_completa)
+    fig = px.bar(tabela, x="quantidade", y="etapa", orientation="h", text="quantidade",
+                 custom_data=["pct", "valor_exibido"], color_discrete_sequence=[AMBER])
     fig.update_traces(
-        text=[f"{q} ({p:.0f}%) · {moeda_compacta(v)}" for q, p, v in zip(tabela["quantidade"], tabela["pct"], tabela["valor"])],
-        textposition="outside", cliponaxis=False,
+        textposition="auto",
+        hovertemplate="%{y}<br>Requisições: %{x}<br>Participação: %{customdata[0]:.1f}%<br>Valor: %{customdata[1]}<extra></extra>",
     )
     fig.update_layout(
         xaxis_title="", yaxis_title="",
@@ -200,10 +200,12 @@ def _analise_previsoes(df, sufixo):
         st.caption("Distribuição por situação da previsão")
         contagem = df["situacao_previsao"].value_counts().reset_index()
         contagem.columns = ["situacao", "quantidade"]
-        cores = {s: STATUS.get(COR_SITUACAO_PREVISAO.get(s, "neutro"), SECONDARY) for s in contagem["situacao"]}
-        fig = px.bar(contagem, x="situacao", y="quantidade", color="situacao", color_discrete_map=cores)
-        fig.update_traces(text=contagem["quantidade"], textposition="outside", cliponaxis=False)
-        fig.update_layout(xaxis_title="", yaxis_title="", showlegend=False)
+        cores = {s: COR_SITUACAO_PREVISAO.get(s, STATUS["neutro"]) for s in contagem["situacao"]}
+        fig = px.bar(contagem, x="quantidade", y="situacao", orientation="h", text="quantidade",
+                     color="situacao", color_discrete_map=cores)
+        fig.update_traces(textposition="auto", hovertemplate="%{y}<br>Requisições: %{x}<extra></extra>")
+        fig.update_yaxes(categoryorder="array", categoryarray=contagem["situacao"].tolist()[::-1])
+        fig.update_layout(xaxis_title="Requisições", yaxis_title="", showlegend=False)
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch", key=f"tpjl_previsao_{sufixo}")
 
@@ -219,6 +221,11 @@ def _analise_previsoes(df, sufixo):
             st.dataframe(resumo, hide_index=True, width="stretch", height=220)
 
 
+def _limpar_filtros(sufixo):
+    for campo in ("status_atual", "situacao", "mes", "busca"):
+        st.session_state[f"tpjl_f_{campo}_{sufixo}"] = "" if campo == "busca" else []
+
+
 def _filtros(df, sufixo):
     c1, c2, c3, c4 = st.columns(4)
     with c1:
@@ -229,13 +236,9 @@ def _filtros(df, sufixo):
         meses = sorted(df["previsao_empenho"].dropna().dt.to_period("M").astype(str).unique())
         mes_f = st.multiselect("Previsão por mês", meses, key=f"tpjl_f_mes_{sufixo}")
     with c4:
-        busca = st.text_input("🔎 Busca (Nº requisição, PN, Descrição)", key=f"tpjl_f_busca_{sufixo}")
+        busca = st.text_input("Buscar requisição, PN ou descrição", key=f"tpjl_f_busca_{sufixo}")
 
-    limpar = st.button("Limpar filtros", key=f"tpjl_f_limpar_{sufixo}")
-    if limpar:
-        for chave in (f"tpjl_f_status_atual_{sufixo}", f"tpjl_f_situacao_{sufixo}", f"tpjl_f_mes_{sufixo}", f"tpjl_f_busca_{sufixo}"):
-            st.session_state.pop(chave, None)
-        st.rerun()
+    st.button("Limpar filtros", key=f"tpjl_f_limpar_{sufixo}", on_click=_limpar_filtros, args=(sufixo,))
 
     filtrado = df.copy()
     if status_atual_f:
@@ -247,11 +250,10 @@ def _filtros(df, sufixo):
     if busca:
         b = busca.strip().lower()
         filtrado = filtrado[
-            filtrado["numero_requisicao"].astype(str).str.lower().str.contains(b, na=False)
-            | filtrado["pn"].astype(str).str.lower().str.contains(b, na=False)
-            | filtrado["descricao"].astype(str).str.lower().str.contains(b, na=False)
+            filtrado["numero_requisicao"].astype(str).str.lower().str.contains(b, na=False, regex=False)
+            | filtrado["pn"].astype(str).str.lower().str.contains(b, na=False, regex=False)
+            | filtrado["descricao"].astype(str).str.lower().str.contains(b, na=False, regex=False)
         ]
-    st.caption(f"Exibindo {len(filtrado)} de {len(df)} requisições")
     return filtrado
 
 
@@ -259,7 +261,7 @@ def _painel_detalhe(registro, sufixo):
     linhas_html = []
     for campo, rotulo in NOMES_COLUNAS.items():
         valor = registro.get(campo)
-        vazio = valor is None or (isinstance(valor, (float, pd.Timestamp)) and pd.isna(valor))
+        vazio = pd.isna(valor)
         if vazio:
             texto = "Não informado"
         elif campo in ("valor_unit", "valor_total"):
@@ -270,14 +272,14 @@ def _painel_detalhe(registro, sufixo):
             texto = str(valor)
         linhas_html.append(
             f'<div style="font-size:13.5px;color:{SECONDARY};margin-bottom:6px;">'
-            f'<strong style="color:{INK};">{rotulo}:</strong> {texto}</div>'
+            f'<strong style="color:{INK};">{rotulo}:</strong> {escape(texto)}</div>'
         )
     metade = (len(linhas_html) + 1) // 2
     st.markdown(
         f"""<div style="background:{PANEL};border:1px solid {LINE};border-left:3px solid {AMBER};
         border-radius:10px;padding:16px 18px;margin-top:10px;">
             <div style="font-weight:700;color:{INK};margin-bottom:10px;font-size:15px;">
-                Detalhe — Requisição {registro.get('numero_requisicao', 'Não informado')}
+                Detalhe — Requisição {escape(str(registro.get('numero_requisicao', 'Não informado')))}
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
                 <div>{"".join(linhas_html[:metade])}</div>
@@ -288,38 +290,43 @@ def _painel_detalhe(registro, sufixo):
     )
 
 
-def _pagina(df, sufixo, historico=None):
-    if df is None or df.empty:
-        st.info(f"Sem requisições U8 encontradas.")
-        return
-
-    _indicadores(df, sufixo)
-    st.divider()
-    _situacao_do_processo(df, sufixo)
-    st.divider()
-    _distribuicao_etapa_processo(df, sufixo)
-    st.divider()
-    _analise_previsoes(df, sufixo)
-    st.divider()
-
-    st.markdown('<div class="pj-titulo-secao">Filtros</div>', unsafe_allow_html=True)
-    filtrado = _filtros(df, sufixo)
-
-    st.markdown('<div class="pj-titulo-secao">Tabela operacional</div>', unsafe_allow_html=True)
+def _registros(filtrado, sufixo):
     tabela = filtrado[COLUNAS_TABELA].rename(columns=NOMES_COLUNAS)
     evento = st.dataframe(
         tabela, hide_index=True, width="stretch", height=420,
         on_select="rerun", selection_mode="single-row", key=f"tpjl_tabela_{sufixo}",
     )
     linhas_selecionadas = evento.selection.get("rows", []) if evento else []
-    if linhas_selecionadas:
+    if linhas_selecionadas and 0 <= linhas_selecionadas[0] < len(filtrado):
         registro = filtrado.iloc[linhas_selecionadas[0]].to_dict()
         _painel_detalhe(registro, sufixo)
 
     csv = tabela.to_csv(index=False).encode("utf-8")
     st.download_button("⬇️ Exportar (CSV)", csv, file_name=f"tpjl_{sufixo}.csv", mime="text/csv", key=f"tpjl_csv_{sufixo}")
 
-    st.divider()
+
+
+def _pagina(df, sufixo, historico=None):
+    if df is None or df.empty:
+        st.info("Sem requisições U8 neste ano.")
+        return
+    with st.expander("Filtros da consulta"):
+        filtrado = _filtros(df, sufixo)
+    st.caption(f"{sufixo} · {len(filtrado)} de {len(df)} requisições")
+    if not filtrado.empty:
+        _indicadores(filtrado, sufixo)
+    vista = st.segmented_control("Visualização CABW", ("Situação", "Etapas", "Previsões", "Registros", "Histórico do ano"),
+                                default="Situação", required=True, label_visibility="collapsed", key=f"tpjl_vista_{sufixo}")
+    if vista != "Histórico do ano":
+        if filtrado.empty:
+            st.info("Nenhuma requisição corresponde aos filtros selecionados.")
+        else:
+            renderizar = {"Situação": _situacao_do_processo, "Etapas": _distribuicao_etapa_processo,
+                          "Previsões": _analise_previsoes, "Registros": _registros}
+            renderizar[vista](filtrado, sufixo)
+            _outros_indicadores(filtrado)
+        return
+    st.caption(f"Comparação das extrações de {sufixo} para o conjunto completo do ano.")
     secao_evolucao(
         historico, chave=["ano", "numero_requisicao", "pn"], key_slider=f"tpjl_evolucao_slider_{sufixo}",
         colunas_exibir=["ano", "numero_requisicao", "pn", "status_atual", "valor_total", "situacao_previsao"],
@@ -333,21 +340,11 @@ def _pagina(df, sufixo, historico=None):
 def render(dados):
     estado_atual = dados.get("tpjl_estado", {})
 
-    col_titulo, col_botao = st.columns([4, 1])
-    with col_titulo:
-        cabecalho_pagina(
-            "TPJL — Controle CABW",
-            "Fontes: \"TPOB - Controle CABW 2025\" e \"TPOB - Controle CABW 2026\", aba \"COORDENADORES\"",
-            "Projeto: U8",
-            status_atualizacao_html(estado_atual),
-        )
-    with col_botao:
-        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-        botao_atualizar("TPJL", _atualizar, key="tpjl_atualizar")
-
+    st.title("TPJL", anchor=False)
     cabw = "Controle CABW · 2025 e 2026"
     fontes = {fonte[0]: chave for chave, fonte in FONTES.items()}
-    topico = st.radio("Índice TPJL", ("Prioridades U8", cabw, *fontes), horizontal=True, key="tpjl_indice")
+    indice, periodo = st.columns([3, 1])
+    topico = indice.selectbox("Consulta TPJL", ("Prioridades U8", cabw, *fontes), key="tpjl_indice")
     if topico == "Prioridades U8":
         tpjl_v2.render_prioridades()
         return
@@ -356,8 +353,12 @@ def render(dados):
         return
 
     dados_por_ano = dados.get("tpjl") or {}
-    ano = st.radio("Ano do Controle CABW", (2025, 2026), index=1, horizontal=True, key="tpjl_ano")
+    ano = periodo.radio("Ano do Controle CABW", (2025, 2026), index=1, horizontal=True, key="tpjl_ano")
     historico = dados.get("tpjl_historico")
     if historico is not None and not historico.empty:
         historico = historico.loc[historico["ano"].astype(str).eq(str(ano))]
     _pagina(dados_por_ano.get(ano), str(ano), historico=historico)
+    with st.expander("Fonte e atualização do Controle CABW"):
+        cabecalho_pagina("Controle CABW", "TPOB 2025 e 2026 · aba COORDENADORES", "Projeto U8",
+                         status_atualizacao_html(estado_atual))
+        botao_atualizar("TPJL", _atualizar, key="tpjl_atualizar")
