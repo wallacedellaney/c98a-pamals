@@ -60,28 +60,19 @@ def _triagem_consumo(consumo, estoque):
 
 
 def _barras(dados, grupo, valor, titulo, *, horizontal=False, selecionar=None):
-    st.markdown(f"**{titulo}**")
     if dados.empty:
-        st.caption("Sem registros para este gráfico.")
-        return []
+        return
     args = {"x": valor, "y": grupo, "orientation": "h"} if horizontal else {"x": grupo, "y": valor}
-    fig = px.bar(dados, **args, text=valor, color_discrete_sequence=[PRIMARY])
-    eixo_grupo, eixo_valor = ("%{y}", "%{x}") if horizontal else ("%{x}", "%{y}")
-    fig.update_traces(textposition="auto", hovertemplate=f"{eixo_grupo}<br>{valor}: {eixo_valor}<extra></extra>")
+    fig = px.bar(dados, **args, text_auto=True, title=titulo, color_discrete_sequence=[PRIMARY])
     if horizontal:
-        fig.update_yaxes(type="category", categoryorder="array", categoryarray=dados[grupo].tolist()[::-1])
-    else:
-        # Mantém a competência original no evento de seleção mesmo quando parece uma data.
-        fig.update_xaxes(type="category")
-    altura = min(660, max(245, 90 + 32 * len(dados))) if horizontal else 285
-    fig.update_layout(xaxis_title=valor if horizontal else "", yaxis_title="" if horizontal else valor)
-    layout_grafico(fig, altura=altura)
+        fig.update_yaxes(autorange="reversed")
+    layout_grafico(fig, altura=310)
     if selecionar:
         evento = st.plotly_chart(fig, width="stretch", key=selecionar,
                                  on_select="rerun", selection_mode="points")
         eixo = "y" if horizontal else "x"
         return [p[eixo] for p in evento.selection.points if eixo in p]
-    st.plotly_chart(fig, width="stretch", key=f"v2_barras_{grupo}_{titulo}")
+    st.plotly_chart(fig, width="stretch")
     return []
 
 
@@ -109,10 +100,9 @@ def _visuais(chave, df):
     elif chave == "estoque":
         pecas = df.drop_duplicates([*CHAVE_PECA, "Unidade", "Tipo de saldo"])
         contagem = pecas.groupby(["Unidade", "Tipo de saldo"]).size().reset_index(name="Pares PN/CFF")
-        st.markdown("**Peças distintas por unidade e tipo de saldo**")
         fig = px.bar(contagem, x="Unidade", y="Pares PN/CFF", color="Tipo de saldo", barmode="group",
-                     text="Pares PN/CFF", color_discrete_map=COR_TIPO_SALDO)
-        fig.update_layout(xaxis_title="", legend_title_text="")
+                     text_auto=True, color_discrete_map=COR_TIPO_SALDO,
+                     title="Peças distintas por unidade e tipo de saldo")
         st.plotly_chart(layout_grafico(fig, altura=310), width="stretch")
     else:
         status = "Status da requisição" if chave == "requisicoes" else "Status"
@@ -143,8 +133,7 @@ def _filtros(chave, df, obtido_em):
         coluna = DATAS[chave]
         datas = pd.to_datetime(df[coluna], errors="coerce").dt.date
         if datas.notna().any():
-            validas = datas.dropna()
-            limites = (validas.min(), validas.max())
+            limites = (datas.min(), datas.max())
             periodo = st.date_input(coluna, limites, min_value=limites[0], max_value=limites[1],
                                     format="DD/MM/YYYY", key=f"v2_periodo_{chave}")
             if len(periodo) == 2 and periodo != limites:
@@ -191,6 +180,7 @@ def _filtros(chave, df, obtido_em):
 
 
 def _tabela(df, chave):
+    st.metric("Registros", f"{len(df):,}".replace(",", "."))
     if df.empty:
         st.info("Nenhum registro para os filtros selecionados.")
         return
@@ -198,8 +188,6 @@ def _tabela(df, chave):
     pagina = st.number_input("Página", 1, paginas, 1, key=f"v2_pg_{chave}_{paginas}") if paginas > 1 else 1
     inicio = (pagina - 1) * TAMANHO_PAGINA
     lote = df.iloc[inicio:inicio + TAMANHO_PAGINA]
-    fim = inicio + len(lote)
-    st.caption(f"Registros {inicio + 1:,} a {fim:,} de {len(df):,}".replace(",", "."))
     evento = st.dataframe(lote, hide_index=True, width="stretch", on_select="rerun",
                           selection_mode="single-row", key=f"v2_tabela_{chave}_{pagina}")
     if evento.selection.rows and evento.selection.rows[0] < len(lote):
@@ -278,6 +266,10 @@ def _historico_peca(pn, cff):
         st.dataframe(tabela, hide_index=True, width="stretch")
 
 
+def _selecionar_lista(rotulo):
+    st.session_state["v2_prioridades_lista"] = rotulo
+
+
 def render_prioridades():
     st.subheader("Prioridades U8")
     fontes = {k: rel for k in FONTES if (rel := _fonte(k)) is not None}
@@ -309,10 +301,14 @@ def render_prioridades():
     if listas:
         st.subheader("Listas de triagem")
         st.caption("Os registros incluem os códigos de status de origem. Compare-os antes de usar a lista para cobrança.")
+        itens = list(listas.items())
+        for i in range(0, len(itens), 2):
+            for col, (rotulo, registros) in zip(st.columns(2), itens[i:i + 2]):
+                col.metric(rotulo, len(registros))
+                col.button("Abrir lista", key=f"v2_triagem_{rotulo}", on_click=_selecionar_lista, args=(rotulo,))
         if st.session_state.get("v2_prioridades_lista") not in listas:
             st.session_state["v2_prioridades_lista"] = next(iter(listas))
-        escolha = st.radio("Lista", list(listas), key="v2_prioridades_lista", label_visibility="collapsed",
-                          format_func=lambda nome: f"{nome} ({len(listas[nome]):,})".replace(",", "."))
+        escolha = st.radio("Lista", list(listas), key="v2_prioridades_lista")
         lista = listas[escolha]
         if "Situação no extrato" in lista:
             situacao = st.radio("Situação no extrato", ("Todas", *sorted(lista["Situação no extrato"].unique())),
@@ -325,17 +321,18 @@ def render_prioridades():
 def render(chave):
     titulo, pasta, _, _ = FONTES[chave]
     st.subheader(titulo)
+    st.caption("SILOMS · Projeto U8 · atualização mensal")
+    st.markdown(f"[Pasta da fonte no Drive](https://drive.google.com/drive/folders/{pasta})")
+    if st.button(f"Atualizar {titulo} pelo Drive", key=f"v2_sync_{chave}"):
+        try:
+            with st.spinner("Buscando e conferindo a exportação SILOMS…"):
+                drive_sync.garantir_credencial_arquivo()
+                sincronizar_fonte(chave)
+            st.success("Relatório atualizado.")
+        except (ValueError, OSError, drive_sync.DriveSyncError):
+            st.error("Falha na atualização. Verifique o acesso da conta de serviço e a exportação XLSX no Drive.")
+
     fonte = _fonte(chave)
-    with st.expander("Fonte SILOMS e atualização", expanded=fonte is None):
-        st.markdown(f"[Pasta da fonte no Drive](https://drive.google.com/drive/folders/{pasta})")
-        if st.button(f"Atualizar {titulo} pelo Drive", key=f"v2_sync_{chave}"):
-            try:
-                with st.spinner("Buscando e conferindo a exportação SILOMS…"):
-                    drive_sync.garantir_credencial_arquivo()
-                    sincronizar_fonte(chave)
-                st.success("Relatório atualizado.")
-            except (ValueError, OSError, drive_sync.DriveSyncError):
-                st.error("Falha na atualização. Verifique o acesso da conta de serviço e a exportação XLSX no Drive.")
     if fonte is None:
         st.info("Carregue um relatório válido pelo botão de atualização.")
         return
@@ -349,23 +346,18 @@ def render(chave):
     busca = st.text_input("Buscar por PN, CFF, nomenclatura ou número", key=f"v2_busca_{chave}").strip()
     if busca:
         df = _buscar(df, busca)
-    with st.expander("Filtros do relatório"):
-        if chave == "consumo" and not df.empty:
-            if st.checkbox("Peças com consumo em pelo menos duas competências", key="v2_consumo_recorrente"):
-                frequencia = df.loc[df["Consumo"].gt(0)].groupby(CHAVE_PECA)["Competência"].nunique()
-                recorrentes = frequencia[frequencia.ge(2)].reset_index()[CHAVE_PECA]
-                df = df.merge(recorrentes, on=CHAVE_PECA)
-        if not df.empty:
-            df = _filtros(chave, df, obtido_em)
-        if chave == "estoque":
-            consumo = _fonte("consumo")
-            if consumo is not None and st.checkbox("Com consumo na base disponível", key="v2_estoque_consumo"):
-                df = df.merge(consumo[0][CHAVE_PECA].drop_duplicates(), on=CHAVE_PECA)
-    if df.empty:
-        st.info("Nenhum registro corresponde à busca e aos filtros.")
-        return
-    graficos, registros = st.tabs(["Gráficos", "Registros"])
-    with graficos:
-        df = _visuais(chave, df)
-    with registros:
-        _tabela(df, chave)
+    if chave == "consumo" and not df.empty:
+        if st.checkbox("Peças com consumo em pelo menos duas competências", key="v2_consumo_recorrente"):
+            frequencia = df.loc[df["Consumo"].gt(0)].groupby(CHAVE_PECA)["Competência"].nunique()
+            recorrentes = frequencia[frequencia.ge(2)].reset_index()[CHAVE_PECA]
+            df = df.merge(recorrentes, on=CHAVE_PECA)
+    if not df.empty:
+        df = _filtros(chave, df, obtido_em)
+    if chave == "estoque":
+        consumo = _fonte("consumo")
+        if consumo is not None and st.checkbox("Com consumo na base disponível", key="v2_estoque_consumo"):
+            df = df.merge(consumo[0][CHAVE_PECA].drop_duplicates(), on=CHAVE_PECA)
+    if not df.empty:
+        with st.expander("Gráficos da seleção", expanded=True):
+            df = _visuais(chave, df)
+    _tabela(df, chave)

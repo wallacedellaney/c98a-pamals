@@ -7,8 +7,6 @@ amber/cyan = cor de marca (nunca usar como status).
 good/critical = cor de status (nunca usar como série qualquer).
 """
 
-from shared.graficos import acabamento
-
 BG = "#10151b"
 PANEL = "#161d24"
 INK = "#eef2f4"
@@ -40,7 +38,7 @@ def layout_grafico(fig, altura=260):
     )
     fig.update_xaxes(gridcolor=LINE, zerolinecolor=LINE, color=SECONDARY)
     fig.update_yaxes(gridcolor=LINE, zerolinecolor=LINE, color=SECONDARY)
-    return acabamento(fig)
+    return fig
 
 
 def faixa_pendencia(soma_unidades_faltantes):

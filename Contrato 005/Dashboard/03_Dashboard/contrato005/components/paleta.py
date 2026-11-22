@@ -21,8 +21,6 @@ que precisa de cor semântica usa HTML puro, não `st.metric()`.
 
 import streamlit as st
 
-from shared.graficos import acabamento
-
 BG = "#10151b"
 PANEL = "#161d24"
 INK = "#eef2f4"
@@ -64,7 +62,7 @@ def layout_grafico(fig, altura=200):
     )
     fig.update_xaxes(gridcolor=LINE, zerolinecolor=LINE, color=SECONDARY)
     fig.update_yaxes(gridcolor=LINE, zerolinecolor=LINE, color=SECONDARY)
-    return acabamento(fig)
+    return fig
 
 
 def metrica_html(col, label, valor, cor=None, tamanho="2rem"):

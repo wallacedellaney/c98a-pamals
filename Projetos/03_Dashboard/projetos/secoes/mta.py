@@ -110,11 +110,9 @@ def _categoria_destinacao(row):
     return "Sem categoria"
 
 
-def _rotular_barras(fig):
-    for serie in fig.data:
-        valores = serie.x if serie.orientation == "h" else serie.y
-        serie.update(text=[moeda_compacta(v) for v in valores], texttemplate="%{text}",
-                     textposition="auto")
+def _rotular_barras(fig, valores):
+    fig.update_traces(text=[moeda_compacta(v) for v in valores], texttemplate="%{text}",
+                       textposition="outside", cliponaxis=False)
     return fig
 
 
@@ -595,7 +593,7 @@ def _analise_mensal_tgco(df):
             agrupado = serie.groupby("mes")["valor"].sum(min_count=1).reset_index().sort_values("mes")
             agrupado["mes_label"] = agrupado["mes"].apply(_mes_ano)
             fig = px.bar(agrupado, x="mes_label", y="valor", color_discrete_sequence=[AMBER])
-            _rotular_barras(fig)
+            _rotular_barras(fig, agrupado["valor"])
             fig.update_layout(xaxis_title="", yaxis_title="")
             layout_grafico(fig, altura=320)
             st.plotly_chart(fig, width="stretch")
@@ -606,7 +604,7 @@ def _analise_mensal_tgco(df):
     resumo["_ordem"] = resumo["grupo_estrategico"].map(ordem).fillna(999)
     resumo = resumo.sort_values("_ordem")
     fig = px.bar(resumo, x="grupo_estrategico", y="valor", color_discrete_sequence=[CATEGORICA[1]])
-    _rotular_barras(fig)
+    _rotular_barras(fig, resumo["valor"])
     fig.update_layout(xaxis_title="", yaxis_title="")
     layout_grafico(fig, altura=320)
     st.plotly_chart(fig, width="stretch")
@@ -635,7 +633,7 @@ def _disponivel_por_mes(df):
     col1, col2 = st.columns([2, 1])
     with col1:
         fig = px.bar(resumo, x="rotulo_mes", y="valor", color_discrete_sequence=[STATUS["info"]])
-        _rotular_barras(fig)
+        _rotular_barras(fig, resumo["valor"])
         fig.update_layout(xaxis_title="", yaxis_title="")
         layout_grafico(fig, altura=330)
         st.plotly_chart(fig, width="stretch")
@@ -716,7 +714,7 @@ def _situacao(df):
         cores = {s: COR_SITUACAO_MTA.get(s, STATUS["neutro"]) for s in contagem["situacao"]}
         fig = px.bar(contagem.sort_values("quantidade"), x="quantidade", y="situacao", orientation="h",
                      color="situacao", color_discrete_map=cores)
-        fig.update_traces(texttemplate="%{x}", textposition="auto")
+        fig.update_traces(text=contagem.sort_values("quantidade")["quantidade"], textposition="outside", cliponaxis=False)
         fig.update_layout(xaxis_title="", yaxis_title="", showlegend=False, yaxis={"type": "category"})
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch")
@@ -736,7 +734,7 @@ def _analise_financeira(df):
             agrupado = serie.groupby("mes")["valor"].sum(min_count=1).reset_index().sort_values("mes")
             agrupado["mes_label"] = agrupado["mes"].apply(_mes_ano)
             fig = px.bar(agrupado, x="mes_label", y="valor", color_discrete_sequence=[AMBER])
-            _rotular_barras(fig)
+            _rotular_barras(fig, agrupado["valor"])
             fig.update_layout(xaxis_title="", yaxis_title="")
             layout_grafico(fig, altura=340)
             st.plotly_chart(fig, width="stretch")
@@ -745,7 +743,7 @@ def _analise_financeira(df):
         st.caption("Valor por executora")
         agrupado = df.groupby("executora", dropna=True)["valor"].sum(min_count=1).reset_index().sort_values("valor", ascending=True)
         fig = px.bar(agrupado, x="valor", y="executora", orientation="h", color_discrete_sequence=[CATEGORICA[1]])
-        _rotular_barras(fig)
+        _rotular_barras(fig, agrupado["valor"])
         fig.update_layout(xaxis_title="", yaxis_title="", yaxis={"type": "category"})
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch")
@@ -755,7 +753,7 @@ def _analise_financeira(df):
         st.caption("Valor por pacote")
         agrupado = df.groupby("pacote", dropna=True)["valor"].sum(min_count=1).reset_index().sort_values("valor", ascending=True)
         fig = px.bar(agrupado, x="valor", y="pacote", orientation="h", color_discrete_sequence=[CATEGORICA[2]])
-        _rotular_barras(fig)
+        _rotular_barras(fig, agrupado["valor"])
         fig.update_layout(xaxis_title="", yaxis_title="", yaxis={"type": "category"})
         layout_grafico(fig, altura=340)
         st.plotly_chart(fig, width="stretch")
@@ -1212,9 +1210,8 @@ def _analise_saldo(df, dados):
                 color_discrete_map={"Positivo": STATUS["good"], "Negativo": STATUS["critical"]},
             )
             fig.add_hline(y=0, line_dash="dash", line_color=SECONDARY)
-            _rotular_barras(fig)
-            fig.update_xaxes(type="category", categoryorder="array", categoryarray=projecao["mes_label"].tolist())
-            fig.update_layout(xaxis_title="", yaxis_title="Saldo projetado (R$)", legend_title="", showlegend=False)
+            fig.update_traces(text=[moeda_compacta(v) for v in projecao["saldo_final"]], textposition="outside", cliponaxis=False)
+            fig.update_layout(xaxis_title="", yaxis_title="Saldo projetado", legend_title="", showlegend=False)
             layout_grafico(fig, altura=340)
             evento_proj = st.plotly_chart(
                 fig, width="stretch", key="mta_projecao_chart", on_select="rerun", selection_mode="points"
@@ -1252,7 +1249,7 @@ def _analise_saldo(df, dados):
                 st.caption("Valor por parcela, colorido por situação")
                 cores = {s: COR_SITUACAO_MTA.get(s, STATUS["neutro"]) for s in ordenado["situacao_consolidada"].unique()}
                 fig = px.bar(ordenado, x="parcela", y="valor", color="situacao_consolidada", color_discrete_map=cores)
-                _rotular_barras(fig)
+                _rotular_barras(fig, ordenado["valor"])
                 fig.update_layout(xaxis_title="Parcela", yaxis_title="", legend_title="")
                 layout_grafico(fig, altura=340)
                 st.plotly_chart(fig, width="stretch")
