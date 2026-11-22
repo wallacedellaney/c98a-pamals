@@ -82,8 +82,8 @@ def render(dados):
     st.markdown(
         f"""<div style="margin-bottom:20px;">
             <div class="pj-titulo-pagina">Acompanhamento de Projetos</div>
-            <div class="pj-subtitulo-pagina">Solicitações do MTA (DIRMAB) e Controle CABW, consumo, estoque, requisições emitidas, pedidos de suprimento e
-            ordens de serviço do TPJL (CABW/EUA) — filtradas pro C-98/U8.
+            <div class="pj-subtitulo-pagina">Solicitações do MTA (DIRMAB) e requisições, consumo, estoque e
+            solicitações do TPJL (CABW/EUA) — filtradas pro C-98/U8.
             Última atualização geral: {ultima_texto}.</div>
         </div>""",
         unsafe_allow_html=True,

@@ -3,37 +3,6 @@
 Especificação completa dada pelo Wallace em 2026-07-09. Ver `Projetos/CLAUDE.md`
 para status de implementação. Nome exibido no site: "TPJL — Controle CABW".
 
-## Índice e atualização mensal (18/11/2026)
-
-No índice da TPJL, **Controle CABW · 2025 e 2026** reúne os dois anos com
-seletor interno. As bases continuam separadas. A comparação entre os anos
-saiu da navegação. A evolução histórica de cada ano continua no painel CABW.
-
-Os cinco tópicos SILOMS usam as exportações U8 do
-[V2 TPLJ](https://drive.google.com/drive/folders/1uX2LOwZw4zO0PpStD4G6u_SCIjYTZPsZ):
-Consumo, Estoque, Requisições emitidas, Pedidos de suprimento e Ordens de
-serviço. A cada mês, suba a exportação acumulada do ano na pasta da fonte e
-clique em **Atualizar … pelo Drive** no tópico correspondente. Estoque é uma
-posição de uma data. O site escolhe o carimbo mais recente do nome em cada
-pasta e nas suas subpastas, sem somar exportações acumuladas sobrepostas.
-O cabeçalho da planilha informa o período e a data da extração.
-
-As cópias locais em `01_Bases_Originais/TPJL_V2/` são ignoradas pelo Git.
-Em um ambiente sem essas cópias, use o botão de cada tópico para carregar
-as fontes. As seções abaixo descrevem o histórico da implementação.
-
-### Consulta operacional U8
-
-Prioridades U8 reúne a ficha por PN e CFF e as listas de triagem. Os filtros
-de status usam os códigos originais do SILOMS. As listas por quantidade,
-prioridade e data apoiam a conferência e dependem de validação dos códigos
-para classificar pendências e cobranças.
-
-Cada atualização válida guarda a última extração do mês em
-`01_Bases_Originais/TPJL_V2/historico/`. A ficha exibe essas posições.
-A série começa na primeira extração arquivada em cada instalação. A
-posição de estoque fornece saldo observado na data do relatório.
-
 ## Fontes
 
 - "TPOB - Controle CABW 2025" (`1zkBB77PXvzRTg-8n-tgNAYX8lJB8KozPvuyGiNtARsA`)

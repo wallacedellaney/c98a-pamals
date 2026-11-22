@@ -1,5 +1,7 @@
 """Dashboard do projeto TPJL — Controle CABW, filtrado por PJT = U8.
-2025 e 2026 ficam em um único tópico de navegação com seleção de ano.
+2025 e 2026 ficam separados (decisão do Wallace em 2026-07-09 — não fundir
+os anos), com uma 4ª aba "Visão consolidada" combinando os dois. Ver
+00_Instrucoes/tpjl.md.
 
 Redesenho visual completo em 2026-07-09:
 - "Registros vencidos por situação" tinha um bug de rótulo: mostrava TODAS
@@ -16,6 +18,8 @@ Redesenho visual completo em 2026-07-09:
   planilha) — mesma etapa do processo, nomes diferentes.
 """
 
+from datetime import datetime
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -28,8 +32,7 @@ from projetos.components.paleta import (
     cabecalho_pagina, cartao_indicador, grade_indicadores, layout_grafico, moeda_compacta, moeda_completa,
 )
 from projetos.regras.tpjl_regras import eh_pendencia, normalizar
-from projetos.data.tpjl_v2 import FONTES
-from projetos.secoes import tpjl_v2
+from projetos.secoes import tpjl_extras
 
 COLUNAS_TABELA = [
     "numero_requisicao", "pn", "descricao", "qtd", "valor_unit", "valor_total",
@@ -75,6 +78,15 @@ def _em_andamento(status_atual_valor):
 def _atualizar():
     from projetos.data.atualizar_drive import atualizar_fonte
     return atualizar_fonte("tpjl")
+
+
+def _concatenar(dados_por_ano):
+    partes = []
+    for ano, df in dados_por_ano.items():
+        parte = df.copy()
+        parte["ano"] = ano
+        partes.append(parte)
+    return pd.concat(partes, ignore_index=True)
 
 
 def _indicadores(df, sufixo):
@@ -330,6 +342,48 @@ def _pagina(df, sufixo, historico=None):
     )
 
 
+def _comparativo(dados_por_ano):
+    resumo = {}
+    for ano, df in dados_por_ano.items():
+        resumo[ano] = {
+            "total": len(df),
+            "valor_total": df["valor_total"].sum(skipna=True),
+            "qtd_itens": df["qtd"].sum(skipna=True),
+        }
+
+    st.markdown('<div class="pj-titulo-secao">Indicadores por ano</div>', unsafe_allow_html=True)
+    cards = []
+    for ano, r in resumo.items():
+        cards.append(cartao_indicador(f"Requisições U8 — {ano}", r["total"], None, "primary"))
+        cards.append(cartao_indicador(f"Valor total — {ano}", moeda_compacta(r["valor_total"]), moeda_completa(r["valor_total"]), "info"))
+    grade_indicadores(cards)
+
+    st.divider()
+    col1, col2 = st.columns(2)
+    with col1:
+        st.caption("Valor total por ano")
+        tabela = pd.DataFrame({"ano": [str(a) for a in resumo.keys()], "valor_total": [r["valor_total"] for r in resumo.values()]})
+        fig = px.bar(tabela, x="ano", y="valor_total", color_discrete_sequence=[AMBER])
+        _rotular_barras(fig, tabela["valor_total"])
+        fig.update_layout(xaxis_title="", yaxis_title="", xaxis={"type": "category"})
+        layout_grafico(fig, altura=340)
+        st.plotly_chart(fig, width="stretch", key="tpjl_comp_valor_ano")
+
+    with col2:
+        st.caption("Comparação 2025 x 2026 — valor por Status atual")
+        partes = []
+        for ano, df in dados_por_ano.items():
+            agrupado = df.groupby("status_atual")["valor_total"].sum(min_count=1).reset_index()
+            agrupado["ano"] = str(ano)
+            partes.append(agrupado)
+        junto = pd.concat(partes, ignore_index=True)
+        fig = px.bar(junto, x="status_atual", y="valor_total", color="ano", barmode="group",
+                     color_discrete_sequence=[AMBER, STATUS["info"]])
+        fig.update_layout(xaxis_title="", yaxis_title="", legend_title="")
+        layout_grafico(fig, altura=340)
+        st.plotly_chart(fig, width="stretch", key="tpjl_comp_status")
+
+
 def render(dados):
     estado_atual = dados.get("tpjl_estado", {})
 
@@ -345,19 +399,31 @@ def render(dados):
         st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
         botao_atualizar("TPJL", _atualizar, key="tpjl_atualizar")
 
-    cabw = "Controle CABW · 2025 e 2026"
-    fontes = {fonte[0]: chave for chave, fonte in FONTES.items()}
-    topico = st.radio("Índice TPJL", ("Prioridades U8", cabw, *fontes), horizontal=True, key="tpjl_indice")
-    if topico == "Prioridades U8":
-        tpjl_v2.render_prioridades()
-        return
-    if topico in fontes:
-        tpjl_v2.render(fontes[topico])
+    dados_por_ano = dados.get("tpjl")
+    if not dados_por_ano:
+        st.info("Ainda não foi carregado — clique em \"Atualizar TPJL\" acima.")
         return
 
-    dados_por_ano = dados.get("tpjl") or {}
-    ano = st.radio("Ano do Controle CABW", (2025, 2026), index=1, horizontal=True, key="tpjl_ano")
     historico = dados.get("tpjl_historico")
-    if historico is not None and not historico.empty:
-        historico = historico.loc[historico["ano"].astype(str).eq(str(ano))]
-    _pagina(dados_por_ano.get(ano), str(ano), historico=historico)
+
+    (aba_consolidada, aba_2025, aba_2026, aba_comparativo,
+     aba_consumo, aba_estoque, aba_solicitacoes) = st.tabs([
+        "Visão consolidada", "2025", "2026", "Comparativo",
+        "Consumo", "Estoque", "Solicitações",
+    ])
+    with aba_consolidada:
+        _pagina(_concatenar(dados_por_ano), "consolidado", historico=historico)
+    with aba_2025:
+        hist_2025 = historico[historico["ano"] == "2025"] if historico is not None and not historico.empty else historico
+        _pagina(dados_por_ano.get(2025), "2025", historico=hist_2025)
+    with aba_2026:
+        hist_2026 = historico[historico["ano"] == "2026"] if historico is not None and not historico.empty else historico
+        _pagina(dados_por_ano.get(2026), "2026", historico=hist_2026)
+    with aba_comparativo:
+        _comparativo(dados_por_ano)
+    with aba_consumo:
+        tpjl_extras.render_consumo(dados)
+    with aba_estoque:
+        tpjl_extras.render_estoque(dados)
+    with aba_solicitacoes:
+        tpjl_extras.render_solicitacoes(dados)

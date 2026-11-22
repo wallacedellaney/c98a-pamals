@@ -39,11 +39,11 @@ FONTES = [
         "_chave": "tpjl_atualizado_em",
     },
     {
-        "Informação": "TPJL — Consumo, Estoque, Requisições, Pedidos e OS",
-        "De onde vem": 'Exportações do SILOMS na pasta Drive "V2 TPLJ"',
-        "Como é atualizado": "Botão em cada tópico, após subir a nova exportação",
-        "Frequência": "Mensal",
-        "_chave": None,
+        "Informação": "TPJL — Consumo / Estoque / Solicitações",
+        "De onde vem": '3 arquivos na pasta Drive "Planilhas TPLJ"',
+        "Como é atualizado": "Botão no site (ainda sem compartilhamento configurado com a conta de serviço — busca real pendente)",
+        "Frequência": "Manual, por enquanto",
+        "_chave": "tpjl_extras_atualizado_em",
     },
 ]
 
