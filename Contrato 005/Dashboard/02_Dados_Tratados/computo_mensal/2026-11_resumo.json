@@ -32,8 +32,31 @@
     "2730",
     "2734"
   ],
-  "ultimo_dia_calculado": 23,
+  "ultimo_dia_calculado": 24,
   "ultimo_dia_mes": 30,
-  "mmam_previa": 79.97,
-  "inconsistencias": []
+  "mmam_previa": 78.89,
+  "inconsistencias": [
+    "Emergência 313250016529 (FAB 2732, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250016629 (FAB 2732, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250016949 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017116 (FAB 2732, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017117 (FAB 2732, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017120 (FAB 2732, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017309 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017347 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017348 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017349 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017350 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017351 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313250017352 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313260017606 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313260017612 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313260017681 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313260017685 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313260017686 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313260017700 (FAB 2732, AIFP): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313260017714 (FAB 2732, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313260017715 (FAB 2732, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente.",
+    "Emergência 313260017760 (FAB 2732, IPLR): campo 'Estoque' em branco — não negativada automaticamente, revisar manualmente."
+  ]
 }
