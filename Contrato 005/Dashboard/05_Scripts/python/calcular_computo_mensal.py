@@ -49,6 +49,12 @@ TIPOS_CONSIDERADOS = ("AIFP", "IPLR")
 # 17/11/2026, recebida pela VEE ONE em 18/11; cobertura a partir de
 # 19/11/2026 (pedido do Wallace, 18/11/2026). A classificação "dentro do
 # contrato" continua vindo do RAC; isto só limita os dias.
+# Emergências da aeronave abertas ANTES do início da cobertura não entram
+# no cômputo (nem negativam, nem viram inconsistência): só conta o que foi
+# aberto a partir da data (regra do Wallace, 25/11/2026 — caso real da
+# 313260018753, PASSENGER DOOR - LOW, aberta em 17/09/2026, que zerava o
+# 2732 de 19/11 em diante, e de 22 emergências antigas com Estoque em
+# branco que enchiam a lista de "revisar manualmente").
 INICIO_COBERTURA = {
     "2732": date(2026, 11, 19),
 }
@@ -57,6 +63,11 @@ INICIO_COBERTURA = {
 def _coberta(matricula, data_dia):
     inicio = INICIO_COBERTURA.get(str(matricula))
     return inicio is None or data_dia >= inicio
+
+
+def _aberta_antes_da_cobertura(matricula, data_abertura):
+    inicio = INICIO_COBERTURA.get(str(matricula))
+    return inicio is not None and pd.notna(data_abertura) and data_abertura < inicio
 
 # Termos que, aparecendo na observação da Coordenadoria (fiscal), indicam que
 # a emergência não deve negativar NENHUM dia (regra do Wallace, 2026-07-17:
@@ -166,6 +177,11 @@ def calcular_mes(ano, mes, hoje=None):
         matricula = row["matricula_aeronave"]
         if matricula not in pontuadas:
             continue  # só aeronaves dentro do contrato entram no cômputo
+
+        # Aeronave incluída no meio do contrato: só entram as emergências
+        # abertas a partir do início da cobertura (silencioso).
+        if _aberta_antes_da_cobertura(matricula, row["data_abertura"]):
+            continue
 
         # Comentário da Coordenadoria indica cancelamento pelo
         # operador/suprimentista/"não é mais necessário" — desconsidera a
