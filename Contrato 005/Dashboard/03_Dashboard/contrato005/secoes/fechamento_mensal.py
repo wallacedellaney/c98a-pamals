@@ -34,7 +34,7 @@ from contrato005.data.justificativas import carregar_justificativas, sincronizar
 from contrato005.components.exportar import gerar_pdf_bytes, gerar_xlsx_bytes
 from calcular_computo_mensal import (
     _tem_comentario_cancelamento, calcular_media_diaria_vee_one,
-    calcular_mes_retroativo, carregar_mes_retroativo,
+    calcular_mes_retroativo, carregar_mes_retroativo, carregar_projecao,
 )
 
 MESES_PT = [
@@ -856,6 +856,29 @@ def _computo_mensal(mes_escolhido):
         st.info("Ainda não foi calculado pra este mês — clique em \"Recalcular\".")
         return
 
+    # Previsão até o fim do mês (Wallace, 27/11/2026): "no fechamento deixa o
+    # do dia e cria um com a previsão, no site delas e no meu". Os dias já
+    # decorridos são os mesmos do oficial; os seguintes repetem as emergências
+    # como estão na última atualização da planilha de emergências (dias
+    # úteis). Entrega ou ajuste que ainda não foi lançado não entra.
+    df_projecao = carregar_projecao(mes_escolhido.year, mes_escolhido.month)
+    tem_previsao = (
+        df_projecao is not None and not df_projecao.empty
+        and resumo.get("mmam_projetada") is not None
+        and resumo["ultimo_dia_calculado"] < resumo.get("ultimo_dia_mes", resumo["ultimo_dia_calculado"])
+    )
+    visao = "Até hoje (oficial)"
+    if tem_previsao:
+        visao = st.radio(
+            "Visão da matriz e do gráfico",
+            ["Até hoje (oficial)", "Previsão até o fim do mês"],
+            horizontal=True, key="computo_visao",
+        )
+    em_previsao = visao.startswith("Previsão")
+    df_matriz_vis = (
+        df_projecao[["matricula", "dia", "fim_de_semana", "montada"]] if em_previsao else df_matriz
+    )
+
     # Calculado aqui em cima (não só lá embaixo no gráfico) pra alimentar
     # também o card pequeno "Média real VEE ONE" — pedido do Wallace,
     # 2026-08-14: "deixa pequeno lá nas informações a média montada do mês
@@ -892,7 +915,14 @@ def _computo_mensal(mes_escolhido):
     horas_no_mes, horas_intervalos = _horas_voadas_no_mes(mes_escolhido)
 
     c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("MMAM prévia (oficial)", f"{resumo['mmam_previa']}%" if resumo["mmam_previa"] is not None else "—")
+    with c1:
+        st.metric("MMAM prévia (oficial)", f"{resumo['mmam_previa']}%" if resumo["mmam_previa"] is not None else "—")
+        if tem_previsao:
+            st.markdown(
+                f'<div style="font-size:11px;color:{SECONDARY};margin-top:-8px;">'
+                f"Previsão até o fim do mês: {resumo['mmam_projetada']}%</div>",
+                unsafe_allow_html=True,
+            )
     with c2:
         st.metric("Média real VEE ONE", f"{mmam_vee_one}%" if mmam_vee_one is not None else "—")
         # Pedido do Wallace, 2026-08-14: "escreve entre parênteses ... e
@@ -913,6 +943,14 @@ def _computo_mensal(mes_escolhido):
             unsafe_allow_html=True,
         )
     st.info(AVISO_MMAM_PREVIA)
+    if em_previsao:
+        st.warning(
+            f"📈 **Previsão até o fim do mês: MMAM {resumo['mmam_projetada']}%.** Os dias 1 a "
+            f"{resumo['ultimo_dia_calculado']} são os do cômputo oficial; os dias seguintes (marcados com *) "
+            "repetem as emergências como estão na última atualização da planilha de emergências, que é "
+            "atualizada nos dias úteis. Entregas ou ajustes ainda não lançados não entram — é só uma "
+            "estimativa, refeita a cada atualização."
+        )
 
     if not horas_intervalos.empty:
         with st.expander("✈️ Horas voadas por intervalo (dia atual − relatório anterior)"):
@@ -973,7 +1011,7 @@ def _computo_mensal(mes_escolhido):
                 st.markdown(f"- {i}")
 
     st.markdown("##### Evolução da % de aeronaves montadas no mês")
-    media_diaria = df_matriz.dropna(subset=["montada"]).groupby("dia")["montada"].mean().mul(100).reset_index()
+    media_diaria = df_matriz_vis.dropna(subset=["montada"]).groupby("dia")["montada"].mean().mul(100).reset_index()
     # `media_vee_one` já foi calculado lá em cima (card "Média real VEE
     # ONE") — reaproveita, mesma linha 2 "real da VEE ONE" (sem estoque,
     # sem dia útil, desde a data de abertura). Ver `calcular_media_diaria_vee_one`.
@@ -1016,21 +1054,25 @@ def _computo_mensal(mes_escolhido):
         "Disponibilidade Diária entre um relatório e outro — célula em branco não significa 0 "
         "horas voadas, só que o lançamento daquele intervalo ainda não chegou/atrasou."
     )
-    pivot = df_matriz.pivot(index="matricula", columns="dia", values="montada")
+    pivot = df_matriz_vis.pivot(index="matricula", columns="dia", values="montada")
 
     mapa_rotulo = {}
     fins_de_semana = set()
+    dias_projetados = set()
     for dia in pivot.columns:
         wd = date(mes_escolhido.year, mes_escolhido.month, int(dia)).weekday()
-        rotulo = f"{dia} {ABREV_SEMANA[wd]}"
+        projetado = em_previsao and int(dia) > resumo["ultimo_dia_calculado"]
+        rotulo = f"{dia} {ABREV_SEMANA[wd]}" + ("*" if projetado else "")
         mapa_rotulo[dia] = rotulo
         if wd >= 5:
             fins_de_semana.add(rotulo)
+        if projetado:
+            dias_projetados.add(rotulo)
 
     # % de montadas por dia (a mesma média usada no gráfico de evolução
     # acima) — pedido do Wallace: "coloca a porcetnagem em baixo de cada
     # dia", uma linha resumo no final da própria matriz.
-    percentual_dia = df_matriz.dropna(subset=["montada"]).groupby("dia")["montada"].mean().mul(100)
+    percentual_dia = df_matriz_vis.dropna(subset=["montada"]).groupby("dia")["montada"].mean().mul(100)
     pivot.loc["% Montadas"] = percentual_dia
 
     # Aeronaves fora do contrato aparecem como linha em branco (sem
@@ -1104,7 +1146,11 @@ def _computo_mensal(mes_escolhido):
                 estilos.append(f"background-color: {LINE}" if coluna in fins_de_semana else "")
             else:
                 cor = STATUS["good"] if v == 1 else STATUS["critical"]
-                estilos.append(f"background-color: {cor}55")
+                # Dia projetado (previsão) em tom mais claro e itálico.
+                if coluna in dias_projetados:
+                    estilos.append(f"background-color: {cor}22; font-style: italic;")
+                else:
+                    estilos.append(f"background-color: {cor}55")
         return estilos
 
     styler = pivot_texto.style.apply(_cor_linha, axis=1)
@@ -1134,7 +1180,14 @@ def _computo_mensal(mes_escolhido):
         if matricula_sel not in ("% Montadas", "Horas voadas (prévia)") and matricula_sel not in aeronaves_fora:
             dia_sel = int(coluna_rotulo.split()[0])
             valor_sel = pivot.iloc[linha_idx][coluna_rotulo]
-            _mostrar_motivo_celula(matricula_sel, dia_sel, valor_sel, df_motivos)
+            if coluna_rotulo in dias_projetados:
+                st.info(
+                    f"FAB {matricula_sel}, dia {dia_sel}: dia projetado "
+                    f"({'montada' if valor_sel == 1 else 'desmontada'}), considerando as emergências "
+                    "como estão na última atualização da planilha."
+                )
+            else:
+                _mostrar_motivo_celula(matricula_sel, dia_sel, valor_sel, df_motivos)
 
     st.markdown("##### Justificativa das negativações")
     if df_motivos.empty:
@@ -1149,6 +1202,7 @@ def _computo_mensal(mes_escolhido):
         }).fillna("ainda aberto")
         st.dataframe(tabela, hide_index=True, width="stretch")
 
-    csv = df_matriz.to_csv(index=False).encode("utf-8")
+    csv = df_matriz_vis.to_csv(index=False).encode("utf-8")
+    sufixo = "_previsao" if em_previsao else ""
     st.download_button("⬇️ Exportar matriz (CSV)", csv,
-                        file_name=f"computo_mensal_{mes_escolhido}.csv", mime="text/csv")
+                        file_name=f"computo_mensal_{mes_escolhido}{sufixo}.csv", mime="text/csv")

@@ -190,6 +190,7 @@ def calcular_mes(ano, mes, hoje=None):
 
     inconsistencias = []
     periodos = []
+    periodos_projecao = []
 
     for _, row in emergencias.iterrows():
         matricula = row["matricula_aeronave"]
@@ -263,6 +264,26 @@ def calcular_mes(ano, mes, hoje=None):
             continue
 
         inicio_negativacao = _proximo_dia_util(data_info)
+
+        # Previsão até o fim do mês (Wallace, 27/11/2026): a mesma emergência
+        # projetada como está — aberta continua negativando até o último dia
+        # do mês; com data de Atd/cancelada, para no dia anterior a ela.
+        # Entra antes do corte por "dia já decorrido" para pegar também as
+        # que só começam a negativar depois de hoje (ex.: info em 27/11 →
+        # início em 30/11). Não substitui o cômputo oficial do dia.
+        fim_projecao = (
+            (data_fim_emergencia - timedelta(days=1)) if data_fim_emergencia else fim_mes
+        )
+        inicio_proj = max(inicio_negativacao, primeiro_dia)
+        fim_proj = min(fim_projecao, fim_mes)
+        if inicio_proj <= fim_proj:
+            periodos_projecao.append({
+                "matricula": matricula,
+                "numero_emergencia": row["numero_emergencia"],
+                "periodo_no_mes_inicio": inicio_proj,
+                "periodo_no_mes_fim": fim_proj,
+            })
+
         # No dia do cancelamento/conclusão em si, a aeronave já volta a ser
         # montada (1) — por isso o último dia negativado é o dia ANTERIOR
         # à data de cancelamento, não a própria data.
@@ -321,6 +342,37 @@ def calcular_mes(ano, mes, hoje=None):
     else:
         mmam_previa = None
 
+    # Matriz da previsão: dias já decorridos iguais ao oficial; dias seguintes
+    # projetados com as emergências como estão hoje (ver periodos_projecao).
+    linhas_projecao = []
+    for matricula in pontuadas:
+        proj_aeronave = [p for p in periodos_projecao if p["matricula"] == matricula]
+        for dia in range(1, ultimo_dia_mes + 1):
+            data_dia = date(ano, mes, dia)
+            if not _coberta(matricula, data_dia):
+                montada = None
+            elif dia <= ultimo_dia_calculado:
+                montada = next(
+                    (l["montada"] for l in linhas_matriz if l["matricula"] == matricula and l["dia"] == dia), None
+                )
+            else:
+                negativada = any(
+                    p["periodo_no_mes_inicio"] <= data_dia <= p["periodo_no_mes_fim"] for p in proj_aeronave
+                )
+                montada = 0 if negativada else 1
+            linhas_projecao.append({
+                "matricula": matricula, "dia": dia,
+                "fim_de_semana": data_dia.weekday() >= 5,
+                "projetado": dia > ultimo_dia_calculado,
+                "montada": montada,
+            })
+    df_projecao = pd.DataFrame(linhas_projecao)
+    if not df_projecao.empty:
+        media_proj = df_projecao.dropna(subset=["montada"]).groupby("dia")["montada"].mean() * 100
+        mmam_projetada = round(media_proj.mean(), 2) if len(media_proj) else None
+    else:
+        mmam_projetada = None
+
     resumo = {
         "ano": ano, "mes": mes,
         "aeronaves_pontuadas": pontuadas,
@@ -328,6 +380,7 @@ def calcular_mes(ano, mes, hoje=None):
         "ultimo_dia_calculado": ultimo_dia_calculado,
         "ultimo_dia_mes": ultimo_dia_mes,
         "mmam_previa": mmam_previa,
+        "mmam_projetada": mmam_projetada,
         "inconsistencias": inconsistencias,
     }
 
@@ -335,6 +388,7 @@ def calcular_mes(ano, mes, hoje=None):
     mes_ref = f"{ano}-{mes:02d}"
     df_matriz.to_csv(PASTA_COMPUTO / f"{mes_ref}_matriz.csv", index=False)
     df_motivos.to_csv(PASTA_COMPUTO / f"{mes_ref}_motivos.csv", index=False)
+    df_projecao.to_csv(PASTA_COMPUTO / f"{mes_ref}_matriz_projecao.csv", index=False)
     with open(PASTA_COMPUTO / f"{mes_ref}_resumo.json", "w", encoding="utf-8") as f:
         json.dump(resumo, f, ensure_ascii=False, indent=2, default=str)
 
@@ -446,6 +500,15 @@ def calcular_media_diaria_vee_one(ano, mes, hoje=None):
     df.to_csv(PASTA_COMPUTO / f"{ano}-{mes:02d}_vee_one.csv", index=False)
 
     return df
+
+
+def carregar_projecao(ano, mes):
+    """Matriz da previsão até o fim do mês (gravada por calcular_mes). None
+    se o mês ainda não foi recalculado com a previsão."""
+    caminho = PASTA_COMPUTO / f"{ano}-{mes:02d}_matriz_projecao.csv"
+    if not caminho.exists():
+        return None
+    return pd.read_csv(caminho, dtype={"matricula": str})
 
 
 def carregar_mes(ano, mes):
