@@ -192,3 +192,10 @@ lendo o `pivot` numérico original, só o texto exibido mudou.
 - **Sem feriados no cálculo de dia útil** — só pula sábado/domingo. Se isso importar, avisar o Wallace pra decidir se vale manter uma lista de feriados.
 - **Não escreve na Pré-RMA real** — é só uma conferência no site. Pra automatizar a escrita de verdade, precisaria: (1) compartilhar o arquivo com a conta de serviço como Editor, e (2) construir a escrita via API do Google Sheets (mais arriscado — pode mexer em célula errada, tem que preservar fórmulas).
 - **Ajustes manuais na planilha oficial não são capturados** — como visto no caso do 2739, alguém pode marcar uma aeronave como desmontada na planilha real sem que exista uma emergência formal registrada no site. A prévia sempre vai refletir só o que está nos registros de emergência.
+
+
+### Emergência gerada para outra aeronave (27/11/2026)
+
+Quando a observação da Fiscalização declara explicitamente “AIFP/IPLR gerado para atender a Anv XXXX” e o destino difere da matrícula cadastrada, a ocorrência não negativa a matrícula de origem. A aeronave permanece na relação contratual. O cálculo não transfere automaticamente o impedimento ao destino. A regra vale para a matriz oficial e para a linha VEE ONE.
+
+Caso conferido: emergências 386260013673 e 386260013674, cadastradas no 2702, com comentário “AIFP gerado para atender a Anv 2743.”. A simples menção a outra matrícula não causa isenção.

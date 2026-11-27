@@ -30,6 +30,7 @@ não duplicamos essa classificação aqui.
 
 import calendar
 import json
+import re
 from datetime import date, timedelta
 
 import pandas as pd
@@ -140,6 +141,23 @@ def _tem_isencao_avaliacao_negativa(observacao):
     return any(termo in texto for termo in TERMOS_ISENCAO_AVALIACAO_NEGATIVA)
 
 
+def _gerada_para_outra_aeronave(observacao, matricula):
+    """A origem da emergência não é necessariamente a aeronave atendida.
+
+    A declaração explícita do fiscal exclui a ocorrência da origem, sem
+    transferir automaticamente a negativação ao destino (Wallace, 27/11/2026).
+    Uma simples menção a outra matrícula não implica isenção.
+    """
+    if pd.isna(observacao):
+        return False
+    destino = re.search(
+        r"\b(?:AIFP|IPLR)\s+gerad[oa]\s+para\s+atender\s+(?:a\s+)?"
+        r"(?:Anv\.?|aeronave|FAB)\s*(27\d{2})\b",
+        str(observacao), re.IGNORECASE,
+    )
+    return destino is not None and destino.group(1) != str(matricula)
+
+
 def _classificar_aeronaves():
     """Retorna (aeronaves_pontuadas, aeronaves_fora_listadas) a partir do
     RAC — mesma classificação usada na tela RAC."""
@@ -198,6 +216,9 @@ def calcular_mes(ano, mes, hoje=None):
         # ocorrência (ver TERMOS_ISENCAO_AVALIACAO_NEGATIVA acima) — mesmo
         # tratamento silencioso do cancelamento, mas motivo diferente.
         if _tem_isencao_avaliacao_negativa(row.get("obs_coordenadoria_fiscal")):
+            continue
+
+        if _gerada_para_outra_aeronave(row.get("obs_coordenadoria_fiscal"), matricula):
             continue
 
         data_abertura = row["data_abertura"]
@@ -375,6 +396,9 @@ def calcular_media_diaria_vee_one(ano, mes, hoje=None):
         # ocorrência (ver TERMOS_ISENCAO_AVALIACAO_NEGATIVA acima) — mesmo
         # tratamento silencioso do cancelamento, mas motivo diferente.
         if _tem_isencao_avaliacao_negativa(row.get("obs_coordenadoria_fiscal")):
+            continue
+
+        if _gerada_para_outra_aeronave(row.get("obs_coordenadoria_fiscal"), matricula):
             continue
 
         data_abertura = row["data_abertura"]
