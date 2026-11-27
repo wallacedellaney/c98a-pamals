@@ -1,0 +1,85 @@
+*C-98 - 27/11/2026*
+
+
+*RESUMO:*
+
+
+*Disponibilidade*
+11 D / 16 M
+( 08 DI / 03 DO / 06 II / 04 IN / 00 ITR / 06 IS / 01 IP / 01 AD)
+ 
+*Previsão até o final do dia:* 12 D / 16 M
+
+
+*Previsão de disponibilidade semanal*
+
+
+*Disponíveis:* 16
+- 2703, 2719, 2722, 2727, 2737
+
+
+*Montadas:* 17
+- 2722
+
+
+*Esforço  Aéreo*
+Anual: 10100:00 / 9126:50 / 90,36%
+
+
+*Motores disponíveis:* 23
+
+
+*CLA*
+[ ] 2723 - II - CUMPRINDO AS INSPEÇÕES  ID05-15-0A/01/07/20/MD/MG - DPE: 27/11
+
+
+*DACTA II*
+[ ] 2742 - DO
+
+
+*PAMA-LS*
+[ ] 2704 - DO
+[ ] 2706 - IP - 71 APE- DPE: A ser definido.
+[ ] 2724 - AD - Anv em desativação conforme rádio 106/OPGP-3/161026
+[ ] 2726 - IS - 88 AIFP - DPE: A ser definido.
+[ ] 2728 - IN - Em processo de montagem após sinsitro - DPE: 26/02/27
+[ ] 2730 - IS - Sem motor e hélice - 41 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+[ ] 2734 - IS - Sem motor e hélice - 70 IPLR - DPE: Aguarda DPE do PAMASP e PAMALS.
+
+
+*1º ETA*
+[ ] 2727 - II - Realizando inspeções ID5-15-16 +06/01/02/09/11/20/21/22 - DPE: 04/12
+[ ] 2731 - DI
+[ ] 2733 - IN -   AGD PARECER DO AT 396%485 (PAMASP) - DPE: ASD
+[ ] 2739 - DI
+
+
+*1º/5º GAV*
+[ ] 2703 - IN - ANV VAZ OLÉO HÉLICE - DPE: 02/12
+[ ] 2708 - DO
+[ ] 2729 - IS - Itens recolhidos ao PAMA-SP - 05 IPLR - DPE: 05 DIAS após retorno dos itens.
+
+
+*2º ETA*
+[ ] 2722 - II - INSP 0A, MG / 4300FH / COR 60M - DPE: 04/12
+
+
+*5º ETA*
+[ ] 2702 - II - AERONAVE REALIZANDO INSP. "ID5-15-02/06/07/08/11/ME/MG" E "800FH" (MOT) - DPE: 10/01/2027
+[ ] 2719 - II - AERONAVE REALIZANDO INSPEÇÕES "ID5-15-06" E "66M" - DPE: 04/12
+[ ] 2743 - IN - MOTOR EXCEDEU PARÂMETROS EM VOO - DPE: 27/11
+
+
+*6º ETA*
+[ ] 2709 - DI
+[ ] 2720 - DI
+[ ] 2721 - IS - Agd atendimento de 01 AIFP e 03 IPLR - DPE: 04/12
+
+
+*7º ETA*
+[ ] 2732 - DI 
+[ ] 2736 - DI
+[ ] 2737 - II - CUMPRINDO INSPEÇÕES ID5-15 - DPE: 27/11
+[ ] 2738 - DI
+[ ] 2740 - IS - Realizando inspeções ID5-15-(0A, 22, 21, 11, 09, 03, 15)(CEL), (3500H, MOT1M12, HSI)(MOT). - DPE: 07 DIAS após chegada do kit HSI.
+[ ] 2741 - DI.
