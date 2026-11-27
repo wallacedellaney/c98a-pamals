@@ -105,12 +105,12 @@ def render(dados):
     # "Financeiro" só mostra os valores oficiais já apurados (aba 4.1),
     # mesmo princípio de transparência de "Atrasos".
     if dados.get("modo_externo"):
-        aba_computo, aba_atrasos, aba_financeiro, aba_historico = st.tabs(
-            ["Cômputo Mensal", "Atrasos", "Financeiro (RMA)", "Histórico Mensal"]
+        aba_computo, aba_previsao, aba_atrasos, aba_financeiro, aba_historico = st.tabs(
+            ["Cômputo Mensal", "Previsão (fim do mês)", "Atrasos", "Financeiro (RMA)", "Histórico Mensal"]
         )
     else:
-        aba_computo, aba_atrasos, aba_financeiro, aba_apresentacao, aba_ata, aba_historico = st.tabs(
-            ["Cômputo Mensal", "Atrasos", "Financeiro (RMA)", "Apresentação (RMA)", "Ata de Reunião", "Histórico Mensal"]
+        aba_computo, aba_previsao, aba_atrasos, aba_financeiro, aba_apresentacao, aba_ata, aba_historico = st.tabs(
+            ["Cômputo Mensal", "Previsão (fim do mês)", "Atrasos", "Financeiro (RMA)", "Apresentação (RMA)", "Ata de Reunião", "Histórico Mensal"]
         )
         with aba_apresentacao:
             _apresentacao_rma(mes_escolhido)
@@ -119,6 +119,9 @@ def render(dados):
 
     with aba_computo:
         _computo_mensal(mes_escolhido)
+
+    with aba_previsao:
+        _computo_mensal(mes_escolhido, previsao=True)
 
     with aba_financeiro:
         _financeiro_rma(mes_escolhido)
@@ -840,7 +843,35 @@ def _valor_hora_voo_atual():
     return float(candidatos.sort_values("linha").iloc[-1]["valor"])
 
 
-def _computo_mensal(mes_escolhido):
+def _projecao_pelos_motivos(df_matriz, df_motivos, resumo, ano, mes):
+    """Previsão montada só com os CSVs do cômputo oficial (sem depender do
+    arquivo de previsão): dias já decorridos = oficial; dias seguintes =
+    aeronave negativa se alguma negativação dela está "ainda aberta" ou só
+    termina depois daquele dia. Não pega emergência que ainda vai começar a
+    negativar (essas entram quando o cálculo grava a previsão completa)."""
+    ult = resumo["ultimo_dia_calculado"]
+    abertas = {}
+    if df_motivos is not None and not df_motivos.empty:
+        for _, p in df_motivos.iterrows():
+            canc = pd.to_datetime(p.get("data_cancelamento"), errors="coerce")
+            fim = (canc - pd.Timedelta(days=1)).date() if pd.notna(canc) else date(ano, mes, resumo["ultimo_dia_mes"])
+            abertas.setdefault(str(p["matricula"]), []).append(fim)
+    linhas = []
+    for _, r in df_matriz.iterrows():
+        dia = int(r["dia"])
+        montada = r["montada"]
+        if dia > ult:
+            ultimo_valor = df_matriz[(df_matriz["matricula"] == r["matricula"]) & (df_matriz["dia"] == ult)]["montada"]
+            if ultimo_valor.empty or pd.isna(ultimo_valor.iloc[0]):
+                montada = None
+            else:
+                data_dia = date(ano, mes, dia)
+                montada = 0 if any(f >= data_dia for f in abertas.get(str(r["matricula"]), [])) else 1
+        linhas.append({"matricula": r["matricula"], "dia": dia, "fim_de_semana": r.get("fim_de_semana"), "montada": montada})
+    return pd.DataFrame(linhas)
+
+
+def _computo_mensal(mes_escolhido, previsao=False):
     # Meses antes de dez/2025 não têm o campo "Estoque" preenchido nas
     # emergências (só passou a existir em meados de 2026), então o cálculo
     # oficial `calcular_mes()` não funciona pra eles — desvia pra uma versão
@@ -855,7 +886,10 @@ def _computo_mensal(mes_escolhido):
         _computo_mensal_retroativo(mes_escolhido)
         return
 
-    st.subheader(f"Cômputo Mensal — {_formatar_mes(mes_escolhido)}")
+    sufixo_key = "_prev" if previsao else ""
+    st.subheader(
+        f"{'Previsão até o fim do mês' if previsao else 'Cômputo Mensal'} — {_formatar_mes(mes_escolhido)}"
+    )
     st.caption(
         "Prévia calculada automaticamente a partir dos registros de emergências AIFP/IPLR sem estoque "
         "(ver 00_Instrucoes/computo_mensal.md) — não substitui a Pré-RMA oficial, é uma conferência."
@@ -863,7 +897,7 @@ def _computo_mensal(mes_escolhido):
 
     col_calc, _ = st.columns([1, 3])
     with col_calc:
-        if st.button("🔄 Recalcular", key="computo_recalcular", width="stretch"):
+        if st.button("🔄 Recalcular", key=f"computo_recalcular{sufixo_key}", width="stretch"):
             with st.spinner("Recalculando a partir das emergências..."):
                 import calcular_computo_mensal
                 calcular_computo_mensal.calcular_mes(mes_escolhido.year, mes_escolhido.month)
@@ -879,23 +913,22 @@ def _computo_mensal(mes_escolhido):
     # decorridos são os mesmos do oficial; os seguintes repetem as emergências
     # como estão na última atualização da planilha de emergências (dias
     # úteis). Entrega ou ajuste que ainda não foi lançado não entra.
-    df_projecao = carregar_projecao(mes_escolhido.year, mes_escolhido.month)
-    tem_previsao = (
-        df_projecao is not None and not df_projecao.empty
-        and resumo.get("mmam_projetada") is not None
-        and resumo["ultimo_dia_calculado"] < resumo.get("ultimo_dia_mes", resumo["ultimo_dia_calculado"])
-    )
-    visao = "Até hoje (oficial)"
-    if tem_previsao:
-        visao = st.radio(
-            "Visão da matriz e do gráfico",
-            ["Até hoje (oficial)", "Previsão até o fim do mês"],
-            horizontal=True, key="computo_visao",
-        )
-    em_previsao = visao.startswith("Previsão")
-    df_matriz_vis = (
-        df_projecao[["matricula", "dia", "fim_de_semana", "montada"]] if em_previsao else df_matriz
-    )
+    mes_em_andamento = resumo["ultimo_dia_calculado"] < resumo.get("ultimo_dia_mes", resumo["ultimo_dia_calculado"])
+    em_previsao = previsao and mes_em_andamento
+    tem_previsao = False
+    df_matriz_vis = df_matriz
+    if previsao and not mes_em_andamento:
+        st.info("Mês já encerrado — a previsão é igual ao cômputo oficial (aba Cômputo Mensal).")
+    if em_previsao:
+        df_projecao = carregar_projecao(mes_escolhido.year, mes_escolhido.month)
+        if df_projecao is None or df_projecao.empty:
+            df_projecao = _projecao_pelos_motivos(
+                df_matriz, df_motivos, resumo, mes_escolhido.year, mes_escolhido.month
+            )
+        df_matriz_vis = df_projecao[["matricula", "dia", "fim_de_semana", "montada"]]
+        medias = df_matriz_vis.dropna(subset=["montada"]).groupby("dia")["montada"].mean() * 100
+        resumo = dict(resumo, mmam_projetada=round(medias.mean(), 2) if len(medias) else None)
+        tem_previsao = resumo["mmam_projetada"] is not None
 
     # Calculado aqui em cima (não só lá embaixo no gráfico) pra alimentar
     # também o card pequeno "Média real VEE ONE" — pedido do Wallace,
@@ -977,7 +1010,7 @@ def _computo_mensal(mes_escolhido):
             tabela = tabela.rename(columns={
                 "data_inicio": "Desde (relatório anterior)", "data_fim": "Até (este relatório)", "horas": "Horas voadas",
             })
-            st.dataframe(tabela, width="stretch", hide_index=True)
+            st.dataframe(tabela, width="stretch", hide_index=True, key=f"computo_horas{sufixo_key}")
 
     # Valor recebido (Módulo I = horas de voo) + projeção do mês — pedido
     # do Wallace, 2026-08-20: "coloca o valor que a empresa ta recebendo
@@ -1055,7 +1088,7 @@ def _computo_mensal(mes_escolhido):
     # linhas (achado pelo Wallace, 2026-08-14: "só a legenda que ficou
     # embora [embolada/sobreposta]"). Abre espaço só pra essa figura.
     fig.update_layout(margin=dict(t=55))
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, width="stretch", key=f"computo_grafico{sufixo_key}")
     st.caption(
         "🟠 Linha cheia (laranja) = cômputo oficial acima (só negativa sem estoque, começa no "
         "próximo dia útil após a data da informação). 🔵 Linha pontilhada (azul) = cálculo \"real\" no "
@@ -1186,7 +1219,7 @@ def _computo_mensal(mes_escolhido):
     evento = st.dataframe(
         styler, width="stretch", height=altura_tabela,
         column_config=colunas_config,
-        on_select="rerun", selection_mode="single-cell", key="computo_matriz_selecao",
+        on_select="rerun", selection_mode="single-cell", key=f"computo_matriz_selecao{sufixo_key}",
     )
 
     celulas = evento.selection.get("cells", []) if evento else []
@@ -1218,9 +1251,9 @@ def _computo_mensal(mes_escolhido):
             "inicio_negativacao": "Início negativação", "data_cancelamento": "Cancelamento/conclusão",
             "periodo_no_mes_inicio": "Negativado de", "periodo_no_mes_fim": "Negativado até",
         }).fillna("ainda aberto")
-        st.dataframe(tabela, hide_index=True, width="stretch")
+        st.dataframe(tabela, hide_index=True, width="stretch", key=f"computo_justificativas{sufixo_key}")
 
     csv = df_matriz_vis.to_csv(index=False).encode("utf-8")
     sufixo = "_previsao" if em_previsao else ""
     st.download_button("⬇️ Exportar matriz (CSV)", csv,
-                        file_name=f"computo_mensal_{mes_escolhido}{sufixo}.csv", mime="text/csv")
+                        file_name=f"computo_mensal_{mes_escolhido}{sufixo}.csv", mime="text/csv", key=f"computo_csv{sufixo_key}")
