@@ -34,8 +34,26 @@ from contrato005.data.justificativas import carregar_justificativas, sincronizar
 from contrato005.components.exportar import gerar_pdf_bytes, gerar_xlsx_bytes
 from calcular_computo_mensal import (
     _tem_comentario_cancelamento, calcular_media_diaria_vee_one,
-    calcular_mes_retroativo, carregar_mes_retroativo, carregar_projecao,
+    calcular_mes_retroativo, carregar_mes_retroativo,
 )
+
+
+# Previsão até o fim do mês: leitura local do CSV gravado por
+# calcular_computo_mensal.calcular_mes. Não importa uma função nova daquele
+# módulo de propósito — no Streamlit Cloud o módulo antigo fica em memória
+# depois do deploy e a importação nova quebrou a página (ImportError em
+# 27/11/2026, site 005). Sem o arquivo, a previsão simplesmente não aparece.
+_PASTA_COMPUTO = Path(__file__).resolve().parents[3] / "02_Dados_Tratados" / "computo_mensal"
+
+
+def carregar_projecao(ano, mes):
+    caminho = _PASTA_COMPUTO / f"{ano}-{mes:02d}_matriz_projecao.csv"
+    if not caminho.exists():
+        return None
+    try:
+        return pd.read_csv(caminho, dtype={"matricula": str})
+    except Exception:
+        return None
 
 MESES_PT = [
     "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
